@@ -11,7 +11,7 @@
             <section class="col-lg-8">
                 <!-- Toolbar-->
                 <div class="d-none d-lg-flex justify-content-between align-items-center pt-lg-3 pb-4 pb-lg-5 mb-lg-3">
-                    <h6 class="fs-base text-light mb-0">Uredite svoje podatke ispod:</h6>
+                    <h6 class="fs-base text-dark mb-0">Uredite svoje podatke ispod:</h6>
                     <a class="btn btn-primary btn-sm" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         <i class="ci-sign-out me-2"></i>Odjava
                     </a>

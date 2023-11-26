@@ -26,6 +26,8 @@
     <meta name="twitter:description" content="{{ $seo['description'] }}" />
     <meta name="twitter:image" content="{{ asset($prod->image) }}" />
 
+    <base href="http://127.0.0.1:800000"/>
+
 @endpush
 
 @if (isset($gdl))

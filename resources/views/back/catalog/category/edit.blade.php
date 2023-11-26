@@ -126,13 +126,15 @@
                                 <i class="fas fa-save mr-1"></i> Snimi
                             </button>
                         </div>
+                        <div class="col-md-5 text-right">
                         @if (isset($category))
-                            <div class="col-md-5 text-right">
+
                                 <a href="{{ route('category.destroy', ['category' => $category]) }}" type="submit" class="btn btn-hero-danger my-2 js-tooltip-enabled" data-toggle="tooltip" title="" data-original-title="Obriši" onclick="event.preventDefault(); document.getElementById('delete-category-form{{ $category->id }}').submit();">
                                     <i class="fa fa-trash-alt"></i> Obriši
                                 </a>
-                            </div>
+
                         @endif
+                        </div>
                     </div>
                 </div>
             </div>

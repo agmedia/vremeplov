@@ -17,6 +17,11 @@ class Order extends Model
 {
 
     /**
+     * @var string[]
+     */
+    protected $fillable = ['order_status_id'];
+
+    /**
      * @var array
      */
     public $order = [];
@@ -183,7 +188,7 @@ class Order extends Model
         if ( ! empty($data)) {
             $this->order = $data;
         }
-        
+
         $updated = \App\Models\Back\Orders\Order::where('id', $data['id'])->update([
             'payment_fname'    => $this->order['address']['fname'],
             'payment_lname'    => $this->order['address']['lname'],

@@ -28,6 +28,7 @@ class HistoryController extends Controller
                 if ($request->has('pojam') && $request->input('pojam') != '') {
                     $query->whereHas('product', function ($query) use ($request) {
                         $query->where('name', 'like', '%' . $request->input('pojam') . '%')
+                            ->orWhere('isbn', 'like', '%' . $request->input('pojam') . '%')
                               ->orWhere('sku', 'like', '%' . $request->input('pojam') . '%');
                     });
                 }

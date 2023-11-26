@@ -175,18 +175,18 @@
 @push('product_scripts')
 
     <script>
-        let el = $('#max');
-
-        el.maxlength({
-            alwaysShow: true,
-            threshold: el.data('threshold') || 10,
-            warningClass: el.data('warning-class') || 'badge badge-warning',
-            limitReachedClass: el.data('limit-reached-class') || 'badge badge-danger',
-            placement: el.data('placement') || 'bottom',
-            preText: el.data('pre-text') || '',
-            separator: el.data('separator') || '/',
-            postText: el.data('post-text') || ''
-        });
+        // let el = $('#max');
+        //
+        // el.maxlength({
+        //     alwaysShow: true,
+        //     threshold: el.data('threshold') || 10,
+        //     warningClass: el.data('warning-class') || 'badge badge-warning',
+        //     limitReachedClass: el.data('limit-reached-class') || 'badge badge-danger',
+        //     placement: el.data('placement') || 'bottom',
+        //     preText: el.data('pre-text') || '',
+        //     separator: el.data('separator') || '/',
+        //     postText: el.data('post-text') || ''
+        // });
     </script>
 
     <script>

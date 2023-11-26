@@ -130,10 +130,14 @@ class Checkout extends Component
 
         if (CheckoutSession::hasShipping()) {
             $this->shipping = CheckoutSession::getShipping();
+        } else {
+            $this->selectShipping('gls');
         }
 
         if (CheckoutSession::hasPayment()) {
             $this->payment = CheckoutSession::getPayment();
+        } else {
+            $this->selectPayment('corvus');
         }
 
         $this->secondary_price = Currency::secondary() ? Currency::secondary()->value : false;
@@ -162,6 +166,8 @@ class Checkout extends Component
             $this->setAddress();
 
             session()->flash('login_success', 'Uspješno ste se prijavili na vaš račun...');
+
+            return redirect(request()->header('Referer'));
         }
 
         session()->flash('error', 'Upisani podaci ne odgovaraju našim korisnicima...');
@@ -251,7 +257,7 @@ class Checkout extends Component
 
         CheckoutSession::setShipping($shipping);
 
-        return redirect()->route('naplata', ['step' => 'dostava']);
+       // return redirect()->route('naplata', ['step' => 'dostava']);
     }
 
 
@@ -260,6 +266,7 @@ class Checkout extends Component
      */
     public function selectPayment(string $payment)
     {
+
         $this->payment = $payment;
 
         $this->checkPayment($payment);
@@ -279,9 +286,12 @@ class Checkout extends Component
             $geo->id = 1;
         }
 
+        $this->checkCart();
+        $cart = $this->cart ? $this->cart->get() : [];
+
         return view('livewire.front.checkout', [
-            'shippingMethods' => (new ShippingMethod())->findGeo($geo->id),
-            'paymentMethods' => (new PaymentMethod())->findGeo($geo->id)->checkShipping($this->shipping)->resolve(),
+            'shippingMethods' => (new ShippingMethod())->findGeo($geo->id)->checkCart($cart)->resolve(),
+            'paymentMethods' => (new PaymentMethod())->findGeo($geo->id)->checkShipping($this->shipping)->checkCart($cart)->resolve()->sortBy('sort_order'),
             'countries' => Country::list()
         ]);
     }

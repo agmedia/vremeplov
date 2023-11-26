@@ -9,10 +9,14 @@ use App\Mail\OrderSent;
 use App\Models\Back\Settings\Settings;
 use App\Models\Front\AgCart;
 use App\Models\Front\Checkout\Order;
+use App\Models\Front\Checkout\Shipping\Gls;
 use App\Models\TagManager;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use SoapClient;
+use \stdClass;
 
 class CheckoutController extends Controller
 {
@@ -85,9 +89,18 @@ class CheckoutController extends Controller
             CheckoutSession::setOrder($order->getData());
         }
 
+        if ( ! isset($data['id'])) {
+            $data['id'] = CheckoutSession::getOrder()['id'];
+        }
+
+        $uvjeti = DB::table('pages')
+                    ->select('description')
+                    ->whereIn('id', [6])
+                    ->get();
+
         $data['payment_form'] = $order->resolvePaymentForm();
 
-        return view('front.checkout.view', compact('data'));
+        return view('front.checkout.view', compact('data', 'uvjeti'));
     }
 
 
@@ -138,8 +151,6 @@ class CheckoutController extends Controller
             foreach ($order->products as $product) {
                 $real = $product->real;
 
-                Log::info('Before...' . $real->quantity);
-
                 if ($real->decrease) {
                     $real->decrement('quantity', $product->quantity);
 
@@ -149,15 +160,19 @@ class CheckoutController extends Controller
                         ]);
                     }
                 }
-
-                Log::info('After...' . $real->quantity);
             }
+
+            // Sent labels to gls
+           // $gls   = new Gls($order);
+          //  $label = $gls->resolve();
 
             CheckoutSession::forgetOrder();
             CheckoutSession::forgetStep();
             CheckoutSession::forgetPayment();
             CheckoutSession::forgetShipping();
-            $this->shoppingCart()->flush();
+
+            $cart = $this->shoppingCart();
+            $cart->flush()->resolveDB();
 
             $data['google_tag_manager'] = TagManager::getGoogleSuccessDataLayer($order);
 
@@ -165,6 +180,30 @@ class CheckoutController extends Controller
         }
 
         return redirect()->route('front.checkout.checkout', ['step' => '']);
+    }
+
+
+    /**
+     * @param Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function successKeks(Request $request)
+    {
+        if ($this->validateKeksResponse($request)) {
+            $id    = substr($request->input('bill_id'), 16);
+            $order = Order::query()->where('id', $id)->first();
+
+            $order->setData($id)->finish($request);
+
+            $order->update([
+                'order_status_id' => config('settings.order.new_status')
+            ]);
+
+            return response()->json(['status' => 0, 'message' => 'Accepted']);
+        }
+
+        return response()->json(['status' => 1, 'message' => 'Failed']);
     }
 
 
@@ -218,6 +257,31 @@ class CheckoutController extends Controller
         $response['order_status_id'] = $order_status_id;
 
         return $response;
+    }
+
+
+    /**
+     * @param Request $request
+     *
+     * @return bool
+     */
+    private function validateKeksResponse(Request $request): bool
+    {
+        if ($request->has('status') && ! $request->input('status')) {
+            $token = $request->header('Php-Auth-Pw');
+
+            if ($token) {
+                $keks_token = Settings::get('payment', 'list.keks')->first();
+
+                if (isset($keks_token->data->token)) {
+                    $request->validate(['bill_id' => 'required']);
+
+                    return hash_equals($keks_token->data->token, $token);
+                }
+            }
+        }
+
+        return false;
     }
 
 

@@ -7,6 +7,7 @@ namespace App\Helpers;
 use App\Models\Front\Catalog\Author;
 use App\Models\Front\Catalog\Publisher;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -102,6 +103,21 @@ class Query
         }
 
         return $data;
+    }
+
+
+    /**
+     * @param string|null $query
+     *
+     * @return bool
+     */
+    public static function run(string $query = null)
+    {
+        if ($query) {
+            return DB::statement(DB::raw($query));
+        }
+
+        return false;
     }
 
 }

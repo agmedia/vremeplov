@@ -41,8 +41,10 @@ class CartController extends Controller
         $this->middleware(function ($request, $next) {
             $this->key = config('session.cart');
 
-            if (session()->has($this->key)) {
+            if (session()->has($this->key)/* && Auth::guest()*/) {
                 $this->cart = new AgCart(session($this->key));
+
+                Cart::checkLogged($this->cart, session($this->key));
             } else {
                 $this->resolveSession();
             }
@@ -150,8 +152,8 @@ class CartController extends Controller
         $sl_cart_id = Str::random(8);
         $this->cart = new AgCart($sl_cart_id);
         session([$this->key => $sl_cart_id]);
-        
-        Cart::checkLogged($sl_cart_id, $this->cart);
+
+        Cart::checkLogged($this->cart, $sl_cart_id);
     }
 
 

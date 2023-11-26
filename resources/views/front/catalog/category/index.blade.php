@@ -130,7 +130,7 @@
         </div>
 
     </div>
-    <section class="spikesg" ></section>
+
     <div class="container pb-4 mb-2 mb-md-4 mt-4" id="filter-app" v-cloak>
         <div class="row">
             <filter-view ids="{{ isset($ids) ? $ids : null }}"

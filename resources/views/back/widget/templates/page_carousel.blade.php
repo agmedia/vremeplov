@@ -45,6 +45,10 @@
                                     <select class="form-control" id="target-select" name="target">
                                         <option></option>
                                         <option value="blog" {{ (isset($widget) and $widget->target == 'blog') ? 'selected="selected"' : '' }}>Blog</option>
+                                        <option value="category" {{ (isset($widget) and $widget->target == 'category') ? 'selected="selected"' : '' }}>Kategorije</option>
+                                        <option value="publisher" {{ (isset($widget) and $widget->target == 'publisher') ? 'selected="selected"' : '' }}>Izdavači</option>
+
+                                        <option value="reviews" {{ (isset($widget) and $widget->target == 'reviews') ? 'selected="selected"' : '' }}>Ocjene i komentari</option>
                                         {{--@foreach ($targets as $target)
                                             <option value="{{ $target->id }}" {{ (isset($widget) and $target->id == $widget->target) ? 'selected="selected"' : '' }}>{{ $target->title }}</option>
                                         @endforeach--}}

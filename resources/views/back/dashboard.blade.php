@@ -5,7 +5,7 @@
     <div class="bg-body-light">
         <div class="content content-full">
             <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center">
-                <h1 class="flex-sm-fill font-size-h2 font-w400 mt-2 mb-0 mb-sm-2">Nadzorna ploča</h1>
+                <h1 class="flex-sm-fill font-size-h3 font-w400 mt-2 mb-0 mb-sm-2">Nadzorna ploča</h1>
                 <nav class="flex-sm-00-auto ml-sm-3" aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item active" aria-current="page">Nadzorna ploča</li>
@@ -51,55 +51,89 @@
             </div>
         @endif
 
-        <!-- Quick Overview -->
-        <div class="row row-deck">
-            <div class="col-6 col-lg-3">
-                <a class="block block-rounded block-link-shadow text-center" href="{{ route('orders') }}">
-                    <div class="block-content py-5">
-                        <div class="font-size-h3 font-w600 text-warning mb-1">{{ $data['proccess'] }}</div>
-                        <p class="font-w600 font-size-sm text-muted text-uppercase mb-0">
-                            Narudžbi u obradi
-                        </p>
+
+        <!-- Overview -->
+            <div class="row items-push">
+                <div class="col-sm-6 col-xl-3">
+                    <div class="block block-rounded text-center d-flex flex-column h-100 mb-0">
+                        <div class="block-content block-content-full">
+                            <div class="item rounded-circle bg-body mx-auto my-3">
+                                <i class="fa fa-wallet fa-lg text-primary"></i>
+                            </div>
+                            <div class="font-size-h3 text-success font-w600 mb-1">{{ $data['this_month_total'] }}€</div>
+                            <div class="text-muted ">Mjesečni promet</div>
+
+                        </div>
+                        <div class="block-content block-content-full block-content-sm bg-body-light fs-sm">
+                            <a class="fw-medium" href="{{ route('orders') }}">
+                                Pregled narudžbi
+                                <i class="fa fa-arrow-right ms-1 opacity-25"></i>
+                            </a>
+                        </div>
                     </div>
-                </a>
-            </div>
-            <div class="col-6 col-lg-3">
-                <a class="block block-rounded block-link-shadow text-center" href="{{ route('orders') }}">
-                    <div class="block-content py-5">
-                        <div class="font-size-h3 font-w600 text-success mb-1">{{ $data['finished'] }}</div>
-                        <p class="font-w600 font-size-sm text-muted text-uppercase mb-0">
-                            Dovršenih narudžbi
-                        </p>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="block block-rounded text-center d-flex flex-column h-100 mb-0">
+                        <div class="block-content block-content-full flex-grow-1">
+                            <div class="item rounded-circle bg-body mx-auto my-3">
+                                <i class="fa fa-chart-line fa-lg text-primary"></i>
+                            </div>
+                            <div class="font-size-h3 text-success font-w600 mb-1">{{ $data['this_month'] }}</div>
+                            <div class="text-muted ">Narudžbi ovaj mjesec</div>
+
+                        </div>
+                        <div class="block-content block-content-full block-content-sm bg-body-light fs-sm">
+                            <a class="fw-medium" href="{{ route('orders') }}">
+                                Pregled narudžbi
+                                <i class="fa fa-arrow-right ms-1 opacity-25"></i>
+                            </a>
+                        </div>
                     </div>
-                </a>
-            </div>
-            <div class="col-6 col-lg-3">
-                <a class="block block-rounded block-link-shadow text-center" href="{{ route('orders') }}">
-                    <div class="block-content py-5">
-                        <div class="font-size-h3 text-success font-w600 mb-1">{{ $data['today'] }}</div>
-                        <p class="font-w600 font-size-sm text-muted text-uppercase mb-0">
-                            Narudžbi danas
-                        </p>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="block block-rounded text-center d-flex flex-column h-100 mb-0">
+                        <div class="block-content block-content-full flex-grow-1">
+                            <div class="item rounded-circle bg-body mx-auto my-3">
+                                <i class="fa fa-chart-line fa-lg text-primary"></i>
+                            </div>
+                            <div class="font-size-h3 text-success font-w600 mb-1">{{ $data['today'] }}</div>
+                            <div class="text-muted ">Narudžbi danas</div>
+
+                        </div>
+                        <div class="block-content block-content-full block-content-sm bg-body-light fs-sm">
+                            <a class="fw-medium" href="{{ route('orders') }}">
+                                Pregled narudžbi
+                                <i class="fa fa-arrow-right ms-1 opacity-25"></i>
+                            </a>
+                        </div>
                     </div>
-                </a>
-            </div>
-            <div class="col-6 col-lg-3">
-                <a class="block block-rounded block-link-shadow text-center" href="{{ route('orders') }}">
-                    <div class="block-content py-5">
-                        <div class="font-size-h3 text-success font-w600 mb-1">{{ $data['this_month'] }}</div>
-                        <p class="font-w600 font-size-sm text-muted text-uppercase mb-0">
-                            Narudžbi ovaj mjesec
-                        </p>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="block block-rounded text-center d-flex flex-column h-100 mb-0">
+                        <div class="block-content block-content-full flex-grow-1">
+                            <div class="item rounded-circle bg-body mx-auto my-3">
+                                <i class="fa fa-users fa-lg text-primary"></i>
+                            </div>
+                            <div class="font-size-h3 text-success font-w600 mb-1">{{ $data['users'] }}</div>
+                            <div class="text-muted ">Registriranih korisnika</div>
+
+                        </div>
+                        <div class="block-content block-content-full block-content-sm bg-body-light fs-sm">
+                            <a class="fw-medium" href="{{ route('users') }}">
+                                Pregled korisnika
+                                <i class="fa fa-arrow-right ms-1 opacity-25"></i>
+                            </a>
+                        </div>
                     </div>
-                </a>
+                </div>
             </div>
-        </div>
-        <!-- END Quick Overview -->
+            <!-- END Overview -->
+
 
         <!-- Orders Overview -->
         <div class="block block-rounded">
             <div class="block-header block-header-default">
-                <h3 class="block-title">Mjesečni pregled</h3>
+                <h3 class="block-title">Prodaja</h3>
                 <div class="block-options">
                     <button type="button" class="btn-block-option" data-toggle="block-option" data-action="state_toggle" data-action-mode="demo">
                         <i class="si si-refresh"></i>
@@ -116,38 +150,8 @@
 
         <!-- Top Products and Latest Orders -->
         <div class="row">
-            <div class="col-xl-6">
-                <!-- Top Products -->
-                <div class="block block-rounded">
-                    <div class="block-header block-header-default">
-                        <h3 class="block-title">Zadnje prodani artikli</h3>
-                        <div class="block-options">
-                            <button type="button" class="btn-block-option" data-toggle="block-option" data-action="state_toggle" data-action-mode="demo">
-                                <i class="si si-refresh"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="block-content">
-                        <table class="table table-borderless table-striped table-vcenter font-size-sm">
-                            <tbody>
-                            @foreach ($products as $product)
-                                <tr>
-                                    <td class="text-center" style="width: 5%;">
-                                        <a class="font-w600" href="{{ route('products.edit', ['product' => $product->product_id]) }}">{{ $product->id }}</a>
-                                    </td>
-                                    <td>
-                                        <a href="{{ route('products.edit', ['product' => $product->product_id]) }}">{{ $product->name }}</a>
-                                    </td>
-                                    <td class="font-w600 text-right" style="width: 20%;">{{ \App\Helpers\Currency::main($product->price, true) }}</td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <!-- END Top Products -->
-            </div>
-            <div class="col-xl-6">
+
+            <div class="col-xl-12">
                 <!-- Latest Orders -->
                 <div class="block block-rounded">
                     <div class="block-header block-header-default">
@@ -159,29 +163,198 @@
                         </div>
                     </div>
                     <div class="block-content">
-                        <table class="table table-borderless table-striped table-vcenter font-size-sm">
-                            <tbody>
-                            @foreach ($orders as $order)
+                        <!-- All Orders Table -->
+                        <div class="table-responsive">
+                            <table class="table table-borderless table-striped table-vcenter font-size-sm">
+                                <thead>
                                 <tr>
-                                    <td class="font-w600 text-center" style="width: 5%;">
-                                        <a href="{{ route('orders.edit', ['order' => $order]) }}">{{ $order->id }}</a>
-                                    </td>
-                                    <td class="d-none d-sm-table-cell">
-                                        <a href="{{ route('orders.edit', ['order' => $order]) }}">{{ $order->payment_fname . ' ' . $order->payment_lname }}</a>
-                                    </td>
-                                    <td class="text-right" style="width: 5%;">
-                                        <span class="badge badge-pill badge-{{ $order->status->color }}">{{ $order->status->title }}</span>
-                                    </td>
-                                    <td class="font-w600 text-right" style="width: 20%;">{{ \App\Helpers\Currency::main($order->total, true) }}</td>
+
+                                    <th class="text-center" style="width: 36px;">Br.</th>
+                                    <th class="text-center">Datum</th>
+                                    <th>Status</th>
+                                    <th>Plaćanje</th>
+                                    <th>Kupac</th>
+                                    <th class="text-center">Artikli</th>
+                                    <th class="text-right">Vrijednost</th>
+                                    <th class="text-right">Detalji</th>
                                 </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                @forelse ($orders->sortByDesc('id') as $order)
+                                    <tr>
+                                        <td class="text-center">
+                                            <a class="font-w600" href="{{ route('orders.show', ['order' => $order]) }}">
+                                                <strong>{{ $order->id }}</strong>
+                                            </a>
+                                        </td>
+                                        <td class="text-center">{{ \Illuminate\Support\Carbon::make($order->created_at)->format('d.m.Y') }}</td>
+                                        <td class="font-size-base">
+                                            <span class="badge badge-pill badge-{{ $order->status->color }}">{{ $order->status->title }}</span>
+                                        </td>
+                                        <td class="text-lwft">{{ $order->payment_method }}</td>
+                                        <td>
+                                            <a class="font-w600" href="{{ route('orders.show', ['order' => $order]) }}">{{ $order->shipping_fname }} {{ $order->shipping_lname }}</a>
+                                        </td>
+                                        <td class="text-center">{{ $order->products->count() }}</td>
+                                        <td class="text-right">
+                                            <strong>{{ number_format($order->total, 2, ',', '.') }}€ </strong>
+                                        </td>
+                                        <td class="text-right font-size-base">
+                                            <a class="btn btn-sm btn-alt-secondary" href="{{ route('orders.show', ['order' => $order]) }}">
+                                                <i class="fa fa-fw fa-eye"></i>
+                                            </a>
+                                            <a class="btn btn-sm btn-alt-info" href="{{ route('orders.edit', ['order' => $order]) }}">
+                                                <i class="fa fa-fw fa-edit"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td class="text-center font-size-sm" colspan="8">
+                                            <label>Nema narudžbi...</label>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Pagination -->
+
+                    </div>
+                    <div class="block-content block-content-full text-center block-content-sm bg-body-light fs-sm">
+                        <a class="fw-medium" href="{{ route('orders') }}">
+                            Sve narudžbe
+                            <i class="fa fa-arrow-right ms-1 opacity-25"></i>
+                        </a>
                     </div>
                 </div>
                 <!-- END Latest Orders -->
             </div>
+
         </div>
+
+
+            <div class="row">
+
+                <div class="col-md-6 d-flex flex-column">
+                    <div class="block block-rounded">
+                        <div class="block-header block-header-default">
+                            <h3 class="block-title">Komentari kupaca</h3>
+
+                        </div>
+                        <div class="block-content block-content-full d-flex justify-content-between align-items-center flex-grow-1">
+                            <div class="me-3">
+                                <div class="font-size-h3 text-warning font-w600 mb-1">{{ $data['comments'] }}</div>
+
+                                <p class="text-muted mb-0">
+                                    Novih komentara
+                                </p>
+                            </div>
+                            <div class="item rounded-circle bg-body">
+                                <i class="fas fa-comments fa-lg text-primary"></i>
+
+                            </div>
+                        </div>
+                        <div class="block-content block-content-full block-content-sm bg-body-light fs-sm text-center">
+                            <a class="fw-medium" href="{{ route('reviews') }}">
+                                Pogledaj komentare
+                                <i class="fa fa-arrow-right ms-1 opacity-25"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex flex-column">
+                    <div class="block block-rounded">
+                        <div class="block-header block-header-default">
+                            <h3 class="block-title">Rasprodano</h3>
+
+                        </div>
+                        <div class="block-content block-content-full d-flex justify-content-between align-items-center flex-grow-1">
+                            <div class="me-3">
+                                <div class="font-size-h3 text-warning font-w600 mb-1">{{ $data['zeroproducts'] }}</div>
+                                <p class="text-muted mb-0">
+                                    Rasprodanih artikala
+                                </p>
+                            </div>
+                            <div class="item rounded-circle bg-body">
+                                <i class="fas fa-exclamation-triangle fa-lg text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="block-content block-content-full block-content-sm bg-body-light fs-sm text-center">
+                            <a class="fw-medium" href="{{ route('products') }}">
+                                Pogledaj artikle
+                                <i class="fa fa-arrow-right ms-1 opacity-25"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xl-6">
+                    <!-- Top Products -->
+                    <div class="block block-rounded">
+                        <div class="block-header block-header-default">
+                            <h3 class="block-title">Najprodavaniji artikli</h3>
+                            <div class="block-options">
+                                <button type="button" class="btn-block-option" data-toggle="block-option" data-action="state_toggle" data-action-mode="demo">
+                                    <i class="si si-refresh"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="block-content">
+                            <table class="table table-borderless table-striped table-vcenter font-size-sm">
+                                <tbody>
+                                @foreach ($bestsellers as $product)
+                                    <tr>
+                                        <td class="text-center" style="width: 5%;">
+                                            <a class="font-w600" href="{{ route('products.edit', ['product' => $product->product_id]) }}">{{ $product->product_id }}</a>
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('products.edit', ['product' => $product->product_id]) }}">{{ $product->name }}</a>
+                                        </td>
+                                        <td class="font-w600 text-right" style="width: 20%;">{{ $product->total }}</td>
+                                    </tr>
+                                @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- END Top Products -->
+                </div>
+                <div class="col-xl-6">
+                    <!-- Top Products -->
+                    <div class="block block-rounded">
+                        <div class="block-header block-header-default">
+                            <h3 class="block-title">Zadnje prodani artikli</h3>
+                            <div class="block-options">
+                                <button type="button" class="btn-block-option" data-toggle="block-option" data-action="state_toggle" data-action-mode="demo">
+                                    <i class="si si-refresh"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="block-content">
+                            <table class="table table-borderless table-striped table-vcenter font-size-sm">
+                                <tbody>
+                                @foreach ($products->take(9) as $product)
+                                    <tr>
+                                        <td class="text-center" style="width: 5%;">
+                                            <a class="font-w600" href="{{ route('products.edit', ['product' => $product->product_id]) }}">{{ $product->id }}</a>
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('products.edit', ['product' => $product->product_id]) }}">{{ $product->name }}</a>
+                                        </td>
+                                        <td class="font-w600 text-right" style="width: 20%;">{{ \App\Helpers\Currency::main($product->price, true) }}</td>
+                                    </tr>
+                                @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- END Top Products -->
+                </div>
+
+            </div>
         <!-- END Top Products and Latest Orders -->
     </div>
     <!-- END Page Content -->
@@ -211,13 +384,13 @@
             console.log(last_year.names, last_year.values, last_year.step, last_year.top)
 
             // Set Global Chart.js configuration
-            Chart.defaults.global.defaultFontColor              = '#495057';
-            Chart.defaults.scale.gridLines.color                = 'transparent';
-            Chart.defaults.scale.gridLines.zeroLineColor        = 'transparent';
+            Chart.defaults.global.defaultFontColor              = '#818d96';
+            Chart.defaults.scale.gridLines.color                = 'rgba(0,0,0,.04)';
+            Chart.defaults.scale.gridLines.zeroLineColor        = 'rgba(0,0,0,.1)';
             Chart.defaults.scale.ticks.beginAtZero              = true;
-            Chart.defaults.global.elements.line.borderWidth     = 0;
-            Chart.defaults.global.elements.point.radius         = 0;
-            Chart.defaults.global.elements.point.hoverRadius    = 0;
+            Chart.defaults.global.elements.line.borderWidth     = 2;
+            Chart.defaults.global.elements.point.radius         = 5;
+            Chart.defaults.global.elements.point.hoverRadius    = 7;
             Chart.defaults.global.tooltips.cornerRadius         = 3;
             Chart.defaults.global.legend.labels.boxWidth        = 12;
 
@@ -230,10 +403,11 @@
             // Overview Chart Options
             chartOverviewOptions = {
                 maintainAspectRatio: false,
+                tension: .4,
                 scales: {
                     yAxes: [{
                         ticks: {
-                            suggestedMax: this_year.top
+                            suggestedMax: this_year.top + ( this_year.top * 0.1)
                         }
                     }]
                 },
@@ -254,30 +428,30 @@
                     {
                         label: 'Ova godina',
                         fill: true,
-                        backgroundColor: 'rgba(6, 101, 208, .5)',
-                        borderColor: 'transparent',
-                        pointBackgroundColor: 'rgba(6, 101, 208, 1)',
+                        backgroundColor: 'rgba(59,101,190,0.75)',
+                        borderColor: 'rgb(24, 50, 109)',
+                        pointBackgroundColor: 'rgba(24, 50, 109, 1)',
                         pointBorderColor: '#fff',
                         pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: 'rgba(6, 101, 208, 1)',
+                        pointHoverBorderColor: 'rgba(24, 50, 109, 1)',
                         data: this_year.values
                     },
                     {
                         label: 'Zadnja godina',
                         fill: true,
-                        backgroundColor: 'rgba(6, 101, 208, .2)',
-                        borderColor: 'transparent',
-                        pointBackgroundColor: 'rgba(6, 101, 208, .2)',
+                        backgroundColor: 'rgba(108, 117, 125, .25)',
+                        borderColor: 'rgba(108, 117, 125, .75)',
+                        pointBackgroundColor: 'rgba(108, 117, 125, 1)',
                         pointBorderColor: '#fff',
                         pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: 'rgba(6, 101, 208, .2)',
+                        pointHoverBorderColor: 'rgba(108, 117, 125, 1)',
                         data: last_year.values
                     }
                 ]
             };
 
             // Init Overview Chart
-            if (chartOverviewCon.length) {
+            if (chartOverviewCon !== null) {
                 chartOverview = new Chart(chartOverviewCon, {
                     type: 'line',
                     data: chartOverviewData,

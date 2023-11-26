@@ -29,7 +29,7 @@ class ProductController extends Controller
     {
         $query = $product->filter($request);
 
-        $products = $query->paginate(20)->appends(request()->query());
+        $products = $query->paginate(50)->appends(request()->query());
 
         if ($request->has('status')) {
             if ($request->input('status') == 'with_action' || $request->input('status') == 'without_action') {
@@ -180,7 +180,7 @@ class ProductController extends Controller
     {
         if ($request->has('id')) {
             $id = $request->input('id');
-            
+
             ProductImage::where('product_id', $id)->delete();
             ProductCategory::where('product_id', $id)->delete();
 
@@ -205,7 +205,7 @@ class ProductController extends Controller
      *
      * @return LengthAwarePaginator
      */
-    public function paginateColl($items, $perPage = 20, $page = null, $options = []): LengthAwarePaginator
+    public function paginateColl($items, $perPage = 50, $page = null, $options = []): LengthAwarePaginator
     {
         $page = $page ?: (Paginator::resolveCurrentPage() ?: 1);
         $items = $items instanceof Collection ? $items : Collection::make($items);

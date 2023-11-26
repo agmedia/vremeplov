@@ -127,6 +127,33 @@ class PaymentMethod
     }
 
 
+    public function checkCart(array $cart)
+    {
+        $pass = true;
+
+        if (isset($cart['items'])) {
+            foreach ($cart['items'] as $item) {
+                if ($item['associatedModel']['origin'] != 'Hrvatski') {
+                    $pass = false;
+                }
+            }
+        }
+
+        if ( ! $pass) {
+            $methods = $this->response_methods;
+            $this->response_methods = collect();
+
+            foreach ($methods as $method) {
+                if ($method->code != 'cod') {
+                    $this->response_methods->push($method);
+                }
+            }
+        }
+
+        return $this;
+    }
+
+
     /**
      * @param string $shipping
      *

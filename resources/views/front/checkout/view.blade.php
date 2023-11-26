@@ -3,11 +3,11 @@
 
 @section('content')
 
-    <div class="page-title bg-dark pt-4" style="background-image: url({{ config('settings.images_domain') . 'media/img/zuzi-bck.svg' }});background-repeat: repeat-x;background-position-y: bottom;">
+    <div class="page-title-overlap bg-light pt-4"  style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
         <div class="container d-lg-flex justify-content-between py-2 py-lg-3">
             <div class="order-lg-2 mb-3 mb-lg-0 pt-lg-2">
                 <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb breadcrumb-light flex-lg-nowrap justify-content-center justify-content-lg-start">
+                    <ol class="breadcrumb breadcrumb-dark flex-lg-nowrap justify-content-center justify-content-lg-start">
                         <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="ci-home"></i>Naslovnica</a></li>
 
                         <li class="breadcrumb-item text-nowrap active" aria-current="page">Potvrdite narudžbu</li>
@@ -15,45 +15,38 @@
                 </nav>
             </div>
             <div class="order-lg-1 pe-lg-4 text-center text-lg-start">
-                <h1 class="h3 text-light mb-0">Način plaćanja</h1>
+                <h1 class="h3 text-dark mb-0">Potvrdite narudžbu</h1>
             </div>
         </div>
-        <div class="container">
-            <div class="row">
 
-                <section class="col-lg-12">
-                    <div class="steps steps-light pt-2 pb-3 mb-2">
-                        <a class="step-item active" href="{{ route('kosarica') }}">
-                            <div class="step-progress"><span class="step-count">1</span></div>
-                            <div class="step-label"><i class="ci-cart"></i>Košarica</div>
-                        </a>
-                        <a class="step-item active" href="{{ route('naplata', ['step' => 'podaci']) }}">
-                            <div class="step-progress"><span class="step-count">2</span></div>
-                            <div class="step-label"><i class="ci-user-circle"></i>Podaci</div>
-                        </a>
-                        <a class="step-item active" href="{{ route('naplata', ['step' => 'dostava']) }}">
-                            <div class="step-progress"><span class="step-count">3</span></div>
-                            <div class="step-label"><i class="ci-package"></i>Dostava</div>
-                        </a>
-                        <a class="step-item active" href="{{ route('naplata', ['step' => 'placanje']) }}">
-                            <div class="step-progress"><span class="step-count">4</span></div>
-                            <div class="step-label"><i class="ci-card"></i>Plaćanje</div>
-                        </a>
-                        <a class="step-item current active" href="{{ route('pregled') }}">
-                            <div class="step-progress"><span class="step-count">5</span></div>
-                            <div class="step-label"><i class="ci-check-circle"></i>Pregledaj</div>
-                        </a>
-                    </div>
-                </section>
-
-            </div>
-        </div>
     </div>
-    <section class="spikesg" ></section>
-    <div class="container pb-5 mb-2 mt-5 mb-md-4">
-        <div class="row">
 
+    <div class="container pb-5 mb-2 mb-md-4">
+        <div class="row">
             <section class="col-lg-8">
+
+                <div class="steps steps-dark pt-2 pb-3 mb-2">
+                    <a class="step-item active" href="{{ route('kosarica') }}">
+                        <div class="step-progress"><span class="step-count">1</span></div>
+                        <div class="step-label"><i class="ci-cart"></i>Košarica</div>
+                    </a>
+                    <a class="step-item active" href="{{ route('naplata', ['step' => 'podaci']) }}">
+                        <div class="step-progress"><span class="step-count">2</span></div>
+                        <div class="step-label"><i class="ci-user-circle"></i>Podaci</div>
+                    </a>
+                    <a class="step-item active" href="{{ route('naplata', ['step' => 'dostava']) }}">
+                        <div class="step-progress"><span class="step-count">3</span></div>
+                        <div class="step-label"><i class="ci-package"></i>Dostava</div>
+                    </a>
+                    <a class="step-item active" href="{{ route('naplata', ['step' => 'placanje']) }}">
+                        <div class="step-progress"><span class="step-count">4</span></div>
+                        <div class="step-label"><i class="ci-card"></i>Plaćanje</div>
+                    </a>
+                    <a class="step-item current active" href="{{ route('pregled') }}">
+                        <div class="step-progress"><span class="step-count">5</span></div>
+                        <div class="step-label"><i class="ci-check-circle"></i>Pregledaj</div>
+                    </a>
+                </div>
                 <h2 class="h6 pt-1 pb-3 mb-3">Pregled košarice</h2>
                 <cart-view continueurl="{{ route('index') }}" checkouturl="{{ route('naplata') }}" buttons="false"></cart-view>
 
@@ -108,7 +101,7 @@
 
             </section>
 
-            <aside class="col-lg-4 pt-4 pt-lg-0 mb-3 ps-xl-5 d-block">
+            <aside class="col-lg-4 pt-4 pt-lg-0 ps-xl-5 d-none d-lg-block">
                 <cart-view-aside route="pregled" continueurl="{{ route('index') }}" checkouturl="/"></cart-view-aside>
             </aside>
         </div>

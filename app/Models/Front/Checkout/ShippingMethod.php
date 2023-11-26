@@ -5,6 +5,7 @@ namespace App\Models\Front\Checkout;
 use App\Helpers\Session\CheckoutSession;
 use App\Models\Back\Settings\Settings;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Class ShippingMethod
@@ -18,6 +19,11 @@ class ShippingMethod
      */
     protected $methods;
 
+    /**
+     * @var mixed|null
+     */
+    protected $response_methods = null;
+
 
     /**
      * ShippingMethod constructor.
@@ -25,6 +31,7 @@ class ShippingMethod
     public function __construct()
     {
         $this->methods = $this->list();
+        $this->response_methods = collect();
     }
 
 
@@ -65,26 +72,67 @@ class ShippingMethod
     /**
      * @param int $zone
      *
-     * @return Collection
+     * @return $this
      */
-    public function findGeo(int $zone): Collection
+    public function findGeo(int $zone)
     {
-        $methods = collect();
-
         foreach ($this->methods as $method) {
             if ($method->geo_zone == $zone) {
-                $methods->push($method);
+                $this->response_methods->push($method);
             }
         }
 
-        return $methods;
+        return $this;
     }
 
-    /*******************************************************************************
-    *                                Copyright : AGmedia                           *
-    *                              email: filip@agmedia.hr                         *
-    *******************************************************************************/
 
+    /**
+     * @param array $cart
+     *
+     * @return $this
+     */
+    public function checkCart(array $cart)
+    {
+        /*$pass = true;
+
+        if (isset($cart['items'])) {
+            foreach ($cart['items'] as $item) {
+                if ($item['associatedModel']['origin'] != 'Hrvatski') {
+                    $pass = false;
+                }
+            }
+        }
+
+        if ( ! $pass) {
+            $methods = $this->response_methods;
+            $this->response_methods = collect();
+
+            foreach ($methods as $method) {
+                if ($method->code != 'flat') {
+                    $this->response_methods->push($method);
+                }
+            }
+        }*/
+
+        return $this;
+    }
+
+
+    /**
+     * @return Collection
+     */
+    public function resolve(): Collection
+    {
+        return $this->response_methods;
+    }
+
+
+    /**
+     * @param $cart
+     *
+     * @return \Darryldecode\Cart\CartCondition|false
+     * @throws \Darryldecode\Cart\Exceptions\InvalidConditionException
+     */
     public static function condition($cart = null)
     {
         $shipping = false;

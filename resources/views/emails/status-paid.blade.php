@@ -29,12 +29,12 @@
                     <b>{{ __('Općom uplatnicom / Virmanom / Internet bankarstvom') }}</b>
                 @elseif ($order->payment_code == 'cod')
                     <b>{{ __('Gotovinom prilikom pouzeća') }}</b>
-                @elseif ($order->payment_code == 'payway')
-                    <b>{{ __('T-Com Payway') }}</b>
+                @elseif ($order->payment_code == 'corvus')
+                    <b>{{ __('CorvusPay') }}</b>
                 @else
                     <b>{{ __('Plaćanje prilikom preuzimanja') }}</b>
                 @endif
-                <br><br>Lijep pozdrav,<br>Zuzi Shop
+                <br><br>Lijep pozdrav,<br>Plava Krava
             </td>
         </tr>
 

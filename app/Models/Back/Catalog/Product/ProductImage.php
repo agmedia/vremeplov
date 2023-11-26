@@ -49,8 +49,9 @@ class ProductImage extends Model
             foreach ($new as $new_image) {
                 if (isset($new_image['image']) && $new_image['image']) {
                     $data = json_decode($new_image['image']);
+                    $sort_order = (isset($new_image['sort_order']) && $new_image['sort_order']) ? $new_image['sort_order'] : 0;
 
-                    $saved = $this->saveNew($data->output, $new_image['sort_order']);
+                    $saved = $this->saveNew($data->output, $sort_order);
                     // Ako je novi default ujedno i novo uploadana fotka.
                     // Također ako je ime novo uploadane slike isto kao $existing['default']
                     if (
@@ -258,7 +259,7 @@ class ProductImage extends Model
 
         $time = Str::random(4);
         $img  = Image::make($this->makeImageFromBase($image));
-        $path = $this->resource->id . '/' . Str::slug($this->resource->name) . '-' . $time . '.';
+        $path = $this->resource->id . '/' . Str::slug($title) . '-' . $time . '.';
 
         $path_jpg = $path . 'jpg';
         Storage::disk('products')->put($path_jpg, $img->encode('jpg'));
@@ -267,14 +268,17 @@ class ProductImage extends Model
         Storage::disk('products')->put($path_webp, $img->encode('webp'));
 
         // Thumb creation
-        $path_thumb = $this->resource->id . '/' . Str::slug($this->resource->name) . '-' . $time . '-thumb.';
+        $path_thumb = $this->resource->id . '/' . Str::slug($title) . '-' . $time . '-thumb.';
+        $canvas = Image::canvas(400, 400, '#ffffff');
 
-        $img = $img->resize(null, 300, function ($constraint) {
+        $img = $img->resize(null, 350, function ($constraint) {
             $constraint->aspectRatio();
-        })->resizeCanvas(250, null);
+        });
+
+        $canvas->insert($img, 'center');
 
         $path_webp_thumb = $path_thumb . 'webp';
-        Storage::disk('products')->put($path_webp_thumb, $img->encode('webp'));
+        Storage::disk('products')->put($path_webp_thumb, $canvas->encode('webp'));
 
         return $path_jpg;
     }

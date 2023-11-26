@@ -30,34 +30,33 @@ class FilterController extends Controller
         }
 
         $response = [];
-        $params = $request->input('params');
-
-        $author = $params['author'] ? Author::where('slug', $params['author'])->first() : null;
-        $publisher = $params['publisher'] ? Publisher::where('slug', $params['publisher'])->first() : null;
+        $params   = $request->input('params');
 
         // Ako je normal kategorija
         if ($params['group']) {
-            $categories = Helper::resolveCache('categories')->remember($params['group'], config('cache.life'), function () use ($params) {
-                return Category::active()->topList($params['group'])->sortByName()->with('subcategories')->withCount('products')->get()->toArray();
-            });
+            $response = Helper::resolveCache('categories')->remember($params['group'], config('cache.life'), function () use ($params) {
+                $categories = Category::active()->topList($params['group'])->sortByName()->with('subcategories')/*->withCount('products')*/ ->get()->toArray();
 
-            $response = $this->resolveCategoryArray($categories, 'categories');
+                return $this->resolveCategoryArray($categories, 'categories');
+            });
         }
 
         // Ako je autor
-        if ( ! $params['group'] && $params['author']) {
-            $a_cats = $author->categories();
+        /*if ( ! $params['group'] && $params['author']) {
+            $author   = Author::where('slug', $params['author'])->first();
+            $a_cats   = $author->categories();
             $response = $this->resolveCategoryArray($a_cats, 'author', $author);
-        }
+        }*/
 
         // Ako je nakladnik
-        if ( ! $params['group'] && $params['publisher']) {
-            $a_cats = $publisher->categories();
-            $response = $this->resolveCategoryArray($a_cats, 'publisher', $publisher);
-        }
+        /*if ( ! $params['group'] && $params['publisher']) {
+            $publisher = Publisher::where('slug', $params['publisher'])->first();
+            $a_cats    = $publisher->categories();
+            $response  = $this->resolveCategoryArray($a_cats, 'publisher', $publisher);
+        }*/
 
         // Ako su posebni ID artikala.
-        if ($params['ids'] && $params['ids'] != '[]') {
+        /*if ($params['ids'] && $params['ids'] != '[]') {
             $_ids = collect(explode(',', substr($params['ids'], 1, -1)))->unique();
 
             $categories = Category::active()->whereHas('products', function ($query) use ($_ids) {
@@ -65,7 +64,7 @@ class FilterController extends Controller
             })->sortByName()->withCount('products')->get()->toArray();
 
             $response = $this->resolveCategoryArray($categories, 'categories');
-        }
+        }*/
 
         return response()->json($response);
     }
@@ -84,7 +83,7 @@ class FilterController extends Controller
         $response = [];
 
         foreach ($categories as $category) {
-            $url = $this->resolveCategoryUrl($category, $type, $target, $parent_slug);
+            $url  = $this->resolveCategoryUrl($category, $type, $target, $parent_slug);
             $subs = null;
 
             if (isset($category['subcategories']) && ! empty($category['subcategories'])) {
@@ -92,20 +91,21 @@ class FilterController extends Controller
                     $sub_url = $this->resolveCategoryUrl($subcategory, $type, $target, $category['slug']);
 
                     $subs[] = [
-                        'id' => $subcategory['id'],
+                        'id'    => $subcategory['id'],
                         'title' => $subcategory['title'],
-                        'count' => Category::find($subcategory['id'])->products()->count(),
-                        'url' => $sub_url
+                        'count' => 0,//Category::find($subcategory['id'])->products()->count(),
+                        'url'   => $sub_url
                     ];
                 }
             }
 
             $response[] = [
-                'id' => $category['id'],
+                'id'    => $category['id'],
                 'title' => $category['title'],
-                'count' => $category['products_count'],
-                'url' => $url,
-                'subs' => $subs
+                'icon'  => $category['icon'],
+                'count' => 0,//$category['products_count'],
+                'url'   => $url,
+                'subs'  => $subs
             ];
 
 
@@ -128,21 +128,21 @@ class FilterController extends Controller
         if ($type == 'author') {
             return route('catalog.route.author', [
                 'author' => $target,
-                'cat' => $parent_slug ?: $category['slug'],
+                'cat'    => $parent_slug ?: $category['slug'],
                 'subcat' => $parent_slug ? $category['slug'] : null
             ]);
 
         } elseif ($type == 'publisher') {
             return route('catalog.route.publisher', [
                 'publisher' => $target,
-                'cat' => $parent_slug ?: $category['slug'],
-                'subcat' => $parent_slug ? $category['slug'] : null
+                'cat'       => $parent_slug ?: $category['slug'],
+                'subcat'    => $parent_slug ? $category['slug'] : null
             ]);
 
         } else {
             return route('catalog.route', [
-                'group' => Str::slug($category['group']),
-                'cat' => $parent_slug ?: $category['slug'],
+                'group'  => Str::slug($category['group']),
+                'cat'    => $parent_slug ?: $category['slug'],
                 'subcat' => $parent_slug ? $category['slug'] : null
             ]);
         }
@@ -160,7 +160,7 @@ class FilterController extends Controller
             return response()->json(['status' => 300, 'message' => 'Error!']);
         }
 
-        $params = $request->input('params');
+        $params       = $request->input('params');
         $cache_string = '';
 
         if (isset($params['autor']) && $params['autor']) {
@@ -169,17 +169,17 @@ class FilterController extends Controller
                 $arr = explode('+', $params['autor']);
 
                 foreach ($arr as $item) {
-                    $_author = Author::where('slug', $item)->first();
+                    $_author         = Author::where('slug', $item)->first();
                     $this->authors[] = $_author;
-                    $cache_string .= $_author->id . '+';
+                    $cache_string    .= $_author->id . '+';
                 }
 
                 $cache_string = substr($cache_string, 0, -1);
 
             } else {
-                $_author = Author::where('slug', $params['autor'])->first();
+                $_author         = Author::where('slug', $params['autor'])->first();
                 $this->authors[] = $_author;
-                $cache_string .= $_author->id;
+                $cache_string    .= $_author->id;
             }
         }
 
@@ -189,17 +189,17 @@ class FilterController extends Controller
                 $arr = explode('+', $params['nakladnik']);
 
                 foreach ($arr as $item) {
-                    $_publisher = Publisher::where('slug', $item)->first();
+                    $_publisher         = Publisher::where('slug', $item)->first();
                     $this->publishers[] = $_publisher;
-                    $cache_string .= $_publisher->id . '+';
+                    $cache_string       .= $_publisher->id . '+';
                 }
 
                 $cache_string = substr($cache_string, 0, -1);
 
             } else {
-                $_publisher = Publisher::where('slug', $params['nakladnik'])->first();
+                $_publisher         = Publisher::where('slug', $params['nakladnik'])->first();
                 $this->publishers[] = $_publisher;
-                $cache_string .= $_publisher->id . '_';
+                $cache_string       .= $_publisher->id . '_';
             }
         }
 
@@ -211,17 +211,17 @@ class FilterController extends Controller
 
         if (isset($params['group']) && $params['group']) {
             $request_data['group'] = $params['group'];
-            $cache_string .= '&group=' . $params['group'];
+            $cache_string          .= '&group=' . $params['group'];
         }
 
         if (isset($params['cat']) && $params['cat']) {
             $request_data['cat'] = $params['cat'];
-            $cache_string .= '&cat=' . $params['cat'];
+            $cache_string        .= '&cat=' . $params['cat'];
         }
 
         if (isset($params['subcat']) && $params['subcat']) {
             $request_data['subcat'] = $params['subcat'];
-            $cache_string .= '&subcat=' . $params['subcat'];
+            $cache_string           .= '&subcat=' . $params['subcat'];
         }
 
         if (isset($params['autor']) && $params['autor']) {
@@ -234,17 +234,17 @@ class FilterController extends Controller
 
         if (isset($params['start']) && $params['start']) {
             $request_data['start'] = $params['start'];
-            $cache_string .= '&start=' . $params['start'];
+            $cache_string          .= '&start=' . $params['start'];
         }
 
         if (isset($params['end']) && $params['end']) {
             $request_data['end'] = $params['end'];
-            $cache_string .= '&end=' . $params['end'];
+            $cache_string        .= '&end=' . $params['end'];
         }
 
         if (isset($params['sort']) && $params['sort']) {
             $request_data['sort'] = $params['sort'];
-            $cache_string .= '&sort=' . $params['sort'];
+            $cache_string         .= '&sort=' . $params['sort'];
         }
 
         $request_data['page'] = $request->input('page');

@@ -186,10 +186,10 @@ class Publisher extends Model
             })->where('parent_id', $id);
         }
 
-        return $query->withCount(['products as products_count' => function ($query) {
+        return $query/*->withCount(['products as products_count' => function ($query) {
                          $query->where('publisher_id', $this->id);
                      }])
-                     ->orderBy('title')
+                     */->orderBy('title')
                      ->get();
     }
 

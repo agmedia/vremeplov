@@ -61,7 +61,7 @@ class Category extends Model
      */
     public function subcategories()
     {
-        return $this->hasMany(Category::class, 'parent_id', 'id');
+        return $this->hasMany(Category::class, 'parent_id', 'id')->where('status', 1)->orderBy('title');
     }
 
 
@@ -110,7 +110,7 @@ class Category extends Model
      */
     public function scopeSortByName(Builder $query): Builder
     {
-        return $query->orderBy('title');
+        return $query->orderBy('sort_order', 'asc');
     }
 
 

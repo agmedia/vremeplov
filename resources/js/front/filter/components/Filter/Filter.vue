@@ -1,7 +1,7 @@
 <template>
     <aside class="col-lg-auto">
         <!-- Sidebar-->
-        <div class="offcanvas offcanvas-collapse bg-dark w-100 rounded-3 shadow-lg py-1 pt-0" id="shop-sidebar" style="min-width: 22rem;">
+        <div class="offcanvas offcanvas-collapse   rounded-3 shadow-lg py-1 pt-0" id="shop-sidebar" style="max-width: 22rem;">
             <div class="offcanvas-cap bg-white align-items-center shadow-sm">
                 <h2 class="h3 mb-0 text-primary">Filtriraj</h2>
                 <button class="btn-close ms-auto" type="button" data-bs-dismiss="offcanvas" v-on:click="closeWindow" aria-label="Close"></button>
@@ -10,7 +10,7 @@
                 <!-- Categories-->
                 <div class="widget widget-categories mb-2 pb-2 " v-if="categories">
 
-                    <h3 class="widget-title text-white" >Kategorije</h3>
+                    <h3 class="widget-title " >Kategorije</h3>
 
 
 
@@ -84,7 +84,7 @@
                 </div>
 
                 <!-- Date range-->
-             <!--   <div class="widget mb-4 pb-4 border-bottom">
+            <div class="widget mb-4 pb-4 border-bottom">
                     <h3 class="widget-title">Godina izdanja</h3>
                     <div >
                         <div class="d-flex pb-1">
@@ -131,7 +131,7 @@
                         </li>
                     </ul>
                 </div>
-                <button type="button" class="btn btn-primary mt-4" v-on:click="cleanQuery"><i class=" ci-trash"></i> Očisti sve</button> -->
+                <button type="button" class="btn btn-primary mt-4" v-on:click="cleanQuery"><i class=" ci-trash"></i> Očisti sve</button>
 
             </div>
         </div>

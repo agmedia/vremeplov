@@ -232,6 +232,30 @@ class Settings extends Model
     /**
      * @param string $code
      * @param string $key
+     * @param        $value
+     * @param bool   $json
+     *
+     * @return bool|mixed
+     */
+    public static function reset(string $code, string $key, $value, bool $json = true)
+    {
+        $setting = Settings::where('code', $code)->where('key', $key)->first();
+
+        if ($json) {
+            $value = json_encode([$value]);
+        }
+
+        if ($setting) {
+            return self::edit($setting->id, $code, $key, $value, $json);
+        }
+
+        return self::insert($code, $key, $value, $json);
+    }
+
+
+    /**
+     * @param string $code
+     * @param string $key
      *
      * @return mixed
      */

@@ -87,6 +87,7 @@
                             <th>Kupac</th>
                             <th class="text-center">Artikli</th>
                             <th class="text-right">Vrijednost</th>
+                            <th class="text-right">GLS Labels</th>
                             <th class="text-right">Detalji</th>
                         </tr>
                         </thead>
@@ -117,6 +118,15 @@
                                 <td class="text-right">
                                     <strong>€ {{ number_format($order->total, 2, ',', '.') }}</strong>
                                 </td>
+
+                                <td class="text-center">
+                                    @if($order->printed)
+                                        <i class="fa fa-fw fa-check text-success"></i>
+                                    @else
+                                        <button type="button" class="btn btn-light btn-sm" onclick="sendGLS({{ $order->id }})"><i class="fa fa-shipping-fast ml-1"></i></button>
+                                    @endif
+                                </td>
+
                                 <td class="text-right font-size-base">
                                     <a class="btn btn-sm btn-alt-secondary" href="{{ route('orders.show', ['order' => $order]) }}">
                                         <i class="fa fa-fw fa-eye"></i>
@@ -169,7 +179,7 @@
                 console.log('Selected ID: ' + selected);
                 console.log('Orders ID: ' + orders);
 
-                axios.get('{{ route('api.order.status.change') }}' + '?selected=' + selected + '&orders=' + orders)
+                axios.post('{{ route('api.order.status.change') }}', {selected: selected, orders: orders})
                 .then((r) => {
                     location.reload();
                 })
@@ -178,6 +188,23 @@
                 })
             });
         });
+
+        function sendGLS(order_id) {
+            axios.post("{{ route('api.order.send.gls') }}", {order_id: order_id})
+            .then(response => {
+                if (response.data.message) {
+                    successToast.fire({
+                        timer: 1500,
+                        text: response.data.message,
+                    }).then(() => {
+                        location.reload();
+                    })
+
+                } else {
+                    return errorToast.fire(response.data.error);
+                }
+            });
+        }
 
         /**
          *

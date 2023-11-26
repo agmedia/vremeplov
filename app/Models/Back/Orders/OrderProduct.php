@@ -9,12 +9,12 @@ use Illuminate\Support\Facades\Log;
 
 class OrderProduct extends Model
 {
-    
+
     /**
      * @var string
      */
     protected $table = 'order_products';
-    
+
     /**
      * @var array
      */
@@ -48,8 +48,8 @@ class OrderProduct extends Model
     {
         return $query->orderBy('created_at', 'desc')->limit($count);
     }
-    
-    
+
+
     /**
      * @param $products
      * @param $order_id
@@ -59,14 +59,14 @@ class OrderProduct extends Model
     public static function store($products, $order_id)
     {
         self::where('order_id', $order_id)->delete();
-        
+
         foreach ($products as $product) {
             $discount = null;
-            
+
             if ($product->price < $product->org_price) {
                 $discount = (intval($product->price) / intval($product->org_price) * 100) - 100;
             }
-            
+
             $id = self::insertGetId([
                 'order_id'   => $order_id,
                 'product_id' => $product->id,
@@ -80,15 +80,15 @@ class OrderProduct extends Model
                 'updated_at' => Carbon::now()
             ]);
         }
-        
+
         if ( ! $id) {
             return false;
         }
-        
+
         return true;
     }
-    
-    
+
+
     /**
      * @param $products
      * @param $order_id
@@ -99,24 +99,24 @@ class OrderProduct extends Model
     {
         $data     = json_decode($request->order_data);
         $products = $data->items;
-        
+
         foreach ($products as $product) {
             $price    = $product->price;
             $model    = $product->associatedModel;
             $discount = null;
-            
+
             if ( ! empty($product->conditions)) {
                 $price = $product->price - $product->conditions->parsedRawValue;
             }
-            
+
             if (isset($model->action) && ! empty($model->action)) {
                 $discount = $model->action->discount;
-                
+
                 if ($model->action->price) {
                     $discount = (($model->action->price / intval($model->price)) * 100) - 100;
                 }
             }
-            
+
             $id = $this->insertGetId([
                 'order_id'   => $order_id,
                 'product_id' => $product->id,
@@ -130,11 +130,11 @@ class OrderProduct extends Model
                 'updated_at' => Carbon::now()
             ]);
         }
-        
+
         if ( ! $id) {
             return false;
         }
-        
+
         return true;
     }
 }

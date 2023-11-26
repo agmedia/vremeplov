@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Back\Widget;
 
+use App\Models\Back\Catalog\Publisher;
 use App\Models\Back\Settings\Settings;
 use App\Models\Back\Widget\Widget;
 use App\Models\Back\Widget\WidgetGroup;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
@@ -69,7 +71,7 @@ class WidgetController extends Controller
                 $stored->resolveImage($request);
             }
 
-            $this->flush($stored);
+            $this->flush();
 
             return redirect()->route('widgets')->with(['success' => 'Widget je uspješno snimljen!']);
         }
@@ -134,7 +136,7 @@ class WidgetController extends Controller
                 $updated->resolveImage($request);
             }
 
-            $this->flush($updated);
+            $this->flush();
 
             return redirect()->back()->with(['success' => 'Widget je uspješno snimljen!']);
         }
@@ -161,14 +163,11 @@ class WidgetController extends Controller
 
 
     /**
-     * @param Page $page
+     * @return void
      */
-    private function flush(Widget $widget): void
+    private function flush(): void
     {
-        $widget_group = WidgetGroup::where('id', $widget->group_id)->first();
-
-        Cache::forget('wg.' . $widget_group->id);
-        Cache::forget('wg.' . $widget_group->slug);
+        Artisan::call('optimize:clear');
     }
 
 
@@ -181,12 +180,15 @@ class WidgetController extends Controller
     public function getLinks(Request $request)
     {
         if ($request->has('type')) {
-            /*if ($request->input('type') == 'category') {
+            if ($request->input('type') == 'category') {
                 return response()->json(Category::getList());
             }
             if ($request->input('type') == 'page') {
                 return response()->json(Blog::published()->pluck('title', 'id'));
-            }*/
+            }
+            if ($request->input('type') == 'publisher') {
+                return response()->json(Publisher::getList());
+            }
         }
 
         return response()->json([

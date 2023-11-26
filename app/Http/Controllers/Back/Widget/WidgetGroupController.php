@@ -6,6 +6,7 @@ use App\Models\Back\Widget\Widget;
 use App\Models\Back\Widget\WidgetGroup;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
@@ -40,7 +41,7 @@ class WidgetGroupController extends Controller
         $stored = $wg->validateRequest($request)->store();
 
         if ($stored) {
-            $this->flush($stored);
+            $this->flush();
 
             return redirect()->back()->with(['success' => 'Widget grupa je uspješno snimljena!']);
         }
@@ -86,7 +87,7 @@ class WidgetGroupController extends Controller
         $updated = $wg->validateRequest($request)->edit($id);
 
         if ($updated) {
-            $this->flush($updated);
+            $this->flush();
 
             return redirect()->back()->with(['success' => 'Widget je uspješno snimljen!']);
         }
@@ -113,12 +114,11 @@ class WidgetGroupController extends Controller
 
 
     /**
-     * @param Page $page
+     * @return void
      */
-    private function flush(WidgetGroup $widget_group): void
+    private function flush(): void
     {
-        Cache::forget('wg.' . $widget_group->id);
-        Cache::forget('wg.' . $widget_group->slug);
+        Artisan::call('optimize:clear');
     }
 
 

@@ -4,6 +4,7 @@ namespace App\Models\Front\Catalog;
 
 use App\Helpers\Currency;
 use App\Models\Back\Catalog\Product\ProductAction;
+use App\Models\Back\Marketing\Review;
 use App\Models\Back\Settings\Settings;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -195,12 +196,56 @@ class Product extends Model
 
 
     /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'product_id')->where('status', 1)->orderBy('sort_order');
+    }
+
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function action()
+    {
+        return $this->hasOne(ProductAction::class, 'id', 'action_id')->where('status', 1);
+    }
+
+
+    /**
+     * @param $ocjena
+     * @param $total
+     *
+     * @return float|void
+     */
+    public function percentreviews($ocjena, $total) {
+        if ($total) {
+            return round(($ocjena / $total) * 100, 2);
+        }
+
+        return 0;
+    }
+
+
+    /**
      * @return false|float|int|mixed
      */
     public function special()
     {
+        $coupon_session_key = config('session.cart') . '_coupon';
+        $coupon_ok = false;
+
+        if ( ! $this->action || ($this->action && ! $this->action->coupon)) {
+            $coupon_ok = true;
+        }
+
+        if ((isset($this->action->coupon) && $this->action->coupon) && session()->has($coupon_session_key) && session($coupon_session_key) == $this->action->coupon) {
+            $coupon_ok = true;
+        }
+
         // If special is set, return special.
-        if ($this->special) {
+        if ($this->special && $coupon_ok) {
             $from = now()->subDay();
             $to = now()->addDay();
 
@@ -436,7 +481,7 @@ class Product extends Model
     {
         $query = $this->newQuery();
 
-        $query->active()->hasStock();
+       // $query->active()->hasStock();
 
         if ($ids && $ids->count() && ! \request()->has('pojam')) {
             $query->whereIn('id', $ids->unique());

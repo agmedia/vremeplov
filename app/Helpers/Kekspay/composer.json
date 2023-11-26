@@ -1,0 +1,20 @@
+{
+    "name": "agmedia/opencart-kekspay",
+    "description": "Kekspay dependencies for Opencart platform.",
+    "type": "composer-plugin",
+    "authors": [
+        {
+            "name": "Filip Jankosi",
+            "email": "filip@agmedia.hr"
+        }
+    ],
+    "keywords": ["opencart", "ecommerce", "framework", "opensource", "kekspay"],
+    "homepage": "http://www.agmedia.hr",
+    "license": "GPL-3.0+",
+    "config": {
+        "vendor-dir": "./"
+    },
+    "require": {
+        "chillerlan/php-qrcode": "^3.2"
+    }
+}

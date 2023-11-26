@@ -58,7 +58,7 @@
                                                 @foreach ($groups as $group)
                                                     <option value="{{ $group->id }}" {{ (isset($action) and $group->id == $action->group) ? 'selected="selected"' : '' }}>{{ $group->title }}</option>
                                                 @endforeach
-                                                <option value="all" {{ (isset($action) and 'all' == $action->group) ? 'selected="selected"' : '' }}>Svi Artikli</option>
+{{--                                                <option value="all" {{ (isset($action) and 'all' == $action->group) ? 'selected="selected"' : '' }}>Svi Artikli</option>--}}
                                             </select>
                                         </div>
                                     </div>
@@ -67,7 +67,7 @@
                                             <label for="type-select">Vrsta popusta <span class="text-danger">*</span></label>
                                             <select class="form-control" id="type-select" name="type">
                                                 @foreach ($types as $type)
-                                                    <option value="{{ $type->id }}" {{ (isset($action) and $type->id == 'P') ? 'selected="selected"' : '' }}>{{ $type->title }}</option>
+                                                    <option value="{{ $type->id }}" {{ (isset($action) and $type->id == $action->type) ? 'selected="selected"' : '' }}>{{ $type->title }}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -99,6 +99,14 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="form-group row items-push mb-2 mt-4">
+                                        <div class="col-md-4 pt-2">
+                                            <label>Zahtjeva Kupon kod @include('back.layouts.partials.popover', ['title' => 'Ako upišete kupon kod', 'content' => 'Smatrat će se da ga zahtjevate prilikom kupnje za ostvranje akcije i pripadajučeg popusta...'])</label>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <input type="text" class="form-control" name="coupon" placeholder="Upišite kupon kod..." value="{{ isset($action) ? $action->coupon : old('coupon') }}">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -120,7 +128,6 @@
                         </div>
                     </div>
                 </div>
-
 
                 <div class="col-md-5" id="action-list-view">
                     @if (isset($action))
@@ -181,8 +188,8 @@
                 }
             });
 
-            @if (isset($action))
-            $('#group-select').attr("disabled", true);
+            @if (isset($action) && ! in_array($action->group, ['all', 'total']))
+                $('#group-select').attr("disabled", true);
             @endif
 
         })

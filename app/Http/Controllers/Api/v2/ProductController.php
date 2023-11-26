@@ -106,7 +106,7 @@ class ProductController extends Controller
                 // If update price
                 if ($target == 'price' && $product['item']['special']) {
                     $discount = Helper::calculateDiscount($product['item']['price'], $product['item']['special']);
-                    $new_special = Helper::calculateDiscountPrice($product['new_value'], $discount);
+                    $new_special = Helper::calculateDiscountPrice($product['new_value'], $discount, 'P');
 
                     Product::where('id', $product['item']['id'])->update([
                         'special' => $new_special

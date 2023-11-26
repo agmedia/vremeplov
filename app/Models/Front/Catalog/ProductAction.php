@@ -5,6 +5,7 @@ namespace App\Models\Front\Catalog;
 use App\Models\Front\Catalog\Product;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProductAction extends Model
 {
@@ -30,9 +31,11 @@ class ProductAction extends Model
 
 
     /**
-     * @return mixed
+     * @param Builder $query
+     *
+     * @return Builder
      */
-    public function scopeActive($query)
+    public function scopeActive(Builder $query)
     {
         return $query->where('date_start', '<', Carbon::now())
             ->where('date_end', '>', Carbon::now())

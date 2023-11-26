@@ -20,7 +20,7 @@
         </tr>
         <tr>
             <td class="ag-mail-tableset">
-                {{ __('Način plaćanja') }}:
+                <b> {{ __('Način plaćanja') }}:</b>
                 @if ($order->payment_code == 'bank')
                     <b>{{ __('Općom uplatnicom / Virmanom / Internet bankarstvom') }}</b>
 
@@ -33,7 +33,7 @@
                     <p style="font-size:12px">MOLIMO IZVRŠITE UPLATU U IZNOSU OD € {{number_format($order->total, 2)}}</p>
 
 
-                    <p style="font-size:12px"> IBAN RAČUN: HR1624020061140345999<br>
+                    <p style="font-size:12px"> IBAN RAČUN: HR98 2402 0061 1011 2296 1<br>
                         MODEL: 00 POZIV NA BROJ: {{ $order->id }}-{{date('ym')}}</p>
 
 
@@ -45,7 +45,7 @@
                     <b>{{ __('Gotovinom prilikom pouzeća') }}</b>
                     <p style="font-size:12px">Uredno smo zaprimili Vašu narudžbu broj {{ $order->id }} i zahvaljujemo Vam.</p>
                 @elseif ($order->payment_code == 'corvus')
-                    <b>{{ __('Corvus Pay') }}</b>
+                    <b>{{ __('CorvusPay') }}</b>
                     <p style="font-size:12px">Uredno smo zaprimili Vašu narudžbu broj {{ $order->id }} i zahvaljujemo Vam.</p>
                 @else
                     <b>{{ __('Plaćanje prilikom preuzimanja') }}</b>
@@ -53,7 +53,7 @@
                 @endif
                 <br><br>
 
-                Lijep pozdrav,<br>Zuzi Shop
+                Lijep pozdrav,<br>Plava Krava
             </td>
         </tr>
 

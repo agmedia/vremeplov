@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Back\Settings;
 
+use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
 use App\Models\Back\Settings\Settings;
 use Illuminate\Support\Facades\Artisan;
@@ -19,17 +20,24 @@ class SettingsController extends Controller
     }
 
 
+    /**
+     * @return array|mixed
+     */
     public function get()
     {
-        $codes = ['currency', 'geo_zone', 'payment', 'shipping', 'tax'];
-        $response = [];
-        $settings =  Settings::whereIn('code', $codes)->get();
+        $response = Helper::resolveCache('set')->remember('cart', config('cache.life'), function () {
+            $codes = ['currency', 'geo_zone', 'payment', 'shipping', 'tax'];
+            $response = [];
+            $settings =  Settings::whereIn('code', $codes)->get();
 
-        foreach ($settings as $setting) {
-            if ($setting->json) {
-                $response[$setting->code . '.' . $setting->key] = json_decode($setting->value, true);
+            foreach ($settings as $setting) {
+                if ($setting->json) {
+                    $response[$setting->code . '.' . $setting->key] = json_decode($setting->value, true);
+                }
             }
-        }
+
+            return $response;
+        });
 
         return $response;
     }

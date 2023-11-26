@@ -1,6 +1,6 @@
-<header class="bg-light shadow-sm navbar-sticky" style="background-color: #f2f5fc;">
-    <div class="navbar navbar-expand-lg navbar-light">
-        <div class="container"><a class="navbar-brand d-none d-sm-block flex-shrink-0 me-4 order-lg-1 p-0" href="{{ route('index') }}"><img src="{{ asset('media/img/zuzi-logo.webp') }}" width="110"  alt="Web shop | ZUZI Shop | Prodaja knjiga | Otkup knjiga | Webshop"></a><a class="navbar-brand d-sm-none me-0 order-lg-1 p-0" href="{{ route('index') }}"><img src="{{ asset('media/img/zuzi-logo.webp') }}" width="70" alt="Žuži Shop"></a>
+<header class="bg-dark shadow-sm  position-relative" style="background-image: url('media/img/footer-vintage-bg.jpg');">
+    <div class="navbar navbar-expand-lg navbar-dark">
+        <div class="container"><a class="navbar-brand d-none d-sm-block flex-shrink-0 me-4 order-lg-1 p-0" href="{{ route('index') }}"><img src="{{ asset('media/img/vremeplov-logo.svg') }}" width="180"  alt="Web shop | Antikvarijat Vremeplov"></a><a class="navbar-brand d-sm-none me-0 order-lg-1 p-0" href="{{ route('index') }}"><img src="{{ asset('media/img/vremeplov-logo.svg') }}" width="100" alt="Antikvarijat Vremeplov"></a>
 
             <!-- Toolbar -->
             <div class="navbar-toolbar d-flex align-items-center order-lg-3">
@@ -8,13 +8,13 @@
                     <button class="navbar-toggler" type="button" data-bs-target="#shop-sidebar" data-bs-toggle="collapse" aria-expanded="false"><i class="ci-filter-alt"></i></button>
                 @endif
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"><span class="navbar-toggler-icon"></span></button>
-                <a class="navbar-tool d-none d-lg-flex" href="javascript:void(0)" data-bs-toggle="collapse" data-bs-target="#searchBox" role="button" aria-expanded="false" aria-controls="searchBox"><span class="navbar-tool-tooltip">Pretraži</span>
+                <a class="navbar-tool d-none d-lg-flex" href="javascript:void(0)" data-bs-toggle="collapse" data-bs-target="#searchBox" role="button" aria-expanded="false" aria-controls="searchBox">
                     <div class="navbar-tool-icon-box"><i class="navbar-tool-icon ci-search"></i></div>
                 </a>
-                <a class="navbar-tool ms-12" href="{{ route('login') }}" ><span class="navbar-tool-tooltip">Korisnički račun</span>
+                <a class="navbar-tool ms-2 me-1" href="{{ route('login') }}" >
                     <div class="navbar-tool-icon-box"><i class="navbar-tool-icon ci-user-circle"></i></div>
                 </a>
-                <div style="width:46px">
+                <div>
                     <cart-nav-icon carturl="{{ route('kosarica') }}" checkouturl="{{ route('naplata') }}"></cart-nav-icon>
                 </div>
             </div>
@@ -43,8 +43,8 @@
         </div>
     </div>
     <!-- Search collapse-->
-    <div class="search-box collapse" id="searchBox">
-        <div class="card bg-white pt-3 pb-3 border-0 rounded-0">
+    <div class="search-box collapse" id="searchBox" >
+        <div class="card  pt-3 pb-3 border-0 rounded-0" style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
             <div class="container">
                 <form action="{{ route('pretrazi') }}" id="search-form" method="get">
                     <div class="input-group">
@@ -55,7 +55,10 @@
             </div>
         </div>
     </div>
-    <section class="spikesw"></section>
+
+
+
+
 </header>
 
 

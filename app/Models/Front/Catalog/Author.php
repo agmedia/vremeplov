@@ -190,10 +190,10 @@ class Author extends Model
             })->where('parent_id', $id);
         }
 
-        return $query->withCount(['products as products_count' => function ($query) {
+        return $query/*->withCount(['products as products_count' => function ($query) {
                          $query->where('author_id', $this->id);
                      }])
-                     ->sortByName()
+                     */->sortByName()
                      ->get();
     }
 }

@@ -7,10 +7,12 @@ use App\Helpers\Recaptcha;
 use App\Http\Controllers\Controller;
 use App\Imports\ProductImport;
 use App\Mail\ContactFormMessage;
+use App\Models\Back\Marketing\Review;
 use App\Models\Front\Page;
 use App\Models\Sitemap;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Intervention\Image\Facades\Image;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -54,6 +56,20 @@ class HomeController extends Controller
     public function contact(Request $request)
     {
         return view('front.contact');
+    }
+    
+    
+    public function sendProductComment(Request $request)
+    {
+        $review = new Review();
+        
+        $created_review = $review->validateRequest($request)->create();
+        
+        if ($created_review) {
+            return back()->with(['success' => 'Komentar je uspješno poslan']);
+        }
+        
+        return back()->with(['error' => 'Whoops..! Greška kod snimanja komentara']);
     }
 
 
@@ -117,8 +133,8 @@ class HomeController extends Controller
         }
 
         $cacheimage = Image::cache(function($image) use ($request) {
-            $width = 250;
-            $height = 300;
+            $width = 400;
+            $height = 400;
 
             if ($request->has('size')) {
                 if (strpos($request->input('size'), 'x') !== false) {

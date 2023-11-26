@@ -29,6 +29,7 @@
 @else
     @section ( 'title', $page->title. ' - ZUZI Shop' )
 @section ( 'description', $page->meta_description )
+
 @endif
 
 @section('content')
@@ -36,12 +37,12 @@
     @if (request()->routeIs(['index']))
 
 
-        @include('front.layouts.partials.hometemp')
+
 
 
         {!! $page->description !!}
 
-        @include('front.layouts.partials.otkupwidget')
+
 
 
 

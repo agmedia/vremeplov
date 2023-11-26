@@ -43,6 +43,7 @@
                             <th>Vrijedi od</th>
                             <th>Vrijedi do</th>
                             <th>Popust</th>
+                            <th class="text-center font-size-sm">Kupon kod</th>
                             <th class="text-center font-size-sm">Status</th>
                             <th class="text-right" style="width: 10%;">Uredi</th>
                         </tr>
@@ -56,6 +57,10 @@
                                 <td class="font-size-sm">{{ $action->date_start ? \Illuminate\Support\Carbon::make($action->date_start)->format('d.m.Y') : '' }}</td>
                                 <td class="font-size-sm">{{ $action->date_end ? \Illuminate\Support\Carbon::make($action->date_end)->format('d.m.Y') : '' }}</td>
                                 <td class="font-size-sm">{{ $action->discount }}</td>
+                                <td class="text-center font-size-sm">
+                                    @include('back.layouts.partials.status', ['status' => $action->coupon, 'simple' => true])
+                                    {{ $action->coupon ?: '' }}
+                                </td>
                                 <td class="text-center font-size-sm">
                                     @include('back.layouts.partials.status', ['status' => $action->status, 'simple' => true])
                                 </td>

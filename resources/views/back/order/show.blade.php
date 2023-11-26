@@ -49,15 +49,15 @@
 
 
 
-                                <td class="text-center"> <a class="img-link img-link-zoom-in img-lightbox" href="{{ ($product->product && $product->product->image) ? asset($product->product->image) : asset('media/avatars/avatar0.jpg') }}">
-                                        <img src="{{ ($product->product && $product->product->image) ? asset($product->product->image) : asset('media/avatars/avatar0.jpg') }}" height="80px"/>
+                                <td class="text-center"> <a class="img-link img-link-zoom-in img-lightbox" href="{{ $product->product->image ? asset($product->product->image) : asset('media/avatars/avatar0.jpg') }}">
+                                        <img src="{{ $product->product->image ? asset($product->product->image) : asset('media/avatars/avatar0.jpg') }}" height="80px"/>
                                     </a>
                                 </td>
 
 
 
-                                <td><strong>{{ $product->name }} -  {{ $product->product ? $product->product->sku : '' }}</strong></td>
-                                <td>{{ $product->product ? $product->product->polica : '' }}</td>
+                                <td><strong>{{ $product->name }} -  {{ $product->product->sku }}</strong></td>
+                                <td>{{ $product->product->polica }}</td>
                                 <td class="text-center"><strong>{{ $product->quantity }}</strong></td>
                                 <td class="text-right">{{ number_format($product->price, 2, ',', '.') }}</td>
                                 <td class="text-right">{{ number_format($product->total, 2, ',', '.') }}</td>

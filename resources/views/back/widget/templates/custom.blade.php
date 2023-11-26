@@ -49,7 +49,7 @@
                                         <div class="col-md-10 offset-md-1" id="size-half">
                                             <div class="slim"
                                                  data-ratio="16:9"
-                                                 data-force-size="640,360"
+                                                 data-force-size="500,500"
                                                  data-max-file-size="2">
                                                 <img src="{{ isset($widget) && isset($widget->image) ? asset($widget->image) : '' }}" alt=""/>
                                                 <input type="file" name="image"/>
@@ -150,8 +150,8 @@
                                     </div>
 
                                     <div class="form-group mb-2">
-                                        <label for="sort_order">Badge Traka @include('back.layouts.partials.popover', ['title' => 'Badge traka', 'content' => 'Ako polje ostane prazno badge traka se neće prikazivati. Ako se upiše prikazivat će se badge traka sa upisanim tekstom.'])</label>
-                                        <input type="text" class="form-control" name="badge" value="{{ isset($widget) ? $widget->badge : '' }}">
+                                        <label for="sort_order">Boja pozadine @include('back.layouts.partials.popover', ['title' => 'Badge traka', 'content' => 'Ako polje ostane prazno badge traka se neće prikazivati. Ako se upiše prikazivat će se badge traka sa upisanim tekstom.'])</label>
+                                        <input type="color" class="form-control" name="badge" value="{{ isset($widget) ? $widget->badge : '#e9f3fc' }}">
                                     </div>
                                 </div>
                             </div>

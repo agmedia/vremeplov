@@ -19,8 +19,8 @@
                             <span class="smini-visible">
                                 B<span class="opacity-75">x</span>
                             </span>
-                <span class="smini-hidden">
-                                ZUZI<span class="opacity-75">SHOP</span>
+                <span class="smini-hidden ml-2">
+                                Plava <span class="opacity-75">Krava</span>
                             </span>
             </a>
             <!-- END Logo -->
@@ -88,6 +88,17 @@
                                 <span class="nav-main-link-name">Autori</span>
                             </a>
                         </li>
+                        <hr class="mt-1 mb-1" style="border-top: 1px solid #3f3f3f; margin-right: 40px;">
+                        <li class="nav-main-item">
+                            <a class="nav-main-link{{ request()->routeIs(['blogs', 'blogs.*']) ? ' active' : '' }}" href="{{ route('blogs') }}">
+                                <span class="nav-main-link-name">Blog</span>
+                            </a>
+                        </li>
+                        <li class="nav-main-item">
+                            <a class="nav-main-link{{ request()->routeIs(['pages', 'pages.*']) ? ' active' : '' }}" href="{{ route('pages') }}">
+                                <span class="nav-main-link-name">Info Stranice</span>
+                            </a>
+                        </li>
                     </ul>
                 </li>
 
@@ -110,8 +121,13 @@
                             </a>
                         </li>
                         <li class="nav-main-item">
-                            <a class="nav-main-link{{ request()->routeIs(['blogs', 'blogs.*']) ? ' active' : '' }}" href="{{ route('blogs') }}">
-                                <span class="nav-main-link-name">Blog</span>
+                            <a class="nav-main-link{{ request()->routeIs(['reviews', 'reviews.*']) ? ' active' : '' }}" href="{{ route('reviews') }}">
+                                <span class="nav-main-link-name">{{ __('Komentari') }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-main-item">
+                            <a class="nav-main-link{{ request()->routeIs(['faqs', 'faqs.*']) ? ' active' : '' }}" href="{{ route('faqs') }}">
+                                <span class="nav-main-link-name">FAQ</span>
                             </a>
                         </li>
                     </ul>
@@ -147,15 +163,30 @@
                     </a>
                     <ul class="nav-main-submenu">
                         <li class="nav-main-item">
-                            <a class="nav-main-link{{ request()->routeIs(['pages', 'pages.*']) ? ' active' : '' }}" href="{{ route('pages') }}">
-                                <span class="nav-main-link-name">Info Stranice</span>
+                            <a class="nav-main-link{{ request()->routeIs(['api', 'api.*']) ? ' active' : '' }}" href="{{ route('api.index') }}">
+                                <span class="nav-main-link-name">API</span>
                             </a>
                         </li>
-                        <li class="nav-main-item">
-                            <a class="nav-main-link{{ request()->routeIs(['faqs', 'faqs.*']) ? ' active' : '' }}" href="{{ route('faqs') }}">
-                                <span class="nav-main-link-name">FAQ</span>
+
+                        <li class="nav-main-item{{ request()->is(['admin/settings/system/*']) ? ' open' : '' }}">
+                            <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="false" href="#">
+                                <span class="nav-main-link-name">Sistem</span>
                             </a>
+
+                            <ul class="nav-main-submenu">
+                                <li class="nav-main-item">
+                                    <a class="nav-main-link{{ request()->routeIs(['application', 'application.*']) ? ' active' : '' }}" href="{{ route('application.settings') }}">
+                                        <span class="nav-main-link-name">Aplikacija</span>
+                                    </a>
+                                </li>
+                                <li class="nav-main-item">
+                                    <a class="nav-main-link{{ request()->routeIs(['history', 'history.*']) ? ' active' : '' }}" href="{{ route('history') }}">
+                                        <span class="nav-main-link-name">History log</span>
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
+
                         <li class="nav-main-item{{ request()->is(['admin/settings/application/*']) ? ' open' : '' }}">
                             <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="false" href="#">
                                 <span class="nav-main-link-name">Postavke Aplikacije</span>
@@ -193,11 +224,6 @@
                                     </a>
                                 </li>
                             </ul>
-                        </li>
-                        <li class="nav-main-item">
-                            <a class="nav-main-link{{ request()->routeIs(['history', 'history.*']) ? ' active' : '' }}" href="{{ route('history') }}">
-                                <span class="nav-main-link-name">History log</span>
-                            </a>
                         </li>
 
                     </ul>

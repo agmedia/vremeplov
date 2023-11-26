@@ -19,7 +19,9 @@ class ActionGroupList extends Component
     /**
      * @var string[]
      */
-    protected $listeners = ['groupUpdated' => 'groupSelected'];
+    protected $listeners = [
+        'groupUpdated' => 'groupSelected'
+    ];
 
     /**
      * @var string
@@ -30,6 +32,11 @@ class ActionGroupList extends Component
      * @var array
      */
     public $search_results = [];
+
+    /**
+     * @var bool
+     */
+    public $is_search_active = true;
 
     /**
      * @var string
@@ -132,6 +139,7 @@ class ActionGroupList extends Component
     public function groupSelected(string $group)
     {
         $this->group = $group;
+        $this->checkGroup();
     }
 
 
@@ -146,6 +154,8 @@ class ActionGroupList extends Component
             $this->emit('list_empty');
         }
 
+        $this->checkGroup();
+
         return view('livewire.back.marketing.action-group-list', [
             'list' => $this->list,
             'group' => $this->group
@@ -159,5 +169,15 @@ class ActionGroupList extends Component
     public function paginationView()
     {
         return 'vendor.pagination.bootstrap-livewire';
+    }
+
+
+    private function checkGroup()
+    {
+        if (in_array($this->group, ['all', 'total'])) {
+            $this->is_search_active = false;
+        } else {
+            $this->is_search_active = true;
+        }
     }
 }

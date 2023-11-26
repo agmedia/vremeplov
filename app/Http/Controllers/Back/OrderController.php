@@ -11,13 +11,13 @@ use App\Mail\StatusPaid;
 use App\Models\Back\Orders\Order;
 use App\Models\Back\Orders\OrderHistory;
 use App\Models\Back\Settings\Settings;
+use App\Models\Front\Checkout\Shipping\Gls;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class OrderController extends Controller
 {
-
     /**
      * Display a listing of the resource.
      *
@@ -25,7 +25,8 @@ class OrderController extends Controller
      */
     public function index(Request $request, Order $order)
     {
-        $orders   = $order->filter($request)->paginate(config('settings.pagination.back'));
+        $orders = $order->filter($request)->paginate(config('settings.pagination.back'));
+
         $statuses = Settings::get('order', 'statuses');
 
         return view('back.order.index', compact('orders', 'statuses'));
@@ -89,9 +90,9 @@ class OrderController extends Controller
     public function edit(Order $order)
     {
         $countries = Country::list();
-        $statuses  = Settings::get('order', 'statuses');
+        $statuses = Settings::get('order', 'statuses');
         $shippings = Settings::getList('shipping');
-        $payments  = Settings::getList('payment');
+        $payments = Settings::getList('payment');
 
         return view('back.order.edit', compact('order', 'countries', 'statuses', 'shippings', 'payments'));
     }
@@ -124,9 +125,7 @@ class OrderController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request)
-    {
-    }
+    public function destroy(Request $request) {}
 
 
     /**
@@ -184,6 +183,28 @@ class OrderController extends Controller
             OrderHistory::store($request->input('order_id'), $request);
 
             return response()->json(['message' => 'Status je uspješno promijenjen..!']);
+        }
+
+        return response()->json(['error' => 'Greška..! Molimo pokušajte ponovo ili kontaktirajte administratora..']);
+    }
+
+
+    /**
+     * @param Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function api_send_gls(Request $request)
+    {
+        $request->validate(['order_id' => 'required']);
+
+        $order = Order::where('id', $request->input('order_id'))->first();
+
+        $gls = new Gls($order);
+        $label = $gls->resolve();
+
+        if (isset($label['ParcelIdList'])) {
+            return response()->json(['message' => 'GLS je uspješno poslan sa ID: ' . $label['ParcelIdList'][0]]);
         }
 
         return response()->json(['error' => 'Greška..! Molimo pokušajte ponovo ili kontaktirajte administratora..']);

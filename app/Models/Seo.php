@@ -23,8 +23,8 @@ class Seo
     public static function getProductData(Product $product): array
     {
         return [
-            'title'       => $product->name . ' knjige ' . (isset($product->author->title) ? $product->author->title : ''),
-            'description' => 'Knjiga ' . $product->name . ' izdavača ' . (isset($product->author->title) ? $product->author->title : '') . ' godine izdanja ' . ($product->year ?: '') . ' i mjesta izdavanja ' . ($product->origin ?: '') . ' u Zuzi Shop-u.'
+            'title'       => rtrim($product->name) . ' - ' . (isset($product->author->title) ? $product->author->title : ''),
+            'description' => 'Knjiga ' . rtrim($product->name) . ' pisca ' . (isset($product->author->title) ? $product->author->title : '') . ' u Plava Krava web shopu. Kliknite na naš web i saznajte više!'
         ];
     }
 
@@ -34,7 +34,7 @@ class Seo
      */
     public static function getAuthorData(Author $author, Category $cat = null, Category $subcat = null): array
     {
-        $title = $author->title . ' knjige - Zuzi Shop';
+        $title = $author->title . ' knjige - Plava Krava';
         $description = 'Knjige autora ' . $author->title . ' danas su jako popularne u svijetu. Bogati izbor knjiga autora ' . $author->title . ' uz brzu dostavu i sigurnu kupovinu.';
 
         // Check if there is meta title or description and set vars.
@@ -60,8 +60,8 @@ class Seo
      */
     public static function getPublisherData(Publisher $publisher, Category $cat = null, Category $subcat = null): array
     {
-        $title = $publisher->title . ' knjige - Zuzi Shop';
-        $description = 'Ponuda knjiga nakladnika ' . $publisher->title . '. Knjige iz antikvarijata, naklade ' . $publisher->title . ' mogu biti u vašem domu uz brzu dostavu.';
+        $title = $publisher->title . ' knjige - Plava Krava';
+        $description = 'Ponuda knjiga nakladnika ' . $publisher->title . ' u Plava Krava Online shopu. Naručite knjige na engleskom jeziku iz naklade ' . $publisher->title . '.';
 
         // Check if there is meta title or description and set vars.
         if ($cat) {

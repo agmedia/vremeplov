@@ -109,13 +109,13 @@ class Breadcrumb
                 'name' => $prod->name,
                 'url' => url($prod->url),
                 'publisher' => [
-                    '@type' => 'Organization',
+                    '@type' => 'Organization', 
                     'name' => ($prod->publisher) ? $prod->publisher->title : 'Izdavačka kuća',
                 ],
                 'author' => ($prod->author) ? $prod->author->title : 'Autor',
                 'offers' => [
                     '@type' => 'Offer',
-                    'priceCurrency' => 'EUR',
+                    'priceCurrency' => 'HRK',
                     'price' => ($prod->special()) ? $prod->special() : number_format($prod->price, 2, '.', ''),
                     'sku' => $prod->sku,
                     'availability' => ($prod->quantity) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'

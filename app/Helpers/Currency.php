@@ -86,8 +86,8 @@ class Currency
     private static function resolvePrice(\stdClass $currency, $price, bool $text_price = false): string
     {
         if ($text_price) {
-            $left  = $currency->symbol_left ? $currency->symbol_left . ' ' : '';
-            $right = $currency->symbol_right ? ' ' . $currency->symbol_right : '';
+            $left  = $currency->symbol_left ? $currency->symbol_left . '' : '';
+            $right = $currency->symbol_right ? '' . $currency->symbol_right : '';
 
             return $left . number_format(($price * $currency->value), $currency->decimal_places, ',', '.') . $right;
         }

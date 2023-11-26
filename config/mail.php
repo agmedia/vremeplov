@@ -107,6 +107,6 @@ return [
         ],
     ],
 
-    'admin' => 'info@zuzi.hr'
+    'admin' => 'tomislav@agmedia.hr'
 
 ];

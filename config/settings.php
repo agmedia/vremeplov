@@ -28,7 +28,6 @@ return [
     'unknown_author'    => 6,
     'unknown_publisher' => 6,
     'images_domain'     =>  env('APP_IMAGE_DOMAIN'),
-
     'eur_divide_amount' => 0.13272280,
 
     'sorting_list' => [
