@@ -428,23 +428,23 @@
                     {
                         label: 'Ova godina',
                         fill: true,
-                        backgroundColor: 'rgba(59,101,190,0.75)',
-                        borderColor: 'rgb(24, 50, 109)',
-                        pointBackgroundColor: 'rgba(24, 50, 109, 1)',
+                        backgroundColor: 'rgba(45, 34, 36, 0.75)',
+                        borderColor: 'rgb(45, 34, 36)',
+                        pointBackgroundColor: 'rgba(45, 34, 36, 1)',
                         pointBorderColor: '#fff',
                         pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: 'rgba(24, 50, 109, 1)',
+                        pointHoverBorderColor: 'rgba(45, 34, 36, 1)',
                         data: this_year.values
                     },
                     {
                         label: 'Zadnja godina',
                         fill: true,
-                        backgroundColor: 'rgba(108, 117, 125, .25)',
-                        borderColor: 'rgba(108, 117, 125, .75)',
-                        pointBackgroundColor: 'rgba(108, 117, 125, 1)',
+                        backgroundColor: 'rgba(230, 209, 171, .25)',
+                        borderColor: 'rgba(230, 209, 171, .75)',
+                        pointBackgroundColor: 'rgba(230, 209, 171, 1)',
                         pointBorderColor: '#fff',
                         pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: 'rgba(108, 117, 125, 1)',
+                        pointHoverBorderColor: 'rgba(230, 209, 171, 1)',
                         data: last_year.values
                     }
                 ]

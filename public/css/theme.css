@@ -77,6 +77,11 @@
     box-sizing: border-box;
 }
 
+p:empty {
+    display: none;
+}
+
+
 body {
     margin: 0;
     font-family: var(--cz-body-font-family);
