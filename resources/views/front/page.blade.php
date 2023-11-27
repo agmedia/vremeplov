@@ -13,8 +13,8 @@
     <meta property="og:description" content="Dobro došli na stranice antikvarijata Vremeplov. Specijalizirani smo za stare razglednice, pisma, knjige, plakate,časopise te vršimo otkup i prodaju navedenih." />
     <meta property="og:url" content="{{ env('APP_URL')}}"  />
     <meta property="og:site_name" content="Antikvarijat Vremeplov | Prodaja knjiga | Otkup knjiga | Webshop" />
-    <meta property="og:image" content="{{ asset('media/cover-zuzi.jpg') }}" />
-    <meta property="og:image:secure_url" content="{{ asset('media/cover-zuzi.jpg') }}" />
+    <meta property="og:image" content="{{ asset('media/img/cover-vremeplov.png') }}" />
+    <meta property="og:image:secure_url" content="{{ asset('media/img/cover-vremeplov.png') }}" />
     <meta property="og:image:width" content="1920" />
     <meta property="og:image:height" content="720" />
     <meta property="og:image:type" content="image/jpeg" />
@@ -22,7 +22,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Antikvarijat Vremeplov | Prodaja knjiga | Otkup knjiga | Webshop" />
     <meta name="twitter:description" content="Dobro došli na stranice antikvarijata Vremeplov. Specijalizirani smo za stare razglednice, pisma, knjige, plakate,časopise te vršimo otkup i prodaju navedenih." />
-    <meta name="twitter:image" content="{{ asset('media/cover-zuzi.jpg') }}" />
+    <meta name="twitter:image" content="{{ asset('media/img/cover-vremeplov.png') }}" />
 
 @endpush
 

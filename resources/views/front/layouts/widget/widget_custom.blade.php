@@ -7,7 +7,7 @@
             <div class="rounded-3 px-md-5 text-center text-lg-start " style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
                 <div class="d-lg-flex justify-content-between align-items-center px-4  mx-auto" style="max-width: 1226px;">
                     <div class="py-2 py-sm-3 pb-0 me-xl-4 mx-auto mx-xl-0" style="max-width: 490px;">
-                        <p class="text-dark fs-sm pb-0 mb-1 mt-2 "><i class="ci-bookmark  fs-sm mt-n1 me-2"></i> TOP PONUDA</p>
+                        <p class="text-dark fs-sm pb-0 mb-1 mt-2 "><i class="ci-bookmark  fs-sm mt-n1 me-2"></i> PONUDA MJESECA</p>
                         <h2 class="h1 text-primary font-title mb-1">{{ $widget['title'] }} </h2>
                         <div class="star-rating mb-3"><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i>
                         </div>
