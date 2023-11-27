@@ -9,7 +9,7 @@
     <meta property="og:title" content="{{ $seo['title'] }}" />
     <meta property="og:description" content="{{ $seo['description']  }}" />
     <meta property="og:url" content="{{ env('APP_URL')}}/{{ $prod->url }}"  />
-    <meta property="og:site_name" content="ZuZi Shop" />
+    <meta property="og:site_name" content="Antikvarijat Vremeplov" />
     <meta property="og:updated_time" content="{{ $prod->updated_at  }}" />
     <meta property="og:image" content="{{ asset($prod->image) }}" />
     <meta property="og:image:secure_url" content="{{ asset($prod->image) }}" />
@@ -26,7 +26,7 @@
     <meta name="twitter:description" content="{{ $seo['description'] }}" />
     <meta name="twitter:image" content="{{ asset($prod->image) }}" />
 
-    <base href="http://127.0.0.1:800000"/>
+
 
 @endpush
 
@@ -47,11 +47,11 @@
 @section('content')
 
     <!-- Page Title-->
-    <div class="page-title bg-dark pt-2 pb-2" style="background-image: url({{ config('settings.images_domain') . 'media/img/zuzi-bck.svg' }});background-repeat: repeat-x;background-position-y: bottom;">
-        <div class="container d-lg-block justify-content-end py-2 py-lg-3">
-            <div class="order-lg-2 mb-3 mt-3 mb-lg-0 pb-lg-1">
+    <div class="bg-light pt-2 pb-2"  style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
+        <div class="container d-lg-block justify-content-end py-1">
+            <div class="order-lg-2 mb-0 mt-0 mb-lg-0">
                 <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb breadcrumb-light flex-lg-nowrap justify-content-center ">
+                    <ol class="breadcrumb breadcrumb-dark flex-lg-nowrap justify-content-center ">
                         <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="ci-home"></i>Naslovnica</a></li>
 
                         @if ($group)
@@ -86,10 +86,10 @@
 
         </div>
     </div>
-    <section class="spikesg" ></section>
+
     <div class="container">
         <!-- Gallery + details-->
-        <div class="bg-light  rounded-3 px-2 py-3 mb-3">
+        <div class="bg-light  rounded-3 px-2 py-3 mt-3 mb-3">
             <div class="px-lg-3">
                 <div class="row">
                     <!-- Product gallery-->
@@ -175,6 +175,7 @@
                                 @endif
                                 <li class="d-flex justify-content-between mb-2 bg-gray-50 pb-2 border-bottom"><span class="text-dark fw-medium">Šifra</span><span class="text-muted">{{ $prod->sku }}</span></li>
 
+
                                     <li class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span class="text-dark fw-medium">Stanje</span><span class="text-muted">{{ $prod->condition ?: '...' }}</span></li>
 
                                     @if ($prod->quantity)
@@ -185,15 +186,19 @@
                                         @endif
                                     @else
                                         <li class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span class="text-dark fw-medium">Dostupnost</span><span class="text-muted">Rasprodano</span></li>
+
                                     @endif
 
 
 
-
                                 <li class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span class="text-dark fw-medium">Broj stranica</span><span class="text-muted">{{ $prod->pages ?: '...' }}</span></li>
+
                                 <li class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span class="text-dark fw-medium">Godina izdanja</span><span class="text-muted">{{ $prod->year ?: '...' }}</span></li>
+
                                 <li class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span class="text-dark fw-medium">Dimenzije</span><span class="text-muted">{{ $prod->dimensions.' cm' ?: '...' }}</span></li>
+
                                 <li class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span class="text-dark fw-medium">Mjesto izdavanja</span><span class="text-muted">{{ $prod->origin ?: '...' }}</span></li>
+
                                 <li class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span class="text-dark fw-medium">Pismo</span><span class="text-muted">{{ $prod->letter ?: '...' }}</span></li>
 
                                 <li class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span class="text-dark fw-medium">Uvez</span><span class="text-muted">{{ $prod->binding ?: '...' }}</span></li>

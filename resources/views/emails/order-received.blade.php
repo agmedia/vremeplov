@@ -32,7 +32,7 @@
                 @endif
                 <br><br>
 
-                Lijep pozdrav,<br>Plava Krava
+                Lijep pozdrav,<br>Antikvarijat Vremeplov
             </td>
         </tr>
 

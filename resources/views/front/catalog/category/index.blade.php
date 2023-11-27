@@ -2,13 +2,13 @@
 
 @if (isset($group) && $group)
     @if ($group && ! $cat && ! $subcat)
-        @section ( 'title',  \Illuminate\Support\Str::ucfirst($group). ' - ZuZi Shop' )
+        @section ( 'title',  \Illuminate\Support\Str::ucfirst($group). ' - Antikvarijat Vremeplov' )
     @endif
     @if ($cat && ! $subcat)
-        @section ( 'title',  $cat->title . ' - ZuZi Shop' )
+        @section ( 'title',  $cat->title . ' - Antikvarijat Vremeplov' )
         @section ( 'description', $cat->meta_description )
     @elseif ($cat && $subcat)
-        @section ( 'title', $subcat->title . ' - ZuZi Shop' )
+        @section ( 'title', $subcat->title . ' - Antikvarijat Vremeplov' )
         @section ( 'description', $cat->meta_description )
     @endif
 @endif
@@ -35,13 +35,13 @@
 @section('content')
 
     <!-- Page Title-->
-    <div class="page-title bg-dark pt-4 pb-4 mb-0" style="background-image: url({{ config('settings.images_domain') . 'media/img/zuzi-bck.svg' }});background-repeat: repeat-x;background-position-y: bottom;">
-        <div class="container d-lg-block justify-content-start py-2 py-lg-3">
+    <div class="bg-light pt-4 pb-3"  style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
+        <div class="container d-lg-flex justify-content-between py-2 py-lg-3">
 
             @if (isset($group) && $group)
-                <div class="order-lg-2 mb-3 mb-lg-0 pb-lg-2">
+                <div class="order-lg-2 mb-3 mb-lg-0 pt-lg-2">
                     <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb breadcrumb-light flex-lg-nowrap justify-content-center ">
+                        <ol class="breadcrumb breadcrumb-dark flex-lg-nowrap justify-content-center ">
                             <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="ci-home"></i>Naslovnica</a></li>
                             @if ($group && ! $cat && ! $subcat)
                                 <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ \Illuminate\Support\Str::ucfirst($group) }}</li>
@@ -59,12 +59,12 @@
                 </div>
                 <div class="order-lg-1 pe-lg-4 text-center ">
                     @if ($group && ! $cat && ! $subcat)
-                        <h1 class="h3 text-light mb-0">{{ \Illuminate\Support\Str::ucfirst($group) }}</h1>
+                        <h1 class="h3 text-dark mb-0">{{ \Illuminate\Support\Str::ucfirst($group) }}</h1>
                     @endif
                     @if ($cat && ! $subcat)
-                        <h1 class="h3 text-light mb-0">{{ $cat->title }}</h1>
+                        <h1 class="h3 text-dark mb-0">{{ $cat->title }}</h1>
                     @elseif ($cat && $subcat)
-                        <h1 class="h3 text-light mb-0">{{ $subcat->title }}</h1>
+                        <h1 class="h3 text-dark mb-0">{{ $subcat->title }}</h1>
                     @endif
 
                 </div>

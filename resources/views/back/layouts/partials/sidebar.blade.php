@@ -17,10 +17,10 @@
             <!-- Logo -->
             <a class="font-w600 text-white text-center tracking-wide" href="/">
                             <span class="smini-visible">
-                                B<span class="opacity-75">x</span>
+                                <span class="opacity-75">x</span>
                             </span>
                 <span class="smini-hidden ml-2">
-                                Plava <span class="opacity-75">Krava</span>
+                                Antikvarijat <span class="opacity-75">Vremeplov</span>
                             </span>
             </a>
             <!-- END Logo -->

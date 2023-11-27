@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
 
-    <title>Plava Krava</title>
+    <title>Antikvarijat Vremeplov</title>
 
-    <meta name="description" content="Plava Krava">
-    <meta name="author" content="pixelcave">
+    <meta name="description" content="Antikvarijat Vremeplov">
+    <meta name="author" content="agmedia.hr">
     <meta name="robots" content="noindex, nofollow">
 
     <!-- CSRF Token -->

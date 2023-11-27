@@ -80,15 +80,15 @@ class Bank
                         ),
                     'receiver'    =>
                         array(
-                            'name'      => 'Plava krava izdavaštvo',
-                            'street'    => 'Nova cesta 130',
+                            'name'      => 'Vremeplov razglednica d.o.o.',
+                            'street'    => 'Radoslava Lopašića 11',
                             'place'     => '10000 Zagreb',
-                            'iban'      => 'HR9824020061101122961',
+                            'iban'      => 'HR4524020061100571694',
                             'model'     => '00',
                             'reference' => $pozivnabroj,
                         ),
                     'purpose'     => 'CMDT',
-                    'description' => 'Web narudžba Plava Krava',
+                    'description' => 'Web narudžba Antikvarijat Vremeplov',
                 ),
         );
 

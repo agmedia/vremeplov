@@ -89,7 +89,7 @@
             <!-- Desktop menu (visible on screens above md)-->
             <div class="col-md-3 d-none d-md-block text-center text-md-start mb-4">
                 <div class="widget widget-links widget-light pb-2">
-                    <h3 class="widget-title fw-700 text-white"><span>Uvjeti kupnje</span></h3>
+                    <h3 class="widget-title fw-700 text-white"><span>Informacije</span></h3>
                     <ul class="widget-list">
                         @foreach ($uvjeti_kupnje as $page)
                             <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.page', ['page' => $page]) }}">{{ $page->title }}</a></li>

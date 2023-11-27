@@ -1,9 +1,9 @@
 @extends('front.layouts.app')
 @if(isset($blogs))
-        @section ( 'title', 'Blog - Zuzi Shop' )
-        @section ( 'description', 'Medijske objave, članci i obavijesti -  Zuzi Shop' )
+        @section ( 'title', 'Blog - Antikvarijat Vremeplov' )
+        @section ( 'description', 'Medijske objave, članci i obavijesti -  Antikvarijat Vremeplov' )
 @else
-    @section ( 'title', $blog->title. ' - Zuzi Shop' )
+    @section ( 'title', $blog->title. ' - Antikvarijat Vremeplov' )
 @section ( 'description', $blog->meta_description )
 
 @endif
@@ -11,12 +11,11 @@
 @section('content')
 
     <!-- Page Title-->
-    <div class=" bg-dark pt-4 pb-3" style="background-image: url({{ config('settings.images_domain') . 'media/img/indexslika.jpg' }});-webkit-background-size: cover;-moz-background-size: cover;-o-background-size: cover;background-size: cover;">
-        <div class="container d-lg-block justify-content-end py-2 py-lg-3">
-            <div class="order-lg-2 mb-3 mb-lg-0 pb-lg-2">
-
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb breadcrumb-light flex-lg-nowrap justify-content-center justify-content-lg-start">
+    <div class="bg-light pt-4 pb-3"  style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
+        <div class="container d-lg-flex justify-content-between py-2 py-lg-3">
+            <div class="order-lg-2 mb-3 mb-lg-0 pt-lg-2">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb breadcrumb-dark flex-lg-nowrap justify-content-center justify-content-lg-start">
                                 <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="ci-home"></i>Naslovnica</a></li>
                                 <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('catalog.route.blog') }}"><i class="ci-home"></i>Blog</a></li>
 
@@ -27,9 +26,9 @@
             </div>
             <div class="order-lg-1 pe-lg-4 text-center text-lg-start">
                 @if(isset($blogs))
-            <h1 class="text-light">Blog</h1>
+            <h1 class="text-dark">Blog</h1>
                 @else
-                    <h1 class="text-light">{{ $blog->title }}</h1>
+                    <h1 class="text-dark">{{ $blog->title }}</h1>
                 @endif
         </div>
         </div>

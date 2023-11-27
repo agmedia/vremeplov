@@ -6843,7 +6843,7 @@ var render = function() {
       "div",
       {
         staticClass:
-          "offcanvas offcanvas-collapse   rounded-3 shadow-lg py-1 pt-0",
+          "offcanvas offcanvas-collapse bg-white  rounded-3 shadow-lg py-1 pt-0",
         staticStyle: { "max-width": "22rem" },
         attrs: { id: "shop-sidebar" }
       },

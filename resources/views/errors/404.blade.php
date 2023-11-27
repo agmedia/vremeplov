@@ -27,9 +27,9 @@
                             </div>
                         </a>
                     </div>
-                    <div class="col-sm-4 mb-3"><a class="card h-100 border-0 shadow-sm" href="{{ route('index') }}">
+                    <div class="col-sm-4 mb-3"><a class="card h-100 border-0 shadow-sm" href="javascript:void(0)" data-bs-toggle="collapse" data-bs-target="#searchBox" role="button" aria-expanded="false" aria-controls="searchBox">
                             <div class="card-body">
-                                <div class="d-flex align-items-center"><i class="ci-search text-success h4 mb-0"></i>
+                                <div class="d-flex align-items-center"><i class="ci-search text-primary h4 mb-0"></i>
                                     <div class="ps-3">
                                         <h5 class="fs-sm mb-0">Pretraži</h5><span class="text-muted fs-ms">Pronađite preko napredne tražilice</span>
                                     </div>
@@ -37,7 +37,7 @@
                             </div></a></div>
                     <div class="col-sm-4 mb-3"><a class="card h-100 border-0 shadow-sm" href="{{ route('faq') }}">
                             <div class="card-body">
-                                <div class="d-flex align-items-center"><i class="ci-help text-info h4 mb-0"></i>
+                                <div class="d-flex align-items-center"><i class="ci-help text-primary h4 mb-0"></i>
                                     <div class="ps-3">
                                         <h5 class="fs-sm mb-0">Česta pitanja</h5><span class="text-muted fs-ms">Posjetite stranicu sa čestim pitanjima</span>
                                     </div>

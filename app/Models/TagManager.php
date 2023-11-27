@@ -44,7 +44,7 @@ class TagManager
             'event'     => 'purchase',
             'ecommerce' => [
                 'transaction_id' => (string) $order->id,
-                'affiliation'    => 'Plava Krava webshop',
+                'affiliation'    => 'Antikvarijat Vremeplov webshop',
                 'value'          =>  (float) number_format($order->total,2),
                 'tax'            =>  (float) number_format($tax, 2),
                 'shipping'       =>  (float) number_format($shipping, 2),

@@ -3,21 +3,24 @@
 @section('content')
 
     <!-- Page Title (Light)-->
-    <div class=" bg-dark pt-4 pb-3" style="background-image: url({{ config('settings.images_domain') . 'media/img/zuzi-bck.svg' }});background-repeat: repeat-x;background-position-y: bottom;">
+    <div class="bg-light pt-4 pb-3"  style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
         <div class="container d-lg-flex justify-content-between py-2 py-lg-3">
             <div class="order-lg-2 mb-3 mb-lg-0 pt-lg-2">
                 <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb breadcrumb-light flex-lg-nowrap justify-content-center justify-content-lg-start">
+                    <ol class="breadcrumb breadcrumb-dark flex-lg-nowrap justify-content-center justify-content-lg-start">
                         <li class="breadcrumb-item"><a class="text-nowrap" href="/"><i class="ci-home"></i>Naslovnica</a></li>
-                        <li class="breadcrumb-item text-nowrap active" aria-current="page">Kontakt</li>
+                         <li class="breadcrumb-item text-nowrap active" aria-current="page">Kontakt</li>
                     </ol>
                 </nav>
             </div>
             <div class="order-lg-1 pe-lg-4 text-center text-lg-start">
-                <h1 class="h3 text-light mb-0">Kontaktirajte nas</h1>
+                <h1 class="h3 text-dark mb-0"> Kontaktirajte nas</h1>
             </div>
+
         </div>
+
     </div>
+
 
     <section class="spikesg" ></section>
     <!-- Contact detail cards-->
@@ -30,22 +33,20 @@
 
                         <h3 class=" mb-2">Impressum</h3>
                         <p>
+                        <br>
+                           <strong> Vremeplov razglednica d.o.o.</strong></p>
 
-                           <strong> ZUZI, obrt za uslužne djelatnosti, VL. MIRJANA VULIĆ ŠALDIĆ</strong></p>
+                <p> Sjedište: Radoslava Lopašića br.11, 10000 Zagreb<br><br>
 
-                <p> Sjedište: Antuna Šoljana 33, 10000 Zagreb<br><br>
+                            OIB: 34413434459<br>
+                            MB: 2623196<br>
 
-                            OIB: 69101336685<br>
-                            MBO: 97981036<br>
-                            Broj obrtnice: 21011606742<br>
                     <br>
-                            IBAN: HR1624020061140345999<br>
+                            IBAN: HR4524020061100571694<br>
                             Banka: ERSTE & STEIERMÄRKISCHE BANK d.d. Rijeka<br>
-                            Swift: ESBCHR22<br><br>
+                            Swift: ESBCHR22
 
-                            IBAN: HR0623900011101297120<br>
-                            Banka: HRVATSKA POSTANSKA BANKA d.d. Zagreb<br>
-                            Swift: HPBZHR2X
+
                 </p>
 
             </div>
@@ -93,8 +94,9 @@
         <div class="row g-0">
             <div class="col-lg-12 iframe-full-height-wrap">
 
+                <iframe class="iframe-full-height" src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d11124.005570722158!2d15.988982!3d45.8112305!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4765d6549337de2d%3A0xeb2609abc24978d!2sAntikvarijat%20Vremeplov!5e0!3m2!1shr!2shr!4v1701073620720!5m2!1shr!2shr" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
 
-                <iframe class="iframe-full-height" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2781.460285624646!2d15.88745341256823!3d45.802039410712396!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4765d12d0d165b0f%3A0xa370e29cb63b7a2e!2sZuzi%20Shop!5e0!3m2!1shr!2shr!4v1684309041472!5m2!1shr!2shr" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+
             </div>
 
         </div>

@@ -4,10 +4,10 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
 
-        <title>Plava Krava</title>
+        <title>Antikvarijat Vremeplov</title>
 
-        <meta name="description" content="Plava Krava">
-        <meta name="author" content="pixelcave">
+        <meta name="description" content="Antikvarijat Vremeplov">
+        <meta name="author" content="agmedia.hr">
         <meta name="robots" content="noindex, nofollow">
 
         <!-- CSRF Token -->
@@ -60,7 +60,7 @@
                             Crafted with <i class="fa fa-heart text-danger"></i> by <a class="font-w600" href="https://www.agmedia.hr" target="_blank">AG media</a>
                         </div>
                         <div class="col-sm-6 order-sm-1 text-center text-sm-left">
-                            <a class="font-w600" href="https://www.plavakrava.hr" target="_blank">Plava Krava</a> &copy; <span data-toggle="year-copy"></span>
+                            <a class="font-w600" href="https://www.plavakrava.hr" target="_blank">Antikvarijat Vremeplov</a> &copy; <span data-toggle="year-copy"></span>
                         </div>
                     </div>
                 </div>

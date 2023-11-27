@@ -56,8 +56,8 @@
     --cz-body-color: #111;
     --cz-body-bg: #fff;
     --cz-border-width: 1px;
-    --cz-border-style: dashed;
-    --cz-border-color: #e3e9ef;
+    --cz-border-style: solid;
+    --cz-border-color: #ebe5d5;
     --cz-border-color-translucent: rgba(0, 0, 0, 0.175);
     --cz-border-radius: 0.3125rem;
     --cz-border-radius-sm: 0.25rem;
@@ -2741,7 +2741,7 @@ textarea.form-control-lg {
     text-align: center;
     white-space: nowrap;
     background-color: #fff;
-    border: 1px solid #dae1e7;
+    border: 1px solid #d8ac63;
     border-radius: 0.3125rem;
 }
 
@@ -13255,7 +13255,7 @@ button:focus {
 }
 
 .display-404 {
-    color: #fff;
+    color: #e6d1ab;
     text-shadow: -0.0625rem 0 var(--cz-primary), 0 0.0625rem var(--cz-primary), 0.0625rem 0 var(--cz-primary), 0 -0.0625rem var(--cz-primary);
 }
 
@@ -14746,7 +14746,7 @@ input[type=search]::-webkit-search-results-decoration {
 }
 
 .btn-outline-primary {
-    --cz-btn-border-color: rgb(229, 0, 119);
+    --cz-btn-border-color: rgb(216, 172, 99);
 }
 
 .btn-outline-accent {
@@ -17402,13 +17402,14 @@ a.nav-link:hover .media-tab-media {
     height: 2.75rem;
     margin-top: -1.375rem;
     transition: all 0.3s ease-in-out;
-    border: 1px solid #e3e9ef;
+    border: 1px solid #d8ac63;
     border-radius: 50%;
-    background-color: #fff;
+    background-color: #fbf9f5;
     font-size: 0.8085rem;
     line-height: 2.625rem;
     text-align: center;
     z-index: 10;
+    color: #2d2224;
 }
 .tns-carousel [data-controls][disabled] {
     opacity: 0 !important;

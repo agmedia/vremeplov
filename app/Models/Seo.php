@@ -24,7 +24,7 @@ class Seo
     {
         return [
             'title'       => rtrim($product->name) . ' - ' . (isset($product->author->title) ? $product->author->title : ''),
-            'description' => 'Knjiga ' . rtrim($product->name) . ' pisca ' . (isset($product->author->title) ? $product->author->title : '') . ' u Plava Krava web shopu. Kliknite na naš web i saznajte više!'
+            'description' => 'Knjiga ' . rtrim($product->name) . ' pisca ' . (isset($product->author->title) ? $product->author->title : '') . ' u Antikvarijat Vremeplov web shopu. Kliknite na naš web i saznajte više!'
         ];
     }
 
@@ -34,7 +34,7 @@ class Seo
      */
     public static function getAuthorData(Author $author, Category $cat = null, Category $subcat = null): array
     {
-        $title = $author->title . ' knjige - Plava Krava';
+        $title = $author->title . ' knjige - Antikvarijat Vremeplov';
         $description = 'Knjige autora ' . $author->title . ' danas su jako popularne u svijetu. Bogati izbor knjiga autora ' . $author->title . ' uz brzu dostavu i sigurnu kupovinu.';
 
         // Check if there is meta title or description and set vars.
@@ -60,8 +60,8 @@ class Seo
      */
     public static function getPublisherData(Publisher $publisher, Category $cat = null, Category $subcat = null): array
     {
-        $title = $publisher->title . ' knjige - Plava Krava';
-        $description = 'Ponuda knjiga nakladnika ' . $publisher->title . ' u Plava Krava Online shopu. Naručite knjige na engleskom jeziku iz naklade ' . $publisher->title . '.';
+        $title = $publisher->title . ' knjige - Antikvarijat Vremeplov';
+        $description = 'Ponuda knjiga nakladnika ' . $publisher->title . ' u Antikvarijat Vremeplov Online shopu. Naručite knjige  iz naklade ' . $publisher->title . '.';
 
         // Check if there is meta title or description and set vars.
         if ($cat) {

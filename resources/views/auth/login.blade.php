@@ -19,7 +19,7 @@
                             <!-- Header -->
                             <div class="mb-2 text-center">
                                 <a class="link-fx font-w700 font-size-h2" href="{{ route('index') }}">
-                                    <span class="text-dark">ZUZI</span> <span class="text-primary">SHOP</span>
+                                    <span class="text-dark">Antikvarijat</span> <span class="text-primary">Vremeplov</span>
                                 </a>
                                 <p class="text-uppercase font-w700 font-size-sm text-muted">PRIJAVA</p>
                             </div>

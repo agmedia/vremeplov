@@ -13,7 +13,7 @@
                 <p style="font-size:12px"> Imate dodatak u privitku ili gumb kojim možete učitati excel datoteku.</p>
                 <br><br>
 
-                Lijep pozdrav,<br>Plava Krava
+                Lijep pozdrav,<br>Antikvarijat Vremeplov
             </td>
         </tr>
 

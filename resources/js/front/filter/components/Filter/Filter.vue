@@ -1,7 +1,7 @@
 <template>
     <aside class="col-lg-auto">
         <!-- Sidebar-->
-        <div class="offcanvas offcanvas-collapse   rounded-3 shadow-lg py-1 pt-0" id="shop-sidebar" style="max-width: 22rem;">
+        <div class="offcanvas offcanvas-collapse bg-white  rounded-3 shadow-lg py-1 pt-0" id="shop-sidebar" style="max-width: 22rem;">
             <div class="offcanvas-cap bg-white align-items-center shadow-sm">
                 <h2 class="h3 mb-0 text-primary">Filtriraj</h2>
                 <button class="btn-close ms-auto" type="button" data-bs-dismiss="offcanvas" v-on:click="closeWindow" aria-label="Close"></button>
