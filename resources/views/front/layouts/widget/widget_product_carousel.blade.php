@@ -5,7 +5,7 @@
         <h2 class="h3 mb-0 pt-3 font-title me-3">{{ $data['title'] }}</h2>
             @if($data['subtitle'])  <p class="text-muted text-center mb-5">{{ $data['subtitle'] }}</p> @endif
         @if($data['url'] !='/')
-         <a class="btn btn-outline-primary btn-sm btn-shadow mt-3" href="{{ url($data['url']) }}"><span class="d-none d-sm-inline-block">Pogledajte ponudu</span> <i class="ci-arrow-right "></i></a>
+         <a class="btn btn-outline-primary btn-sm  mt-3" href="{{ url($data['url']) }}"><span class="d-none d-sm-inline-block">Pogledajte ponudu</span> <i class="ci-arrow-right "></i></a>
         @endif
 
     </div>
