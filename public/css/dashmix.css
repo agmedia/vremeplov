@@ -11875,14 +11875,14 @@ small,
 }
 .btn-hero-success:hover {
   color: #fff;
-  background-color: #9bc46f;
-  box-shadow: 0 0.375rem 0.75rem rgba(91, 127, 52, 0.4);
+    background-color: #d29b3e;
+    box-shadow: 0 0.375rem 0.75rem rgb(219, 169, 87);
   transform: translateY(-1px);
 }
 .btn-hero-success:focus, .btn-hero-success.focus {
   color: #fff;
-  background-color: #9bc46f;
-  box-shadow: 0 0.125rem 0.75rem rgba(91, 127, 52, 0.25);
+    background-color: #d29b3e;
+    box-shadow: 0 0.375rem 0.75rem rgb(219, 169, 87);
 }
 .btn-hero-success.disabled, .btn-hero-success:disabled {
   color: #fff;
@@ -11892,8 +11892,8 @@ small,
 }
 .btn-hero-success:not(:disabled):not(.disabled):active, .btn-hero-success:not(:disabled):not(.disabled).active, .show > .btn-hero-success.dropdown-toggle {
   color: #fff;
-  background-color: #5b7f34;
-  box-shadow: 0 0.125rem 0.75rem rgba(91, 127, 52, 0.25);
+    background-color: #d29b3e;
+    box-shadow: 0 0.375rem 0.75rem rgb(219, 169, 87);
   transform: translateY(0);
 }
 .btn-hero-success:not(:disabled):not(.disabled):active:focus, .btn-hero-success:not(:disabled):not(.disabled).active:focus, .show > .btn-hero-success.dropdown-toggle:focus {

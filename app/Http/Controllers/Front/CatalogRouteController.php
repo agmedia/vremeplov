@@ -300,6 +300,8 @@ class CatalogRouteController extends Controller
      */
     public function page(Page $page)
     {
+
+        //$page->description = Helper::setDescription(isset($page->description) ? $page->description : '');
         return view('front.page', compact('page'));
     }
 
