@@ -28,6 +28,12 @@ class DatabaseSeeder extends Seeder
         $this->call(SettingsSeeder::class);
         $this->command->line('Settings created!');
 
+        $this->call(PagesSeeder::class);
+        $this->command->line('Homepage created!');
+
+        $this->call(BouncerSedder::class);
+        $this->command->line('Roles & Permissions created!');
+
         $this->command->comment('Enjoy your app!');
         $this->command->comment('...');
 
