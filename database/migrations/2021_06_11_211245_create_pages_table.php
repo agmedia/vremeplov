@@ -17,6 +17,7 @@ class CreatePagesTable extends Migration
             $table->bigIncrements('id');
             $table->integer('category_id')->unsigned()->nullable();
             $table->string('group')->default('blog');
+            $table->string('subgroup')->nullable();
             $table->string('title')->index();
             $table->text('short_description')->nullable();
             $table->longText('description')->nullable();

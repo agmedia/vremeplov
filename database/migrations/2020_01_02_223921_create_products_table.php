@@ -21,13 +21,16 @@ class CreateProductsTable extends Migration
             $table->string('name')->index();
             $table->string('sku', 14)->default(0)->index();
             $table->string('ean', 14)->nullable();
+            $table->string('polica', 14)->nullable();
             $table->text('description')->nullable();
             $table->string('slug');
             $table->string('url', 255);
-            $table->text('slug')->nullable();
+            $table->text('category_string')->nullable();
             $table->string('image')->nullable();
+            $table->string('image_alt', 255)->nullable();
             $table->decimal('price', 15, 4)->default(0);
             $table->integer('quantity')->unsigned()->default(0);
+            $table->boolean('decrease')->default(true);
             $table->integer('tax_id')->unsigned()->default(0);
             $table->decimal('special', 15, 4)->nullable();
             $table->timestamp('special_from')->nullable();

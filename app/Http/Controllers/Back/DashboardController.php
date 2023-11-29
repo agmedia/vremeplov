@@ -39,36 +39,33 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        $data['today']      = Order::whereDate('created_at', Carbon::today())->count();
-        $data['proccess']   = Order::whereIn('order_status_id', [1, 2, 3])->count();
-        $data['finished']   = Order::whereIn('order_status_id', [4, 5, 6, 7])->count();
-        $data['this_month'] = Order::whereMonth('created_at', '=', Carbon::now()->month)->count();
+        $data['today']            = Order::whereDate('created_at', Carbon::today())->count();
+        $data['proccess']         = Order::whereIn('order_status_id', [1, 2, 3])->count();
+        $data['finished']         = Order::whereIn('order_status_id', [4, 5, 6, 7])->count();
+        $data['this_month']       = Order::whereMonth('created_at', '=', Carbon::now()->month)->count();
         $data['this_month_total'] = Order::whereMonth('created_at', '=', Carbon::now()->month)->whereIn('order_status_id', [4, 1, 2, 3])->sum('total');
 
+        $data['users'] = UserDetail::whereIn('role', ['customer'])->count();
 
-        $data['users']   = UserDetail::whereIn('role', ['customer'])->count();
+        $data['comments']     = Review::whereIn('status', ['0'])->count();
+        $data['zeroproducts'] = Product::whereIn('quantity', ['0'])->count();
 
-        $data['comments']   = Review::whereIn('status', ['0'])->count();
-        $data['zeroproducts']   = Product::whereIn('quantity', ['0'])->count();
+        $orders = Order::last()->with('products')->get();
 
-        $orders   = Order::last()->with('products')->get();
-
-        $ordersfinished   = Order::finished()->with('products')->get();
-        $products = $ordersfinished->map(function ($item) {
+        $ordersfinished = Order::finished()->with('products')->get();
+        $products       = $ordersfinished->map(function ($item) {
             return $item->products()->get();
         })->take(9)->flatten();
 
-
         $bestsellers = DB::table('order_products')
-            ->leftJoin('orders','orders.id','=','order_products.order_id')
-            ->select('order_products.name','order_products.product_id',
-                DB::raw('SUM(order_products.quantity) as total'))
-            ->groupBy('order_products.product_id')
-            ->whereIn('orders.order_status_id', [1, 2, 3, 4])
-            ->orderBy('total','desc')
-            ->limit(10)
-            ->get();
-
+                         ->leftJoin('orders', 'orders.id', '=', 'order_products.order_id')
+                         ->select('order_products.name', 'order_products.product_id',
+                             DB::raw('SUM(order_products.quantity) as total'))
+                         ->groupBy('order_products.product_id')
+                         ->whereIn('orders.order_status_id', [1, 2, 3, 4])
+                         ->orderBy('total', 'desc')
+                         ->limit(10)
+                         ->get();
 
         $chart     = new Chart();
         $this_year = json_encode($chart->setDataByYear(
@@ -78,8 +75,7 @@ class DashboardController extends Controller
             Order::chartData($chart->setQueryParams(true))
         ));
 
-
-       // dd($data['users']);
+        // dd($data['users']);
 
         return view('back.dashboard', compact('data', 'orders', 'bestsellers', 'products', 'this_year', 'last_year'));
     }
@@ -92,7 +88,19 @@ class DashboardController extends Controller
      */
     public function import(Request $request)
     {
-        $xml = simplexml_load_file(public_path('assets/proizvodi.xml'));
+        $category    = DB::connection('oc')->table('oc_category')->inRandomOrder()->first();
+        $description = DB::connection('oc')->table('oc_category_description')->where('category_id', $category->category_id)->first();
+        $path        = DB::connection('oc')->table('oc_seo_url')->where('query', 'category_id=' . $category->category_id)->first();
+
+        Log::info(print_r($category, true));
+        Log::info(print_r($description, true));
+        Log::info(print_r($path, true));
+
+        return redirect()->route('dashboard')->with(['success' => 'Import je uspješno obavljen..! ' . 1 . ' proizvoda importano.']);
+
+        // fj.agmedia.hr
+
+        $xml    = simplexml_load_file(public_path('assets/proizvodi.xml'));
         $import = new Import();
         $count  = 0;
 
@@ -101,10 +109,10 @@ class DashboardController extends Controller
 
             if ( ! $exist) {
                 $categories = [];
-                $images = [];
-                $publisher = $import->resolvePublisher();
-                $author = $import->resolveAuthor($item->Title);
-                $action = ((float) $item->RegularPrice == (float) $item->Price) ? null : $item->Price;
+                $images     = [];
+                $publisher  = $import->resolvePublisher();
+                $author     = $import->resolveAuthor($item->Title);
+                $action     = ((float) $item->RegularPrice == (float) $item->Price) ? null : $item->Price;
 
                 $count++;
 
@@ -184,7 +192,7 @@ class DashboardController extends Controller
                     $product = Product::find($product_id);
 
                     $product->update([
-                        'url' => ProductHelper::url($product),
+                        'url'             => ProductHelper::url($product),
                         'category_string' => ProductHelper::categoryString($product)
                     ]);
 
@@ -294,7 +302,7 @@ class DashboardController extends Controller
                     $time = Str::random(9);
                     $product->update([
                         'slug' => $product->slug . '-' . $time,
-                        'url' => $product->url . '-' . $time,
+                        'url'  => $product->url . '-' . $time,
                     ]);
                 }
             }
@@ -320,12 +328,12 @@ class DashboardController extends Controller
         $authors = Author::query()->pluck('id')->diff($products)->flatten();
 
         Author::whereIn('id', $authors)->update([
-            'status' => 0,
+            'status'     => 0,
             'updated_at' => now()
         ]);
 
         Author::whereNotIn('id', $authors)->update([
-            'status' => 1,
+            'status'     => 1,
             'updated_at' => now()
         ]);
 
@@ -340,12 +348,12 @@ class DashboardController extends Controller
         $publishers = Publisher::query()->pluck('id')->diff($products)->flatten();
 
         Publisher::whereIn('id', $publishers)->update([
-            'status' => 0,
+            'status'     => 0,
             'updated_at' => now()
         ]);
 
         Publisher::whereNotIn('id', $publishers)->update([
-            'status' => 1,
+            'status'     => 1,
             'updated_at' => now()
         ]);
 
@@ -355,7 +363,7 @@ class DashboardController extends Controller
         if ($categories_off) {
             foreach ($categories_off as $category) {
                 Category::where('id', $category['id'])->update([
-                    'status' => 0,
+                    'status'     => 0,
                     'updated_at' => now()
                 ]);
             }
@@ -366,7 +374,7 @@ class DashboardController extends Controller
         if ($categories_on) {
             foreach ($categories_on as $category) {
                 Category::where('id', $category['id'])->update([
-                    'status' => 1,
+                    'status'     => 1,
                     'updated_at' => now()
                 ]);
             }
@@ -376,12 +384,12 @@ class DashboardController extends Controller
         $products = Product::where('quantity', 0)->pluck('id');
 
         Product::whereIn('id', $products)->update([
-            'status' => 0,
+            'status'     => 0,
             'updated_at' => now()
         ]);
 
         Product::whereNotIn('id', $products)->update([
-            'status' => 1,
+            'status'     => 1,
             'updated_at' => now()
         ]);
 
@@ -485,7 +493,7 @@ class DashboardController extends Controller
         Product::query()->whereIn('id', $products)->update([
             'quantity' => 100,
             'decrease' => 0,
-            'status' => 1
+            'status'   => 1
         ]);
 
         return redirect()->route('dashboard')->with(['success' => 'Proizvodi su namješteni na neograničenu količinu..! ' . $products->count() . ' proizvoda obnovljeno.']);

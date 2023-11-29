@@ -26,6 +26,8 @@ class CreateAuthorsTable extends Migration
             $table->boolean('status')->default(false);
             $table->string('slug');
             $table->string('url', 255);
+            $table->boolean('featured')->default(false);
+            $table->integer('viewed')->unsigned()->default(0);
             $table->timestamps();
         });
     }

@@ -17,7 +17,6 @@
     <div class="content content-full">
     @include('back.layouts.partials.session')
 
-
         <!-- Posts -->
         <div class="block">
             <div class="block-header block-header-default">
@@ -83,7 +82,7 @@
                         </tr>
                     @empty
                         <tr class="text-center">
-                            <td colspan="3">Nema info stranica...</td>
+                            <td colspan="5">Nema info stranica...</td>
                         </tr>
                     @endforelse
                     </tbody>

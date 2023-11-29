@@ -1,2 +1,0 @@
-ALTER TABLE `pages`
-    ADD COLUMN `subgroup` VARCHAR(191) NULL DEFAULT NULL AFTER `group`;
