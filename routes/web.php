@@ -57,7 +57,9 @@ Route::middleware(['auth:sanctum', 'verified', 'no.customers'])->prefix('admin')
     Route::match(['get', 'post'], '/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('setRoles', [DashboardController::class, 'setRoles'])->name('roles.set');
-    Route::get('import', [DashboardController::class, 'import'])->name('import.initial');
+    Route::get('import-categories', [DashboardController::class, 'importCategories'])->name('import.categories');
+    Route::get('import-products', [DashboardController::class, 'importProducts'])->name('import.products');
+    Route::get('import-customers', [DashboardController::class, 'importCustomers'])->name('import.customers');
     Route::get('mailing-test', [DashboardController::class, 'mailing'])->name('mailing.test');
     Route::get('letters', [DashboardController::class, 'letters'])->name('letters.import');
     Route::get('slugs', [DashboardController::class, 'slugs'])->name('slugs.revision');

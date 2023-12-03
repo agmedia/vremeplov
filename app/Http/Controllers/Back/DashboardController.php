@@ -20,6 +20,8 @@ use App\Models\Back\Catalog\Publisher;
 use App\Models\Back\Marketing\Review;
 use App\Models\Back\Orders\Order;
 use App\Models\Back\Orders\OrderProduct;
+use App\Models\Back\Settings\Api\OC_Import;
+use App\Models\Back\Settings\Settings;
 use App\Models\User;
 use App\Models\UserDetail;
 use Carbon\Carbon;
@@ -30,6 +32,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use function Symfony\Component\Translation\t;
 
 class DashboardController extends Controller
 {
@@ -86,122 +89,272 @@ class DashboardController extends Controller
      *
      * @param Request $request
      */
-    public function import(Request $request)
+    public function importCategories(Request $request)
     {
-        $category    = DB::connection('oc')->table('oc_category')->inRandomOrder()->first();
-        $description = DB::connection('oc')->table('oc_category_description')->where('category_id', $category->category_id)->first();
-        $path        = DB::connection('oc')->table('oc_seo_url')->where('query', 'category_id=' . $category->category_id)->first();
+        /*$import = new OC_Import();
+        $categories  = $import->getTopCategories();
 
-        Log::info(print_r($category, true));
-        Log::info(print_r($description, true));
-        Log::info(print_r($path, true));
+        if ($categories->count()) {
+            foreach ($categories as $category) {
+                $main_description = $import->getCategoryDescription($category->category_id);
+                $main_path        = $import->getCategoryPath($category->category_id);
 
-        return redirect()->route('dashboard')->with(['success' => 'Import je uspješno obavljen..! ' . 1 . ' proizvoda importano.']);
+                $category_exist = Category::query()->where('slug', $main_path->keyword)->first();
 
-        // fj.agmedia.hr
-
-        $xml    = simplexml_load_file(public_path('assets/proizvodi.xml'));
-        $import = new Import();
-        $count  = 0;
-
-        foreach ($xml->post as $item) {
-            $exist = Product::query()->where('sku', $item->Sku)->first();
-
-            if ( ! $exist) {
-                $categories = [];
-                $images     = [];
-                $publisher  = $import->resolvePublisher();
-                $author     = $import->resolveAuthor($item->Title);
-                $action     = ((float) $item->RegularPrice == (float) $item->Price) ? null : $item->Price;
-
-                $count++;
-
-                foreach ($item->Kategorijeproizvoda as $category) {
-                    $categories[] = $category;
+                if ( ! $category_exist) {
+                    $new_category = $import->saveCategory(
+                        $main_description->name,
+                        $main_path->keyword,
+                        $main_description->meta_title,
+                        $main_description->meta_description,
+                        0,
+                        $category->sort_order,
+                        $category->category_id
+                    );
                 }
 
-                foreach ($item->ImageURL as $image) {
-                    $images[] = $image;
-                }
+                $subcategories = $import->getSubCategories($category->category_id);
 
-                $product_id = Product::insertGetId([
-                    'author_id'        => $author ?: config('settings.unknown_author'),
-                    'publisher_id'     => $publisher ?: config('settings.unknown_publisher'),
-                    'action_id'        => 0,
-                    'name'             => $item->Title,
-                    'sku'              => $item->Sku,
-                    'description'      => '<p>' . str_replace('\n', '<br>', $item->Excerpt) . '</p>',
-                    'slug'             => $item->Slug,
-                    'price'            => $item->RegularPrice ?: '0',
-                    'quantity'         => $item->Stock ?: '0',
-                    'tax_id'           => 1,
-                    'special'          => $action,
-                    'special_from'     => null,
-                    'special_to'       => null,
-                    'meta_title'       => $item->Title,
-                    'meta_description' => $item->Content,
-                    'pages'            => null,
-                    'dimensions'       => null,
-                    'origin'           => null,
-                    'letter'           => null,
-                    'condition'        => null,
-                    'binding'          => null,
-                    'year'             => null,
-                    'viewed'           => 0,
-                    'sort_order'       => 0,
-                    'push'             => 0,
-                    'status'           => $item->Stock ? 1 : 0,
-                    'created_at'       => Carbon::now(),
-                    'updated_at'       => Carbon::now()
-                ]);
+                if ($subcategories->count()) {
+                    foreach ($subcategories as $subcategory) {
+                        $submain_description = $import->getCategoryDescription($subcategory->category_id);
+                        $submain_path        = $import->getCategoryPath($subcategory->category_id);
 
-                if ($product_id) {
-                    $images = $import->resolveImages($images, $item->Title, $product_id);
+                        $subcategory_exist = Category::query()->where('slug', $submain_path->keyword)->first();
 
-                    if ($images && ! empty($images)) {
-                        for ($k = 0; $k < count($images); $k++) {
-                            if ($k == 0) {
-                                Product::where('id', $product_id)->update([
-                                    'image' => $images[$k]
-                                ]);
-                            } else {
-                                ProductImage::insert([
-                                    'product_id' => $product_id,
-                                    'image'      => $images[$k],
-                                    'alt'        => $item->Title,
-                                    'published'  => 1,
-                                    'sort_order' => $k,
-                                    'created_at' => Carbon::now(),
-                                    'updated_at' => Carbon::now()
-                                ]);
+                        if ( ! $subcategory_exist) {
+                            $new_subcategory = $import->saveCategory(
+                                $submain_description->name,
+                                $submain_path->keyword,
+                                $submain_description->meta_title,
+                                $submain_description->meta_description,
+                                $category_exist ? $category_exist->id : $new_category,
+                                $subcategory->sort_order,
+                                $subcategory->category_id
+                            );
+                        }
+
+                        $sub_subcategories = $import->getSubCategories($subcategory->category_id);
+
+                        if ($sub_subcategories->count()) {
+                            foreach ($sub_subcategories as $sub_subcategory) {
+                                $sub_submain_description = $import->getCategoryDescription($sub_subcategory->category_id);
+                                $sub_submain_path        = $import->getCategoryPath($sub_subcategory->category_id);
+
+                                $sub_subcategory_exist = Category::query()->where('slug', $sub_submain_path->keyword)->first();
+
+                                if ( ! $sub_subcategory_exist) {
+                                    $new_subcategory = $import->saveCategory(
+                                        $sub_submain_description->name,
+                                        $sub_submain_path->keyword,
+                                        $sub_submain_description->meta_title,
+                                        $sub_submain_description->meta_description,
+                                        $subcategory_exist ? $subcategory_exist->id : $new_subcategory,
+                                        $sub_subcategory->sort_order,
+                                        $sub_subcategory->category_id
+                                    );
+                                }
                             }
                         }
                     }
+                }
+            }
+        }
 
-                    $categories = $import->resolveCategories($categories);
+        return redirect()->route('dashboard')->with(['success' => 'Import je uspješno obavljen..! ' . 1 . ' proizvoda importano.']);*/
 
-                    if ($categories) {
-                        foreach ($categories as $category) {
-                            ProductCategory::insert([
-                                'product_id'  => $product_id,
-                                'category_id' => $category
-                            ]);
+        /*******************************************************************************
+        *                                Copyright : AGmedia                           *
+        *                              email: filip@agmedia.hr                         *
+        *******************************************************************************/
+
+        $groups = [];
+        $count = 0;
+        $import = new OC_Import();
+        $categories  = $import->getCategories();
+
+        if ($categories->count()) {
+            foreach ($categories as $category) {
+                $count++;
+                $main_description = $import->getCategoryDescription($category->category_id);
+                $main_path        = $import->getCategoryPath($category->category_id);
+
+                $groups[$category->category_id] = [
+                    'title' => $main_description->name,
+                    'slug'  => $main_path->keyword,
+                    'sort_order' => $category->sort_order
+                ];
+
+                $subcategories = $import->getCategories($category->category_id);
+
+                if ($subcategories->count()) {
+                    foreach ($subcategories as $subcategory) {
+                        $count++;
+                        $submain_description = $import->getCategoryDescription($subcategory->category_id);
+                        $submain_path        = $import->getCategoryPath($subcategory->category_id);
+
+                        $subcategory_exist = Category::query()->where('slug', $submain_path->keyword)->first();
+
+                        if ( ! $subcategory_exist) {
+                            $new_subcategory = $import->saveCategory(
+                                $submain_description->name,
+                                $groups[$category->category_id]['slug'],
+                                $submain_path->keyword,
+                                $submain_description->meta_title,
+                                $submain_description->meta_description,
+                                0,
+                                $subcategory->sort_order,
+                                $subcategory->category_id
+                            );
+                        }
+
+                        $sub_subcategories = $import->getCategories($subcategory->category_id);
+
+                        if ($sub_subcategories->count()) {
+                            foreach ($sub_subcategories as $sub_subcategory) {
+                                $count++;
+                                $sub_submain_description = $import->getCategoryDescription($sub_subcategory->category_id);
+                                $sub_submain_path        = $import->getCategoryPath($sub_subcategory->category_id);
+
+                                $sub_subcategory_exist = Category::query()->where('slug', $sub_submain_path->keyword)->first();
+
+                                if ( ! $sub_subcategory_exist) {
+                                    $new_subcategory = $import->saveCategory(
+                                        $sub_submain_description->name,
+                                        $groups[$category->category_id]['slug'],
+                                        $sub_submain_path->keyword,
+                                        $sub_submain_description->meta_title,
+                                        $sub_submain_description->meta_description,
+                                        $subcategory_exist ? $subcategory_exist->id : $new_subcategory,
+                                        $sub_subcategory->sort_order,
+                                        $sub_subcategory->category_id
+                                    );
+                                }
+                            }
                         }
                     }
+                }
+            }
 
-                    $product = Product::find($product_id);
+            $groups = collect($groups)->sortBy('title')->toArray();
+            $groups = array_values($groups);
 
-                    $product->update([
-                        'url'             => ProductHelper::url($product),
-                        'category_string' => ProductHelper::categoryString($product)
-                    ]);
+            $settings = Settings::where('code', 'category')->where('key', 'list.groups')->first();
 
-                    $count++;
+            if ($settings) {
+                Settings::edit($settings->id, 'category', 'list.groups', json_encode($groups), true);
+            } else {
+                Settings::insert('category', 'list.groups', json_encode($groups), true);
+            }
+        }
 
-                    if ($count > 100000) {
-                        return redirect()->route('dashboard');
+        return redirect()->route('dashboard')->with(['success' => 'Import je uspješno obavljen..! ' . $count . ' kategorija importano.']);
+    }
+
+
+    public function importProducts(Request $request)
+    {
+        $count = 0;
+        $import = new OC_Import();
+
+        $products = $import->getProducts(0, 50);
+
+        $existing = Product::query()->pluck('ean');
+
+        $diff = $products->pluck('product_id')->diff($existing)->toArray();
+
+        $products = $import->getProducts($diff);
+
+        foreach ($products as $product) {
+            $product_description = $import->getProductDescription($product->product_id);
+            $product_images = $import->getProductImages($product->product_id);
+            $product_categories = $import->getProductCategories($product->product_id);
+
+            $attributes = $import->resolveAttributes($product_description->description);
+            $author = $import->resolveAuthor($product_description->name);
+            $publisher = $import->resolvePublisher(isset($attributes['Izdavač']) ? $attributes['Izdavač'] : '');
+
+            $product_id = Product::insertGetId([
+                'author_id'        => $author,
+                'publisher_id'     => $publisher,
+                'action_id'        => 0,
+                'name'             => $product_description->name,
+                'sku'              => isset($attributes['Šifra']) ? $attributes['Šifra'] : $product->model,
+                'ean'              => $product->product_id,
+                'polica'           => 0,
+                'description'      => '<p>' . str_replace('\n', '<br>', $product_description->description) . '</p>',
+                'slug'             => Str::slug($product_description->name) . '-' . time(),
+                'url'              => '',
+                'price'            => $product->price,
+                'quantity'         => $product->quantity,
+                'decrease'         => 1,
+                'tax_id'           => 1,
+                'special'          => null,
+                'special_from'     => null,
+                'special_to'       => null,
+                'meta_title'       => $product_description->meta_title,
+                'meta_description' => $product_description->meta_description,
+                'pages'            => isset($attributes['Broj stranica']) ? $attributes['Broj stranica'] : null,
+                'dimensions'       => null,
+                'origin'           => isset($attributes['Jezik']) ? $attributes['Jezik'] : null,
+                'letter'           => isset($attributes['Pismo']) ? $attributes['Pismo'] : null,
+                'condition'        => isset($attributes['Stanje']) ? $attributes['Stanje'] : null,
+                'binding'          => isset($attributes['Uvez']) ? $attributes['Uvez'] : null,
+                'year'             => isset($attributes['Godina']) ? str_replace('.', '', $attributes['Godina']) : null,
+                'viewed'           => 0,
+                'sort_order'       => 0,
+                'push'             => 0,
+                'status'           => $product->quantity ? 1 : 0,
+                'created_at'       => Carbon::now(),
+                'updated_at'       => Carbon::now()
+            ]);
+
+            if ($product_id) {
+                // Create, sort all images.
+                $main_path = 'https://www.antikvarijat-vremeplov.hr/image/' . $product->image;
+                $main_image = $import->resolveProductImage($main_path, $product_description->name, $product_id);
+
+                Product::where('id', $product_id)->update(['image' => $main_image]);
+
+                if ($product_images->count()) {
+                    $icount = 0;
+                    foreach ($product_images as $product_image) {
+                        $path = 'https://www.antikvarijat-vremeplov.hr/image/' . $product_image->image;
+                        $image = $import->resolveProductImage($path, $product_description->name, $product_id);
+
+                        ProductImage::insert([
+                            'product_id' => $product_id,
+                            'image'      => $image,
+                            'alt'        => $product_description->name,
+                            'published'  => 1,
+                            'sort_order' => $icount,
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now()
+                        ]);
+
+                        $icount++;
                     }
                 }
+
+                $categories = $import->resolveProductCategories($product_categories);
+
+                if ($categories) {
+                    foreach ($categories as $category) {
+                        ProductCategory::insert([
+                            'product_id'  => $product_id,
+                            'category_id' => $category
+                        ]);
+                    }
+                }
+
+                $product = Product::find($product_id);
+
+                $product->update([
+                    'url'             => ProductHelper::url($product),
+                    'category_string' => ProductHelper::categoryString($product)
+                ]);
+
+                $count++;
             }
         }
 
@@ -209,51 +362,9 @@ class DashboardController extends Controller
     }
 
 
-    /**
-     * Set up roles. Should be done once only.
-     *
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function setRoles()
+    public function importCustomers()
     {
-        if ( ! auth()->user()->can('*')) {
-            abort(401);
-        }
-
-        $superadmin = Bouncer::role()->firstOrCreate([
-            'name'  => 'superadmin',
-            'title' => 'Super Administrator',
-        ]);
-
-        Bouncer::role()->firstOrCreate([
-            'name'  => 'admin',
-            'title' => 'Administrator',
-        ]);
-
-        Bouncer::role()->firstOrCreate([
-            'name'  => 'editor',
-            'title' => 'Editor',
-        ]);
-
-        Bouncer::role()->firstOrCreate([
-            'name'  => 'customer',
-            'title' => 'Customer',
-        ]);
-
-        Bouncer::allow($superadmin)->everything();
-
-        Bouncer::ability()->firstOrCreate([
-            'name'  => 'set-super',
-            'title' => 'Postavi korisnika kao Superadmina.'
-        ]);
-
-        $users = User::whereIn('email', ['filip@agmedia.hr', 'tomislav@agmedia.hr'])->get();
-
-        foreach ($users as $user) {
-            $user->assign($superadmin);
-        }
-
-        return redirect()->route('dashboard');
+        
     }
 
 

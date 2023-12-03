@@ -25,10 +25,12 @@ return [
     'author_path'       => 'autor',
     'publisher_path'    => 'nakladnik',
     'group_path'        => 'Kategorija proizvoda',
-    'unknown_author'    => 6,
-    'unknown_publisher' => 6,
-    'images_domain'     =>  env('APP_IMAGE_DOMAIN'),
+    'unknown_author'    => 1,
+    'unknown_publisher' => 1,
+    'images_domain'     => env('APP_IMAGE_DOMAIN'),
     'eur_divide_amount' => 0.13272280,
+    //
+    'default_product_image' => 'media/avatars/default_book.jpg',
 
     'sorting_list' => [
         0 => [
