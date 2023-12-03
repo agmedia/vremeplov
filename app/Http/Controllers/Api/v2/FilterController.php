@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\v2;
 
 use App\Helpers\Helper;
+use App\Models\Back\Settings\Settings;
 use App\Models\Front\Catalog\Product;
 use App\Models\Back\Catalog\Product\ProductImage;
 use App\Models\Front\Catalog\Author;
@@ -34,26 +35,42 @@ class FilterController extends Controller
 
         // Ako je normal kategorija
         if ($params['group']) {
-            $response = Helper::resolveCache('categories')->remember($params['group'], config('cache.life'), function () use ($params) {
+            //$response = Helper::resolveCache('categories')->remember($params['group'], config('cache.life'), function () use ($params) {
                 $categories = Category::active()->topList($params['group'])->sortByName()->with('subcategories')/*->withCount('products')*/ ->get()->toArray();
 
                 return $this->resolveCategoryArray($categories, 'categories');
-            });
+            //});
         }
 
         // Ako je autor
-        /*if ( ! $params['group'] && $params['author']) {
+        if ( ! $params['group'] && $params['author']) {
             $author   = Author::where('slug', $params['author'])->first();
             $a_cats   = $author->categories();
             $response = $this->resolveCategoryArray($a_cats, 'author', $author);
-        }*/
+        }
 
         // Ako je nakladnik
-        /*if ( ! $params['group'] && $params['publisher']) {
+        if ( ! $params['group'] && $params['publisher']) {
             $publisher = Publisher::where('slug', $params['publisher'])->first();
             $a_cats    = $publisher->categories();
             $response  = $this->resolveCategoryArray($a_cats, 'publisher', $publisher);
-        }*/
+        }
+
+        //
+        if ( ! $params['group'] && ! $params['author'] && ! $params['publisher']) {
+            $groups = Settings::get('category', 'list.groups');
+
+            foreach ($groups as $key => $group) {
+                $response[] = [
+                    'id'    => $key,
+                    'title' => $group->title,
+                    'icon'  => '',
+                    'count' => 0,//$category['products_count'],
+                    'url'   => route('catalog.route', ['group'  => $group->slug]),
+                    'subs'  => []//$subs
+                ];
+            }
+        }
 
         // Ako su posebni ID artikala.
         /*if ($params['ids'] && $params['ids'] != '[]') {
@@ -102,7 +119,7 @@ class FilterController extends Controller
             $response[] = [
                 'id'    => $category['id'],
                 'title' => $category['title'],
-                'icon'  => $category['icon'],
+                'icon'  => $category['image'],
                 'count' => 0,//$category['products_count'],
                 'url'   => $url,
                 'subs'  => $subs

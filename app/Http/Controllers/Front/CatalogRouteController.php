@@ -137,6 +137,17 @@ class CatalogRouteController extends Controller
 
 
     /**
+     * @param Request $request
+     *
+     * @return void
+     */
+    public function allList(Request $request)
+    {
+        return view('front.catalog.category.index');
+    }
+
+
+    /**
      *
      *
      * @param Author $author

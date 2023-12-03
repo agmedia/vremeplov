@@ -128,7 +128,6 @@
             @endif
 
         </div>
-
     </div>
 
     <div class="container pb-4 mb-2 mb-md-4 mt-4" id="filter-app" v-cloak>
@@ -156,18 +155,22 @@
         </div>
     @endif
 
-    <div class="container pb-4 mb-2 mb-md-4" >
-        @if ($cat && ! $subcat)
-            {!! $cat->description !!}
-        @elseif ($subcat && ! $subcat)
-            {!! $cat->description !!}
-        @endif
-    </div>
+    @if (isset($cat) && isset($subcat))
+        <div class="container pb-4 mb-2 mb-md-4" >
+            @if ($cat && ! $subcat)
+                {!! $cat->description !!}
+            @elseif ($subcat && ! $subcat)
+                {!! $cat->description !!}
+            @endif
+        </div>
+    @endif
 
 @endsection
 
 @push('js_after')
-    <script type="application/ld+json">
-        {!! collect($crumbs)->toJson() !!}
-    </script>
+    @if (isset($crumbs))
+        <script type="application/ld+json">
+            {!! collect($crumbs)->toJson() !!}
+        </script>
+    @endif
 @endpush

@@ -386,6 +386,8 @@ Route::get(config('settings.publisher_path') . '/{publisher?}/{cat?}/{subcat?}',
 //
 Route::get('akcijska-ponuda/{cat?}/{subcat?}', [CatalogRouteController::class, 'actions'])->name('catalog.route.actions');
 //
+Route::get(\Illuminate\Support\Str::slug(config('settings.group_path')), [CatalogRouteController::class, 'allList'])->name('catalog.route.all');
+//
 Route::get('{group}/{cat?}/{subcat?}/{prod?}', [CatalogRouteController::class, 'resolve'])->name('catalog.route');
 
 // SPECIAL ROUTES
