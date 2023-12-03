@@ -2,9 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Models\Back\Catalog\Author;
+use App\Models\Back\Catalog\Publisher;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class SettingsSeeder extends Seeder
 {
@@ -37,5 +41,40 @@ class SettingsSeeder extends Seeder
               (null, 'shipping', 'list.gls_world', '" . '[{"title":"Dostava EU","code":"gls_world","data":{"price":"14","time":null,"short_description":null,"description":null},"geo_zone":"2","status":true,"sort_order":"0"}]' . "', 1, NOW(), NOW()),
               (null, 'tax', 'list', '" . '{"1":{"id":1,"geo_zone":"1","title":"PDV 5%","rate":"5","sort_order":"0","status":true},"2":{"id":2,"geo_zone":null,"title":"PDV 25%","rate":"25","sort_order":"1","status":true}}' . "', 1, NOW(), NOW())"
         );
+
+        //
+        Author::insertGetId([
+            'id'               => 1,
+            'letter'           => 'A',
+            'title'            => 'Nepoznati autori',
+            'description'      => 'Knjige nepoznatih autora. Ili knjige gdje autore još nismo kategorizirali :)',
+            'meta_title'       => 'Nepoznati autori',
+            'meta_description' => 'Knjige nepoznatih autora. Ili knjige gdje autore još nismo kategorizirali :)',
+            'image'            => 'media/avatars/avatar0.jpg',
+            'lang'             => 'hr',
+            'sort_order'       => 0,
+            'status'           => 1,
+            'slug'             => Str::slug('Nepoznati autori'),
+            'url'              => config('settings.author_path') . '/' . Str::slug('Nepoznati autori'),
+            'created_at'       => Carbon::now(),
+            'updated_at'       => Carbon::now()
+        ]);
+
+        //
+        Publisher::insertGetId([
+            'id'               => 1,
+            'letter'           => 'A',
+            'title'            => 'Nepoznati nakladnici',
+            'description'      => 'Knjige nepoznatih nakladnika. Ili knjige gdje nakladnike još nismo kategorizirali :)',
+            'meta_title'       => 'Nepoznati nakladnici',
+            'meta_description' => 'Knjige nepoznatih nakladnika. Ili knjige gdje nakladnike još nismo kategorizirali :)',
+            'lang'             => 'hr',
+            'sort_order'       => 0,
+            'status'           => 1,
+            'slug'             => Str::slug('Nepoznati nakladnici'),
+            'url'              => config('settings.publisher_path') . '/' . Str::slug('Nepoznati nakladnici'),
+            'created_at'       => Carbon::now(),
+            'updated_at'       => Carbon::now()
+        ]);
     }
 }
