@@ -61,16 +61,20 @@ class FilterController extends Controller
             $groups = Settings::get('category', 'list.groups');
 
             foreach ($groups as $key => $group) {
+                $categories = Category::active()->topList($group->slug)->sortByName()->with('subcategories')->get()->toArray();
+
                 $response[] = [
                     'id'    => $key,
                     'title' => $group->title,
                     'icon'  => '',
                     'count' => 0,//$category['products_count'],
                     'url'   => route('catalog.route', ['group'  => $group->slug]),
-                    'subs'  => []//$subs
+                    'subs'  => $this->resolveCategoryArray($categories, 'categories')
                 ];
             }
         }
+
+        Log::info($response);
 
         // Ako su posebni ID artikala.
         /*if ($params['ids'] && $params['ids'] != '[]') {
