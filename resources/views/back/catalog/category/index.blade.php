@@ -5,6 +5,9 @@
         <div class="content content-full">
             <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center">
                 <h1 class="flex-sm-fill font-size-h2 font-w400 mt-2 mb-0 mb-sm-2">Kategorije</h1>
+                <a class="btn btn-hero-info my-2 mr-3" href="{{ route('categories.groups') }}">
+                    <i class="far fa-fw fa-list-alt"></i><span class="d-none d-sm-inline ml-1"> Grupe kategorija</span>
+                </a>
                 <a class="btn btn-hero-success my-2" href="{{ route('category.create') }}">
                     <i class="far fa-fw fa-plus-square"></i><span class="d-none d-sm-inline ml-1"> Nova kategorija</span>
                 </a>

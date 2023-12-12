@@ -91,83 +91,6 @@ class DashboardController extends Controller
      */
     public function importCategories(Request $request)
     {
-        /*$import = new OC_Import();
-        $categories  = $import->getTopCategories();
-
-        if ($categories->count()) {
-            foreach ($categories as $category) {
-                $main_description = $import->getCategoryDescription($category->category_id);
-                $main_path        = $import->getCategoryPath($category->category_id);
-
-                $category_exist = Category::query()->where('slug', $main_path->keyword)->first();
-
-                if ( ! $category_exist) {
-                    $new_category = $import->saveCategory(
-                        $main_description->name,
-                        $main_path->keyword,
-                        $main_description->meta_title,
-                        $main_description->meta_description,
-                        0,
-                        $category->sort_order,
-                        $category->category_id
-                    );
-                }
-
-                $subcategories = $import->getSubCategories($category->category_id);
-
-                if ($subcategories->count()) {
-                    foreach ($subcategories as $subcategory) {
-                        $submain_description = $import->getCategoryDescription($subcategory->category_id);
-                        $submain_path        = $import->getCategoryPath($subcategory->category_id);
-
-                        $subcategory_exist = Category::query()->where('slug', $submain_path->keyword)->first();
-
-                        if ( ! $subcategory_exist) {
-                            $new_subcategory = $import->saveCategory(
-                                $submain_description->name,
-                                $submain_path->keyword,
-                                $submain_description->meta_title,
-                                $submain_description->meta_description,
-                                $category_exist ? $category_exist->id : $new_category,
-                                $subcategory->sort_order,
-                                $subcategory->category_id
-                            );
-                        }
-
-                        $sub_subcategories = $import->getSubCategories($subcategory->category_id);
-
-                        if ($sub_subcategories->count()) {
-                            foreach ($sub_subcategories as $sub_subcategory) {
-                                $sub_submain_description = $import->getCategoryDescription($sub_subcategory->category_id);
-                                $sub_submain_path        = $import->getCategoryPath($sub_subcategory->category_id);
-
-                                $sub_subcategory_exist = Category::query()->where('slug', $sub_submain_path->keyword)->first();
-
-                                if ( ! $sub_subcategory_exist) {
-                                    $new_subcategory = $import->saveCategory(
-                                        $sub_submain_description->name,
-                                        $sub_submain_path->keyword,
-                                        $sub_submain_description->meta_title,
-                                        $sub_submain_description->meta_description,
-                                        $subcategory_exist ? $subcategory_exist->id : $new_subcategory,
-                                        $sub_subcategory->sort_order,
-                                        $sub_subcategory->category_id
-                                    );
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return redirect()->route('dashboard')->with(['success' => 'Import je uspješno obavljen..! ' . 1 . ' proizvoda importano.']);*/
-
-        /*******************************************************************************
-        *                                Copyright : AGmedia                           *
-        *                              email: filip@agmedia.hr                         *
-        *******************************************************************************/
-
         $groups = [];
         $count = 0;
         $import = new OC_Import();
@@ -180,9 +103,11 @@ class DashboardController extends Controller
                 $main_path        = $import->getCategoryPath($category->category_id);
 
                 $groups[$category->category_id] = [
+                    'id' => $count,
                     'title' => $main_description->name,
                     'slug'  => $main_path->keyword,
-                    'sort_order' => $category->sort_order
+                    'sort_order' => $category->sort_order,
+                    'status' => 1
                 ];
 
                 $subcategories = $import->getCategories($category->category_id);
