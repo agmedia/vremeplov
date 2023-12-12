@@ -61,7 +61,7 @@ class FilterController extends Controller
             $groups = Settings::get('category', 'list.groups');
 
             foreach ($groups as $key => $group) {
-                $categories = Category::active()->topList($group->slug)->sortByName()->with('subcategories')->get()->toArray();
+                $categories = Category::active()->topList($group->slug)->orderBy('title')->with('subcategories')->get()->toArray();
 
                 $response[] = [
                     'id'    => $key,
@@ -73,8 +73,6 @@ class FilterController extends Controller
                 ];
             }
         }
-
-        Log::info($response);
 
         // Ako su posebni ID artikala.
         /*if ($params['ids'] && $params['ids'] != '[]') {
