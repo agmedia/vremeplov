@@ -17911,8 +17911,8 @@ a.nav-link:hover .media-tab-media {
     display:none
 }
 .widget-categories .accordion-button.collapsed {
-    color: #fff;
-    font-weight: 600;
+    color: #2d2224;
+    font-weight: 500;
 }
 .widget-categories .accordion-button.collapsed::after {
     background-color: #f3f5f9;
@@ -17947,7 +17947,7 @@ a.nav-link:hover .media-tab-media {
 .widget-list-link {
     display: block;
     transition: color 0.25s ease-in-out;
-    color: #fff;
+    color: #2d2224;
     font-size: .9rem;
     font-weight: 500;
     padding:2px 0;
