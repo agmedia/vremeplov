@@ -59,7 +59,7 @@ class FilterController extends Controller
         //
         //if ( ! $params['group'] && ! $params['author'] && ! $params['publisher']) {
         $response = Helper::resolveCache('categories')->remember('nav', config('cache.life'), function () use ($params) {
-            $groups = Settings::get('category', 'list.groups');
+            $groups = Settings::get('category', 'list.groups')->sortBy('sort_order');
 
             foreach ($groups as $key => $group) {
                 $categories = Category::active()->topList($group->slug)->orderBy('title')->with('subcategories')->get()->toArray();
