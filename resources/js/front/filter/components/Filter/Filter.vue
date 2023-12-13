@@ -9,45 +9,30 @@
             <div class="offcanvas-body py-grid-gutter px-lg-grid-gutter">
                 <!-- Categories-->
                 <div class="widget widget-categories mb-2 pb-2 " v-if="categories">
-
                     <h3 class="widget-title " >Kategorije</h3>
-
-
-
                     <div class="accordion mt-n1" id="shop-categories">
-
-
-
                         <div class="accordion-item " v-for="cat in categories">
                             <h3 class="accordion-header" v-if="category && (category.id == cat.id)" >
-                                <!--type="button"  -->
-                                <a :href="cat.url" v-if="cat.subs " class="accordion-button py-1 none" data-bs-toggle="collapse"  :data-bs-target="'#id' + cat.id" aria-expanded="true" :aria-controls="'id'+ cat.id" role="link">
-                                    {{ cat.title }}   <span class="badge bg-dark ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
+                                <a :href="cat.url" v-if="cat.subs " class="accordion-button py-1 none" data-bs-toggle="collapse" :data-bs-target="'#id' + cat.id" aria-expanded="true" :aria-controls="'id'+ cat.id" role="link">
+                                    {{ cat.title }} <span class="badge bg-dark ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
                                 </a>
-
-                                <!--type="button"  -->
-                                <a :href="cat.url" v-if="!cat.subs" class="accordion-button py-1 none collapsed  " role="link">
-                                    {{ cat.title }}  <span class="badge bg-dark ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
+                                <a :href="cat.url" v-if="!cat.subs" class="accordion-button py-1 none collapsed" role="link">
+                                    {{ cat.title }} <span class="badge bg-dark ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
                                 </a>
                             </h3>
 
-
-                            <h3 class="accordion-header" v-else >
-                                <!--type="button"  -->
-                                <a :href="cat.url" v-if="cat.subs " class="accordion-button py-1 none collapsed   " data-bs-toggle="collapse"  :data-bs-target="'#id' + cat.id" aria-expanded="false" :aria-controls="'id'+ cat.id" role="link">
-                                    {{ cat.title }}   <span class="badge bg-dark ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
+                            <h3 class="accordion-header" v-else>
+                                <a :href="cat.url" v-if="cat.subs" class="accordion-button py-1 none collapsed" data-bs-toggle="collapse"  :data-bs-target="'#id' + cat.id" aria-expanded="false" :aria-controls="'id'+ cat.id" role="link">
+                                    {{ cat.title }} <span class="badge bg-dark ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
                                 </a>
-
-                                <!--type="button"  -->
-                                <a :href="cat.url" v-if="!cat.subs" class="accordion-button py-1 none collapsed  " role="link">
-                                    {{ cat.title }}  <span class="badge bg-dark ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
+                                <a :href="cat.url" v-if="!cat.subs" class="accordion-button py-1 none collapsed" role="link">
+                                    {{ cat.title }} <span class="badge bg-dark ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
                                 </a>
                             </h3>
 
-                             <div class="collapse show" :id="'id'+ cat.id"  v-if="cat.subs && category && (category.id == cat.id)" data-bs-parent="#shop-categories">
+                             <div class="collapse show" :id="'id'+ cat.id" v-if="cat.subs && category && (category.id == cat.id)" data-bs-parent="#shop-categories">
                                 <div class=" pt-2 pb-2 pe-2">
                                     <div class="widget widget-links">
-
                                         <ul class="widget-list" v-for="subcategory in cat.subs" >
                                             <li class="widget-list-item"><a class="widget-list-link" :href="subcategory.url">{{ subcategory.title }} </a></li>
                                         </ul>
@@ -58,11 +43,9 @@
                                 </div>
                              </div>
 
-
-                            <div class="collapse " :id="'id'+ cat.id"  v-else data-bs-parent="#shop-categories">
+                            <div class="collapse" :id="'id'+ cat.id"  v-else data-bs-parent="#shop-categories">
                                 <div class=" pt-2 pb-2 pe-2">
                                     <div class="widget widget-links">
-
                                         <ul class="widget-list" v-for="subcategory in cat.subs" >
                                             <li class="widget-list-item"><a class="widget-list-link" :href="subcategory.url">{{ subcategory.title }} </a></li>
                                         </ul>
@@ -72,19 +55,11 @@
                                     </div>
                                 </div>
                             </div>
-
-
-
-
                         </div>
                     </div>
-
-
-
                 </div>
-
                 <!-- Date range-->
-            <div class="widget mb-4 pb-4 border-bottom">
+                <div class="widget mb-4 pb-4 border-bottom">
                     <h3 class="widget-title">Godina izdanja</h3>
                     <div >
                         <div class="d-flex pb-1">
@@ -103,6 +78,7 @@
                         </div>
                     </div>
                 </div>
+                <!-- Publishers -->
                 <div class="widget widget-filter mb-4 pb-4 border-bottom" v-if="show_publishers">
                     <h3 class="widget-title">Nakladnici<span v-if="!publishers_loaded" class="spinner-border spinner-border-sm" style="float: right;"></span></h3>
                     <div class="input-group input-group-sm mb-2 autocomplete">
@@ -117,6 +93,7 @@
                         </li>
                     </ul>
                 </div>
+                <!-- Authors -->
                 <div class="widget widget-filter mb-4 pb-4 border-bottom" v-if="show_authors">
                     <h3 class="widget-title">Autori<span v-if="!authors_loaded" class="spinner-border spinner-border-sm" style="float: right;"></span></h3>
                     <div class="input-group input-group-sm mb-2 autocomplete">
@@ -132,7 +109,6 @@
                     </ul>
                 </div>
                 <button type="button" class="btn btn-primary mt-4" v-on:click="cleanQuery"><i class=" ci-trash"></i> Očisti sve</button>
-
             </div>
         </div>
     </aside>
@@ -205,12 +181,9 @@
 
         //
         mounted() {
-
             this.checkQuery(this.$route);
             this.checkCategory();
             this.getCategories();
-
-
 
             if (this.author == '') {
                 this.show_authors = true;
@@ -234,7 +207,16 @@
 
                 axios.post('filter/getCategories', { params }).then(response => {
                     this.categories = response.data;
-                    console.log(this.categories);
+
+                    if (this.group != '') {
+                        this.categories.forEach((item) => {
+                            let slug = item.url.substring(item.url.lastIndexOf('/') + 1);
+
+                            if (this.group == slug) {
+                                this.category = item;
+                            }
+                        });
+                    }
                 });
             },
 
