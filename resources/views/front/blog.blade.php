@@ -24,7 +24,7 @@
                         </nav>
 
             </div>
-            <div class="order-lg-1 pe-lg-4 text-center text-lg-start">
+            <div class="order-lg-1 pe-lg-4 text-center ">
                 @if(isset($blogs))
             <h1 class="text-dark">Blog</h1>
                 @else
