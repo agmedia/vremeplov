@@ -2836,7 +2836,6 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 //
 //
 //
-//
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   props: {
@@ -7041,7 +7040,7 @@ var render = function() {
                                 [
                                   _c(
                                     "div",
-                                    { staticClass: " pt-2 pb-2 pe-2" },
+                                    { staticClass: "pt-2 pb-2 pe-2 subcat" },
                                     [
                                       _c(
                                         "div",
@@ -7127,7 +7126,7 @@ var render = function() {
                                 [
                                   _c(
                                     "div",
-                                    { staticClass: " pt-2 pb-2 pe-2 subcat" },
+                                    { staticClass: "pt-2 pb-2 pe-2 subcat" },
                                     [
                                       _c(
                                         "div",
