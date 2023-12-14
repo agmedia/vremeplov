@@ -481,7 +481,7 @@ class Product extends Model
     {
         $query = $this->newQuery();
 
-       // $query->active()->hasStock();
+        $query->active();
 
         if ($ids && $ids->count() && ! \request()->has('pojam')) {
             $query->whereIn('id', $ids->unique());
@@ -493,27 +493,11 @@ class Product extends Model
         }
 
         if ($request->has('group')) {
-            // Akcije
-            if ($request->input('group') == 'snizenja') {
-                $query->where('special', '!=', '')
-                    ->where(function ($query) {
-                        $query->whereDate('special_from', '<=', now())->orWhereNull('special_from');
-                    })
-                    ->where(function ($query) {
-                        $query->whereDate('special_to', '>=', now())->orWhereNull('special_to');
-                    });
-            } else {
-                // Kategorija...
-                $group = $request->input('group');
+            $group = $request->input('group');
 
-                if ($group == 'zemljovidi-i-vedute') {
-                    $group = 'Zemljovidi i vedute';
-                }
-
-                $query->whereHas('categories', function ($query) use ($request, $group) {
-                    $query->where('group', 'like', '%' . $group . '%');
-                });
-            }
+            $query->whereHas('categories', function ($query) use ($request, $group) {
+                $query->where('group', 'like', '%' . $group . '%');
+            });
         }
 
         if ($request->has('cat')) {
