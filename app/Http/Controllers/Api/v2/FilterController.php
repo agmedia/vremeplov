@@ -62,13 +62,18 @@ class FilterController extends Controller
             $groups = Settings::get('category', 'list.groups')->where('status', 1)->sortBy('sort_order');
 
             foreach ($groups as $key => $group) {
-                $categories = Category::active()->topList($group->slug)->orderBy('title')->with('subcategories')->get()->toArray();
+                $categories = Category::active()->topList($group->slug)->orderBy('title')->withCount('products')->with('subcategories')->get()->toArray();
+                $count = 0;
+
+                foreach ($categories as $category) {
+                    $count += $category['products_count'];
+                }
 
                 $response[] = [
                     'id'    => $key,
                     'title' => $group->title,
                     'icon'  => '',
-                    'count' => 0,//$category['products_count'],
+                    'count' => $count,//$category['products_count'],
                     'url'   => route('catalog.route', ['group'  => $group->slug]),
                     'subs'  => $this->resolveCategoryArray($categories, 'categories')
                 ];
