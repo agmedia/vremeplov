@@ -4571,7 +4571,7 @@ textarea.form-control-lg {
 .card-img-top {
     border-top-left-radius: var(--cz-card-inner-border-radius);
     border-top-right-radius: var(--cz-card-inner-border-radius);
-    padding:10px;
+    padding:0 10px;
 
 }
 
