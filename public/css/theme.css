@@ -4430,7 +4430,7 @@ textarea.form-control-lg {
     --cz-card-spacer-x: 1.25rem;
     --cz-card-title-spacer-y: 0.75rem;
     --cz-card-border-width: 1px;
-    --cz-card-border-color: rgb(216, 172, 99);
+    --cz-card-border-color: rgb(208, 199, 183);
     --cz-card-border-radius: 0.4375rem;
     --cz-card-box-shadow: ;
     --cz-card-inner-border-radius: calc(0.4375rem - 1px);
@@ -18520,6 +18520,7 @@ html:not([dir=rtl]) .range-slider-ui.noUi-horizontal .noUi-handle {
 .blog-entry-thumb > img {
     display: block;
     width: 100%;
+    padding:0px;
 }
 .blog-entry-thumb.video-item::before, .blog-entry-thumb.video-item::after {
     display: none;
