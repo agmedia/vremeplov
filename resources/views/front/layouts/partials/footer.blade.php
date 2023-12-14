@@ -77,8 +77,9 @@
                         <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.all') }}">Web shop</a></li>
                         <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route', ['group' => '/knjige']) }}">Sve knjige</a>
                         <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.author') }}">Autori</a>
-                        <li class="nwidget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.actions') }}"><span>Akcije</span></a>
-                        <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.blog') }}"><span>Blog</span></a></li>
+                        <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.actions') }}">Akcije</a>
+                        <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.blog') }}">Blog</a></li>
+                        <li class="widget-list-item"><a class="widget-list-link" href="{{ route('kontakt') }}">Kontakt</a></li>
                     </ul>
                 </div>
             </div>
