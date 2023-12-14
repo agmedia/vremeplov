@@ -75,13 +75,10 @@
                     <ul class="widget-list">
 
                         <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route', ['group' => \App\Helpers\Helper::categoryGroupPath(true)]) }}">Web shop</a></li>
-
+                        <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route', ['group' => \App\Helpers\Helper::categoryGroupPath(true) . '/knjige']) }}">Sve knjige</a>
                         <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.author') }}">Autori</a>
-                        <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route', ['group' => \App\Helpers\Helper::categoryGroupPath(true) . '/rijetke-knjige']) }}">Rijetke knjige</a>
-                        <li class="widget-list-item"><a class="widget-list-link" href="https://www.zuzi.hr/kategorije-proizvoda/svezalice-pidzame-za-knjige">Svezalice - pidžame za knjige</a>
-                        <li class="widget-list-item"><a class="widget-list-link" href="https://www.zuzi.hr/akcijska-ponuda">Akcije</a>
-                        <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route', ['group' => \App\Helpers\Helper::categoryGroupPath(true) . '/outlet']) }}">Outlet</a>
-
+                        <li class="nwidget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.actions') }}"><span>Akcije</span></a>
+                        <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.blog') }}"><span>Blog</span></a></li>
                     </ul>
                 </div>
             </div>
