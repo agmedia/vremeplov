@@ -110,4 +110,8 @@ return [
     'widget_life' => 86400, // 1 day
     'page_life' => 86400,
     'life' => 2592000, //30 Days
+    //
+    'one_hour' => 3600,
+    'one_day' => 86400,
+    'one_month' => 2592000
 ];
