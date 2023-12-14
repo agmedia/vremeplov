@@ -195,6 +195,8 @@ class CategoryController extends Controller
     {
         $data = $request->data;
 
+        Log::info($data);
+
         if ($data['id']) {
             $setting = Settings::where('code', 'category')->where('key', 'list.groups')->first();
 

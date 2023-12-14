@@ -200,9 +200,9 @@
         /**
          *
          */
-        function deleteGroup(id) {
+        function deleteGroup(group) {
             $('#delete-group-modal').modal('show');
-            $('#delete-group-id').val(id);
+            $('#delete-group-id').val(group.id);
         }
 
         /**
