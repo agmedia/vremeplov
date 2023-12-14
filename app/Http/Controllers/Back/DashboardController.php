@@ -229,7 +229,7 @@ class DashboardController extends Controller
                 'viewed'           => 0,
                 'sort_order'       => 0,
                 'push'             => 0,
-                'status'           => $product->quantity ? 1 : 0,
+                'status'           => 1,
                 'created_at'       => Carbon::now(),
                 'updated_at'       => Carbon::now()
             ]);
@@ -289,7 +289,7 @@ class DashboardController extends Controller
 
     public function importCustomers()
     {
-        
+
     }
 
 

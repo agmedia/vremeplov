@@ -44,12 +44,12 @@
                              </div>
 
                             <div class="collapse" :id="'id'+ cat.id"  v-else data-bs-parent="#shop-categories">
-                                <div class=" pt-2 pb-2 pe-2">
+                                <div class=" pt-2 pb-2 pe-2 subcat">
                                     <div class="widget widget-links">
                                         <ul class="widget-list" v-for="subcategory in cat.subs" >
                                             <li class="widget-list-item"><a class="widget-list-link" :href="subcategory.url">{{ subcategory.title }} </a></li>
                                         </ul>
-                                        <ul class="widget-list" >
+                                        <ul class="widget-list pt-2" >
                                             <li class="widget-list-item"><a class="widget-list-link" :href="cat.url">Pogledajte sve</a></li>
                                         </ul>
                                     </div>

@@ -108,7 +108,10 @@ hr {
 }
 
 
-
+.subcat{
+    max-height: calc(70vh - 9rem);
+    overflow-y: auto;
+}
 
 #st-1 .st-btn > img {
 
@@ -4568,6 +4571,7 @@ textarea.form-control-lg {
 .card-img-top {
     border-top-left-radius: var(--cz-card-inner-border-radius);
     border-top-right-radius: var(--cz-card-inner-border-radius);
+    padding:10px;
 
 }
 
