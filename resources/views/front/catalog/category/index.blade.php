@@ -1,5 +1,10 @@
 @extends('front.layouts.app')
 
+@if (Route::currentRouteName() == 'catalog.route.all')
+
+    @section ( 'title',  'Web shop - Antikvarijat Vremeplov' )
+    @section ( 'description', 'Dobro došli na stranice antikvarijata Vremeplov. Specijalizirani smo za stare razglednice, pisma, knjige, plakate,časopise te vršimo otkup i prodaju navedenih.' )
+@endif
 @if (isset($group) && $group)
     @if ($group && ! $cat && ! $subcat)
         @section ( 'title',  \Illuminate\Support\Str::ucfirst($group). ' - Antikvarijat Vremeplov' )
@@ -70,7 +75,9 @@
                 </div>
 
             @endif
-                @if (Route::currentRouteName() == 'kategorija-proizvoda')
+
+
+                @if (Route::currentRouteName() == 'catalog.route.all')
                 <div class="order-lg-2 mb-3 mb-lg-0 pt-lg-2">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb breadcrumb-dark flex-lg-nowrap justify-content-center ">
@@ -99,7 +106,7 @@
             @if (isset($author) && $author)
                 <div class="order-lg-2 mb-3 mb-lg-0 pt-lg-2">
                     <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb breadcrumb-light flex-lg-nowrap justify-content-center ">
+                        <ol class="breadcrumb breadcrumb-dark flex-lg-nowrap justify-content-center ">
                             <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="ci-home"></i>Naslovnica</a></li>
                             <li class="breadcrumb-item text-nowrap active" aria-current="page"><a class="text-nowrap" href="{{ route('catalog.route.author') }}">Autori</a></li>
                             @if ( ! $cat && ! $subcat)
@@ -117,7 +124,7 @@
                     </nav>
                 </div>
                 <div class="order-lg-1 pe-lg-4 text-center text-lg-start">
-                    <h1 class="h3 text-light mb-0">{{ $author->title }}</h1>
+                    <h1 class="h3 text-dark mb-0">{{ $author->title }}</h1>
                 </div>
             @endif
 
