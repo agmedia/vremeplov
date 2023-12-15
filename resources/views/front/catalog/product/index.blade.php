@@ -129,6 +129,9 @@
                     <div class="col-lg-7 pt-4 pt-lg-0">
                         <div class="product-details ms-auto me-auto pb-3 ps-2 pe-2">
                             <div class="order-lg-1 pe-lg-4 text-center text-lg-start mt-3">
+                                @if ( $prod->quantity < 1)
+                                    <span class="badge bg-warning mb-2">Rasprodano</span>
+                                @endif
                                 <h1 class="h3 text-dark mb-0"> {{ $prod->name }}</h1>
                             </div>
 
@@ -160,9 +163,11 @@
                                 </div>
 
                             @endif
+
+                            @if ( $prod->quantity > 0)
                             <add-to-cart-btn id="{{ $prod->id }}" available="{{ $prod->quantity }}"></add-to-cart-btn>
 
-
+                            @endif
 
 
                             <!-- Product panels-->

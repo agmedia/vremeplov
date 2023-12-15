@@ -22,6 +22,7 @@
         <div class="row mx-n2 mb-3" v-if="products.total">
             <div class="col-md-3 col-6 px-2 mb-4 d-flex align-items-stretch" v-for="product in products.data">
                 <div class="card product-card shadow pb-2">
+                    <span class="badge bg-warning mt-1 ms-1"  v-if="product.quantity <= 0">Rasprodano</span>
                     <span class="badge rounded-pill bg-primary mt-1 ms-1 badge-shadow" v-if="product.special">-{{ ($store.state.service.getDiscountAmount(product.price, product.special)) }}%</span>
                        <a class="card-img-top d-block overflow-hidden" :href="origin + product.url">
                            <img load="lazy" :src="product.image.replace('.webp', '-thumb.webp')" width="250" height="300" :alt="product.name">
@@ -39,7 +40,7 @@
 
                         </div>
                     </div>
-                    <div class="product-floating-btn">
+                    <div class="product-floating-btn" v-if="product.quantity > 0">
                         <button class="btn btn-primary btn-shadow btn-sm" :disabled="product.disabled" v-on:click="add(product.id, product.quantity)" type="button">+<i class="ci-cart fs-base ms-1"></i></button>
                     </div>
                 </div>
