@@ -69,8 +69,8 @@
 
                 </div>
 
-            @else
-
+            @endif
+                @if (Route::currentRouteName() == 'kategorija-proizvoda')
                 <div class="order-lg-2 mb-3 mb-lg-0 pt-lg-2">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb breadcrumb-dark flex-lg-nowrap justify-content-center ">
@@ -88,7 +88,7 @@
 
                 </div>
 
-            @endif
+                @endif
 
             @if (Route::currentRouteName() == 'pretrazi')
                 <div class="order-lg-1 pe-lg-4 text-center text-lg-start">
