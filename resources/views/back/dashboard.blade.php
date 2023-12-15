@@ -31,8 +31,8 @@
                             </div>
                         </div>
                         <div class="block-content">
-{{--                            <a href="{{ route('roles.set') }}" class="btn btn-hero-sm btn-rounded btn-hero-secondary mb-3 mr-3">Set Roles</a>--}}
-                            <a href="{{ route('import.categories') }}" class="btn btn-hero-sm btn-rounded btn-hero-info mb-3 mr-3">Import Categories</a>
+{{--                            <a href="{{ route('roles.set') }}" class="btn btn-hero-sm btn-rounded btn-hero-secondary mb-3 mr-3">Set Roles</a>
+                            <a href="{{ route('import.categories') }}" class="btn btn-hero-sm btn-rounded btn-hero-info mb-3 mr-3">Import Categories</a>--}}
                             <a href="{{ route('import.products') }}" class="btn btn-hero-sm btn-rounded btn-hero-info mb-3 mr-3">Import Products</a>
                             <a href="{{ route('import.customers') }}" class="btn btn-hero-sm btn-rounded btn-hero-info mb-3 mr-3">Import Customers</a>
                             <a href="{{ route('mailing.test') }}" class="btn btn-hero-sm btn-rounded btn-hero-info mb-3 mr-3">Mail Test</a>
