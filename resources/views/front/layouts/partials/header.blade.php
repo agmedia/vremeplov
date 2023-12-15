@@ -30,8 +30,7 @@
 
                 <!-- Navbar -->
                 <ul class="navbar-nav justify-content-centerpe-lg-2 me-lg-2">
-                    <li class="nav-item "><a class="nav-link" href="{{ route('catalog.route.all') }}"><span>Web shop</span></a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ route('catalog.route', ['group' => '/knjige']) }}"><span>Sve knjige</span></a>
+                    <li class="nav-item "><a class="nav-link" href="{{ route('catalog.route', ['group' => \App\Helpers\Helper::categoryGroupPath(true)]) }}"><span>Web shop</span></a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('catalog.route.author') }}"><span>Autori</span></a>
                     <li class="nav-item"><a class="nav-link" href="{{ route('catalog.route.actions') }}"><span>Akcije</span></a>
                     <li class="nav-item"><a class="nav-link" href="{{ route('catalog.route.blog') }}"><span>Blog</span></a></li>

@@ -3,7 +3,7 @@
 <section class=" pt-3 pb-2 mt-5" style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
 
     <div class="container pt-lg-1">
-     <div class="row pt-lg-2 text-center">
+     <div class="row pt-4 text-center">
          <div class="row pt-lg-2 text-left px-3 px-sm-1">
 
              <div class="col-lg-3 col-sm-6 col-6 mb-grid-gutter"><div class="d-inline-flex align-items-top-center text-start"><i class="ci-book text-primary" style="font-size: 2.6rem;"></i> <div class="ps-3"><p class="text-dark fw-bold fs-base mb-1">Preko 50000 artikala</p> <p class="text-dark fs-ms opacity-70 mb-0">Velika kolekcija naslova </p></div></div></div>
@@ -74,7 +74,7 @@
                     <h3 class="widget-title fw-700 text-white"><span>Iz ponude</span></h3>
                     <ul class="widget-list">
 
-                        <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.all') }}">Web shop</a></li>
+                        <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route', ['group' => \App\Helpers\Helper::categoryGroupPath(true)]) }}">Web shop</a></li>
                         <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route', ['group' => '/knjige']) }}">Sve knjige</a>
                         <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.author') }}">Autori</a>
                         <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.actions') }}">Akcije</a>
