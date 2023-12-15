@@ -177,12 +177,12 @@ class DashboardController extends Controller
     }
 
 
-    public function importProducts(Request $request)
+    public function importProducts(Request $request = null)
     {
         $count = 0;
         $import = new OC_Import();
 
-        $products = $import->getProducts(0, 50);
+        $products = $import->getProducts(4000, 30);
 
         $existing = Product::query()->pluck('ean');
 
@@ -204,7 +204,7 @@ class DashboardController extends Controller
                 'publisher_id'     => $publisher,
                 'action_id'        => 0,
                 'name'             => $product_description->name,
-                'sku'              => isset($attributes['Šifra']) ? $attributes['Šifra'] : $product->model,
+                'sku'              => isset($attributes['Šifra']) ? $attributes['Šifra'] : $product->model . '-' . $product->product_id,
                 'ean'              => $product->product_id,
                 'polica'           => 0,
                 'description'      => '<p>' . str_replace('\n', '<br>', $product_description->description) . '</p>',
@@ -281,6 +281,10 @@ class DashboardController extends Controller
 
                 $count++;
             }
+        }
+
+        if ($request->has('api') && $request->input('api')) {
+            return response()->json(['success' => 'Import je uspješno obavljen..! ' . $count . ' proizvoda importano.']);
         }
 
         return redirect()->route('dashboard')->with(['success' => 'Import je uspješno obavljen..! ' . $count . ' proizvoda importano.']);

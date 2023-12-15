@@ -189,6 +189,10 @@ class OC_Import
 
                     $str = $id . '/' . Str::limit(Str::slug($name)) . '-' . $time . '.';
 
+                    $img = $img->resize(800, null, function ($constraint) {
+                        $constraint->aspectRatio();
+                    });
+
                     $path = $str . 'jpg';
                     Storage::disk('products')->put($path, $img->encode('jpg'));
 
@@ -197,9 +201,9 @@ class OC_Import
 
                     // Thumb creation
                     $str_thumb = $id . '/' . Str::limit(Str::slug($name)) . '-' . $time . '-thumb.';
-                    $canvas = Image::canvas(400, 400, '#ffffff');
+                    $canvas = Image::canvas(300, 300, '#ffffff');
 
-                    $img = $img->resize(null, 350, function ($constraint) {
+                    $img = $img->resize(null, 260, function ($constraint) {
                         $constraint->aspectRatio();
                     });
 
@@ -219,7 +223,12 @@ class OC_Import
     }
 
 
-    public function resolveProductCategories($categories)
+    /**
+     * @param $categories
+     *
+     * @return array
+     */
+    public function resolveProductCategories($categories): array
     {
         $response = [];
 
