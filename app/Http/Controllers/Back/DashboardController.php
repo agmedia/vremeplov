@@ -182,7 +182,7 @@ class DashboardController extends Controller
         $count = 0;
         $import = new OC_Import();
 
-        $products = $import->getProducts(4000, 30);
+        $products = $import->getProducts();
 
         $existing = Product::query()->pluck('ean');
 
