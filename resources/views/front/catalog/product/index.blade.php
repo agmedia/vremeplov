@@ -79,7 +79,7 @@
                             @endif
                         @endif
 
-                        <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ \Illuminate\Support\Str::limit($prod->name, 50) }}</li>
+                        <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ \Illuminate\Support\Str::limit($prod->name, 20) }}</li>
                     </ol>
                 </nav>
             </div>
