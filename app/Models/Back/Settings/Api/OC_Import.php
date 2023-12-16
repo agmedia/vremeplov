@@ -263,22 +263,28 @@ class OC_Import
             $meta = '';
             $arr = explode(':', $text);
             $names = explode(' ', $arr[0]);
-            $first = Helper::resolveFirstLetter(trim($names[1]));
 
-            if (count($names) > 2) {
-                if (in_array(trim($names[1]), ['von', 'Von', 'fon', 'Fon']) || strpos(trim($names[1]), '.')) {
-                    $first = Helper::resolveFirstLetter(trim($names[2]));
+            if (isset($names[1])) {
+                $first = Helper::resolveFirstLetter(trim($names[1]));
+
+                if (count($names) > 2) {
+                    if (in_array(trim($names[1]), ['von', 'Von', 'fon', 'Fon']) || strpos(trim($names[1]), '.')) {
+                        $first = Helper::resolveFirstLetter(trim($names[2]));
+                    }
+
+                    $name = trim($names[1]) . ' ' . trim($names[2]) . ' ' . trim($names[0]);
+                    $meta = trim($names[1]) . ' ' . trim($names[2]) . ', ' . trim($names[0]);
                 }
 
-                $name = trim($names[1]) . ' ' . trim($names[2]) . ' ' . trim($names[0]);
-                $meta = trim($names[1]) . ' ' . trim($names[2]) . ', ' . trim($names[0]);
+                if (count($names) < 3) {
+                    $name = trim($names[1]) . ' ' . trim($names[0]);
+                    $meta = trim($names[1]) . ', ' . trim($names[0]);
+                }
             }
 
-            if (count($names) < 3) {
-                $name = trim($names[1]) . ' ' . trim($names[0]);
-                $meta = trim($names[1]) . ', ' . trim($names[0]);
+            if ($name == '') {
+                return config('settings.unknown_author');
             }
-
             // Check if author exist.
             $exist = Author::where('title', $name)->first();
 
