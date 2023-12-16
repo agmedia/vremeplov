@@ -78,7 +78,7 @@ class ProductHelper
             $category = $product->category();
         }
 
-        if ( ! $subcategory) {
+        if ( ! $subcategory && $category) {
             $psub = $product->subcategory();
 
             if ($psub) {
