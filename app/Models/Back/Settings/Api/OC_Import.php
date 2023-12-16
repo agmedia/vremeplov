@@ -381,7 +381,7 @@ class OC_Import
             $set = $this->getImportRange();
 
             if ( ! is_string($set) && ! $set->count()) {
-                $data = ['offset' => 20000, 'limit' => 10];
+                $data = ['offset' => 20000, 'limit' => 200];
 
                 $this->setImportRange($data);
 
