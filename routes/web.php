@@ -58,6 +58,7 @@ Route::middleware(['auth:sanctum', 'verified', 'no.customers'])->prefix('admin')
 
     Route::get('setRoles', [DashboardController::class, 'setRoles'])->name('roles.set');
     Route::get('import-categories', [DashboardController::class, 'importCategories'])->name('import.categories');
+    Route::get('find-duplicate-products', [DashboardController::class, 'findDuplicates'])->name('products.duplicates');
     Route::get('import-products', [DashboardController::class, 'importProducts'])->name('import.products');
     Route::get('import-customers', [DashboardController::class, 'importCustomers'])->name('import.customers');
     Route::get('mailing-test', [DashboardController::class, 'mailing'])->name('mailing.test');

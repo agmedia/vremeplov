@@ -243,10 +243,6 @@ class OC_Import
         return $response;
     }
 
-    /*******************************************************************************
-    *                                Copyright : AGmedia                           *
-    *                              email: filip@agmedia.hr                         *
-    *******************************************************************************/
 
     /**
      * @param string $text
@@ -370,6 +366,56 @@ class OC_Import
         }
 
         return config('settings.unknown_publisher');
+    }
+
+
+    /**
+     * @param int|null $offset
+     * @param int|null $limit
+     *
+     * @return bool|\Illuminate\Support\Collection|mixed|string
+     */
+    public function resolveProductsImportRange(int $offset = null, int $limit = null)
+    {
+        if ( ! $offset && ! $limit) {
+            $set = $this->getImportRange();
+
+            if ( ! is_string($set) && ! $set->count()) {
+                $data = ['offset' => 20000, 'limit' => 10];
+
+                $this->setImportRange($data);
+
+                $set = $this->getImportRange();
+            }
+
+            return $set;
+        }
+
+        $data = ['offset' => $offset, 'limit' => $limit];
+
+        $this->setImportRange($data);
+
+        return $this->getImportRange();
+    }
+
+
+    /**
+     * @return false|\Illuminate\Support\Collection
+     */
+    private function getImportRange()
+    {
+        return Settings::get('import', 'range');
+    }
+
+
+    /**
+     * @param array $data
+     *
+     * @return bool|mixed
+     */
+    private function setImportRange(array $data)
+    {
+        return Settings::reset('import', 'range', $data);
     }
 
 }

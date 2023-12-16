@@ -30,6 +30,7 @@ use Bouncer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use function Symfony\Component\Translation\t;
@@ -177,12 +178,43 @@ class DashboardController extends Controller
     }
 
 
+    /**
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function findDuplicates()
+    {
+        $count = 0;
+        $products = Product::all();
+        $unique = $products->unique(['ean']);
+        $duplicates = $products->diff($unique);
+
+        Log::info($products->count());
+        Log::info($unique->count());
+        Log::info($duplicates->count());
+
+        foreach ($duplicates as $item) {
+            Storage::disk('products')->deleteDirectory($item->id);
+            $item->delete();
+            $count++;
+        }
+
+        return redirect()->route('dashboard')->with(['success' => 'Import je uspješno obavljen..! ' . $count . ' proizvoda importano.']);
+    }
+
+
+    /**
+     * @param Request|null $request
+     *
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     */
     public function importProducts(Request $request = null)
     {
         $count = 0;
         $import = new OC_Import();
 
-        $products = $import->getProducts();
+        $range = $import->resolveProductsImportRange()->first();
+
+        $products = $import->getProducts($range->offset, $range->limit);
 
         $existing = Product::query()->pluck('ean');
 
@@ -191,9 +223,10 @@ class DashboardController extends Controller
         $products = $import->getProducts($diff);
 
         foreach ($products as $product) {
+            $exist = null;
             $exist = Product::query()->where('ean', $product->product_id)->first();
 
-            if ( ! $exist) {
+            if ( ! $exist && ! isset($exist->product_id)) {
                 $product_description = $import->getProductDescription($product->product_id);
                 $product_images = $import->getProductImages($product->product_id);
                 $product_categories = $import->getProductCategories($product->product_id);
@@ -287,7 +320,9 @@ class DashboardController extends Controller
             }
         }
 
-        if ($request->has('api') && $request->input('api')) {
+        $import->resolveProductsImportRange(($range->offset + $range->limit), $range->limit);
+
+        if ($request && $request->has('api') && $request->input('api')) {
             return response()->json(['success' => 'Import je uspješno obavljen..! ' . $count . ' proizvoda importano.']);
         }
 
