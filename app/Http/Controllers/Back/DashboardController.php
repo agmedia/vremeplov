@@ -191,95 +191,99 @@ class DashboardController extends Controller
         $products = $import->getProducts($diff);
 
         foreach ($products as $product) {
-            $product_description = $import->getProductDescription($product->product_id);
-            $product_images = $import->getProductImages($product->product_id);
-            $product_categories = $import->getProductCategories($product->product_id);
+            $exist = Product::query()->where('ean', $product->product_id)->first();
 
-            $attributes = $import->resolveAttributes($product_description->description);
-            $author = $import->resolveAuthor($product_description->name);
-            $publisher = $import->resolvePublisher(isset($attributes['Izdavač']) ? $attributes['Izdavač'] : '');
+            if ( ! $exist) {
+                $product_description = $import->getProductDescription($product->product_id);
+                $product_images = $import->getProductImages($product->product_id);
+                $product_categories = $import->getProductCategories($product->product_id);
 
-            $product_id = Product::insertGetId([
-                'author_id'        => $author,
-                'publisher_id'     => $publisher,
-                'action_id'        => 0,
-                'name'             => $product_description->name,
-                'sku'              => isset($attributes['Šifra']) ? $attributes['Šifra'] : $product->model . '-' . $product->product_id,
-                'ean'              => $product->product_id,
-                'polica'           => 0,
-                'description'      => '<p>' . str_replace('\n', '<br>', $product_description->description) . '</p>',
-                'slug'             => Str::slug($product_description->name) . '-' . time(),
-                'url'              => '',
-                'price'            => $product->price,
-                'quantity'         => $product->quantity,
-                'decrease'         => 1,
-                'tax_id'           => 1,
-                'special'          => null,
-                'special_from'     => null,
-                'special_to'       => null,
-                'meta_title'       => $product_description->meta_title,
-                'meta_description' => $product_description->meta_description,
-                'pages'            => isset($attributes['Broj stranica']) ? $attributes['Broj stranica'] : null,
-                'dimensions'       => null,
-                'origin'           => isset($attributes['Jezik']) ? $attributes['Jezik'] : null,
-                'letter'           => isset($attributes['Pismo']) ? $attributes['Pismo'] : null,
-                'condition'        => isset($attributes['Stanje']) ? $attributes['Stanje'] : null,
-                'binding'          => isset($attributes['Uvez']) ? $attributes['Uvez'] : null,
-                'year'             => isset($attributes['Godina']) ? str_replace('.', '', $attributes['Godina']) : null,
-                'viewed'           => 0,
-                'sort_order'       => 0,
-                'push'             => 0,
-                'status'           => 1,
-                'created_at'       => Carbon::now(),
-                'updated_at'       => Carbon::now()
-            ]);
+                $attributes = $import->resolveAttributes($product_description->description);
+                $author = $import->resolveAuthor($product_description->name);
+                $publisher = $import->resolvePublisher(isset($attributes['Izdavač']) ? $attributes['Izdavač'] : '');
 
-            if ($product_id) {
-                // Create, sort all images.
-                $main_path = 'https://www.antikvarijat-vremeplov.hr/image/' . $product->image;
-                $main_image = $import->resolveProductImage($main_path, $product_description->name, $product_id);
-
-                Product::where('id', $product_id)->update(['image' => $main_image]);
-
-                if ($product_images->count()) {
-                    $icount = 0;
-                    foreach ($product_images as $product_image) {
-                        $path = 'https://www.antikvarijat-vremeplov.hr/image/' . $product_image->image;
-                        $image = $import->resolveProductImage($path, $product_description->name, $product_id);
-
-                        ProductImage::insert([
-                            'product_id' => $product_id,
-                            'image'      => $image,
-                            'alt'        => $product_description->name,
-                            'published'  => 1,
-                            'sort_order' => $icount,
-                            'created_at' => Carbon::now(),
-                            'updated_at' => Carbon::now()
-                        ]);
-
-                        $icount++;
-                    }
-                }
-
-                $categories = $import->resolveProductCategories($product_categories);
-
-                if ($categories) {
-                    foreach ($categories as $category) {
-                        ProductCategory::insert([
-                            'product_id'  => $product_id,
-                            'category_id' => $category
-                        ]);
-                    }
-                }
-
-                $product = Product::find($product_id);
-
-                $product->update([
-                    'url'             => ProductHelper::url($product),
-                    'category_string' => ProductHelper::categoryString($product)
+                $product_id = Product::insertGetId([
+                    'author_id'        => $author,
+                    'publisher_id'     => $publisher,
+                    'action_id'        => 0,
+                    'name'             => $product_description->name,
+                    'sku'              => isset($attributes['Šifra']) ? $attributes['Šifra'] : $product->model . '-' . $product->product_id,
+                    'ean'              => $product->product_id,
+                    'polica'           => 0,
+                    'description'      => '<p>' . str_replace('\n', '<br>', $product_description->description) . '</p>',
+                    'slug'             => Str::slug($product_description->name) . '-' . time(),
+                    'url'              => '',
+                    'price'            => $product->price,
+                    'quantity'         => $product->quantity,
+                    'decrease'         => 1,
+                    'tax_id'           => 1,
+                    'special'          => null,
+                    'special_from'     => null,
+                    'special_to'       => null,
+                    'meta_title'       => $product_description->meta_title,
+                    'meta_description' => $product_description->meta_description,
+                    'pages'            => isset($attributes['Broj stranica']) ? $attributes['Broj stranica'] : null,
+                    'dimensions'       => null,
+                    'origin'           => isset($attributes['Jezik']) ? $attributes['Jezik'] : null,
+                    'letter'           => isset($attributes['Pismo']) ? $attributes['Pismo'] : null,
+                    'condition'        => isset($attributes['Stanje']) ? $attributes['Stanje'] : null,
+                    'binding'          => isset($attributes['Uvez']) ? $attributes['Uvez'] : null,
+                    'year'             => isset($attributes['Godina']) ? str_replace('.', '', $attributes['Godina']) : null,
+                    'viewed'           => 0,
+                    'sort_order'       => 0,
+                    'push'             => 0,
+                    'status'           => 1,
+                    'created_at'       => Carbon::now(),
+                    'updated_at'       => Carbon::now()
                 ]);
 
-                $count++;
+                if ($product_id) {
+                    // Create, sort all images.
+                    $main_path = 'https://www.antikvarijat-vremeplov.hr/image/' . $product->image;
+                    $main_image = $import->resolveProductImage($main_path, $product_description->name, $product_id);
+
+                    Product::where('id', $product_id)->update(['image' => $main_image]);
+
+                    if ($product_images->count()) {
+                        $icount = 0;
+                        foreach ($product_images as $product_image) {
+                            $path = 'https://www.antikvarijat-vremeplov.hr/image/' . $product_image->image;
+                            $image = $import->resolveProductImage($path, $product_description->name, $product_id);
+
+                            ProductImage::insert([
+                                'product_id' => $product_id,
+                                'image'      => $image,
+                                'alt'        => $product_description->name,
+                                'published'  => 1,
+                                'sort_order' => $icount,
+                                'created_at' => Carbon::now(),
+                                'updated_at' => Carbon::now()
+                            ]);
+
+                            $icount++;
+                        }
+                    }
+
+                    $categories = $import->resolveProductCategories($product_categories);
+
+                    if ($categories) {
+                        foreach ($categories as $category) {
+                            ProductCategory::insert([
+                                'product_id'  => $product_id,
+                                'category_id' => $category
+                            ]);
+                        }
+                    }
+
+                    $product = Product::find($product_id);
+
+                    $product->update([
+                        'url'             => ProductHelper::url($product),
+                        'category_string' => ProductHelper::categoryString($product)
+                    ]);
+
+                    $count++;
+                }
             }
         }
 
