@@ -1,6 +1,6 @@
 <!-- Footer-->
 
-<section class=" pt-3 pb-2 mt-5" style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
+<section class=" pt-3 pb-2 " style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
 
     <div class="container pt-lg-1">
      <div class="row pt-4 text-center">
