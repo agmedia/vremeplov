@@ -17020,8 +17020,11 @@ a.nav-link:hover .media-tab-media {
     position: relative;
     transition: color 0.25s ease-in-out, border-color 0.25s ease-in-out, background-color 0.25s ease-in-out;
 }
-.page-link:focus, .page-link:hover {
+ .page-link:hover {
     color: #2d2224;
+}
+.page-link:focus {
+    color: #e6d1ab;
 }
 .page-link.page-link-static:hover {
     border-color: transparent;
