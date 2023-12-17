@@ -113,7 +113,6 @@ class Helper
             $products = Product::query()->where('name', 'like', '%' . $target . '%')
                                ->orWhere('meta_description', 'like', '%' . $target . '%')
                                ->orWhere('sku', 'like', '%' . $target . '%')
-                               ->orWhere('isbn', 'like', '%' . $target . '%')
                                ->pluck('id');
 
             if ( ! $products->count()) {
