@@ -84,7 +84,7 @@ class FilterController extends Controller
         //}
 
         // Ako su posebni ID artikala.
-        /*if ($params['ids'] && $params['ids'] != '[]') {
+        if ($params['ids'] && $params['ids'] != '[]') {
             $_ids = collect(explode(',', substr($params['ids'], 1, -1)))->unique();
 
             $categories = Category::active()->whereHas('products', function ($query) use ($_ids) {
@@ -92,7 +92,7 @@ class FilterController extends Controller
             })->sortByName()->withCount('products')->get()->toArray();
 
             $response = $this->resolveCategoryArray($categories, 'categories');
-        }*/
+        }
 
         return response()->json($response);
     }
