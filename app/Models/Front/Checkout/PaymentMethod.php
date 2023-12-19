@@ -162,14 +162,14 @@ class PaymentMethod
     public function checkShipping(string $shipping)
     {
         foreach ($this->methods as $method) {
-            /*if ($method->code == 'pickup') {
+            if ($method->code == 'pickup') {
                 if ($shipping == 'pickup') {
                     $this->response_methods = collect();
                     $this->response_methods->put($method->code, $method);
                 } else {
                     $this->response_methods->forget($method->code);
                 }
-            }*/
+            }
         }
 
         foreach ($this->methods as $method) {
