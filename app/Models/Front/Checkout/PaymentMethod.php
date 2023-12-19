@@ -131,13 +131,13 @@ class PaymentMethod
     {
         $pass = true;
 
-        if (isset($cart['items'])) {
+       /* if (isset($cart['items'])) {
             foreach ($cart['items'] as $item) {
                 if ($item['associatedModel']['origin'] != 'Hrvatski') {
                     $pass = false;
                 }
             }
-        }
+        }*/
 
         if ( ! $pass) {
             $methods = $this->response_methods;
@@ -173,7 +173,7 @@ class PaymentMethod
         }
 
         foreach ($this->methods as $method) {
-            if ($method->code == 'payway' && $shipping == 'pickup') {
+            if ($method->code == 'wspay' && $shipping == 'pickup') {
                 $this->response_methods->put($method->code, $method);
             }
         }
