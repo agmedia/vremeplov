@@ -14,7 +14,7 @@
     </tr>
     <tr>
         <td>{{ __('Email adresa') }}:</td>
-        <td><b>{{ $order->payment_email }}</b></td>
+        <td><b style="color: #2D2224;">{{ $order->payment_email }}</b></td>
     </tr>
     <tr>
         <td>{{ __('Telefon') }}:</td>

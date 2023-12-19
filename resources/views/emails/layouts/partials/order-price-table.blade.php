@@ -36,7 +36,7 @@
 <table id="products">
     <tr>
         <th>Proizvod</th>
-        <th>Rok isporuke</th>
+
         <th style="text-align: center;" width="15%">Kol.</th>
         <th style="text-align: right;" width="20%">Cijena</th>
         <th style="text-align: right;" width="25%">Ukupno</th>
@@ -44,7 +44,7 @@
     @foreach ($order->products as $product)
         <tr>
             <td>{{ $product->product->name }} - {{ $product->product->isbn}}</td>
-            <td>{{ $product->product->shipping_time  }}</td>
+
             <td style="text-align: center;">{{ $product->quantity }}</td>
             <td style="text-align: right;">{{ number_format($product->price, 2, ',', '.') }}</td>
             <td style="text-align: right;">{{ number_format($product->total, 2, ',', '.') }}</td>

@@ -260,7 +260,7 @@
     <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: auto;" class="email-container">
         <!-- Email Header : BEGIN -->
         <tr>
-            <td style="padding: 20px 0 15px 0; text-align: center">
+            <td style="padding: 20px 0 15px 0; text-align: center;background-color: #2D2224;">
                 <label class="large bold" style="color: white;">   <img src="{{ asset('media/img/vremeplov-logo.png') }}" alt="Antikvarijat Vremeplov" border="0" style="max-width:200px;height: auto;"></label>
             </td>
         </tr>
