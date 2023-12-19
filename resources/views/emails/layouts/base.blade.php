@@ -41,6 +41,10 @@
             font-family: "Quicksand", sans-serif!important;
         }
 
+        .ii a[href] {
+            color: #2D2224!important;
+        }
+
         /* What it does: Stops email clients resizing small text. */
         * {
             -ms-text-size-adjust: 100%;
@@ -215,7 +219,7 @@
             width: 200px;
             min-height: 20px;
             padding: 10px;
-            background-color: #18326d;
+            background-color: #2D2224;
             border-radius: 3px;
             color: #ffffff;
             font-size: 14px;
