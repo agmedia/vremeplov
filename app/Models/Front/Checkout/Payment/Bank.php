@@ -80,7 +80,7 @@ class Bank
                         ),
                     'receiver'    =>
                         array(
-                            'name'      => 'Vremeplov razglednica d.o.o.',
+                            'name'      => 'Vremeplov razglednica',
                             'street'    => 'Radoslava Lopašića 11',
                             'place'     => '10000 Zagreb',
                             'iban'      => 'HR4524020061100571694',
