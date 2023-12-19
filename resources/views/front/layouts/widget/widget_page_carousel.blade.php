@@ -2,6 +2,8 @@
 <section class=" container py-3 " >
     <div class="d-flex flex-wrap justify-content-between align-items-center pt-1  pb-3 mb-3">
         <h2 class="h3 mb-0 pt-3 font-title me-3"> {{ $data['title'] }}</h2>
+
+        <a class="btn btn-outline-primary btn-sm  mt-3" href="{{ route('catalog.route', ['group' => '/knjige']) }}"><span class="d-none d-sm-inline-block">Pogledajte sve</span> <i class="ci-arrow-right "></i></a>
     </div>
 
     @if ($data['tablename'] == 'category')
@@ -12,9 +14,9 @@
                         <div class="article mb-grid-gutter">
                             <a class="card border-0 shadow" href="{{ $item['group'] }}/{{ $item['slug'] }}">
                                 <span class="blog-entry-meta-label fs-sm"><i class="ci-book text-primary me-0"></i></span>
-                                <img class="card-img-top" loading="lazy" width="400" height="300" src="{{ $item['image'] }}" alt="Kategorija {{ $item['title'] }}">
+                                <img class="card-img-top p-0" loading="lazy" width="400" height="300" src="{{ $item['image'] }}" alt="Kategorija {{ $item['title'] }}">
                                 <div class="card-body py-2 text-center px-0">
-                                    <h3 class="h4 mt-1 font-title text-primary">{{ $item['title'] }}</h3>
+                                    <h3 class="h6 mt-1 font-title text-primary">{{ $item['title'] }}</h3>
                                 </div>
                             </a>
                         </div>
