@@ -7099,7 +7099,7 @@ var render = function() {
                                                     "a",
                                                     {
                                                       staticClass:
-                                                        "widget-list-link",
+                                                        "btn btn-primary btn-sm mt-2 mb-2",
                                                       attrs: { href: cat.url }
                                                     },
                                                     [_vm._v("Pogledajte sve")]

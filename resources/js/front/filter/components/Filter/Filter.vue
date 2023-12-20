@@ -37,7 +37,7 @@
                                             <li class="widget-list-item"><a class="widget-list-link" :href="subcategory.url">{{ subcategory.title }} </a></li>
                                         </ul>
                                         <ul class="widget-list" >
-                                            <li class="widget-list-item"><a class="widget-list-link" :href="cat.url">Pogledajte sve</a></li>
+                                            <li class="widget-list-item"><a class="btn btn-primary btn-sm mt-2 mb-2" :href="cat.url">Pogledajte sve</a></li>
                                         </ul>
                                     </div>
                                 </div>
