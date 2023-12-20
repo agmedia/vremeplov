@@ -124,6 +124,47 @@ ul.spec{max-width:400px}
 
 
 
+.bckshelf{
+    background-image: url('../media/img/slider-bck.png');
+    height: 460px;
+    width: 460px;
+    text-align: center;
+    background-position-y: 3px;
+    padding-top: 20px;
+    background-repeat: no-repeat;
+    margin: 0 auto;
+}
+.bckshelf img{
+    max-height: 380px;
+    margin: 0 auto;
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.6);
+    margin-top: 10px;
+}
+
+
+@media (max-width: 500px) {
+    .bckshelf{
+        background-image: url('../media/img/slider-bck.png');
+        height: 340px;
+        width: 350px;
+        text-align: center;
+        background-position-y: 3px;
+        padding-top: 10px;
+        background-repeat: no-repeat;
+        margin: 0 auto;
+        background-position: center bottom;
+        background-size: cover;
+    }
+    .bckshelf img{
+        max-height: 280px;
+        margin: 0 auto;
+        box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.6);
+        margin-top: 10px;
+    }
+}
+
+
+
 h6, .h6, h5, .h5, h4, .h4, h3, .h3, h2, .h2, h1, .h1 {
     margin-top: 0;
     margin-bottom: 0.75rem;
