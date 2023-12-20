@@ -49,7 +49,7 @@
                                             <li class="widget-list-item"><a class="widget-list-link" :href="subcategory.url">{{ subcategory.title }} </a></li>
                                         </ul>
                                         <ul class="widget-list pt-2" >
-                                            <li class="widget-list-item"><a class="widget-list-link" :href="cat.url">Pogledajte sve</a></li>
+                                            <li class="widget-list-item"><a class="btn btn-primary btn-sm mt-2 mb-2" :href="cat.url">Pogledajte sve</a></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -58,7 +58,7 @@
                     </div>
                 </div>
                 <!-- Date range-->
-                <div class="widget mb-4 pb-4 border-bottom">
+                <div class="widget mb-4 pb-4 mt-4 border-bottom">
                     <h3 class="widget-title">Godina izdanja</h3>
                     <div >
                         <div class="d-flex pb-1">

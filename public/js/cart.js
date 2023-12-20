@@ -7185,7 +7185,7 @@ var render = function() {
                                                     "a",
                                                     {
                                                       staticClass:
-                                                        "widget-list-link",
+                                                        "btn btn-primary btn-sm mt-2 mb-2",
                                                       attrs: { href: cat.url }
                                                     },
                                                     [_vm._v("Pogledajte sve")]
@@ -7209,7 +7209,7 @@ var render = function() {
                 )
               : _vm._e(),
             _vm._v(" "),
-            _c("div", { staticClass: "widget mb-4 pb-4 border-bottom" }, [
+            _c("div", { staticClass: "widget mb-4 pb-4 mt-4 border-bottom" }, [
               _c("h3", { staticClass: "widget-title" }, [
                 _vm._v("Godina izdanja")
               ]),
