@@ -14,19 +14,19 @@
                         <div class="accordion-item " v-for="cat in categories">
                             <h3 class="accordion-header" v-if="category && (category.id == cat.id)" >
                                 <a :href="cat.url" v-if="cat.subs " class="accordion-button py-1 none" data-bs-toggle="collapse" :data-bs-target="'#id' + cat.id" aria-expanded="true" :aria-controls="'id'+ cat.id" role="link">
-                                    {{ cat.title }} <span class="badge bg-dark ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
+                                    {{ cat.title }} <span class="badge bg-light ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
                                 </a>
                                 <a :href="cat.url" v-if="!cat.subs" class="accordion-button py-1 none collapsed" role="link">
-                                    {{ cat.title }} <span class="badge bg-dark ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
+                                    {{ cat.title }} <span class="badge bg-light ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
                                 </a>
                             </h3>
 
                             <h3 class="accordion-header" v-else>
                                 <a :href="cat.url" v-if="cat.subs" class="accordion-button py-1 none collapsed" data-bs-toggle="collapse"  :data-bs-target="'#id' + cat.id" aria-expanded="false" :aria-controls="'id'+ cat.id" role="link">
-                                    {{ cat.title }} <span class="badge bg-dark ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
+                                    {{ cat.title }} <span class="badge bg-light ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
                                 </a>
                                 <a :href="cat.url" v-if="!cat.subs" class="accordion-button py-1 none collapsed" role="link">
-                                    {{ cat.title }} <span class="badge bg-dark ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
+                                    {{ cat.title }} <span class="badge bg-light ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
                                 </a>
                             </h3>
 

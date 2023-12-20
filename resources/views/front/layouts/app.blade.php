@@ -66,7 +66,6 @@
     <div class="container">
 
         <div class="topbar-text text-nowrap  d-inline-block">
-            <i class="ci-support"></i>
             <span class=" me-1">Podrška</span>
             <a class="topbar-link" href="tel:00385917627441">091 762 7441</a>
         </div>

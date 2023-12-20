@@ -6901,7 +6901,7 @@ var render = function() {
                                           "span",
                                           {
                                             staticClass:
-                                              "badge bg-dark ms-2 position-absolute end-0 fw-bold"
+                                              "badge bg-light ms-2 position-absolute end-0 fw-bold"
                                           },
                                           [
                                             _vm._v(
@@ -6935,7 +6935,7 @@ var render = function() {
                                           "span",
                                           {
                                             staticClass:
-                                              "badge bg-dark ms-2 position-absolute end-0 fw-bold"
+                                              "badge bg-light ms-2 position-absolute end-0 fw-bold"
                                           },
                                           [
                                             _vm._v(
@@ -6977,7 +6977,7 @@ var render = function() {
                                           "span",
                                           {
                                             staticClass:
-                                              "badge bg-dark ms-2 position-absolute end-0 fw-bold"
+                                              "badge bg-light ms-2 position-absolute end-0 fw-bold"
                                           },
                                           [
                                             _vm._v(
@@ -7011,7 +7011,7 @@ var render = function() {
                                           "span",
                                           {
                                             staticClass:
-                                              "badge bg-dark ms-2 position-absolute end-0 fw-bold"
+                                              "badge bg-light ms-2 position-absolute end-0 fw-bold"
                                           },
                                           [
                                             _vm._v(

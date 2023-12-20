@@ -17138,6 +17138,7 @@ a.nav-link:hover .media-tab-media {
 .badge.bg-secondary,
 .badge.bg-light {
     color: #373f50;
+    background-color: #f0eada !important;
 }
 
 .bg-primary.badge-shadow {

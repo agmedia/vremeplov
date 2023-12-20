@@ -4,6 +4,9 @@
 
     @section ( 'title',  'Web shop - Antikvarijat Vremeplov' )
     @section ( 'description', 'Dobro došli na stranice antikvarijata Vremeplov. Specijalizirani smo za stare razglednice, pisma, knjige, plakate,časopise te vršimo otkup i prodaju navedenih.' )
+    @push('meta_tags')
+        <link rel="canonical" href="{{ env('APP_URL')}}/kategorija-proizvoda" />
+    @endpush
 @endif
 @if (isset($group) && $group)
     @if ($group && ! $cat && ! $subcat)
@@ -12,20 +15,35 @@
     @if ($cat && ! $subcat)
         @section ( 'title',  $cat->title . ' - Antikvarijat Vremeplov' )
         @section ( 'description', $cat->meta_description )
+        @push('meta_tags')
+            <link rel="canonical" href="{{ env('APP_URL')}}/{{ $cat['slug'] }}" />
+        @endpush
     @elseif ($cat && $subcat)
         @section ( 'title', $subcat->title . ' - Antikvarijat Vremeplov' )
         @section ( 'description', $cat->meta_description )
+
+        @push('meta_tags')
+            <link rel="canonical" href="{{ env('APP_URL')}}/{{ $subcat['slug'] }}" />
+        @endpush
+
+
     @endif
 @endif
 
 @if (isset($author) && $author)
     @section ('title',  $seo['title'])
     @section ('description', $seo['description'])
+    @push('meta_tags')
+        <link rel="canonical" href="{{ env('APP_URL')}}{{ $author['url'] }}" />
+    @endpush
 @endif
 
 @if (isset($publisher) && $publisher)
     @section ('title',  $seo['title'])
     @section ('description', $seo['description'])
+    @push('meta_tags')
+        <link rel="canonical" href="{{ env('APP_URL')}}{{ $publisher['url'] }}" />
+    @endpush
 @endif
 
 @if (isset($meta_tags))
