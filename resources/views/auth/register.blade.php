@@ -73,7 +73,7 @@
                             <!-- Header -->
                             <div class="mb-2 text-center">
                                 <a class="link-fx text-success font-w700 font-size-h1" href="{{ route('index') }}">
-                                    <span class="text-dark">Zuzi</span> <span class="text-primary">Shop</span>
+                                    <span class="text-dark">Antikvarijat</span> <span class="text-primary">Vremeplov</span>
                                 </a>
                                 <p class="text-uppercase font-w700 font-size-sm text-muted">Napravite korisnički račun</p>
                             </div>
