@@ -3494,7 +3494,6 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 //
 //
 //
-//
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: 'ProductsList',
@@ -8163,7 +8162,7 @@ var staticRenderFns = [
             "aria-expanded": "false"
           }
         },
-        [_vm._v("Kategorije")]
+        [_c("i", { staticClass: "ci-filter-alt" }), _vm._v(" Kategorije")]
       )
     ])
   },
