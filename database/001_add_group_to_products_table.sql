@@ -1,0 +1,2 @@
+ALTER TABLE `products`
+    ADD COLUMN `group` VARCHAR(191) NULL DEFAULT NULL AFTER `description`;
