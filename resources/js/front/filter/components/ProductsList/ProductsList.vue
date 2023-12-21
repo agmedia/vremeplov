@@ -5,7 +5,6 @@
             <div class="d-flex flex-wrap">
                 <div class="dropdown me-2 d-sm-none"><a class="btn btn-primary dropdown-toggle collapsed" href="#shop-sidebar" data-bs-toggle="collapse" aria-expanded="false"><i class="ci-filter-alt"></i> Kategorije</a></div>
                 <div class="d-flex align-items-center flex-nowrap me-3 me-sm-4 pb-3">
-
                     <select class="form-select pe-2" v-model="sorting">
                         <option value="">Sortiraj</option>
                         <option value="novi">Najnovije</option>
