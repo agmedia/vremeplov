@@ -25,6 +25,11 @@ class ProductHelper
         $subcategory = $data['subcategory'];
         $catstring   = '';
 
+        if ( ! $category && ! $subcategory) {
+            $group = Category::getGroups()->where('slug', $product->group)->first();
+            $catstring = '<a href="' . route('catalog.route', ['group' => $product->group]) . '" class="product-meta maincat d-block fs-xs pb-1">' . $group->title . '</a> ';
+        }
+
         if ($category) {
             $catstring = '<a href="' . route('catalog.route', ['group' => Str::slug($category->group), 'cat' => $category->slug]) . '" class="product-meta maincat d-block fs-xs pb-1">' . $category->title . '</a> ';
         }
@@ -52,6 +57,10 @@ class ProductHelper
         $data        = static::resolveCategories($product, $category, $subcategory);
         $category    = $data['category'];
         $subcategory = $data['subcategory'];
+
+        if ( ! $category && ! $subcategory) {
+            return $product->group . '/' . $product->slug;
+        }
 
         if ($subcategory) {
             return Str::slug($category->group) . '/' . $category->slug . '/' . $subcategory->slug . '/' . $product->slug;

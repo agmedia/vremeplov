@@ -191,9 +191,9 @@ class Helper
      *
      * @return mixed
      */
-    public static function getRelated($cat = null, $subcat = null)
+    public static function getRelated($group, $cat = null, $subcat = null)
     {
-        $related = [];
+        $related = null;
 
         if ($subcat) {
             $related = $subcat->products()->inRandomOrder()->take(10)->get();
@@ -202,6 +202,10 @@ class Helper
             if ($cat) {
                 $related = $cat->products()->inRandomOrder()->take(10)->get();
             }
+        }
+
+        if ( ! $related) {
+            $related = Product::query()->where('group', $group)->inRandomOrder()->take(10)->get();
         }
 
         if ($related->count() < 9) {
