@@ -43,7 +43,7 @@ class Category extends Model
      */
     public function getThumbAttribute($value)
     {
-        return str_replace('.jpg', '.webp', $this->image);
+        return url(str_replace('.jpg', '.webp', $this->image));
     }
 
 
