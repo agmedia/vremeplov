@@ -41,6 +41,17 @@ class Category extends Model
 
 
     /**
+     * @param $value
+     *
+     * @return array|string|string[]
+     */
+    public function getTitleAttribute($value)
+    {
+        return htmlspecialchars_decode($value);
+    }
+
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
     public function parent()
