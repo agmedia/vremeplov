@@ -324,7 +324,7 @@ class Helper
                     'subtitle' => $widget->subtitle,
                     'color'    => $widget->badge,
                     'url'      => $widget->url,
-                    'image'    => str_replace('.jpg', '.webp', $widget->image),
+                    'image'    => $widget->webp,
                     'width'    => $widget->width,
                     'right'    => (isset($data['right']) && $data['right'] == 'on') ? 1 : null,
                 ];
@@ -544,6 +544,11 @@ class Helper
     }
 
 
+    /**
+     * @param bool $slug
+     *
+     * @return string
+     */
     public static function categoryGroupPath(bool $slug = false): string
     {
         if ($slug) {
