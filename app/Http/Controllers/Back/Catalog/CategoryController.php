@@ -71,7 +71,7 @@ class CategoryController extends Controller
      */
     public function edit(Category $category)
     {
-        $groups = Category::groups()->pluck('group');
+        $groups = \App\Models\Front\Catalog\Category::getGroups();
         $parents = Category::topList()->pluck('title', 'id');
 
         return view('back.catalog.category.edit', compact('category', 'parents', 'groups'));

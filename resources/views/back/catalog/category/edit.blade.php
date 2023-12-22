@@ -53,7 +53,7 @@
                                 <label for="group-select">Grupa</label>
                                 <select class="js-select2 form-control" id="group-select" name="group" style="width: 100%;">
                                     @foreach ($groups as $group)
-                                        <option value="{{ $group }}">{{ $group }}</option>
+                                        <option value="{{ $group->slug }}" {{ (isset($category) and $category->group == $group->slug) ? 'selected="selected"' : '' }}>{{ $group->title }}</option>
                                     @endforeach
                                 </select>
                             </div>
