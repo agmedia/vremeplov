@@ -18548,7 +18548,7 @@ html:not([dir=rtl]) .range-slider-ui.noUi-horizontal .noUi-handle {
 }
 
 .blog-entry-title > a {
-    color: #373f50;
+    color: #2d2224;
     text-decoration: none !important;
     line-height: 1.3;
 }
@@ -18577,7 +18577,7 @@ html:not([dir=rtl]) .range-slider-ui.noUi-horizontal .noUi-handle {
 
 .blog-entry-meta-link {
     display: inline-block;
-    color: #7d879c !important;
+    color: #2d2224 !important;
     font-weight: normal;
 }
 .blog-entry-meta-link > i {
