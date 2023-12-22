@@ -30,34 +30,9 @@ class FilterController extends Controller
             return response()->json(['status' => 300, 'message' => 'Error!']);
         }
 
-        $response = [];
-        $params   = $request->input('params');
+        $params = $request->input('params');
 
-        // Ako je normal kategorija
-        /*if ($params['group']) {
-            $response = Helper::resolveCache('categories')->remember($params['group'], config('cache.life'), function () use ($params) {
-                $categories = Category::active()->topList($params['group'])->sortByName()->with('subcategories')->get()->toArray();
-
-                return $this->resolveCategoryArray($categories, 'categories');
-            });
-        }*/
-
-        // Ako je autor
-        /*if ( ! $params['group'] && $params['author']) {
-            $author   = Author::where('slug', $params['author'])->first();
-            $a_cats   = $author->categories();
-            $response = $this->resolveCategoryArray($a_cats, 'author', $author);
-        }*/
-
-        // Ako je nakladnik
-        /*if ( ! $params['group'] && $params['publisher']) {
-            $publisher = Publisher::where('slug', $params['publisher'])->first();
-            $a_cats    = $publisher->categories();
-            $response  = $this->resolveCategoryArray($a_cats, 'publisher', $publisher);
-        }*/
-
-        //
-        //if ( ! $params['group'] && ! $params['author'] && ! $params['publisher']) {
+        // Uvijekprikaži sve kategorije
         $response = Helper::resolveCache('categories')->remember('nav', config('cache.life'), function () use ($params) {
             $groups = Category::getGroups();
 
