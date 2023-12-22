@@ -654,16 +654,41 @@ class Helper
                         'type'       => 'special',
                         'target'     => 'total', // this condition will be applied to cart's subtotal when getSubTotal() is called.
                         'value'      => '-' . $discount,
-                        'attributes' => [
-                            'description' => '',
-                            'geo_zone'    => ''
-                        ]
+                        'attributes' => $action->setConditionAttributes($coupon)
                     ));
                 }
             }
         }
 
         return $condition;
+    }
+
+
+    /**
+     * @param $cart
+     *
+     * @return false|mixed
+     */
+    public static function isCouponUsed($cart)
+    {
+        $coupon = false;
+        $items = $cart->getContent();
+
+        foreach ($items as $item) {
+            if ($item->getConditions()->getType() == 'coupon') {
+                $coupon = $item->getConditions()->getTarget();
+            }
+        }
+
+        foreach ($cart->getConditions() as $condition) {
+            if (isset($condition->getAttributes()['type']) && $condition->getAttributes()['type'] == 'coupon' && floatval($condition->getValue()) < 0) {
+                $coupon = $condition->getAttributes()['description'];
+            }
+        }
+
+
+
+        return $coupon;
     }
 
 

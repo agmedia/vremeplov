@@ -4,6 +4,7 @@ namespace App\Models\Front;
 
 use App\Helpers\Currency;
 use App\Helpers\Helper;
+use App\Models\Back\Marketing\Action;
 use App\Models\Front\Catalog\Product;
 use App\Models\Front\Catalog\ProductAction;
 use App\Models\Front\Checkout\PaymentMethod;
@@ -28,7 +29,7 @@ class AgCart extends Model
      * @var
      */
     private $cart;
-    
+
     /**
      * @var string
      */
@@ -62,15 +63,15 @@ class AgCart extends Model
         $eur = $this->getEur();
 
         $response = [
-            'id'         => $this->cart_id,
-            'coupon'     => $this->coupon,
-            'items'      => $this->cart->getContent(),
-            'count'      => $this->cart->getTotalQuantity(),
-            'subtotal'   => $this->cart->getSubTotal(),
-            'conditions' => $this->cart->getConditions(),
-            'detail_con' => $this->setCartConditions(),
-            'total'      => $this->cart->getTotal(),
-            'eur'        => $eur,
+            'id'              => $this->cart_id,
+            'coupon'          => $this->coupon,
+            'items'           => $this->cart->getContent(),
+            'count'           => $this->cart->getTotalQuantity(),
+            'subtotal'        => $this->cart->getSubTotal(),
+            'conditions'      => $this->cart->getConditions(),
+            'detail_con'      => $this->setCartConditions(),
+            'total'           => $this->cart->getTotal(),
+            'eur'             => $eur,
             'secondary_price' => $eur
         ];
 
@@ -118,24 +119,25 @@ class AgCart extends Model
     public function check($request)
     {
         //$message = Helper::resolveCache('cart')->remember($this->cart_id, config('cache.cart_life'), function () use ($request) {
-            $products = Product::whereIn('id', $request['ids'])->pluck('quantity', 'id');
-            $message = null;
+        $products = Product::whereIn('id', $request['ids'])->pluck('quantity', 'id');
+        $message  = null;
 
-            foreach ($products as $id => $quantity) {
-                if ( ! $quantity) {
-                    $this->remove(intval($id));
+        foreach ($products as $id => $quantity) {
+            if ( ! $quantity) {
+                $this->remove(intval($id));
 
-                    $product = Product::where('id', intval($id))->first();
+                $product = Product::where('id', intval($id))->first();
 
-                    $message = 'Nažalost, knjiga ' . substr($product->name, 0, 150) . ' više nije dostupna.';
-                }
+                $message = 'Nažalost, knjiga ' . substr($product->name, 0, 150) . ' više nije dostupna.';
             }
+        }
 
-            return $message;
+        return $message;
+
         //});
 
         return [
-            'cart' => $this->get(),
+            'cart'    => $this->get(),
             'message' => $message
         ];
     }
@@ -153,7 +155,7 @@ class AgCart extends Model
         foreach ($this->cart->getContent() as $item) {
             if ($item->id == $request['item']['id']) {
                 $quantity = $request['item']['quantity'];
-                $product = Product::where('id', $request['item']['id'])->first();
+                $product  = Product::where('id', $request['item']['id'])->first();
 
                 if ($quantity > $product->quantity) {
                     return ['error' => 'Nažalost nema dovoljnih količina artikla..!'];
@@ -164,9 +166,9 @@ class AgCart extends Model
                         $quantity = $item->quantity + 1;
                     }
                 }
-                
+
                 $relative = false;
-                
+
                 if (isset($request['item']['relative']) && $request['item']['relative']) {
                     $relative = true;
                 }
@@ -193,6 +195,9 @@ class AgCart extends Model
 
 
     /**
+     * Provjeriti metodu da li se koristi negdje.
+     *  ????????????????????????????????????????
+     *
      * @param $coupon
      *
      * @return int
@@ -223,6 +228,18 @@ class AgCart extends Model
      */
     public function flush()
     {
+        if ($this->coupon != '') {
+            $is_used = Helper::isCouponUsed($this->cart);
+
+            if ($is_used != '') {
+                $action = Action::query()->where('coupon', $is_used)->first();
+
+                if ($action && $action->quantity == 1) {
+                    $action->update(['status' => 0]);
+                }
+            }
+        }
+
         $this->cart->clear();
 
         Helper::flushCache('cart', $this->cart_id);
@@ -277,8 +294,8 @@ class AgCart extends Model
     {
         $this->cart->clearCartConditions();
 
-        $shipping_method = ShippingMethod::condition($this->cart);
-        $payment_method = PaymentMethod::condition($this->cart);
+        $shipping_method   = ShippingMethod::condition($this->cart);
+        $payment_method    = PaymentMethod::condition($this->cart);
         $special_condition = Helper::hasSpecialCartCondition($this->cart);
         $coupon_conditions = Helper::hasCouponCartConditions($this->cart, $this->coupon);
 
@@ -308,10 +325,10 @@ class AgCart extends Model
             $value = $condition->getValue();
 
             $response[] = [
-                'name' => $condition->getName(),
-                'type' => $condition->getType(),
-                'target' => 'total', // this condition will be applied to cart's subtotal when getSubTotal() is called.
-                'value' => $value,
+                'name'       => $condition->getName(),
+                'type'       => $condition->getType(),
+                'target'     => 'total', // this condition will be applied to cart's subtotal when getSubTotal() is called.
+                'value'      => $value,
                 'attributes' => $condition->getAttributes()
             ];
         }
@@ -331,8 +348,8 @@ class AgCart extends Model
 
         return $this->get();
     }
-    
-    
+
+
     /**
      * @param      $id
      * @param      $quantity
@@ -397,7 +414,7 @@ class AgCart extends Model
     {
         return [
             'path' => $product->url,
-            'tax' => $product->tax($product->tax_id)
+            'tax'  => $product->tax($product->tax_id)
         ];
     }
 
@@ -412,10 +429,22 @@ class AgCart extends Model
     {
         // Ako artikl ima akciju.
         if ($product->special()) {
+            $coupon = $product->coupon();
+
+            if ($coupon != '') {
+                return new CartCondition([
+                    'name'   => 'Kupon akcija',
+                    'type'   => 'coupon',
+                    'target' => $coupon,
+                    'value'  => -($product->price - $product->special())
+                ]);
+            }
+
             return new CartCondition([
-                'name'  => 'Akcija',
-                'type'  => 'promo',
-                'value' => -($product->price - $product->special())
+                'name'   => 'Akcija',
+                'type'   => 'promo',
+                'target' => '',
+                'value'  => -($product->price - $product->special())
             ]);
         }
 

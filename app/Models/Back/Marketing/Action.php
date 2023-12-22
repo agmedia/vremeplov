@@ -109,7 +109,7 @@ class Action extends Model
         $is_valid = false;
 
         $from = now()->subDay();
-        $to = now()->addDay();
+        $to   = now()->addDay();
 
         if ($this->date_start && $this->date_start != '0000-00-00 00:00:00') {
             $from = Carbon::make($this->date_start);
@@ -139,6 +139,29 @@ class Action extends Model
 
 
     /**
+     * @param string $coupon
+     *
+     * @return string[]
+     */
+    public function setConditionAttributes(string $coupon = ''): array
+    {
+        $response = [
+            'type'        => '',
+            'description' => ''
+        ];
+
+        if ($coupon != '') {
+            $response = [
+                'type'        => 'coupon',
+                'description' => $coupon
+            ];
+        }
+
+        return $response;
+    }
+
+
+    /**
      * @param bool $insert
      *
      * @return array
@@ -156,6 +179,7 @@ class Action extends Model
             'date_start' => $data['start'],
             'date_end'   => $data['end'],
             'coupon'     => $this->request->coupon,
+            'quantity'   => $data['coupon_quantity'],
             'status'     => $data['status'],
             'updated_at' => Carbon::now()
         ];
@@ -180,10 +204,11 @@ class Action extends Model
         }
 
         return [
-            'links'  => $links,
-            'status' => (isset($this->request->status) and $this->request->status == 'on') ? 1 : 0,
-            'start'  => $this->request->date_start ? Carbon::make($this->request->date_start) : null,
-            'end'    => $this->request->date_end ? Carbon::make($this->request->date_end) : null,
+            'links'           => $links,
+            'status'          => (isset($this->request->status) and $this->request->status == 'on') ? 1 : 0,
+            'start'           => $this->request->date_start ? Carbon::make($this->request->date_start) : null,
+            'end'             => $this->request->date_end ? Carbon::make($this->request->date_end) : null,
+            'coupon_quantity' => (isset($this->request->coupon_quantity) and $this->request->coupon_quantity == 'on') ? 1 : 0
         ];
     }
 

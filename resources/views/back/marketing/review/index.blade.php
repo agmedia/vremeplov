@@ -1,14 +1,10 @@
 @extends('back.layouts.backend')
+
 @push('css_before')
-
-    <link rel="stylesheet" href="{{ asset('js/plugins/select2/css/select2.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('js/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css') }}">
-
 
 @endpush
 
 @section('content')
-
     <div class="bg-body-light">
         <div class="content content-full">
             <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center">
@@ -20,21 +16,15 @@
         </div>
     </div>
 
-    <!-- Page Content -->
     <div class="content">
     @include('back.layouts.partials.session')
-
-
         <!-- All Products -->
         <div class="block block-rounded">
             <div class="block-header block-header-default">
                 <h3 class="block-title">{{ __('back/review.all_reviews') }}   ({{ $reviews->total() }})</h3>
-
             </div>
 
-
             <div class="block-content">
-                <!-- All Products Table -->
                 <div class="table-responsive">
                     <table class="table table-borderless table-striped table-vcenter">
                         <thead>
@@ -70,7 +60,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td class="font-size-sm text-center" colspan="6">
+                                <td class="font-size-sm text-center" colspan="7">
                                     <label for="">{{ __('back/review.no_reviews') }}</label>
                                 </td>
                             </tr>
@@ -81,37 +71,16 @@
                 {{ $reviews->links() }}
             </div>
         </div>
-        <!-- END All Products -->
     </div>
-    <!-- END Page Content -->
 
 @endsection
 
 @push('js_after')
-
-
-    <script src="{{ asset('js/plugins/select2/js/select2.full.min.js') }}"></script>
-    <script src="{{ asset('js/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js') }}"></script>
-
-    <!-- Page JS Helpers (CKEditor 5 plugins) -->
-    <script>jQuery(function(){Dashmix.helpers(['select2','datepicker']);});</script>
     <script>
         $(() => {
-            $('#category-select').select2({
-                placeholder: 'Odaberite kategoriju'
-            });
-            $('#author-select').select2({
-                placeholder: 'Odaberite autora'
-            });
-            $('#publisher-select').select2({
-                placeholder: 'Odaberite izdavača'
+            $("#checkAll").click(function () {
+                $('input:checkbox').not(this).prop('checked', this.checked);
             });
         })
     </script>
-    <script>
-        $("#checkAll").click(function () {
-            $('input:checkbox').not(this).prop('checked', this.checked);
-        });
-    </script>
-
 @endpush

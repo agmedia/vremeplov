@@ -99,12 +99,21 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="form-group row items-push mb-2 mt-4">
+                                    <div class="form-group row items-push mb-0 mt-4">
                                         <div class="col-md-4 pt-2">
-                                            <label>Zahtjeva Kupon kod @include('back.layouts.partials.popover', ['title' => 'Ako upišete kupon kod', 'content' => 'Smatrat će se da ga zahtjevate prilikom kupnje za ostvranje akcije i pripadajučeg popusta...'])</label>
+                                            <label>Zahtjeva Kupon kod @include('back.layouts.partials.popover', ['title' => 'Ako upišete Kupon Kod', 'content' => 'Smatrat će se da ga zahtjevate prilikom kupnje za ostvarivanje akcije i pripadajučeg popusta...'])</label>
                                         </div>
                                         <div class="col-md-8">
                                             <input type="text" class="form-control" name="coupon" placeholder="Upišite kupon kod..." value="{{ isset($action) ? $action->coupon : old('coupon') }}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row items-push mb-2">
+                                        <div class="col-md-4 pt-2"></div>
+                                        <div class="col-md-8">
+                                            <div class="custom-control custom-switch custom-control-success">
+                                                <input type="checkbox" class="custom-control-input" id="coupon-quantity" name="coupon_quantity" @if (isset($action) and $action->quantity) checked @endif>
+                                                <label class="custom-control-label" for="coupon-quantity">Koristi kupon samo jednom</label>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -182,7 +191,7 @@
             });
             $('#type-select').on('change', function (e) {
                 if (e.currentTarget.value == 'F') {
-                    $('#discount-append-badge').text('kn');
+                    $('#discount-append-badge').text('EUR');
                 } else {
                     $('#discount-append-badge').text('%');
                 }
@@ -190,6 +199,12 @@
 
             @if (isset($action) && ! in_array($action->group, ['all', 'total']))
                 $('#group-select').attr("disabled", true);
+
+                @if ($action->type == 'F')
+                    $('#discount-append-badge').text('EUR');
+                @else
+                    $('#discount-append-badge').text('%');
+                @endif
             @endif
 
         })

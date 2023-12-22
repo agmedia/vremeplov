@@ -308,6 +308,18 @@ class Order extends Model
                     'updated_at' => Carbon::now()
                 ]);
             }
+
+            if ($condition->getType() == 'special') {
+                OrderTotal::insert([
+                    'order_id'   => $order_id,
+                    'code'       => 'special',
+                    'title'      => $name,
+                    'value'      => $condition->parsedRawValue,
+                    'sort_order' => $condition->getOrder(),
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now()
+                ]);
+            }
         }
 
         // TOTAL
