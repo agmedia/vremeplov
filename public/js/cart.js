@@ -2359,7 +2359,6 @@ __webpack_require__.r(__webpack_exports__);
     checkCart: function checkCart() {
       var kos = [];
       var cart = this.$store.state.storage.getCart();
-      console.log(cart);
       this.$store.dispatch('getSettings');
       if (!cart) {
         return this.$store.dispatch('getCart');
