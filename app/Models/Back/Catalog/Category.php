@@ -28,10 +28,23 @@ class Category extends Model
      */
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
+    protected $appends = ['thumb'];
+
     /**
      * @var Request
      */
     protected $request;
+
+
+    /**
+     * @param $value
+     *
+     * @return array|string|string[]
+     */
+    public function getThumbAttribute($value)
+    {
+        return str_replace('.jpg', '.webp', $this->image);
+    }
 
 
     /**
