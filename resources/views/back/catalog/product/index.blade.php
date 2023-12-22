@@ -134,8 +134,8 @@
                         @forelse ($products as $product)
                             <tr>
                                 <td class="text-center font-size-sm">
-                                    <a class="img-link img-link-zoom-in img-lightbox" href="{{ $product->image ? asset($product->image) : asset('media/avatars/avatar0.jpg') }}">
-                                        <img src="{{ $product->image ? asset($product->image) : asset('media/avatars/avatar0.jpg') }}" height="80px"/>
+                                    <a class="img-link img-link-zoom-in img-lightbox" href="{{ route('products.edit', ['product' => $product]) }}">
+                                        <img src="{{ $product->thumb }}" height="80px"/>
                                     </a>
                                 </td>
                                 <td class="font-size-sm">

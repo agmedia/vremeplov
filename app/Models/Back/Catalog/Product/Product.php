@@ -36,6 +36,11 @@ class Product extends Model
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
     /**
+     * @var string[]
+     */
+    protected $appends = ['thumb'];
+
+    /**
      * @var Request
      */
     protected $request;
@@ -44,6 +49,15 @@ class Product extends Model
      * @var null
      */
     protected $old_product = null;
+
+
+    /**
+     * @return array|mixed|string|string[]
+     */
+    public function getThumbAttribute()
+    {
+        return $this->image ? asset(str_replace('.jpg', '-thumb.webp', $this->image)) : asset('media/avatars/avatar0.jpg');
+    }
 
 
     /**
@@ -224,6 +238,7 @@ class Product extends Model
             $product = $this->find($id);
 
             $product->update([
+                'group'           => ProductHelper::group($product),
                 'url'             => ProductHelper::url($product),
                 'category_string' => ProductHelper::categoryString($product)
             ]);
@@ -291,6 +306,7 @@ class Product extends Model
             $this->resolveCategories($this->id);
 
             $this->update([
+                'group'           => ProductHelper::group($product),
                 'url'             => ProductHelper::url($this),
                 'category_string' => ProductHelper::categoryString($this)
             ]);

@@ -259,6 +259,10 @@ class ProductImage extends Model
 
         $time = Str::random(4);
         $img  = Image::make($this->makeImageFromBase($image));
+        $img = $img->resize(800, null, function ($constraint) {
+            $constraint->aspectRatio();
+        });
+
         $path = $this->resource->id . '/' . Str::slug($title) . '-' . $time . '.';
 
         $path_jpg = $path . 'jpg';
@@ -269,9 +273,9 @@ class ProductImage extends Model
 
         // Thumb creation
         $path_thumb = $this->resource->id . '/' . Str::slug($title) . '-' . $time . '-thumb.';
-        $canvas = Image::canvas(400, 400, '#ffffff');
+        $canvas = Image::canvas(300, 300, '#ffffff');
 
-        $img = $img->resize(null, 350, function ($constraint) {
+        $img = $img->resize(null, 260, function ($constraint) {
             $constraint->aspectRatio();
         });
 

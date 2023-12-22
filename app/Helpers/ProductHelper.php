@@ -74,6 +74,18 @@ class ProductHelper
     }
 
 
+    public static function group(Product $product)
+    {
+        $data = static::resolveCategories($product);
+
+        if ($data['category']) {
+            return $data['category']->group;
+        }
+
+        return null;
+    }
+
+
     /**
      * @param Product       $product
      * @param Category|null $category
