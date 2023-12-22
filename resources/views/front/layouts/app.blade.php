@@ -68,15 +68,15 @@
         </div>
         <div class="topbar-text  d-none  d-md-inline-block">Besplatna dostava za sve narudžbe iznad 70 €</div>
         <div class="ms-3 text-nowrap ">
-            <a class="topbar-link me-2 d-inline-block" href="https://www.facebook.com/antikavrijatvremeplov">
+            <a class="topbar-link me-2 d-inline-block" aria-label="Follow us on facebook" href="https://www.facebook.com/antikavrijatvremeplov">
                 <i class="ci-facebook"></i>
             </a>
 
-            <a class="topbar-link me-2 d-inline-block" href="https://www.instagram.com/antiqueshopvremeplov/">
+            <a class="topbar-link me-2 d-inline-block" aria-label="Follow us on instagram" href="https://www.instagram.com/antiqueshopvremeplov/">
                 <i class="ci-instagram"></i>
             </a>
 
-            <a class="topbar-link me-0 d-inline-block" href="mailto:info@antiqueshop.hr">
+            <a class="topbar-link me-0 d-inline-block" aria-label="Email us" href="mailto:info@antiqueshop.hr">
                 <i class="ci-mail"></i>
             </a>
 
