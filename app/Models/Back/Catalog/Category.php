@@ -43,7 +43,7 @@ class Category extends Model
      */
     public function getThumbAttribute($value)
     {
-        return url(str_replace('.jpg', '.webp', $this->image));
+        return url(str_replace('.jpg', '-thumb.webp', $this->image));
     }
 
 
@@ -243,12 +243,27 @@ class Category extends Model
     public function resolveImage(Category $category)
     {
         if ($this->request->hasFile('image')) {
-            $name = Str::slug($category->title) . '.' . $this->request->image->extension();
+            $path_jpg = Str::slug($category->title) . '-' . Str::random(4) . '.jpg';
 
-            $this->request->image->storeAs('/', $name, 'category');
+            $img = Image::make($this->request->image)->resize(800, null, function ($constraint) {
+                $constraint->aspectRatio();
+            });
+
+            Storage::disk('category')->put($path_jpg, $img->encode('jpg'));
+
+            $path_webp = str_replace('.jpg', '.webp', $path_jpg);
+            Storage::disk('category')->put($path_webp, $img->encode('webp'));
+
+            // THUMB
+            $img = $img->resize(300, null, function ($constraint) {
+                $constraint->aspectRatio();
+            });
+
+            $path_thumb = str_replace('.jpg', '-thumb.webp', $path_jpg);
+            Storage::disk('category')->put($path_thumb, $img->encode('webp'));
 
             return $category->update([
-                'image' => config('filesystems.disks.category.url') . $name
+                'image' => config('filesystems.disks.category.url') . $path_jpg
             ]);
         }
 
