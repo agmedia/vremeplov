@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Back;
 
 use App\Helpers\Chart;
 use App\Helpers\Helper;
-use App\Helpers\Import;
 use App\Helpers\ProductHelper;
 use App\Http\Controllers\Controller;
 use App\Imports\ProductImport;
@@ -19,10 +18,8 @@ use App\Models\Back\Catalog\Product\ProductImage;
 use App\Models\Back\Catalog\Publisher;
 use App\Models\Back\Marketing\Review;
 use App\Models\Back\Orders\Order;
-use App\Models\Back\Orders\OrderProduct;
 use App\Models\Back\Settings\Api\OC_Import;
 use App\Models\Back\Settings\Settings;
-use App\Models\User;
 use App\Models\UserDetail;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -32,8 +29,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use function Symfony\Component\Translation\t;
 
 class DashboardController extends Controller
 {
@@ -43,20 +38,20 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        $data['today']            = Order::whereDate('created_at', Carbon::today())->count();
-        $data['proccess']         = Order::whereIn('order_status_id', [1, 2, 3])->count();
-        $data['finished']         = Order::whereIn('order_status_id', [4, 5, 6, 7])->count();
-        $data['this_month']       = Order::whereMonth('created_at', '=', Carbon::now()->month)->count();
-        $data['this_month_total'] = Order::whereMonth('created_at', '=', Carbon::now()->month)->whereIn('order_status_id', [4, 1, 2, 3])->sum('total');
+        $data['today']            = Order::query()->whereDate('created_at', Carbon::today())->count();
+        $data['proccess']         = Order::query()->whereIn('order_status_id', [1, 2, 3])->count();
+        $data['finished']         = Order::query()->whereIn('order_status_id', [4, 5, 6, 7])->count();
+        $data['this_month']       = Order::query()->whereMonth('created_at', '=', Carbon::now()->month)->count();
+        $data['this_month_total'] = Order::query()->whereMonth('created_at', '=', Carbon::now()->month)->whereIn('order_status_id', [4, 1, 2, 3])->sum('total');
 
-        $data['users'] = UserDetail::whereIn('role', ['customer'])->count();
+        $data['users'] = UserDetail::query()->whereIn('role', ['customer'])->count();
 
-        $data['comments']     = Review::whereIn('status', ['0'])->count();
-        $data['zeroproducts'] = Product::whereIn('quantity', ['0'])->count();
+        $data['comments']     = Review::query()->whereIn('status', ['0'])->count();
+        $data['zeroproducts'] = Product::query()->whereIn('quantity', ['0'])->count();
 
-        $orders = Order::last()->with('products')->get();
+        $orders = Order::query()->last()->with('products')->get();
 
-        $ordersfinished = Order::finished()->with('products')->get();
+        $ordersfinished = Order::query()->finished()->with('products')->get();
         $products       = $ordersfinished->map(function ($item) {
             return $item->products()->get();
         })->take(9)->flatten();

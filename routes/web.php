@@ -113,6 +113,14 @@ Route::middleware(['auth:sanctum', 'verified', 'no.customers'])->prefix('admin')
         Route::get('blog/{blog}/edit', [BlogController::class, 'edit'])->name('blogs.edit');
         Route::patch('blog/{blog}', [BlogController::class, 'update'])->name('blogs.update');
         Route::delete('blog/{blog}', [BlogController::class, 'destroy'])->name('blogs.destroy');
+
+        // INFO PAGES
+        Route::get('pages', [PageController::class, 'index'])->name('pages');
+        Route::get('page/create', [PageController::class, 'create'])->name('pages.create');
+        Route::post('page', [PageController::class, 'store'])->name('pages.store');
+        Route::get('page/{page}/edit', [PageController::class, 'edit'])->name('pages.edit');
+        Route::patch('page/{page}', [PageController::class, 'update'])->name('pages.update');
+        Route::delete('page/{page}', [PageController::class, 'destroy'])->name('pages.destroy');
     });
 
     // NARUDŽBE
@@ -175,13 +183,7 @@ Route::middleware(['auth:sanctum', 'verified', 'no.customers'])->prefix('admin')
 
     // POSTAVKE
     Route::prefix('settings')->group(function () {
-        // INFO PAGES
-        Route::get('pages', [PageController::class, 'index'])->name('pages');
-        Route::get('page/create', [PageController::class, 'create'])->name('pages.create');
-        Route::post('page', [PageController::class, 'store'])->name('pages.store');
-        Route::get('page/{page}/edit', [PageController::class, 'edit'])->name('pages.edit');
-        Route::patch('page/{page}', [PageController::class, 'update'])->name('pages.update');
-        Route::delete('page/{page}', [PageController::class, 'destroy'])->name('pages.destroy');
+
 
         // API
         Route::get('api', [ApiController::class, 'index'])->name('api.index');

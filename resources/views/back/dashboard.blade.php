@@ -62,7 +62,7 @@
                             <div class="item rounded-circle bg-body mx-auto my-3">
                                 <i class="fa fa-wallet fa-lg text-primary"></i>
                             </div>
-                            <div class="font-size-h3 text-success font-w600 mb-1">{{ $data['this_month_total'] }}€</div>
+                            <div class="font-size-h3 text-success font-w600 mb-1">{{ number_format($data['this_month_total'], 2) }} €</div>
                             <div class="text-muted ">Mjesečni promet</div>
 
                         </div>

@@ -2,6 +2,7 @@
 
 namespace App\Models\Back\Catalog;
 
+use App\Helpers\ImageHelper;
 use App\Models\Back\Catalog\Product\Product;
 use App\Models\Back\Catalog\Product\ProductCategory;
 use Carbon\Carbon;
@@ -169,27 +170,7 @@ class Category extends Model
      */
     public function create()
     {
-        $parent = $this->request->parent ?: 0;
-        $group  = isset($this->request->group) ? $this->request->group : 0;
-
-        if ($parent) {
-            $topcat = $this->where('id', $parent)->first();
-            $group  = $topcat->group;
-        }
-
-        $id = $this->insertGetId([
-            'parent_id'        => $parent,
-            'title'            => $this->request->title,
-            'description'      => $this->request->description,
-            'meta_title'       => $this->request->meta_title,
-            'meta_description' => $this->request->meta_description,
-            'group'            => $group,
-            'lang'             => 'hr',
-            'status'           => (isset($this->request->status) and $this->request->status == 'on') ? 1 : 0,
-            'slug'             => isset($this->request->slug) ? Str::slug($this->request->slug) : Str::slug($this->request->title),
-            'created_at'       => Carbon::now(),
-            'updated_at'       => Carbon::now()
-        ]);
+        $id = $this->insertGetId($this->getModelArray());
 
         if ($id) {
             return $this->find($id);
@@ -206,6 +187,23 @@ class Category extends Model
      */
     public function edit()
     {
+        $id = $this->update($this->getModelArray(false));
+
+        if ($id) {
+            return $this->find($id);
+        }
+
+        return false;
+    }
+
+
+    /**
+     * @param bool $insert
+     *
+     * @return array
+     */
+    private function getModelArray(bool $insert = true): array
+    {
         $parent = $this->request->parent ?: 0;
         $group  = isset($this->request->group) ? $this->request->group : 0;
 
@@ -214,7 +212,7 @@ class Category extends Model
             $group  = $topcat->group;
         }
 
-        $id = $this->update([
+        $response = [
             'parent_id'        => $parent,
             'title'            => $this->request->title,
             'description'      => $this->request->description,
@@ -225,13 +223,13 @@ class Category extends Model
             'status'           => (isset($this->request->status) and $this->request->status == 'on') ? 1 : 0,
             'slug'             => isset($this->request->slug) ? Str::slug($this->request->slug) : Str::slug($this->request->title),
             'updated_at'       => Carbon::now()
-        ]);
+        ];
 
-        if ($id) {
-            return $this;
+        if ($insert) {
+            $response['created_at'] = Carbon::now();
         }
 
-        return false;
+        return $response;
     }
 
 
@@ -243,27 +241,10 @@ class Category extends Model
     public function resolveImage(Category $category)
     {
         if ($this->request->hasFile('image')) {
-            $path_jpg = Str::slug($category->title) . '-' . Str::random(4) . '.jpg';
-
-            $img = Image::make($this->request->image)->resize(800, null, function ($constraint) {
-                $constraint->aspectRatio();
-            });
-
-            Storage::disk('category')->put($path_jpg, $img->encode('jpg'));
-
-            $path_webp = str_replace('.jpg', '.webp', $path_jpg);
-            Storage::disk('category')->put($path_webp, $img->encode('webp'));
-
-            // THUMB
-            $img = $img->resize(300, null, function ($constraint) {
-                $constraint->aspectRatio();
-            });
-
-            $path_thumb = str_replace('.jpg', '-thumb.webp', $path_jpg);
-            Storage::disk('category')->put($path_thumb, $img->encode('webp'));
+            $path = ImageHelper::makeImageSet($this->request->image, 'category', $category->title);
 
             return $category->update([
-                'image' => config('filesystems.disks.category.url') . $path_jpg
+                'image' => $path
             ]);
         }
 

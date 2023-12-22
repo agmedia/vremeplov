@@ -2,6 +2,7 @@
 
 namespace App\Models\Back\Catalog;
 
+use App\Helpers\ImageHelper;
 use App\Models\Back\Catalog\Product\Product;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -65,22 +66,7 @@ class Publisher extends Model
      */
     public function create()
     {
-        $slug = isset($this->request->slug) ? Str::slug($this->request->slug) : Str::slug($this->request->title);
-
-        $id = $this->insertGetId([
-            'title'            => $this->request->title,
-            'description'      => $this->request->description,
-            'meta_title'       => $this->request->meta_title,
-            'meta_description' => $this->request->meta_description,
-            'lang'             => 'hr',
-            'sort_order'       => 0,
-            'status'           => (isset($this->request->status) and $this->request->status == 'on') ? 1 : 0,
-            'featured'         => (isset($this->request->featured) and $this->request->featured == 'on') ? 1 : 0,
-            'slug'             => $slug,
-            'url'              => config('settings.publisher_path') . '/' . $slug,
-            'created_at'       => Carbon::now(),
-            'updated_at'       => Carbon::now()
-        ]);
+        $id = $this->insertGetId($this->getModelArray());
 
         if ($id) {
             return $this->find($id);
@@ -97,9 +83,26 @@ class Publisher extends Model
      */
     public function edit()
     {
+        $id = $this->update($this->getModelArray(false));
+
+        if ($id) {
+            return $this;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * @param bool $insert
+     *
+     * @return array
+     */
+    private function getModelArray(bool $insert = true): array
+    {
         $slug = isset($this->request->slug) ? Str::slug($this->request->slug) : Str::slug($this->request->title);
 
-        $id = $this->update([
+        $response = [
             'title'            => $this->request->title,
             'description'      => $this->request->description,
             'meta_title'       => $this->request->meta_title,
@@ -111,13 +114,13 @@ class Publisher extends Model
             'slug'             => $slug,
             'url'              => config('settings.publisher_path') . '/' . $slug,
             'updated_at'       => Carbon::now()
-        ]);
+        ];
 
-        if ($id) {
-            return $this;
+        if ($insert) {
+            $response['created_at'] = Carbon::now();
         }
 
-        return false;
+        return $response;
     }
 
 
@@ -129,12 +132,10 @@ class Publisher extends Model
     public function resolveImage(Publisher $publisher)
     {
         if ($this->request->hasFile('image')) {
-            $name = Str::slug($publisher->title) . '.' . $this->request->image->extension();
-
-            $this->request->image->storeAs('/', $name, 'publisher');
+            $path = ImageHelper::makeImageSet($this->request->image, 'publisher', $publisher->title);
 
             return $publisher->update([
-                'image' => config('filesystems.disks.publisher.url') . $name
+                'image' => $path
             ]);
         }
 
