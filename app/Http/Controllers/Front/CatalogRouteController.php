@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Front;
 
 use App\Helpers\Breadcrumb;
 use App\Helpers\Helper;
+use App\Helpers\RouteResolver;
 use App\Http\Controllers\Controller;
 use App\Imports\ProductImport;
 use App\Models\Back\Settings\Settings;
@@ -37,20 +38,25 @@ class CatalogRouteController extends Controller
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function resolve(Request $request, $group, Category $cat = null, $subcat = null, Product $prod = null)
+    public function resolve(Request $request, $group, $cat = null, $subcat = null, Product $prod = null)
     {
-        //
-        if ($subcat) {
-            $sub_category = Category::where('slug', $subcat)->where('parent_id', $cat->id)->first();
+        $resolver = new RouteResolver($request, $group, $cat, $subcat, $prod);
 
-            if ( ! $sub_category) {
-                $prod = Product::where('slug', $subcat)->first();
-            }
-
-            $subcat = $sub_category;
+        if ($resolver->isUnwantedRoute()) {
+            return;
         }
 
-        // Check if there is Product set.
+        // Ako je samo grupa
+        $resolver->isAllowedGroup()->setRoute();
+
+        $data = $resolver->setData();
+        $meta = $resolver->setMeta();
+
+        $cat = $resolver->category;
+        $subcat = $resolver->subcategory;
+        $prod = $resolver->product;
+        // Ako je artikl prvotno postavljen ili
+        // ako je postavljen umjest kategorije ili podkategorije
         if ($prod) {
             if ( ! $prod->status) {
                 abort(404);
@@ -60,79 +66,24 @@ class CatalogRouteController extends Controller
             $gdl = TagManager::getGoogleProductDataLayer($prod);
 
             $bc = new Breadcrumb();
-            $crumbs = $bc->product($group, $cat, $subcat, $prod)->resolve();
+            $crumbs = $bc->product($data->group, $data->category, $data->subcategory, $prod)->resolve();
             $bookscheme = $bc->productBookSchema($prod);
 
             $shipping_methods = Settings::getList('shipping', 'list.%', true);
             $payment_methods = Settings::getList('payment', 'list.%', true);
 
             $reviews = $prod->reviews()->get();
-            $related = Helper::getRelated($cat, $subcat);
+            $related = Helper::getRelated($data->group, $data->category, $data->subcategory);
 
             return view('front.catalog.product.index', compact('prod', 'group', 'cat', 'subcat', 'related', 'seo', 'shipping_methods' , 'payment_methods', 'crumbs', 'bookscheme', 'gdl', 'reviews'));
         }
 
-        $list = [];
-        // If only group and has any category... continue...
-        if ($group && ! $cat && ! $subcat) {
-            if ( ! Category::where('group', $group)->first('id')) {
-                abort(404);
-            }
-
-            $list = Category::where('group', $group)->get();
-        }
-
-        if ($cat) {
-            $cat->count = Helper::resolveCache('cat')->remember('cpc' . $cat->id, config('cache.life'), function () use ($cat) {
-                return $cat->products()->count();
-            });
-        }
-        if ($subcat) {
-            $subcat->count = Helper::resolveCache('cat')->remember('scpc' . $subcat->id, config('cache.life'), function () use ($subcat) {
-                return $subcat->products()->count();
-            });
-        }
-
         $meta_tags = Seo::getMetaTags($request, 'filter');
-
         $crumbs = (new Breadcrumb())->category($group, $cat, $subcat)->resolve();
 
-        return view('front.catalog.category.index', compact('group', 'list', 'cat', 'subcat', 'prod', 'crumbs', 'meta_tags'));
-    }
+        //dd($crumbs);
 
-
-    /**
-     * @param null $prod
-     *
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function resolveOldUrl($prod = null)
-    {
-        if ($prod) {
-            $prod = substr($prod, 0, strrpos($prod, '-'));
-            $prod = Product::where('slug', 'LIKE', $prod . '%')->first();
-
-            if ($prod) {
-                return redirect()->to(url($prod->url), 301);
-            }
-        }
-
-        abort(404);
-    }
-
-
-    /**
-     * @param null $prod
-     *
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function resolveOldCategoryUrl(string $group = null, $cat = null, $subcat = null)
-    {
-        if ($group) {
-            return redirect()->route('catalog.route', ['group' => $group, 'cat' => $cat, 'subcat' => $subcat]);
-        }
-
-        abort(404);
+        return view('front.catalog.category.index', compact('group', 'cat', 'subcat', 'prod', 'data', 'meta', 'crumbs', 'meta_tags'));
     }
 
 

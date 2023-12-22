@@ -1,33 +1,19 @@
 @extends('front.layouts.app')
 
 @if (Route::currentRouteName() == 'catalog.route.all')
-
     @section ( 'title',  'Web shop - Antikvarijat Vremeplov' )
     @section ( 'description', 'Dobro došli na stranice antikvarijata Vremeplov. Specijalizirani smo za stare razglednice, pisma, knjige, plakate,časopise te vršimo otkup i prodaju navedenih.' )
     @push('meta_tags')
         <link rel="canonical" href="{{ env('APP_URL')}}/kategorija-proizvoda" />
     @endpush
 @endif
-@if (isset($group) && $group)
-    @if ($group && ! $cat && ! $subcat)
-        @section ( 'title',  \Illuminate\Support\Str::ucfirst($group). ' - Antikvarijat Vremeplov' )
-    @endif
-    @if ($cat && ! $subcat)
-        @section ( 'title',  $cat->title . ' - Antikvarijat Vremeplov' )
-        @section ( 'description', $cat->meta_description )
-        @push('meta_tags')
-            <link rel="canonical" href="{{ env('APP_URL')}}/{{ $cat['slug'] }}" />
-        @endpush
-    @elseif ($cat && $subcat)
-        @section ( 'title', $subcat->title . ' - Antikvarijat Vremeplov' )
-        @section ( 'description', $cat->meta_description )
 
-        @push('meta_tags')
-            <link rel="canonical" href="{{ env('APP_URL')}}/{{ $subcat['slug'] }}" />
-        @endpush
-
-
-    @endif
+@if (isset($meta) && ! empty($meta))
+    @section ( 'title', $meta->title . ' - Antikvarijat Vremeplov' )
+    @section ( 'description', $meta->description )
+    @push('meta_tags')
+        <link rel="canonical" href="{{ $meta->canonical }}" />
+    @endpush
 @endif
 
 @if (isset($author) && $author)
@@ -54,66 +40,47 @@
     @endpush
 @endif
 
-
 @section('content')
 
     <!-- Page Title-->
     <div class="bg-light pt-4 pb-3"  style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
         <div class="container d-lg-flex justify-content-between py-2 py-lg-3">
 
-            @if (isset($group) && $group)
+            @if (isset($crumbs) && ! empty($crumbs))
                 <div class="order-lg-2 mb-3 mb-lg-0 pt-lg-2">
                     <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb breadcrumb-dark flex-lg-nowrap justify-content-center ">
-                            <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="ci-home"></i>Naslovnica</a></li>
-                            @if ($group && ! $cat && ! $subcat)
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ \Illuminate\Support\Str::ucfirst($group) }}</li>
-                            @elseif ($group && $cat)
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page"><a class="text-nowrap" href="{{ route('catalog.route', ['group' => $group]) }}">{{ \Illuminate\Support\Str::ucfirst($group) }}</a></li>
-                            @endif
-                            @if ($cat && ! $subcat)
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ $cat->title }}</li>
-                            @elseif ($cat && $subcat)
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page"><a class="text-nowrap" href="{{ route('catalog.route', ['group' => $group, 'cat' => $cat]) }}">{{ $cat->title }}</a></li>
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ $subcat->title }}</li>
-                            @endif
+                        <ol class="breadcrumb breadcrumb-dark flex-lg-nowrap justify-content-center">
+                            @foreach ($crumbs['itemListElement'] as $crumb)
+                                @if ($loop->last)
+                                    <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ $crumb['name'] }}</li>
+                                @else
+                                    <li class="breadcrumb-item"><a class="text-nowrap" href="{{ $crumb['item'] }}"><i class="ci-home"></i>{{ $crumb['name'] }}</a></li>
+                                @endif
+                            @endforeach
                         </ol>
                     </nav>
                 </div>
-                <div class="order-lg-1 pe-lg-4 text-center ">
-                    @if ($group && ! $cat && ! $subcat)
-                        <h1 class="h3 text-dark mb-0">{{ \Illuminate\Support\Str::ucfirst($group) }}</h1>
+                <div class="order-lg-1 pe-lg-4 text-center">
+                    @if (isset($meta) && ! empty($meta))
+                        <h1 class="h3 text-dark mb-0">{{ $meta->title }}</h1>
                     @endif
-                    @if ($cat && ! $subcat)
-                        <h1 class="h3 text-dark mb-0">{{ $cat->title }}</h1>
-                    @elseif ($cat && $subcat)
-                        <h1 class="h3 text-dark mb-0">{{ $subcat->title }}</h1>
-                    @endif
-
                 </div>
-
             @endif
 
 
-                @if (Route::currentRouteName() == 'catalog.route.all')
+            @if (Route::currentRouteName() == 'catalog.route.all')
                 <div class="order-lg-2 mb-3 mb-lg-0 pt-lg-2">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb breadcrumb-dark flex-lg-nowrap justify-content-center ">
                             <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="ci-home"></i>Naslovnica</a></li>
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page">Web Shop</li>
-
+                            <li class="breadcrumb-item text-nowrap active" aria-current="page">Web Shop</li>
                         </ol>
                     </nav>
                 </div>
-
                 <div class="order-lg-1 pe-lg-4 text-center ">
-
-                        <h1 class="h3 text-dark mb-0">Web Shop</h1>
-
-
+                    <h1 class="h3 text-dark mb-0">Web Shop</h1>
                 </div>
-
-                @endif
+            @endif
 
             @if (Route::currentRouteName() == 'pretrazi')
                 <div class="order-lg-1 pe-lg-4 text-center text-lg-start">

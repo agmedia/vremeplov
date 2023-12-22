@@ -62,12 +62,8 @@ class FilterController extends Controller
             $groups = Category::getGroups();
 
             foreach ($groups as $key => $group) {
-                $categories = Category::active()->topList($group->slug)->orderBy('title')->withCount('products')->with('subcategories')->get()->toArray();
-                $count      = 0;
-
-                foreach ($categories as $category) {
-                    $count += $category['products_count'];
-                }
+                $categories = Category::active()->topList($group->slug)->orderBy('title')->with('subcategories')->get()->toArray();
+                $count      = Product::query()->where('group', $group->slug)->count();
 
                 $response[] = [
                     'id'    => $key,

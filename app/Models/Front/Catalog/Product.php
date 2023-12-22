@@ -493,11 +493,8 @@ class Product extends Model
         }
 
         if ($request->has('group')) {
-            $group = $request->input('group');
-
-            $query->whereHas('categories', function ($query) use ($request, $group) {
-                $query->where('group', 'like', '%' . $group . '%');
-            });
+            //Log::info($request->toArray());
+            $query->where('group', $request->input('group'));
         }
 
         if ($request->has('cat')) {

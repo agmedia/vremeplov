@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Models\Front\Catalog\Author;
 use App\Models\Front\Catalog\Category;
 use App\Models\Front\Catalog\Product;
 use Illuminate\Support\Facades\Log;
@@ -86,6 +87,46 @@ class Breadcrumb
                 'name' => $prod->name,
                 'item' => url($prod->url)
             ]);
+        }
+
+        return $this;
+    }
+
+
+    public function author(Author $author = null, Category $cat = null, $subcat = null)
+    {
+        array_push($this->breadcrumbs, [
+            '@type' => 'ListItem',
+            'position' => 2,
+            'name' => 'Autori',
+            'item' => route('catalog.route.author')
+        ]);
+
+        if ($author) {
+            array_push($this->breadcrumbs, [
+                '@type' => 'ListItem',
+                'position' => 3,
+                'name' => $author->title,
+                'item' => route('catalog.route.author', ['author' => $author])
+            ]);
+
+            if ($cat) {
+                array_push($this->breadcrumbs, [
+                    '@type' => 'ListItem',
+                    'position' => 4,
+                    'name' => $cat->title,
+                    'item' => route('catalog.route.author', ['author' => $author, 'cat' => $cat])
+                ]);
+            }
+
+            if ($subcat) {
+                array_push($this->breadcrumbs, [
+                    '@type' => 'ListItem',
+                    'position' => 5,
+                    'name' => $subcat->title,
+                    'item' => route('catalog.route.author', ['author' => $author, 'cat' => $cat, 'subcat' => $subcat])
+                ]);
+            }
         }
 
         return $this;
