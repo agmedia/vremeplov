@@ -66,16 +66,13 @@ class CatalogRouteController extends Controller
             $gdl = TagManager::getGoogleProductDataLayer($prod);
 
             $bc = new Breadcrumb();
-            $crumbs = $bc->product($data->group, $data->category, $data->subcategory, $prod)->resolve();
+            $crumbs = $bc->product($group, $resolver->category, $resolver->subcategory, $prod)->resolve();
             $bookscheme = $bc->productBookSchema($prod);
 
-            $shipping_methods = Settings::getList('shipping', 'list.%', true);
-            $payment_methods = Settings::getList('payment', 'list.%', true);
-
             $reviews = $prod->reviews()->get();
-            $related = Helper::getRelated($data->group, $data->category, $data->subcategory);
+            $related = Helper::getRelated($group, $resolver->category, $resolver->subcategory);
 
-            return view('front.catalog.product.index', compact('prod', 'group', 'cat', 'subcat', 'related', 'seo', 'shipping_methods' , 'payment_methods', 'crumbs', 'bookscheme', 'gdl', 'reviews'));
+            return view('front.catalog.product.index', compact('prod', 'group', 'cat', 'subcat', 'related', 'seo', 'crumbs', 'bookscheme', 'gdl', 'reviews'));
         }
 
         $meta_tags = Seo::getMetaTags($request, 'filter');
@@ -108,45 +105,17 @@ class CatalogRouteController extends Controller
     public function author(Request $request, Author $author = null, Category $cat = null, Category $subcat = null)
     {
         if ( ! $author) {
-            $letters = Helper::resolveCache('authors')->remember('aut_' . 'letters', config('cache.life'), function () {
-                return Author::letters();
-            });
-            $letter = 0; //$this->checkLetter($letters);
-
-            if ($request->has('letter')) {
-                $letter = $request->input('letter');
-            }
-
-            $currentPage = request()->get('page', 1);
-
-            $authors = Helper::resolveCache('authors')->remember('aut_' . $letter . '.' . $currentPage, config('cache.life'), function () use ($letter) {
-                $auts = Author::query()->select('id', 'title', 'url')->where('status',  1);
-
-                if ($letter) {
-                    $auts->where('letter', $letter);
-                }
-
-                return $auts->orderBy('title')
-                    ->withCount('products')
-                    ->paginate(36)
-                    ->appends(request()->query());
-            });
-
+            $letters = Author::getLetters();
+            $letter = Helper::resolveLetter($request);
+            $authors = Author::getByLetter($letter);
             $meta_tags = Seo::getMetaTags($request, 'ap_filter');
 
             return view('front.catalog.authors.index', compact('authors', 'letters', 'letter', 'meta_tags'));
         }
 
-        $letter = null;
-
-        if ($cat) { $cat->count = $cat->products()->count(); }
-        if ($subcat) { $subcat->count = $subcat->products()->count(); }
-
         $seo = Seo::getAuthorData($author, $cat, $subcat);
 
-        $crumbs = null;
-
-        return view('front.catalog.category.index', compact('author', 'letter', 'cat', 'subcat', 'seo', 'crumbs'));
+        return view('front.catalog.category.index', compact('author', 'cat', 'subcat', 'seo'));
     }
 
 
@@ -160,45 +129,17 @@ class CatalogRouteController extends Controller
     public function publisher(Request $request, Publisher $publisher = null, Category $cat = null, Category $subcat = null)
     {
         if ( ! $publisher) {
-            $letters = Helper::resolveCache('publishers')->remember('pub_' . 'letters', config('cache.life'), function () {
-                return Publisher::letters();
-            });
-            $letter = 0; //$this->checkLetter($letters);
-
-            if ($request->has('letter')) {
-                $letter = $request->input('letter');
-            }
-
-            $currentPage = request()->get('page', 1);
-
-            $publishers = Helper::resolveCache('publishers')->remember('pub_' . $letter . '.' . $currentPage, config('cache.life'), function () use ($letter) {
-                $pubs = Publisher::query()->select('id', 'title', 'url')->where('status',  1);
-
-                if ($letter) {
-                    $pubs->where('letter', $letter);
-                }
-
-                return $pubs->orderBy('title')
-                    ->withCount('products')
-                    ->paginate(36)
-                    ->appends(request()->query());
-            });
-
+            $letters = Publisher::getLetters();
+            $letter = Helper::resolveLetter($request);
+            $publishers = Publisher::getByLetter($letter);
             $meta_tags = Seo::getMetaTags($request, 'ap_filter');
 
             return view('front.catalog.publishers.index', compact('publishers', 'letters', 'letter', 'meta_tags'));
         }
 
-        $letter = null;
-
-        if ($cat) { $cat->count = $cat->products()->count(); }
-        if ($subcat) { $subcat->count = $subcat->products()->count(); }
-
         $seo = Seo::getPublisherData($publisher, $cat, $subcat);
 
-        $crumbs = null;
-
-        return view('front.catalog.category.index', compact('publisher', 'letter', 'cat', 'subcat', 'seo', 'crumbs'));
+        return view('front.catalog.category.index', compact('publisher', 'cat', 'subcat', 'seo'));
     }
 
 
@@ -294,23 +235,6 @@ class CatalogRouteController extends Controller
     {
         $faq = Faq::where('status', 1)->get();
         return view('front.faq', compact('faq'));
-    }
-
-
-    /**
-     * @param array $letters
-     *
-     * @return string
-     */
-    private function checkLetter(Collection $letters): string
-    {
-        foreach ($letters->all() as $letter) {
-            if ($letter['active']) {
-                return $letter['value'];
-            }
-        }
-
-        return 'A';
     }
 
 }

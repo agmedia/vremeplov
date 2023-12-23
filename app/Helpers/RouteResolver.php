@@ -48,7 +48,7 @@ class RouteResolver
 
     public function isAllowedGroup()
     {
-        if ($this->group && ! $this->category) {
+        if ($this->group) {
             $groups = Category::getGroups();
             $group_exist = false;
 
@@ -113,6 +113,27 @@ class RouteResolver
                 $this->title = $subcategory->title;
                 $this->description = $subcategory->meta_description;
                 $this->canonical = url($this->group . '/' . $category->slug . '/' . $subcategory->slug);
+            }
+
+            $this->category = $category;
+            $this->subcategory = $subcategory;
+        }
+
+        if ($this->product && $this->subcategory && $this->category) {
+            $category = Category::query()->where('slug', $this->category)->where('parent_id', 0)->first();
+
+            if ( ! $category) {
+                abort(404);
+            }
+
+            $subcategory = Category::where('slug', $this->subcategory)->where('parent_id', $category->id)->first();
+
+            if ( ! $subcategory) {
+                abort(404);
+            }
+
+            if ( ! isset($this->product->id)) {
+                abort(404);
             }
 
             $this->category = $category;

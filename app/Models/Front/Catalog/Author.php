@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Log;
  */
 class Author extends Model
 {
-    use HasFactory;
 
     /**
      * @var string
@@ -143,28 +142,54 @@ class Author extends Model
 
 
     /**
-     * @return Collection
+     * @return array|mixed
      */
-    public static function letters(): Collection
+    public static function getLetters()
     {
-        $letters = collect();
-        $authors = Author::active()->pluck('letter')->unique();
+        return Helper::resolveCache('authors')->remember('aut_' . 'letters', config('cache.life'), function () {
+            $letters = collect();
+            $authors = Author::active()->pluck('letter')->unique();
 
-        foreach (Helper::abc() as $item) {
-            if ($item == $authors->contains($item)) {
-                $letters->push([
-                    'value' => $item,
-                    'active' => true
-                ]);
-            } else {
-                $letters->push([
-                    'value' => $item,
-                    'active' => false
-                ]);
+            foreach (Helper::abc() as $item) {
+                if ($item == $authors->contains($item)) {
+                    $letters->push([
+                        'value' => $item,
+                        'active' => true
+                    ]);
+                } else {
+                    $letters->push([
+                        'value' => $item,
+                        'active' => false
+                    ]);
+                }
             }
-        }
 
-        return $letters;
+            return $letters;
+        });
+    }
+
+
+    /**
+     * @param $letter
+     *
+     * @return array|mixed
+     */
+    public static function getByLetter($letter)
+    {
+        $currentPage = request()->get('page', 1);
+
+        return Helper::resolveCache('authors')->remember('aut_' . $letter . '.' . $currentPage, config('cache.life'), function () use ($letter) {
+            $auts = Author::query()->select('id', 'title', 'url')->where('status',  1);
+
+            if ($letter) {
+                $auts->where('letter', $letter);
+            }
+
+            return $auts->orderBy('title')
+                        ->withCount('products')
+                        ->paginate(36)
+                        ->appends(request()->query());
+        });
     }
 
 

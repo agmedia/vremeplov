@@ -13,6 +13,7 @@ use App\Models\Front\Catalog\Product;
 use App\Models\Front\Catalog\Publisher;
 use Darryldecode\Cart\CartCondition;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -710,6 +711,21 @@ class Helper
         }
 
         return false;
+    }
+
+
+    /**
+     * @param Request $request
+     *
+     * @return int|string
+     */
+    public static function resolveLetter(Request $request)
+    {
+        if ($request->has('letter')) {
+            return $request->input('letter');
+        }
+
+        return 0;
     }
 
 }
