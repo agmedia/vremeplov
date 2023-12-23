@@ -102,6 +102,7 @@ Route::middleware(['auth:sanctum', 'verified', 'no.customers'])->prefix('admin')
         Route::get('products', [ProductController::class, 'index'])->name('products');
         Route::get('product/create', [ProductController::class, 'create'])->name('products.create');
         Route::post('product', [ProductController::class, 'store'])->name('products.store');
+        Route::get('product/{product}/duplicate', [ProductController::class, 'duplicate'])->name('products.duplicate');
         Route::get('product/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
         Route::patch('product/{product}', [ProductController::class, 'update'])->name('products.update');
         Route::delete('product/{product}', [ProductController::class, 'destroy'])->name('products.destroy');

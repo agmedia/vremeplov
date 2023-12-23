@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\Back\Widget;
 
 use App\Models\Back\Catalog\Publisher;
-use App\Models\Back\Settings\Settings;
 use App\Models\Back\Widget\Widget;
 use App\Models\Back\Widget\WidgetGroup;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class WidgetController extends Controller

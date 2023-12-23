@@ -306,7 +306,7 @@ class Product extends Model
             $this->resolveCategories($this->id);
 
             $this->update([
-                'group'           => ProductHelper::group($product),
+                'group'           => ProductHelper::group($this),
                 'url'             => ProductHelper::url($this),
                 'category_string' => ProductHelper::categoryString($this)
             ]);

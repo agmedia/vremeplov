@@ -15,6 +15,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -157,7 +158,7 @@ class ProductController extends Controller
         ProductImage::where('product_id', $product->id)->delete();
         ProductCategory::where('product_id', $product->id)->delete();
 
-        Storage::deleteDirectory(config('filesystems.disks.products.root') . $product->id);
+        Storage::disk('products')->deleteDirectory($product->id);
 
         $destroyed = Product::destroy($product->id);
 
@@ -184,7 +185,7 @@ class ProductController extends Controller
             ProductImage::where('product_id', $id)->delete();
             ProductCategory::where('product_id', $id)->delete();
 
-            Storage::deleteDirectory(config('filesystems.disks.products.root') . $id);
+            Storage::disk('products')->deleteDirectory($id);
 
             $destroyed = Product::destroy($id);
 
@@ -194,6 +195,60 @@ class ProductController extends Controller
         }
 
         return response()->json(['error' => 300]);
+    }
+
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param Product                  $product
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function duplicate(Request $request, Product $product)
+    {
+        $clone = $product->replicate()->fill([
+            'sku' => $product->sku . '_copy'
+        ]);
+
+        $clone->save();
+
+        foreach ($product->categories()->get() as $cat) {
+            ProductCategory::insert([
+                'product_id'  => $clone->id,
+                'category_id' => $cat->id
+            ]);
+        }
+
+        foreach ($product->subcategories()->get() as $subcat) {
+            ProductCategory::insert([
+                'product_id'  => $clone->id,
+                'category_id' => $subcat->id
+            ]);
+        }
+
+        foreach ($product->images()->get() as $image) {
+            $clone_image = $image->replicate()->fill([
+                'product_id' => $clone->id
+            ]);
+            $clone_image->save();
+        }
+
+        $path = config('filesystems.disks.products.url');
+        File::copyDirectory($path . $product->id, $path . $clone->id);
+
+        $clone->update([
+            'image' => str_replace('/' . $product->id . '/', '/' . $clone->id . '/', $clone->image)
+        ]);
+
+        foreach ($clone->images()->get() as $image) {
+            $image->update([
+                'image' => str_replace('/' . $product->id . '/', '/' . $clone->id . '/', $image->image)
+            ]);
+        }
+
+        return redirect()->route('products.edit', ['product' => $clone])->with(['success' => 'Artikl je uspješno snimljen!']);
     }
 
 

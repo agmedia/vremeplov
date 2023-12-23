@@ -121,13 +121,13 @@
                             <th>Šifra</th>
                             <th class="text-right">Cijena</th>
                             <th class="text-center">God.</th>
-                            <th class="text-center">Polica</th>
-                            <th class="text-center">Dimenzija</th>
+<!--                            <th class="text-center">Polica</th>
+                            <th class="text-center">Dimenzija</th>-->
                             <th class="text-center">Kol.</th>
                             <th>Dodano</th>
-                            <th>Zadnja izmjena</th>
+                            <th>Izmjena</th>
                             <th class="text-center">Status</th>
-                            <th class="text-right" style="width: 12%;">Uredi</th>
+                            <th class="text-right" style="width: 180px;">Uredi</th>
                         </tr>
                         </thead>
                         <tbody id="ag-table-with-input-fields" class="js-gallery" >
@@ -156,13 +156,12 @@
                                 <td class="font-size-sm text-center">
                                     <ag-input-field item="{{ $product }}" target="year"></ag-input-field>
                                 </td>
-                                <td class="font-size-sm text-center">  <ag-input-field item="{{ $product }}" target="polica"></ag-input-field></td>
-                                <td class="font-size-sm text-center">  <ag-input-field item="{{ $product }}" target="dimensions"></ag-input-field></td>
+{{--                                <td class="font-size-sm text-center">  <ag-input-field item="{{ $product }}" target="polica"></ag-input-field></td>--}}
+{{--                                <td class="font-size-sm text-center">  <ag-input-field item="{{ $product }}" target="dimensions"></ag-input-field></td>--}}
                                 <td class="font-size-sm text-center">{{ $product->quantity }}</td>
                                 <td class="font-size-sm">{{ \Illuminate\Support\Carbon::make($product->created_at)->format('d.m.Y') }}</td>
                                 <td class="font-size-sm">{{ \Illuminate\Support\Carbon::make($product->updated_at)->format('d.m.Y') }}</td>
                                 <td class="text-center font-size-sm">
-                                    {{--@include('back.layouts.partials.status', ['status' => $product->status])--}}
                                     <div class="custom-control custom-switch custom-control-success mb-1">
                                         <input type="checkbox" class="custom-control-input" id="status-{{ $product->id }}" onclick="setStatus({{ $product->id }})" name="status" @if ($product->status) checked="" @endif>
                                         <label class="custom-control-label" for="status-{{ $product->id }}"></label>
@@ -174,6 +173,9 @@
                                     </a>
                                     <a class="btn btn-sm btn-alt-secondary" href="{{ route('products.edit', ['product' => $product]) }}">
                                         <i class="fa fa-fw fa-pencil-alt"></i>
+                                    </a>
+                                    <a class="btn btn-sm btn-alt-warning" href="{{ route('products.duplicate', ['product' => $product]) }}">
+                                        <i class="fa fa-fw fa-copy"></i>
                                     </a>
                                     <button class="btn btn-sm btn-alt-danger" onclick="event.preventDefault(); deleteItem({{ $product->id }}, '{{ route('products.destroy.api') }}');"><i class="fa fa-fw fa-trash-alt"></i></button>
                                 </td>
