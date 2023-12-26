@@ -5,6 +5,7 @@ namespace App\Helpers;
 use App\Models\Front\Catalog\Author;
 use App\Models\Front\Catalog\Category;
 use App\Models\Front\Catalog\Product;
+use App\Models\Front\Catalog\Publisher;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -62,6 +63,10 @@ class Breadcrumb
             }
         }
 
+        if ( ! $group) {
+            $this->addGroup('web shop');
+        }
+
         return $this;
     }
 
@@ -93,6 +98,13 @@ class Breadcrumb
     }
 
 
+    /**
+     * @param Author|null   $author
+     * @param Category|null $cat
+     * @param               $subcat
+     *
+     * @return $this
+     */
     public function author(Author $author = null, Category $cat = null, $subcat = null)
     {
         array_push($this->breadcrumbs, [
@@ -125,6 +137,53 @@ class Breadcrumb
                     'position' => 5,
                     'name' => $subcat->title,
                     'item' => route('catalog.route.author', ['author' => $author, 'cat' => $cat, 'subcat' => $subcat])
+                ]);
+            }
+        }
+
+        return $this;
+    }
+
+
+    /**
+     * @param Publisher|null $publisher
+     * @param Category|null  $cat
+     * @param                $subcat
+     *
+     * @return $this
+     */
+    public function publisher(Publisher $publisher = null, Category $cat = null, $subcat = null)
+    {
+        array_push($this->breadcrumbs, [
+            '@type' => 'ListItem',
+            'position' => 2,
+            'name' => 'Izdavači',
+            'item' => route('catalog.route.publisher')
+        ]);
+
+        if ($publisher) {
+            array_push($this->breadcrumbs, [
+                '@type' => 'ListItem',
+                'position' => 3,
+                'name' => $publisher->title,
+                'item' => route('catalog.route.publisher', ['publisher' => $publisher])
+            ]);
+
+            if ($cat) {
+                array_push($this->breadcrumbs, [
+                    '@type' => 'ListItem',
+                    'position' => 4,
+                    'name' => $cat->title,
+                    'item' => route('catalog.route.publisher', ['publisher' => $publisher, 'cat' => $cat])
+                ]);
+            }
+
+            if ($subcat) {
+                array_push($this->breadcrumbs, [
+                    '@type' => 'ListItem',
+                    'position' => 5,
+                    'name' => $subcat->title,
+                    'item' => route('catalog.route.publisher', ['publisher' => $publisher, 'cat' => $cat, 'subcat' => $subcat])
                 ]);
             }
         }

@@ -352,7 +352,7 @@ Route::prefix('api/v2')->group(function () {
 Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::get('/kontakt', [HomeController::class, 'contact'])->name('kontakt');
 Route::post('/kontakt/posalji', [HomeController::class, 'sendContactMessage'])->name('poruka');
-Route::get('/faq', [CatalogRouteController::class, 'faq'])->name('faq');
+Route::get('/faq', [HomeController::class, 'faq'])->name('faq');
 Route::post('/komentar/proizvoda/posalji', [HomeController::class, 'sendProductComment'])->name('komentar.proizvoda');
 //
 Route::get('/kosarica', [CheckoutController::class, 'cart'])->name('kosarica');
@@ -365,8 +365,8 @@ Route::get('/greska', [CheckoutController::class, 'error'])->name('checkout.erro
 //
 Route::get('pretrazi', [CatalogRouteController::class, 'search'])->name('pretrazi');
 //
-Route::get('info/{page}', [CatalogRouteController::class, 'page'])->name('catalog.route.page');
-Route::get('blog/{blog?}', [CatalogRouteController::class, 'blog'])->name('catalog.route.blog');
+Route::get('info/{page}', [HomeController::class, 'page'])->name('catalog.route.page');
+Route::get('blog/{blog?}', [HomeController::class, 'blog'])->name('catalog.route.blog');
 //
 Route::get('cache/image', [HomeController::class, 'imageCache']);
 Route::get('cache/thumb', [HomeController::class, 'thumbCache']);
@@ -395,7 +395,7 @@ Route::get(config('settings.publisher_path') . '/{publisher?}/{cat?}/{subcat?}',
 //
 Route::get('akcijska-ponuda/{cat?}/{subcat?}', [CatalogRouteController::class, 'actions'])->name('catalog.route.actions');
 //
-Route::get(\Illuminate\Support\Str::slug(config('settings.group_path')), [CatalogRouteController::class, 'allList'])->name('catalog.route.all');
+//Route::get(\Illuminate\Support\Str::slug(config('settings.group_path')), [CatalogRouteController::class, 'allList'])->name('catalog.route.all');
 //
 Route::get('{group}/{cat?}/{subcat?}/{prod?}', [CatalogRouteController::class, 'resolve'])->name('catalog.route');
 

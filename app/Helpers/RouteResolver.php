@@ -4,7 +4,9 @@ namespace App\Helpers;
 
 use App\Models\Front\Catalog\Category;
 use App\Models\Front\Catalog\Product;
+use App\Models\Seo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class RouteResolver
 {
@@ -20,6 +22,8 @@ class RouteResolver
     public $description;
     public $canonical;
 
+    private $all_path;
+
     /**
      * RouteResolver constructor.
      */
@@ -30,6 +34,7 @@ class RouteResolver
         $this->category = $cat;
         $this->subcategory = $subcat;
         $this->product = $prod;
+        $this->all_path = Str::slug(config('settings.group_path'));
     }
 
 
@@ -59,6 +64,14 @@ class RouteResolver
                     $this->canonical = url($item->slug);
                     $group_exist = true;
                 }
+            }
+
+            if ($this->group == $this->all_path) {
+                $this->group = null;
+                $this->title = 'Web shop';
+                $this->description = 'Dobro došli na stranice antikvarijata Vremeplov. Specijalizirani smo za stare razglednice, pisma, knjige, plakate,časopise te vršimo otkup i prodaju navedenih.';
+                $this->canonical = url($this->all_path);
+                $group_exist = true;
             }
 
             if ( ! $group_exist) {
@@ -162,13 +175,14 @@ class RouteResolver
     /**
      * @return \stdClass
      */
-    public function setMeta(): \stdClass
+    public function setMeta(): array
     {
-        $data = new \stdClass();
+        $data = [];
 
-        $data->title = $this->title;
-        $data->description = $this->description;
-        $data->canonical = $this->canonical;
+        $data['title'] = $this->title;
+        $data['description'] = $this->description;
+        $data['canonical'] = $this->canonical;
+        $data['tags'] = Seo::getMetaTags($this->request, 'filter');
 
         return $data;
     }

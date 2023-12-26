@@ -8,6 +8,8 @@ use App\Http\Controllers\Controller;
 use App\Imports\ProductImport;
 use App\Mail\ContactFormMessage;
 use App\Models\Back\Marketing\Review;
+use App\Models\Front\Blog;
+use App\Models\Front\Faq;
 use App\Models\Front\Page;
 use App\Models\Sitemap;
 use Illuminate\Http\Request;
@@ -15,8 +17,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Intervention\Image\Facades\Image;
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class HomeController extends Controller
 {
@@ -44,8 +44,36 @@ class HomeController extends Controller
      */
     public function page(Page $page)
     {
-
         return view('front.page', compact('page'));
+    }
+
+
+    /**
+     * @param Blog $blog
+     *
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+     */
+    public function blog(Blog $blog)
+    {
+        if (! $blog->exists) {
+            $blogs = Blog::active()->get();
+
+            return view('front.blog', compact('blogs'));
+        }
+
+        return view('front.blog', compact('blog'));
+    }
+
+
+    /**
+     * @param Faq $faq
+     *
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+     */
+    public function faq()
+    {
+        $faq = Faq::where('status', 1)->get();
+        return view('front.faq', compact('faq'));
     }
 
 
@@ -60,6 +88,11 @@ class HomeController extends Controller
     }
 
 
+    /**
+     * @param Request $request
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function sendProductComment(Request $request)
     {
         $review = new Review();

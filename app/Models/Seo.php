@@ -16,9 +16,10 @@ use Illuminate\Http\Request;
 class Seo
 {
 
-
     /**
-     * @return array
+     * @param Product $product
+     *
+     * @return string[]
      */
     public static function getProductData(Product $product): array
     {
@@ -30,11 +31,15 @@ class Seo
 
 
     /**
+     * @param Author        $author
+     * @param Category|null $cat
+     * @param Category|null $subcat
+     *
      * @return array
      */
     public static function getAuthorData(Author $author, Category $cat = null, Category $subcat = null): array
     {
-        $title = $author->title . ' knjige - Antikvarijat Vremeplov';
+        $title = $author->title;
         $description = 'Knjige autora ' . $author->title . ' danas su jako popularne u svijetu. Bogati izbor knjiga autora ' . $author->title . ' uz brzu dostavu i sigurnu kupovinu.';
 
         // Check if there is meta title or description and set vars.
@@ -50,17 +55,23 @@ class Seo
 
         return [
             'title'       => $title,
-            'description' => $description
+            'description' => $description,
+            'canonical'   => url($author->url),
+            'tags'        => []
         ];
     }
 
 
     /**
+     * @param Publisher     $publisher
+     * @param Category|null $cat
+     * @param Category|null $subcat
+     *
      * @return array
      */
     public static function getPublisherData(Publisher $publisher, Category $cat = null, Category $subcat = null): array
     {
-        $title = $publisher->title . ' knjige - Antikvarijat Vremeplov';
+        $title = $publisher->title;
         $description = 'Ponuda knjiga nakladnika ' . $publisher->title . ' u Antikvarijat Vremeplov Online shopu. Naručite knjige  iz naklade ' . $publisher->title . '.';
 
         // Check if there is meta title or description and set vars.
@@ -76,12 +87,20 @@ class Seo
 
         return [
             'title'       => $title,
-            'description' => $description
+            'description' => $description,
+            'canonical'   => url($publisher->url),
+            'tags'        => []
         ];
     }
 
 
-    public static function getMetaTags(Request $request, $target = 'product')
+    /**
+     * @param Request $request
+     * @param string  $target
+     *
+     * @return array
+     */
+    public static function getMetaTags(Request $request, string $target = 'product'): array
     {
         $response = [];
         $data = $request->toArray();

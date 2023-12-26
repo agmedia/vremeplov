@@ -1,40 +1,11 @@
 @extends('front.layouts.app')
 
-@if (Route::currentRouteName() == 'catalog.route.all')
-    @section ( 'title',  'Web shop - Antikvarijat Vremeplov' )
-    @section ( 'description', 'Dobro došli na stranice antikvarijata Vremeplov. Specijalizirani smo za stare razglednice, pisma, knjige, plakate,časopise te vršimo otkup i prodaju navedenih.' )
-    @push('meta_tags')
-        <link rel="canonical" href="{{ env('APP_URL')}}/kategorija-proizvoda" />
-    @endpush
-@endif
-
 @if (isset($meta) && ! empty($meta))
-    @section ( 'title', $meta->title . ' - Antikvarijat Vremeplov' )
-    @section ( 'description', $meta->description )
+    @section ( 'title', $meta['title'] . ' - Antikvarijat Vremeplov' )
+    @section ( 'description', $meta['description'] )
     @push('meta_tags')
-        <link rel="canonical" href="{{ $meta->canonical }}" />
-    @endpush
-@endif
-
-@if (isset($author) && $author)
-    @section ('title',  $seo['title'])
-    @section ('description', $seo['description'])
-    @push('meta_tags')
-        <link rel="canonical" href="{{ env('APP_URL')}}{{ $author['url'] }}" />
-    @endpush
-@endif
-
-@if (isset($publisher) && $publisher)
-    @section ('title',  $seo['title'])
-    @section ('description', $seo['description'])
-    @push('meta_tags')
-        <link rel="canonical" href="{{ env('APP_URL')}}{{ $publisher['url'] }}" />
-    @endpush
-@endif
-
-@if (isset($meta_tags))
-    @push('meta_tags')
-        @foreach ($meta_tags as $tag)
+        <link rel="canonical" href="{{ $meta['canonical'] }}" />
+        @foreach ($meta['tags'] as $tag)
             <meta name={{ $tag['name'] }} content={{ $tag['content'] }}>
         @endforeach
     @endpush
@@ -62,79 +33,14 @@
                 </div>
                 <div class="order-lg-1 pe-lg-4 text-center">
                     @if (isset($meta) && ! empty($meta))
-                        <h1 class="h3 text-dark mb-0">{{ $meta->title }}</h1>
+                        <h1 class="h3 text-dark mb-0">{{ $meta['title'] }}</h1>
                     @endif
-                </div>
-            @endif
-
-
-            @if (Route::currentRouteName() == 'catalog.route.all')
-                <div class="order-lg-2 mb-3 mb-lg-0 pt-lg-2">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb breadcrumb-dark flex-lg-nowrap justify-content-center ">
-                            <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="ci-home"></i>Naslovnica</a></li>
-                            <li class="breadcrumb-item text-nowrap active" aria-current="page">Web Shop</li>
-                        </ol>
-                    </nav>
-                </div>
-                <div class="order-lg-1 pe-lg-4 text-center ">
-                    <h1 class="h3 text-dark mb-0">Web Shop</h1>
                 </div>
             @endif
 
             @if (Route::currentRouteName() == 'pretrazi')
                 <div class="order-lg-1 pe-lg-4 text-center text-lg-start">
                     <h1 class="h3 text-dark mb-0"><span class="small fw-light me-2">Rezultati za:</span> {{ request()->input('pojam') }}</h1>
-                </div>
-            @endif
-
-            @if (isset($author) && $author)
-                <div class="order-lg-2 mb-3 mb-lg-0 pt-lg-2">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb breadcrumb-dark flex-lg-nowrap justify-content-center ">
-                            <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="ci-home"></i>Naslovnica</a></li>
-                            <li class="breadcrumb-item text-nowrap active" aria-current="page"><a class="text-nowrap" href="{{ route('catalog.route.author') }}">Autori</a></li>
-                            @if ( ! $cat && ! $subcat)
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ $author->title }}</li>
-                            @endif
-                            @if ($cat && ! $subcat)
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page"><a class="text-nowrap" href="{{ route('catalog.route.author', ['author' => $author]) }}">{{ $author->title }}</a></li>
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ $cat->title }}</li>
-                            @elseif ($cat && $subcat)
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page"><a class="text-nowrap" href="{{ route('catalog.route.author', ['author' => $author]) }}">{{ $author->title }}</a></li>
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page"><a class="text-nowrap" href="{{ route('catalog.route.author', ['author' => $author, 'cat' => $cat]) }}">{{ $cat->title }}</a></li>
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ $subcat->title }}</li>
-                            @endif
-                        </ol>
-                    </nav>
-                </div>
-                <div class="order-lg-1 pe-lg-4 text-center text-lg-start">
-                    <h1 class="h3 text-dark mb-0">{{ $author->title }}</h1>
-                </div>
-            @endif
-
-            @if (isset($publisher) && $publisher)
-                <div class="order-lg-2 mb-3 mb-lg-0 pt-lg-2">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb breadcrumb-dark flex-lg-nowrap justify-content-center justify-content-lg-start">
-                            <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="ci-home"></i>Naslovnica</a></li>
-                            <li class="breadcrumb-item text-nowrap active" aria-current="page"><a class="text-nowrap" href="{{ route('catalog.route.publisher') }}">Nakladnici</a></li>
-                            @if ( ! $cat && ! $subcat)
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ $publisher->title }}</li>
-                            @endif
-                            @if ($cat && ! $subcat)
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page"><a class="text-nowrap" href="{{ route('catalog.route.publisher', ['publisher' => $publisher]) }}">{{ $publisher->title }}</a></li>
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ $cat->title }}</li>
-                            @elseif ($cat && $subcat)
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page"><a class="text-nowrap" href="{{ route('catalog.route.publisher', ['publisher' => $publisher]) }}">{{ $publisher->title }}</a></li>
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page"><a class="text-nowrap" href="{{ route('catalog.route.publisher', ['publisher' => $publisher, 'cat' => $cat]) }}">{{ $cat->title }}</a></li>
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ $subcat->title }}</li>
-                            @endif
-                        </ol>
-                    </nav>
-                </div>
-                <div class="order-lg-1 pe-lg-4 text-center text-lg-start">
-                    <h1 class="h3 text-dark mb-0">{{ $publisher->title }}</h1>
                 </div>
             @endif
 
