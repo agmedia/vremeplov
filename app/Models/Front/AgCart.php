@@ -104,10 +104,17 @@ class AgCart extends Model
     /**
      * @return null
      */
+
     public function getEur()
     {
-        return Currency::secondary()->value;
+        if (isset(Currency::secondary()->value)) {
+            return Currency::secondary()->value;
+        }
+
+        return null;
     }
+
+
 
 
     /**
