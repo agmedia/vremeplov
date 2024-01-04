@@ -238,6 +238,7 @@ class DashboardController extends Controller
                     'sku'              => isset($attributes['Šifra']) ? $attributes['Šifra'] : $product->model . '-' . $product->product_id,
                     'ean'              => $product->product_id,
                     'polica'           => 0,
+                    'group'            => '',
                     'description'      => '<p>' . str_replace('\n', '<br>', $product_description->description) . '</p>',
                     'slug'             => Str::slug($product_description->name) . '-' . time(),
                     'url'              => '',
@@ -301,6 +302,12 @@ class DashboardController extends Controller
                                 'category_id' => $category
                             ]);
                         }
+
+                        $cat = Category::query()->where('id', $category)->first();
+
+                        $product->update([
+                            'group' => $cat->group,
+                        ]);
                     }
 
                     $product = Product::find($product_id);
