@@ -32,7 +32,7 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        $groups = Category::groups()->pluck('group');
+        $groups = \App\Models\Front\Catalog\Category::getGroups();
         $parents = Category::topList()->pluck('title', 'id');
 
         return view('back.catalog.category.edit', compact('parents', 'groups'));
