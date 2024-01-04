@@ -45,19 +45,24 @@
             <div class="block block-rounded">
                 <ul class="nav nav-tabs nav-tabs-block" data-toggle="tabs" role="tablist">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#btabs-static-home"><i class="si si-settings"></i> Osnovno</a>
+                        <a class="nav-link active" href="#osnovno"><i class="si si-settings"></i> Osnovno</a>
                     </li>
+
                     <li class="nav-item">
-                        <a class="nav-link" href="#btabs-static-profile"><i class="si si-picture"></i> Slike</a>
+                        <a class="nav-link" href="#atributi"><i class="si si-settings"></i> Atributi</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="#slike"><i class="si si-picture"></i> Slike</a>
                     </li>
                     <li class="nav-item ">
-                        <a class="nav-link" href="#btabs-static-settings">
+                        <a class="nav-link" href="#seo">
                             <i class="si si-link"></i> SEO
                         </a>
                     </li>
                 </ul>
                 <div class="block-content tab-content">
-                    <div class="tab-pane active" id="btabs-static-home" role="tabpanel">
+                    <div class="tab-pane active" id="osnovno" role="tabpanel">
                         <div class="block">
                             <div class="block-header block-header-default">
                                 <a class="btn btn-light" href="{{ route('products') }}">
@@ -114,7 +119,7 @@
                                                 @enderror
                                             </div>
 
-                                            <div class="col-md-2">
+                                            <div class="col-md-3">
                                                 <label for="quantity-input">Količina <span class="text-danger">*</span></label>
                                                 <input type="text" class="form-control" id="quantity-input" name="quantity" placeholder="Upišite količinu artikla" value="{{ isset($product) ? $product->quantity : ( ! isset($product) ? 1 : old('quantity')) }}">
                                                 @error('quantity ')
@@ -122,7 +127,7 @@
                                                 @enderror
                                             </div>
 
-                                            <div class="col-md-2">
+                                            <div class="col-md-3">
                                                 <label for="sku-input">Šifra <span class="text-danger">*</span></label>
                                                 <input type="text" class="form-control" id="sku-input" name="sku" placeholder="Upišite šifru artikla" value="{{ isset($product) ? $product->sku : old('sku') }}">
                                                 @error('sku')
@@ -133,23 +138,13 @@
                                                 @enderror
                                             </div>
 
-                                            <div class="col-md-2">
+                                            <div class="col-md-3">
                                                 <label for="polica-input">Šifra police </label>
                                                 <input type="text" class="form-control" id="polica-input" name="polica" placeholder="Upišite šifru police" value="{{ isset($product) ? $product->polica : old('polica') }}" >
                                             </div>
 
 
-                                            <div class="col-md-3">
-                                                <label for="dm-post-edit-slug">Vrijeme isporuke @include('back.layouts.partials.required-star')</label>
-                                                <select class="js-select2 form-control" id="shipping_time-select" name="shipping_time" style="width: 100%;" data-placeholder="Odaberite ili upišite vrijem isporuke">
-                                                    <option></option>
-                                                    @if ($data['shipping_times'])
-                                                        @foreach ($data['shipping_times'] as $shipping_time)
-                                                            <option value="{{ $shipping_time }}" {{ ((isset($product)) and ($shipping_time == $product->shipping_time)) ? 'selected' : '' }}>{{ $shipping_time }}</option>
-                                                        @endforeach
-                                                    @endif
-                                                </select>
-                                            </div>
+
                                         </div>
 
                                         <div class="form-group row items-push mb-3">
@@ -190,6 +185,21 @@
                                                 <textarea id="description-editor" name="description">{!! isset($product) ? $product->description : old('description') !!}</textarea>
                                             </div>
                                         </div>
+
+
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="atributi" role="tabpanel">
+                        <div class="block">
+
+                            <div class="block-content">
+                                <div class="row justify-content-center push">
+                                    <div class="col-md-12">
+
 
                                         <div class="form-group row items-push mb-4">
                                             <div class="col-md-12">
@@ -283,7 +293,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="tab-pane" id="btabs-static-profile" role="tabpanel">
+                    <div class="tab-pane" id="slike" role="tabpanel">
                         <div class="block">
                             <div class="block-header block-header-default">
                                 <h3 class="block-title">Slike</h3>
@@ -302,7 +312,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="tab-pane" id="btabs-static-settings" role="tabpanel">
+                    <div class="tab-pane" id="seo" role="tabpanel">
                         <div class="block">
                             <div class="block-header block-header-default">
                                 <h3 class="block-title">Meta Data - SEO</h3>

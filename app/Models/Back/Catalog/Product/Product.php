@@ -167,6 +167,7 @@ class Product extends Model
             'name'     => 'required',
             'sku'      => 'required',
             'price'    => 'required',
+            'quantity'    => 'required',
             'category' => 'required'
         ]);
 
