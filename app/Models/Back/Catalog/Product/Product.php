@@ -326,6 +326,7 @@ class Product extends Model
     {
         return [
             'categories' => (new Category())->getList(false),
+            'groups'     => \App\Models\Front\Catalog\Category::getGroups(),
             'images'     => ProductImage::getAdminList($this->id),
             'letters'    => Settings::get('product', 'letter_styles'),
             'conditions' => Settings::get('product', 'condition_styles'),

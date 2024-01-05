@@ -205,18 +205,11 @@
 
                                             <div class="col-md-12">
                                                 <label for="categories">Odaberi grupu @include('back.layouts.partials.required-star')</label>
-                                                <select class="form-control" id="grupa-select" name="category[]" style="width: 100%;" >
+                                                <select class="form-control" id="grupa-select" name="group" style="width: 100%;" >
                                                     <option></option><!-- Required for data-placeholder attribute to work with Select2 plugin -->
-                                                   {{-- @foreach ($data['categories'] as $group => $cats)
-                                                        @foreach ($cats as $id => $category)
-                                                            <option value="{{ $id }}" class="font-weight-bold small" {{ ((isset($product)) and (in_array($id, $product->categories()->pluck('id')->toArray()))) ? 'selected' : '' }}>{{ $category['title'] }}</option>
-                                                            @if ( ! empty($category['subs']))
-                                                                @foreach ($category['subs'] as $sub_id => $subcategory)
-                                                                    <option value="{{ $sub_id }}" class="pl-3 text-sm" {{ ((isset($product) && $product->subcategory()) and ($sub_id == $product->subcategory()->id)) ? 'selected' : '' }}>{{ $category['title'] . ' >> ' . $subcategory['title'] }}</option>
-                                                                @endforeach
-                                                            @endif
-                                                        @endforeach
-                                                    @endforeach- --}}
+                                                    @foreach ($data['groups'] as $group)
+                                                        <option value="{{ $group->slug }}" class="font-weight-bold small" {{ ((isset($product)) and ($group->slug == $product->group)) ? 'selected' : '' }}>{{ $group->title }}</option>
+                                                    @endforeach
                                                 </select>
                                                 @error('category')
                                                 <span class="text-danger font-italic">Kategorija je potrebna...</span>
@@ -430,6 +423,10 @@
             });
 
             $('#category-select').select2({});
+            $('#grupa-select').select2({
+                placeholder: 'Odaberite...',
+                minimumResultsForSearch: Infinity
+            });
             $('#tax-select').select2({});
             $('#action-select').select2({
                 placeholder: 'Odaberite...',
