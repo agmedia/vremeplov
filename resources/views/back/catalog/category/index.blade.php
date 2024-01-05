@@ -26,13 +26,24 @@
                     @forelse($categoriess as $group => $categories)
 
                             <div class="block-header block-header-default mb-2 mt-2" role="tab" id="accordion_h{{ $group }}">
-                                <a class="font-w600" data-toggle="collapse" data-parent="#accordion" href="#accordion_q{{ $group }}" aria-expanded="true" aria-controls="accordion_{{ $group }}">         <h3 class="mb-0"><small class="font-weight-light">Grupa kategorija: </small>{{ $group }} <small class="font-weight-light">{{ $categories->count() }}</small></h3></a></div>
+                                <a class="font-w600" data-toggle="collapse" data-parent="#accordion" href="#accordion_q{{ $group }}" aria-expanded="true" aria-controls="accordion_{{ $group }}">         <h4 class="mb-0"><small class="font-weight-light">Grupa kategorija: </small>{{ $group }} <small class="font-weight-light">{{ $categories->count() }}</small></h4>
+
+                                </a>
+
+                                <div class="block-options">
+                                    <button type="button" data-toggle="collapse" data-parent="#accordion" href="#accordion_q{{ $group }}" aria-expanded="true" aria-controls="accordion_{{ $group }}" class="btn-block-option" data-toggle="block-option" data-action="content_toggle"><i class="si si-arrow-down"></i></button>
+
+
+                                </div>
+                            </div>
                         <div id="accordion_q{{ $group }}" class="collapse " role="tabpanel" aria-labelledby="accordion_h{{ $group }}" data-parent="#accordion">
                         @forelse($categories as $category)
 
                             <div class="block block-rounded mb-1">
                                 <div class="block-header block-header-default" >
-                                    <a class="h3 block-title" >{{ $category->title }}</a>
+                                    {{dd($category)}}
+                                    <a class="h3 block-title"> {{ $category->title }}</a>
+
                                     <div class="block-options">
                                         <div class="btn-group">
                                             <a  class="btn btn-sm btn-secondary js-tooltip-enabled me-2" data-toggle="tooltip" title="" data-original-title="Uredi"> {{ $category->products_count }}
