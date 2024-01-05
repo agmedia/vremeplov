@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Helpers\ProductHelper;
 use App\Http\Controllers\Back\DashboardController;
 use App\Models\Back\Catalog\Product\Product;
+use App\Models\Back\Settings\Api\OC_Import;
 use Illuminate\Console\Command;
 use Illuminate\Http\Request;
 

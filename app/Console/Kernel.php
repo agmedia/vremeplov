@@ -26,7 +26,9 @@ class Kernel extends ConsoleKernel
     {
         //$schedule->command('clean:authors')->dailyAt('00:03');
         //$schedule->command('clean:publishers')->dailyAt('00:04');
-        $schedule->command('import:initial')->everyTenMinutes();
+        //$schedule->command('import:initial')->everyTenMinutes();
+        //$schedule->command('clean:products')->everyMinute();
+        $schedule->command('clean:descriptions')->everyTwoMinutes();
     }
 
     /**

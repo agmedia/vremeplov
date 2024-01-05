@@ -331,6 +331,45 @@ class OC_Import
             }
         }
 
+        foreach ($arr as $item) {
+            $item = trim(str_replace('&lt;p&gt;', '', $item));
+
+            if ($item) {
+                $params = explode(': ', $item);
+
+                if (isset($params[1])) {
+                    $response[$params[0]] = $params[1];
+                }
+            }
+        }
+
+        foreach ($response as $key => $item) {
+            if (in_array($key, ['Izdavač', 'izdavač'])) {
+                $response['Izdavač'] = $item;
+            }
+            if (in_array($key, ['Šifra', 'šifra'])) {
+                $response['Šifra'] = $item;
+            }
+            if (in_array($key, ['Broj stranica', 'broj stranica'])) {
+                $response['Broj stranica'] = $item;
+            }
+            if (in_array($key, ['Jezik', 'jezik'])) {
+                $response['Jezik'] = $item;
+            }
+            if (in_array($key, ['Pismo', 'pismo'])) {
+                $response['Pismo'] = $item;
+            }
+            if (in_array($key, ['Stanje', 'stanje'])) {
+                $response['Stanje'] = $item;
+            }
+            if (in_array($key, ['Uvez', 'uvez'])) {
+                $response['Uvez'] = $item;
+            }
+            if (in_array($key, ['Godina', 'godina'])) {
+                $response['Godina'] = $item;
+            }
+        }
+
         return $response;
     }
 
