@@ -88,6 +88,11 @@
                                         <option value="all" {{ 'all' == request()->input('status') ? 'selected' : '' }}>Svi artikli</option>
                                         <option value="active" {{ 'active' == request()->input('status') ? 'selected' : '' }}>Aktivni</option>
                                         <option value="inactive" {{ 'inactive' == request()->input('status') ? 'selected' : '' }}>Neaktivni</option>
+
+                                        <option value="kolicina" {{ 'kolicina' == request()->input('status') ? 'selected' : '' }}>Rasprodano</option>
+
+
+
                                         <option value="with_action" {{ 'with_action' == request()->input('status') ? 'selected' : '' }}>Sa akcijama</option>
                                         <option value="without_action" {{ 'without_action' == request()->input('status') ? 'selected' : '' }}>Bez akcija</option>
                                     </select>

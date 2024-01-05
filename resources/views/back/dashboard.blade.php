@@ -283,7 +283,7 @@
                             </div>
                         </div>
                         <div class="block-content block-content-full block-content-sm bg-body-light fs-sm text-center">
-                            <a class="fw-medium" href="{{ route('products') }}">
+                            <a class="fw-medium" href="{{ route('products') }}?status=kolicina">
                                 Pogledaj artikle
                                 <i class="fa fa-arrow-right ms-1 opacity-25"></i>
                             </a>

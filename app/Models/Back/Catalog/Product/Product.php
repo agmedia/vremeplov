@@ -417,6 +417,14 @@ class Product extends Model
             }
         }
 
+
+        if ($request->has('status')) {
+            if ($request->input('status') == 'kolicina') {
+                $query->where('quantity', 0);
+            }
+
+        }
+
         if ($request->has('sort')) {
             if ($request->input('sort') == 'new') {
                 $query->orderBy('created_at', 'desc');
