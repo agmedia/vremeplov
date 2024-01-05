@@ -41,7 +41,7 @@
 
                             <div class="block block-rounded mb-1">
                                 <div class="block-header block-header-default" >
-                                    {{dd($category)}}
+
                                     <a class="h3 block-title"> {{ $category->title }}</a>
 
                                     <div class="block-options">

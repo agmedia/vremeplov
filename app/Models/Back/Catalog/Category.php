@@ -112,7 +112,6 @@ class Category extends Model
     public function getList(bool $full = true): Collection
     {
         $categories = collect();
-
         $groups = $this->groups()->pluck('group');
 
         foreach ($groups as $group) {
