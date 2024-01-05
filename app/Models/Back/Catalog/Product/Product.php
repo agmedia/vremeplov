@@ -167,8 +167,8 @@ class Product extends Model
             'name'     => 'required',
             'sku'      => 'required',
             'price'    => 'required',
-            'quantity'    => 'required',
-            'group' => 'required'
+            'quantity' => 'required',
+            'group'    => 'required'
         ]);
 
         // Set Product Model request variable
@@ -189,48 +189,50 @@ class Product extends Model
      */
     public function create()
     {
-        $slug = $this->resolveSlug();
+        $slug  = $this->resolveSlug();
+        $group = isset($this->request->group) ? $this->request->group : null;
 
         $id = $this->insertGetId([
-            'author_id'        => $this->request->author_id ?: 6,
-            'publisher_id'     => $this->request->publisher_id ?: 2,
-            'action_id'        => $this->request->action ?: 0,
-            'name'             => $this->request->name,
-            'sku'              => $this->request->sku,
-            'polica'           => $this->request->polica,
-            'isbn'             => $this->request->isbn,
-            'description'      => $this->cleanHTML($this->request->description),
-            'slug'             => $slug,
-            'price'            => $this->request->price,
-            'quantity'         => $this->request->quantity ?: 0,
-            'decrease'         => (isset($this->request->decrease) and $this->request->decrease == 'on') ? 0 : 1,
-            'tax_id'           => $this->request->tax_id ?: 1,
-            'special'          => $this->request->special,
-            'special_from'     => $this->request->special_from ? Carbon::make($this->request->special_from) : null,
-            'special_to'       => $this->request->special_to ? Carbon::make($this->request->special_to) : null,
-            'meta_title'       => $this->request->meta_title ?: $this->request->name/* . ($author ? '-' . $author->title : '')*/,
-            'meta_description' => $this->request->meta_description,
-            'pages'            => $this->request->pages,
-            'dimensions'       => $this->request->dimensions,
-            'origin'           => $this->request->origin,
-            'letter'           => $this->request->letter,
-            'condition'        => $this->request->condition,
-            'binding'          => $this->request->binding,
-            'year'             => $this->request->year,
-            'shipping_time'    => $this->request->shipping_time,
-            'youtube_product_url'             => $this->request->youtube_product_url,
-            'youtube_channel'             => $this->request->youtube_channel,
-            'goodreads_author_url'             => $this->request->goodreads_author_url,
-            'goodreads_book_url'             => $this->request->goodreads_book_url,
-            'author_web_url'             => $this->request->author_web_url,
-            'serial_web_url'             => $this->request->serial_web_url,
+            'author_id'            => $this->request->author_id ?: 6,
+            'publisher_id'         => $this->request->publisher_id ?: 2,
+            'action_id'            => $this->request->action ?: 0,
+            'name'                 => $this->request->name,
+            'sku'                  => $this->request->sku,
+            'polica'               => $this->request->polica,
+            'isbn'                 => $this->request->isbn,
+            'description'          => $this->cleanHTML($this->request->description),
+            'slug'                 => $slug,
+            'group'                => $group,
+            'price'                => $this->request->price,
+            'quantity'             => $this->request->quantity ?: 0,
+            'decrease'             => (isset($this->request->decrease) and $this->request->decrease == 'on') ? 0 : 1,
+            'tax_id'               => $this->request->tax_id ?: 1,
+            'special'              => $this->request->special,
+            'special_from'         => $this->request->special_from ? Carbon::make($this->request->special_from) : null,
+            'special_to'           => $this->request->special_to ? Carbon::make($this->request->special_to) : null,
+            'meta_title'           => $this->request->meta_title ?: $this->request->name/* . ($author ? '-' . $author->title : '')*/,
+            'meta_description'     => $this->request->meta_description,
+            'pages'                => $this->request->pages,
+            'dimensions'           => $this->request->dimensions,
+            'origin'               => $this->request->origin,
+            'letter'               => $this->request->letter,
+            'condition'            => $this->request->condition,
+            'binding'              => $this->request->binding,
+            'year'                 => $this->request->year,
+            'shipping_time'        => $this->request->shipping_time,
+            'youtube_product_url'  => $this->request->youtube_product_url,
+            'youtube_channel'      => $this->request->youtube_channel,
+            'goodreads_author_url' => $this->request->goodreads_author_url,
+            'goodreads_book_url'   => $this->request->goodreads_book_url,
+            'author_web_url'       => $this->request->author_web_url,
+            'serial_web_url'       => $this->request->serial_web_url,
             'wiki_url'             => $this->request->wiki_url,
-            'viewed'           => 0,
-            'sort_order'       => 0,
-            'push'             => 0,
-            'status'           => (isset($this->request->status) and $this->request->status == 'on') ? 1 : 0,
-            'created_at'       => Carbon::now(),
-            'updated_at'       => Carbon::now()
+            'viewed'               => 0,
+            'sort_order'           => 0,
+            'push'                 => 0,
+            'status'               => (isset($this->request->status) and $this->request->status == 'on') ? 1 : 0,
+            'created_at'           => Carbon::now(),
+            'updated_at'           => Carbon::now()
         ]);
 
         if ($id) {
@@ -239,7 +241,10 @@ class Product extends Model
             $product = $this->find($id);
 
             $product->update([
-                'group'           => ProductHelper::group($product),
+                'group' => ProductHelper::group($product, $group)
+            ]);
+
+            $product->update([
                 'url'             => ProductHelper::url($product),
                 'category_string' => ProductHelper::categoryString($product)
             ]);
@@ -260,54 +265,59 @@ class Product extends Model
     {
         $this->old_product = $this->setHistoryProduct();
 
-        $slug = $this->request->slug;//$this->resolveSlug('update');
+        $slug  = $this->request->slug;//$this->resolveSlug('update');
+        $group = isset($this->request->group) ? $this->request->group : null;
 
         $updated = $this->update([
-            'author_id'        => $this->request->author_id ?: 6,
-            'publisher_id'     => $this->request->publisher_id ?: 2,
-            'action_id'        => $this->request->action ?: 0,
-            'name'             => $this->request->name,
-            'sku'              => $this->request->sku,
-            'polica'           => $this->request->polica,
-            'isbn'             => $this->request->isbn,
-            'description'      => $this->cleanHTML($this->request->description),
-            'slug'             => $slug,
-            'price'            => isset($this->request->price) ? $this->request->price : 0,
-            'quantity'         => $this->request->quantity ?: 0,
-            'decrease'         => (isset($this->request->decrease) and $this->request->decrease == 'on') ? 0 : 1,
-            'tax_id'           => $this->request->tax_id ?: 1,
-            'special'          => $this->request->special,
-            'special_from'     => $this->request->special_from ? Carbon::make($this->request->special_from) : null,
-            'special_to'       => $this->request->special_to ? Carbon::make($this->request->special_to) : null,
-            'meta_title'       => $this->request->meta_title ?: $this->request->name/* . '-' . ($author ? '-' . $author->title : '')*/,
-            'meta_description' => $this->request->meta_description,
-            'pages'            => $this->request->pages,
-            'dimensions'       => $this->request->dimensions,
-            'origin'           => $this->request->origin,
-            'letter'           => $this->request->letter,
-            'condition'        => $this->request->condition,
-            'binding'          => $this->request->binding,
-            'year'             => $this->request->year,
-            'shipping_time'    => $this->request->shipping_time,
-            'youtube_product_url'             => $this->request->youtube_product_url,
-            'youtube_channel'             => $this->request->youtube_channel,
-            'goodreads_author_url'             => $this->request->goodreads_author_url,
-            'goodreads_book_url'             => $this->request->goodreads_book_url,
-            'author_web_url'             => $this->request->author_web_url,
-            'serial_web_url'             => $this->request->serial_web_url,
+            'author_id'            => $this->request->author_id ?: 6,
+            'publisher_id'         => $this->request->publisher_id ?: 2,
+            'action_id'            => $this->request->action ?: 0,
+            'name'                 => $this->request->name,
+            'sku'                  => $this->request->sku,
+            'polica'               => $this->request->polica,
+            'isbn'                 => $this->request->isbn,
+            'description'          => $this->cleanHTML($this->request->description),
+            'slug'                 => $slug,
+            'group'                => $group,
+            'price'                => isset($this->request->price) ? $this->request->price : 0,
+            'quantity'             => $this->request->quantity ?: 0,
+            'decrease'             => (isset($this->request->decrease) and $this->request->decrease == 'on') ? 0 : 1,
+            'tax_id'               => $this->request->tax_id ?: 1,
+            'special'              => $this->request->special,
+            'special_from'         => $this->request->special_from ? Carbon::make($this->request->special_from) : null,
+            'special_to'           => $this->request->special_to ? Carbon::make($this->request->special_to) : null,
+            'meta_title'           => $this->request->meta_title ?: $this->request->name/* . '-' . ($author ? '-' . $author->title : '')*/,
+            'meta_description'     => $this->request->meta_description,
+            'pages'                => $this->request->pages,
+            'dimensions'           => $this->request->dimensions,
+            'origin'               => $this->request->origin,
+            'letter'               => $this->request->letter,
+            'condition'            => $this->request->condition,
+            'binding'              => $this->request->binding,
+            'year'                 => $this->request->year,
+            'shipping_time'        => $this->request->shipping_time,
+            'youtube_product_url'  => $this->request->youtube_product_url,
+            'youtube_channel'      => $this->request->youtube_channel,
+            'goodreads_author_url' => $this->request->goodreads_author_url,
+            'goodreads_book_url'   => $this->request->goodreads_book_url,
+            'author_web_url'       => $this->request->author_web_url,
+            'serial_web_url'       => $this->request->serial_web_url,
             'wiki_url'             => $this->request->wiki_url,
-            'viewed'           => 0,
-            'sort_order'       => 0,
-            'push'             => 0,
-            'status'           => (isset($this->request->status) and $this->request->status == 'on') ? 1 : 0,
-            'updated_at'       => Carbon::now()
+            'viewed'               => 0,
+            'sort_order'           => 0,
+            'push'                 => 0,
+            'status'               => (isset($this->request->status) and $this->request->status == 'on') ? 1 : 0,
+            'updated_at'           => Carbon::now()
         ]);
 
         if ($updated) {
             $this->resolveCategories($this->id);
 
             $this->update([
-                'group'           => ProductHelper::group($this),
+                'group' => ProductHelper::group($this, $group)
+            ]);
+
+            $this->update([
                 'url'             => ProductHelper::url($this),
                 'category_string' => ProductHelper::categoryString($this)
             ]);
@@ -325,14 +335,14 @@ class Product extends Model
     public function getRelationsData(): array
     {
         return [
-            'categories' => (new Category())->getList(false),
-            'groups'     => \App\Models\Front\Catalog\Category::getGroups(),
-            'images'     => ProductImage::getAdminList($this->id),
-            'letters'    => Settings::get('product', 'letter_styles'),
-            'conditions' => Settings::get('product', 'condition_styles'),
-            'bindings'   => Settings::get('product', 'binding_styles'),
-            'shipping_times'   => Settings::get('product', 'shipping_time_styles'),
-            'taxes'      => Settings::get('tax', 'list')
+            'categories'     => (new Category())->getList(false),
+            'groups'         => \App\Models\Front\Catalog\Category::getGroups(),
+            'images'         => ProductImage::getAdminList($this->id),
+            'letters'        => Settings::get('product', 'letter_styles'),
+            'conditions'     => Settings::get('product', 'condition_styles'),
+            'bindings'       => Settings::get('product', 'binding_styles'),
+            'shipping_times' => Settings::get('product', 'shipping_time_styles'),
+            'taxes'          => Settings::get('tax', 'list')
         ];
     }
 
@@ -417,7 +427,6 @@ class Product extends Model
                 $query->where('status', 0);
             }
         }
-
 
         if ($request->has('status')) {
             if ($request->input('status') == 'kolicina') {
@@ -512,9 +521,15 @@ class Product extends Model
      */
     private function resolveCategories(int $product_id): bool
     {
-        if ( ! empty($this->request->category) && is_array($this->request->category)) {
-            ProductCategory::storeData($this->request->category, $product_id);
+        $category = [];
 
+        if (isset($this->request->category) && ! empty($this->request->category) && is_array($this->request->category)) {
+            $category = $this->request->category;
+        }
+
+        $created = ProductCategory::storeData($category, $product_id);
+
+        if (is_array($created)) {
             return true;
         }
 

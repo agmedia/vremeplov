@@ -74,12 +74,16 @@ class ProductHelper
     }
 
 
-    public static function group(Product $product)
+    public static function group(Product $product, string $group = null)
     {
         $data = static::resolveCategories($product);
 
         if ($data['category']) {
             return $data['category']->group;
+        }
+
+        if ($group) {
+            return $group;
         }
 
         return null;
