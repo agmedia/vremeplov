@@ -168,7 +168,7 @@ class Product extends Model
             'sku'      => 'required',
             'price'    => 'required',
             'quantity'    => 'required',
-            'category' => 'required'
+            'group' => 'required'
         ]);
 
         // Set Product Model request variable

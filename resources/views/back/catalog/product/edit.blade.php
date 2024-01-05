@@ -211,8 +211,8 @@
                                                         <option value="{{ $group->slug }}" class="font-weight-bold small" {{ ((isset($product)) and ($group->slug == $product->group)) ? 'selected' : '' }}>{{ $group->title }}</option>
                                                     @endforeach
                                                 </select>
-                                                @error('category')
-                                                <span class="text-danger font-italic">Kategorija je potrebna...</span>
+                                                @error('group')
+                                                <span class="text-danger font-italic">Grupa je obavezna je potrebna...</span>
                                                 @enderror
                                             </div>
 
