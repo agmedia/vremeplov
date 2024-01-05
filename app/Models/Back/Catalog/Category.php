@@ -65,6 +65,16 @@ class Category extends Model
         return $this->hasManyThrough(Product::class, ProductCategory::class, 'category_id', 'id', 'id', 'product_id');
     }
 
+    /**
+     * @param $value
+     *
+     * @return array|string|string[]
+     */
+    public function getTitleAttribute($value)
+    {
+        return htmlspecialchars_decode($value);
+    }
+
 
     /**
      * @param Builder $query
