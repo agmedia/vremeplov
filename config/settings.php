@@ -31,7 +31,14 @@ return [
     'eur_divide_amount' => 0.13272280,
     //
     'default_product_image' => 'media/avatars/default_book.jpg',
-
+    //
+    // Specijalni popust, ako ga ima
+    'special_action' => [
+        'title' => 'Količinski popust',
+        'start' => '04/11/2023 00:00:01',
+        'end' => '12/11/2023 00:00:00'
+    ],
+    //
     'sorting_list' => [
         0 => [
             'title' => 'Najnovije',
