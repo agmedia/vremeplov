@@ -332,7 +332,7 @@ class OC_Import
         }
 
         foreach ($arr as $item) {
-            $item = trim(str_replace('&lt;p&gt;', '', $item));
+           // $item = trim(str_replace('&lt;p&gt;', '', $item));
 
             if ($item) {
                 $params = explode(': ', $item);
@@ -344,28 +344,28 @@ class OC_Import
         }
 
         foreach ($response as $key => $item) {
-            if (in_array($key, ['Izdavač', 'izdavač'])) {
+            if (in_array($key, ['Izdavač', 'izdavač', 'IZDAVAČ'])) {
                 $response['Izdavač'] = $item;
             }
-            if (in_array($key, ['Šifra', 'šifra'])) {
+            if (in_array($key, ['Šifra', 'šifra', 'ŠIFRA'])) {
                 $response['Šifra'] = $item;
             }
-            if (in_array($key, ['Broj stranica', 'broj stranica'])) {
+            if (in_array($key, ['Broj stranica', 'broj stranica', 'BROJ STRANICA'])) {
                 $response['Broj stranica'] = $item;
             }
-            if (in_array($key, ['Jezik', 'jezik'])) {
+            if (in_array($key, ['Jezik', 'jezik', 'JEZIK'])) {
                 $response['Jezik'] = $item;
             }
-            if (in_array($key, ['Pismo', 'pismo'])) {
+            if (in_array($key, ['Pismo', 'pismo', 'PISMO'])) {
                 $response['Pismo'] = $item;
             }
-            if (in_array($key, ['Stanje', 'stanje'])) {
+            if (in_array($key, ['Stanje', 'stanje', 'STANJE'])) {
                 $response['Stanje'] = $item;
             }
-            if (in_array($key, ['Uvez', 'uvez'])) {
+            if (in_array($key, ['Uvez', 'uvez', 'UVEZ'])) {
                 $response['Uvez'] = $item;
             }
-            if (in_array($key, ['Godina', 'godina'])) {
+            if (in_array($key, ['Godina', 'godina', 'GODINA'])) {
                 $response['Godina'] = $item;
             }
         }
