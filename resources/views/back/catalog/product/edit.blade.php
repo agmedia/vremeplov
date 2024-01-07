@@ -45,7 +45,7 @@
             <div class="block block-rounded">
                 <ul class="nav nav-tabs nav-tabs-block" data-toggle="tabs" role="tablist">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#osnovno"><i class="si si-settings"></i> Osnovno</a>
+                        <a class="nav-link active" href="#osnovno"><i class="si si-settings"></i> Info</a>
                     </li>
 
                     <li class="nav-item">
@@ -70,12 +70,12 @@
                                 </a>
                                 <div class="block-options">
                                     <div class="dropdown">
-                                        <div class="custom-control custom-switch custom-control-info block-options-item ml-4">
+                                        <div class="d-none custom-control custom-switch custom-control-info block-options-item ml-4">
                                             <input type="checkbox" class="custom-control-input" id="product-gift-switch" name="gift"{{ (isset($product->gift) and $product->gift) ? 'checked' : '' }}>
                                             <label class="custom-control-label pt-1" for="product-gift-switch">Poklon Bon</label>
                                         </div>
 
-                                        <div class="custom-control custom-switch custom-control-info block-options-item ml-4">
+                                        <div class=" d-none custom-control custom-switch custom-control-info block-options-item ml-4">
                                             <input type="checkbox" class="custom-control-input" id="product-decrease-switch" name="decrease"{{ (isset($product->decrease) and $product->decrease) ? '' : 'checked' }}>
                                             <label class="custom-control-label pt-1" for="product-decrease-switch">Neograničena Količina</label>
                                         </div>
@@ -111,7 +111,7 @@
                                                 <div class="input-group">
                                                     <input type="text" class="form-control" id="price-input" name="price" placeholder="00.00" value="{{ isset($product) ? $product->price : old('price') }}">
                                                     <div class="input-group-append">
-                                                        <span class="input-group-text">EUR</span>
+                                                        <span class="input-group-text">€</span>
                                                     </div>
                                                 </div>
                                                 @error('price')
@@ -153,7 +153,7 @@
                                                 <div class="input-group">
                                                     <input type="text" class="form-control" id="special-input" name="special" placeholder="00.00" value="{{ isset($product) ? $product->special : old('special') }}">
                                                     <div class="input-group-append">
-                                                        <span class="input-group-text">EUR</span>
+                                                        <span class="input-group-text">€</span>
                                                     </div>
                                                 </div>
                                             </div>
