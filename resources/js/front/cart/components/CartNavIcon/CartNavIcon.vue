@@ -33,65 +33,67 @@
 </template>
 
 <script>
-    export default {
-        props: {
-            carturl: String,
-            checkouturl: String
-        },
-        //
-        data() {
-            return {
-                base_path: window.location.origin + '/',
-                success_path: window.location.origin + '/kosarica/success',
-                mobile: false
-            }
-        },
-        //
-        mounted() {
-            this.checkCart();
-
-            if (window.location.pathname == '/kosarica/success') {
-                this.$store.dispatch('flushCart');
-            }
-
-            if (window.innerWidth < 800) {
-                this.mobile = true;
-            }
-
-            if (window.location.pathname == '/pregled') {
-                window.setInterval(this.checkCart, 15000);
-            }
-        },
-        //
-        methods: {
-            /**
-             *
-             */
-            checkCart() {
-                let kos = [];
-                let cart = this.$store.state.storage.getCart();
-
-                this.$store.dispatch('getSettings');
-
-                if ( ! cart) {
-                    return this.$store.dispatch('getCart');
-                }
-
-                Object.keys(cart.items).forEach(function(key) {
-                    kos.push(cart.items[key].id)
-                });
-
-                this.$store.dispatch('checkCart', kos);
-            },
-
-            /**
-             *
-             * @param item
-             */
-            removeFromCart(item) {
-                this.$store.dispatch('removeFromCart', item);
-                window.location.reload();
-            }
+export default {
+    props: {
+        carturl: String,
+        checkouturl: String
+    },
+    //
+    data() {
+        return {
+            base_path: window.location.origin + '/',
+            success_path: window.location.origin + '/kosarica/success',
+            mobile: false
         }
-    };
+    },
+    //
+    mounted() {
+        this.checkCart();
+
+        if (window.location.pathname == '/kosarica/success') {
+            this.$store.dispatch('flushCart');
+        }
+
+        if (window.innerWidth < 800) {
+            this.mobile = true;
+        }
+
+        if (window.location.pathname == '/pregled') {
+            window.setInterval(this.checkCart, 15000);
+        }
+    },
+    //
+    methods: {
+        /**
+         *
+         */
+        checkCart() {
+            let kos = [];
+            let cart = this.$store.state.storage.getCart();
+
+            console.log(cart)
+
+            this.$store.dispatch('getSettings');
+
+            if ( ! cart) {
+                return this.$store.dispatch('getCart');
+            }
+
+            Object.keys(cart.items).forEach(function(key) {
+                kos.push(cart.items[key].id)
+            });
+
+            this.$store.dispatch('checkCart', kos);
+        },
+
+        /**
+         *
+         * @param item
+         */
+        removeFromCart(item) {
+            this.$store.dispatch('removeFromCart', item);
+            //setTimeout(window.location.reload(), 1000);
+        }
+    }
+};
 </script>
