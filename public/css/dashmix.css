@@ -13209,7 +13209,7 @@ a.badge-secondary:focus, a.badge-secondary.focus {
 #page-container.main-content-narrow > #page-header .content,
 #page-container.main-content-narrow > #main-container .content,
 #page-container.main-content-narrow > #page-footer .content {
-    width: 92%;
+    width: 100%;
   }
 }
 #page-container.main-content-boxed > #page-header .content-header,
