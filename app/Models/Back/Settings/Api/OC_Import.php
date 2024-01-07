@@ -323,7 +323,7 @@ class OC_Import
             $item = trim(str_replace('&lt;p&gt;', '', $item));
 
             if ($item) {
-                $params = explode(' : ', $item);
+                $params = explode(': ', $item);
 
                 if (isset($params[1])) {
                     $response[$params[0]] = $params[1];
