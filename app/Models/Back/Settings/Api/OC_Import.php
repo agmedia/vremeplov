@@ -332,7 +332,7 @@ class OC_Import
         }
 
         foreach ($arr as $item) {
-           // $item = trim(str_replace('&lt;p&gt;', '', $item));
+            $item = trim(str_replace('&lt;p&gt;', '', $item));
 
             if ($item) {
                 $params = explode(': ', $item);
