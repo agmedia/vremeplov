@@ -77,11 +77,11 @@
         @endif
 
         @if (auth()->guest())
-            <div class="alert alert-secondary d-flex mb-3" role="alert">
+            <div class="alert alert-custom d-flex mb-3" role="alert">
                 <div class="alert-icon">
                     <i class="ci-user"></i>
                 </div>
-                <div><a data-bs-toggle="collapse" href="#collapseLogin" role="button" aria-expanded="false" aria-controls="collapseLogin" class="alert-link">Prijava </a> za registrirane korisnike!</div>
+                <div><a data-bs-toggle="collapse" href="#collapseLogin" role="button" aria-expanded="false" aria-controls="collapseLogin" class="alert-link">Prijava</a> za registrirane korisnike!</div>
             </div>
 
             @if (session()->has('error'))
@@ -199,22 +199,27 @@
             </div>
         </div>
 
-        <h2 class="h6 pt-1 pb-3 mb-3 border-bottom">Trebate R1 račun?</h2>
-        <div class="row mt-3">
-            <div class="col-sm-6">
-                <div class="mb-3">
-                    <label class="form-label" for="checkout-company">Tvrtka</label>
-                    <input class="form-control" type="text" wire:model="address.company">
-                </div>
-            </div>
-            <div class="col-sm-6">
-                <div class="mb-3">
+        <h2 class="h6 pt-3 pb-3 mb-2"><a data-bs-toggle="collapse" href="#collapseOib" role="button" aria-expanded="false" aria-controls="collapseLogin" class="alert-link">Trebate R1 račun?</a></h2>
+
+        <div id="collapseOib" aria-expanded="false" class="collapse">
+
+            <div class="row ">
+                <div class="col-sm-6">
                     <div class="mb-3">
-                        <label class="form-label" for="checkout-oib">OIB</label>
-                        <input class="form-control" type="text" wire:model="address.oib">
+                        <label class="form-label" for="checkout-company">Tvrtka</label>
+                        <input class="form-control" type="text" wire:model="address.company">
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="mb-3">
+                        <div class="mb-3">
+                            <label class="form-label" for="checkout-oib">OIB</label>
+                            <input class="form-control" type="text" wire:model="address.oib">
+                        </div>
                     </div>
                 </div>
             </div>
+
         </div>
 
         <div class="d-flex pt-4 mt-3">

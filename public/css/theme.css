@@ -5058,6 +5058,16 @@ textarea.form-control-lg {
     color: #b7774c;
 }
 
+
+.alert-custom {
+    --cz-alert-color: #2d2224;
+    --cz-alert-bg: #fbf9f5;
+    --cz-alert-border-color: #d8ac63;
+}
+.alert-custom .alert-link {
+    color: #2d2224;
+}
+
 .alert-danger {
     --cz-alert-color: #db4065;
     --cz-alert-bg: #feedf1;
