@@ -135,7 +135,7 @@
                                 <h1 class="h3 text-dark mb-0"> {{ $prod->name }}</h1>
                             </div>
 
-                            <div class="mb-0 mt-4 text-center text-lg-start">
+                            <div class="mb-3 mt-3 text-center text-lg-start">
                                 @if ($prod->main_price > $prod->main_special)
                                     <span class="h3 fw-normal text-primary me-1">{{ $prod->main_special_text }}</span>
                                     <span class="text-muted fs-sm me-3">*{{ $prod->main_price_text }}</span>
