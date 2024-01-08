@@ -118,11 +118,7 @@ hr {
     filter: grayscale(100%)!important;
 }
 
-ul.spec{max-width:400px}
-
-
-
-
+ul.spec{max-width:500px}
 
 .bckshelf{
     background-image: url('../media/img/slider-bck.png');
