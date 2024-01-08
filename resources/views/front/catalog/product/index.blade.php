@@ -89,7 +89,7 @@
 
     <div class="container">
         <!-- Gallery + details-->
-        <div class="bg-light  rounded-3 px-2 py-3 mt-3 mb-3">
+        <div class="  rounded-3 px-2 py-3 mt-3 mb-3">
             <div class="px-lg-3">
                 <div class="row">
                     <!-- Product gallery-->
@@ -242,7 +242,7 @@
 
 
     <!-- Product carousel (You may also like)-->
-    <div class="container-fluid py-5 bg-white bg-size-cover bg-position-center" style="background-image: url({{ config('settings.images_domain') . 'media/img/zuzi-bck-transparent.svg' }});">
+    <div class="container-fluid py-5  bg-size-cover bg-position-center" style="background-image: url({{ config('settings.images_domain') . 'media/img/zuzi-bck-transparent.svg' }});">
         <div class="container my-md-3" >
             <h2 class="h3 text-center pb-4">Izdvojeno iz kategorije</h2>
             <div class="tns-carousel tns-controls-static tns-controls-outside p-0 ps-sm-1 pe-sm-1">
