@@ -317,13 +317,13 @@ class OC_Import
     public function resolveAttributes(string $text = ''): array
     {
         $response = [];
-        $arr = explode('&lt;/p&gt;', $text);
+        $arr = explode('</p>', $text);
 
         foreach ($arr as $item) {
             $item = trim(str_replace('&lt;p&gt;', '', $item));
 
             if ($item) {
-                $params = explode(': ', $item);
+                $params = explode(':', $item);
 
                 if (isset($params[1])) {
                     $response[$params[0]] = $params[1];
@@ -332,10 +332,10 @@ class OC_Import
         }
 
         foreach ($arr as $item) {
-            $item = trim(str_replace('&lt;p&gt;', '', $item));
+            $item = trim(str_replace('p', '', $item));
 
             if ($item) {
-                $params = explode(': ', $item);
+              //  $params = explode(':', $item);
 
                 if (isset($params[1])) {
                     $response[$params[0]] = $params[1];
