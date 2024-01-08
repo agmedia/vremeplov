@@ -70,7 +70,7 @@
                     <!-- Post meta-->
                     <!-- Gallery-->
                     <div class="gallery row pb-2">
-                        <div class="col-sm-12"><a class="gallery-item rounded-3 mb-grid-gutter" href="{{ asset($blog->image) }}" data-bs-sub-html="&lt;h6 class=&quot;fs-sm text-light&quot;&gt;Gallery image caption #1&lt;/h6&gt;"><img src="{{ asset($blog->image) }}" alt="Gallery image"><span class="gallery-item-caption">{{ $blog->title }}</span></a></div>
+                        <div class="col-sm-12"><span class="gallery-item rounded-3 mb-grid-gutter"  data-bs-sub-html="&lt;h6 class=&quot;fs-sm text-light&quot;&gt;Gallery image caption #1&lt;/h6&gt;"><img src="{{ asset($blog->image) }}" alt="{{ $blog->title }}"><span class="gallery-item-caption">{{ $blog->title }}</span></span></div>
 
                     </div>
                     <!-- Post content-->
