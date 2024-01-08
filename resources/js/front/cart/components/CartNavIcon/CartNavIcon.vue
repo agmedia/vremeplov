@@ -24,8 +24,8 @@
 
                 </div><a class="btn btn-primary btn-sm d-block w-100" :href="carturl"><i class="ci-card me-2 fs-base align-middle"></i>Dovrši kupnju</a>
             </div>
-            <div class="widget widget-cart px-3 pt-2 pb-3" style="width: 20rem;" v-else>
-                <i class="fa fa-cart-arrow-down fa-2x" style="color: #aaaaaa"></i>
+            <div class="widget widget-cart text-center pt-2" style="width: 20rem;" v-else>
+                <h1 class="mb-2 mt-1"><i class="ci-cart"></i></h1>
                 <p>Vaša košarica je prazna!</p>
             </div>
         </div>
