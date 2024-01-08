@@ -175,7 +175,7 @@
                                 @if ($prod->author)
                                     <li class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span class="text-dark fw-medium">Autor</span><span class="text-muted"><a class="product-meta text-primary" href="{{ route('catalog.route.author', ['author' => $prod->author]) }}">{{ $prod->author->title }}</a></span></li>
                                 @endif
-                                @if ($prod->publisher)
+                                @if ($prod->publisher and $prod->publisher != 'Nepoznati nakladnici')
                                     <li class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span class="text-dark fw-medium">Izdavač</span><a class="product-meta text-primary" href="{{ route('catalog.route.publisher', ['publisher' => $prod->publisher]) }}">{{ $prod->publisher->title }}</a></li>
                                 @endif
                                 <li class="d-flex justify-content-between mb-2 bg-gray-50 pb-2 border-bottom"><span class="text-dark fw-medium">Šifra</span><span class="text-muted">{{ $prod->sku }}</span></li>
@@ -205,7 +205,7 @@
                                     <li class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span class="text-dark fw-medium">Dimenzije</span><span class="text-muted">{{ $prod->dimensions.' cm' ?: '...' }}</span></li>
                                 @endif
                                 @if ($prod->origin)
-                                <li class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span class="text-dark fw-medium">Mjesto izdavanja</span><span class="text-muted">{{ $prod->origin ?: '...' }}</span></li>
+                                <li class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span class="text-dark fw-medium">Jezik</span><span class="text-muted">{{ $prod->origin ?: '...' }}</span></li>
                                 @endif
                                 @if ($prod->letter)
                                     <li class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span class="text-dark fw-medium">Pismo</span><span class="text-muted">{{ $prod->letter ?: '...' }}</span></li>
