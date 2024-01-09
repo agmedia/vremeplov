@@ -46,6 +46,10 @@ class CleanProductDescriptions extends Command
         $range = $import->resolveProductsImportRange()->first();
         $products = Product::query()->offset($range->offset)->take($range->limit)->get();
 
+        if ($range->offset > $products->count()) {
+            return response()->json(['success' => 'Import je gotov..!']);
+        }
+
         foreach ($products as $item) {
             $attributes = $import->resolveAttributes($item->description, $item->id);
             $publisher = $import->resolvePublisher(isset($attributes['Izdavač']) ? $attributes['Izdavač'] : '');
