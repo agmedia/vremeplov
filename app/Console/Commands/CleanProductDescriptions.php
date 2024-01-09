@@ -44,9 +44,10 @@ class CleanProductDescriptions extends Command
     {
         $import = new OC_Import();
         $range = $import->resolveProductsImportRange()->first();
+        $total_products = Product::query()->count();
         $products = Product::query()->offset($range->offset)->take($range->limit)->get();
 
-        if ($range->offset > $products->count()) {
+        if ($range->offset > $total_products) {
             return response()->json(['success' => 'Import je gotov..!']);
         }
 
