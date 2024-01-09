@@ -317,7 +317,7 @@ class OC_Import
     public function resolveAttributes(string $text = '', int $id = 0): array
     {
         $response = [];
-        $description = '';
+        $description = $text;
         $arr = explode('</p>', $text);
 
         foreach ($arr as $item) {
@@ -371,7 +371,7 @@ class OC_Import
             }
 
             $search = '<p>' . $key . ':' . $item . '</p>';
-            str_replace($search, '', $text);
+            $description = str_replace($search, '', $description);
         }
 
         Product::query()->where('id', $id)->update([
