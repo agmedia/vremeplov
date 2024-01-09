@@ -357,7 +357,7 @@ class OC_Import
                 $search = '<p>' . $key . ':' . $item . '</p>';
                 $description = str_replace($search, '', $description);
             }
-            if (in_array($key, ['Broj stranica', 'broj stranica', 'BROJ STRANICA'])) {
+            if (in_array($key, ['Broj stranica', 'broj stranica', 'BROJ STRANICA', 'STRANICA', 'Stranica', 'stranica'])) {
                 $response['Broj stranica'] = $item;
 
                 $search = '<p>' . $key . ':' . $item . '</p>';
