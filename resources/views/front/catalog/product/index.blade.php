@@ -172,10 +172,10 @@
 
                             <!-- Product panels-->
                            <ul class="list-unstyled fs-sm spec">
-                                @if ($prod->author)
+                                @if ($prod->author and $prod->author->title != 'Nepoznati autori')
                                     <li class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span class="text-dark fw-medium">Autor</span><span class="text-muted"><a class="product-meta text-primary" href="{{ route('catalog.route.author', ['author' => $prod->author]) }}"><i class="ci-link"></i> {{ $prod->author->title }}</a></span></li>
                                 @endif
-                                @if ($prod->publisher and $prod->publisher->title != 'Nepoznati nakladnici')
+                                @if ($prod->publisher and $prod->publisher->title != 'Nepoznati izdavač')
                                     <li class="d-flex justify-content-between mb-2 pb-2 border-bottom"><span class="text-dark fw-medium">Izdavač</span><a class="product-meta text-primary" href="{{ route('catalog.route.publisher', ['publisher' => $prod->publisher]) }}"><i class="ci-link"></i> {{ $prod->publisher->title }}</a></li>
                                 @endif
                                 <li class="d-flex justify-content-between mb-2 bg-gray-50 pb-2 border-bottom"><span class="text-dark fw-medium">Šifra</span><span class="text-muted">{{ $prod->sku }}</span></li>
