@@ -320,7 +320,7 @@ class OC_Import
         $arr = explode('</p>', $text);
 
         foreach ($arr as $item) {
-            $item = trim(str_replace('&lt;p&gt;', '', $item));
+            $item = trim(str_replace('<p>', '', $item));
 
             if ($item) {
                 $params = explode(':', $item);
@@ -331,7 +331,7 @@ class OC_Import
             }
         }
 
-        foreach ($arr as $item) {
+      /*  foreach ($arr as $item) {
             $item = trim(str_replace('p', '', $item));
 
             if ($item) {
@@ -341,7 +341,7 @@ class OC_Import
                     $response[$params[0]] = $params[1];
                 }
             }
-        }
+        }*/
 
         foreach ($response as $key => $item) {
             if (in_array($key, ['Izdavač', 'izdavač', 'IZDAVAČ'])) {
