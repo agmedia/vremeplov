@@ -347,31 +347,52 @@ class OC_Import
         foreach ($response as $key => $item) {
             if (in_array($key, ['Izdavač', 'izdavač', 'IZDAVAČ'])) {
                 $response['Izdavač'] = $item;
+
+                $search = '<p>' . $key . ':' . $item . '</p>';
+                $description = str_replace($search, '', $description);
             }
             if (in_array($key, ['Šifra', 'šifra', 'ŠIFRA'])) {
                 $response['Šifra'] = $item;
+
+                $search = '<p>' . $key . ':' . $item . '</p>';
+                $description = str_replace($search, '', $description);
             }
             if (in_array($key, ['Broj stranica', 'broj stranica', 'BROJ STRANICA'])) {
                 $response['Broj stranica'] = $item;
+
+                $search = '<p>' . $key . ':' . $item . '</p>';
+                $description = str_replace($search, '', $description);
             }
             if (in_array($key, ['Jezik', 'jezik', 'JEZIK'])) {
                 $response['Jezik'] = $item;
+
+                $search = '<p>' . $key . ':' . $item . '</p>';
+                $description = str_replace($search, '', $description);
             }
             if (in_array($key, ['Pismo', 'pismo', 'PISMO'])) {
                 $response['Pismo'] = $item;
+
+                $search = '<p>' . $key . ':' . $item . '</p>';
+                $description = str_replace($search, '', $description);
             }
             if (in_array($key, ['Stanje', 'stanje', 'STANJE'])) {
                 $response['Stanje'] = $item;
+
+                $search = '<p>' . $key . ':' . $item . '</p>';
+                $description = str_replace($search, '', $description);
             }
             if (in_array($key, ['Uvez', 'uvez', 'UVEZ'])) {
                 $response['Uvez'] = $item;
+
+                $search = '<p>' . $key . ':' . $item . '</p>';
+                $description = str_replace($search, '', $description);
             }
             if (in_array($key, ['Godina', 'godina', 'GODINA'])) {
                 $response['Godina'] = $item;
-            }
 
-            $search = '<p>' . $key . ':' . $item . '</p>';
-            $description = str_replace($search, '', $description);
+                $search = '<p>' . $key . ':' . $item . '</p>';
+                $description = str_replace($search, '', $description);
+            }
         }
 
         Product::query()->where('id', $id)->update([
