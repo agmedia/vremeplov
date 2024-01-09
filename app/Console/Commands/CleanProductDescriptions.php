@@ -47,7 +47,7 @@ class CleanProductDescriptions extends Command
         $products = Product::query()->offset($range->offset)->take($range->limit)->get();
 
         foreach ($products as $item) {
-            $attributes = $import->resolveAttributes($item->description);
+            $attributes = $import->resolveAttributes($item->description, $item->id);
             $publisher = $import->resolvePublisher(isset($attributes['Izdavač']) ? $attributes['Izdavač'] : '');
 
             $item->update([

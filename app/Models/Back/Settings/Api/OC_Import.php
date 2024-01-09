@@ -314,9 +314,10 @@ class OC_Import
      *
      * @return array
      */
-    public function resolveAttributes(string $text = ''): array
+    public function resolveAttributes(string $text = '', int $id = 0): array
     {
         $response = [];
+        $description = '';
         $arr = explode('</p>', $text);
 
         foreach ($arr as $item) {
@@ -368,7 +369,14 @@ class OC_Import
             if (in_array($key, ['Godina', 'godina', 'GODINA'])) {
                 $response['Godina'] = $item;
             }
+
+            $search = '<p>' . $key . ':' . $item . '</p>';
+            str_replace($search, '', $text);
         }
+
+        Product::query()->where('id', $id)->update([
+            'description' => $description
+        ]);
 
         return $response;
     }
