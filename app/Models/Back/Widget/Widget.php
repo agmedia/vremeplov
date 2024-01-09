@@ -21,9 +21,9 @@ class Widget extends Model
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
     /**
-     * @var string[] 
+     * @var string[]
      */
-    protected $appends = ['webp'];
+    protected $appends = ['webp','thumb'];
 
     /**
      * @var Request
@@ -44,6 +44,17 @@ class Widget extends Model
     public function getWebpAttribute($value)
     {
         return config('settings.images_domain') . str_replace('.jpg', '.webp', $this->image);
+    }
+
+
+    /**
+     * @param $value
+     *
+     * @return array|string|string[]
+     */
+    public function getThumbpAttribute($value)
+    {
+        return config('settings.images_domain') . str_replace('.jpg', '-thumb.webp', $this->image);
     }
 
 
