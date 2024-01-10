@@ -6,9 +6,9 @@
             <!-- Toolbar -->
             <div class="navbar-toolbar d-flex align-items-center order-lg-3">
                 @if (isset($group) && $group && ! isset($prod))
-                    <button class="navbar-toggler" type="button" data-bs-target="#shop-sidebar" data-bs-toggle="collapse" aria-expanded="false"><i class="ci-filter-alt"></i></button>
+                    <button class="navbar-toggler" type="button" data-bs-target="#shop-sidebar" aria-label="Filter" data-bs-toggle="collapse" aria-expanded="false"><i class="ci-filter-alt"></i></button>
                 @endif
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"><span class="navbar-toggler-icon"></span></button>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" aria-label="Navbar" data-bs-target="#navbarCollapse"><span class="navbar-toggler-icon"></span></button>
                 <a class="navbar-tool d-none d-lg-flex" aria-label="Search" href="javascript:void(0)" data-bs-toggle="collapse" data-bs-target="#searchBox" role="button" aria-expanded="false" aria-controls="searchBox">
                     <div class="navbar-tool-icon-box"><i class="navbar-tool-icon ci-search"></i></div>
                 </a>
