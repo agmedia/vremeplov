@@ -17,9 +17,13 @@ class ImageHelper
      *
      * @return string
      */
-    public static function makeImageSet($image, string $disk, string $title, string $folder = null): string
+    public static function makeImageSet($image, string $disk, string $title, string $folder = null, int $thumb_width = null, int $thumb_height = null): string
     {
         $path_jpg = Str::slug($title) . '-' . Str::random(4) . '.jpg';
+
+        if ( ! $thumb_width) {
+            $thumb_width = 300;
+        }
 
         if ($folder) {
             $path_jpg = $folder . '/' . $path_jpg;
@@ -39,7 +43,7 @@ class ImageHelper
         Storage::disk($disk)->put($path_webp, $img->encode('webp'));
 
         // THUMB
-        $img = $img->resize(300, null, function ($constraint) {
+        $img = $img->resize($thumb_width, $thumb_height, function ($constraint) {
             $constraint->aspectRatio();
         });
 

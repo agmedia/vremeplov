@@ -224,8 +224,8 @@ class Widget extends Model
 
         $group = $this->group()->first();
 
-        if ($group->template == 'custom') {
-            $path = ImageHelper::makeSliderImageSet($data->output->image, 'widget', $this->title, strval($this->id));
+        if ($group->template == 'custom' && str_contains($group->slug, 'slider')) {
+            $path = ImageHelper::makeImageSet($data->output->image, 'widget', $this->title, strval($this->id), 500, 500);
         } else {
             $path = ImageHelper::makeImageSet($data->output->image, 'widget', $this->title, strval($this->id));
         }
