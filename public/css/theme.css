@@ -17067,7 +17067,7 @@ a.nav-link:hover .media-tab-media {
     position: relative;
     transition: color 0.25s ease-in-out, border-color 0.25s ease-in-out, background-color 0.25s ease-in-out;
 }
- .page-link:hover {
+.page-link:hover {
     color: #2d2224;
 }
 .page-link:focus {
