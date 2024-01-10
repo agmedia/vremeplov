@@ -9,7 +9,7 @@
 
 
         <a class="card-img-top d-block overflow-hidden" href="{{ url($product->url) }}">
-            <img  src="{{ $product->thumb }}" width="250" height="300" alt="{{ $product->name }}">
+            <img  src="{{ $product->thumb }}" width="350" height="300" alt="{{ $product->name }}">
         </a>
         <div class="card-body pt-2" style="min-height: 136px;">
 
