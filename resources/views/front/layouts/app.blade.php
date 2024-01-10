@@ -25,7 +25,7 @@
     <!-- Vendor Styles including: Font Icons, Plugins, etc.-->
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <!-- Main Theme Styles + Bootstrap-->
-    <link rel="stylesheet" media="screen" href="{{ asset(config('settings.images_domain') . 'css/theme.min.css?v=1.91') }}">
+    <link rel="stylesheet" media="screen" href="{{ asset(config('settings.images_domain') . 'css/theme.css?v=1.91') }}">
     @if (config('app.env') == 'production')
         @yield('google_data_layer')
         <!-- Google Tag Manager -->
