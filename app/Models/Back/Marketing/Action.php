@@ -313,7 +313,7 @@ class Action extends Model
     /**
      * @return mixed
      */
-    private function truncateProducts()
+    public function truncateProducts()
     {
         return Product::where('action_id', $this->id)->update([
             'action_id'    => 0,
