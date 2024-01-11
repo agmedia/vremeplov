@@ -1,2 +1,2 @@
 User-agent: *
-Sitemap: https://www.zuzi.hr/sitemap
+Sitemap: https://www.antikvarijat-vremeplov.hr/sitemap
