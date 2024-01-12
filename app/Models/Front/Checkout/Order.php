@@ -153,6 +153,7 @@ class Order extends Model
                 'shipping_code'    => $this->order['shipping']->code,
                 'company'          => $this->order['address']['company'],
                 'oib'              => $this->order['address']['oib'],
+                'comment'          => $this->order['comment'],
                 'created_at'       => Carbon::now(),
                 'updated_at'       => Carbon::now()
             ]);
@@ -214,6 +215,7 @@ class Order extends Model
             'shipping_code'    => $this->order['shipping']->code,
             'company'          => $this->order['address']['company'],
             'oib'              => $this->order['address']['oib'],
+            'comment'          => $this->order['comment'],
             'updated_at'       => Carbon::now()
         ]);
 

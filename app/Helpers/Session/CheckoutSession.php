@@ -55,9 +55,9 @@ class CheckoutSession
     }
 
     /*******************************************************************************
-    *                                Copyright : AGmedia                           *
-    *                              email: filip@agmedia.hr                         *
-    *******************************************************************************/
+     *                                Copyright : AGmedia                           *
+     *                              email: filip@agmedia.hr                         *
+     *******************************************************************************/
 
     /**
      * SHIPPING
@@ -96,6 +96,50 @@ class CheckoutSession
     public static function forgetShipping()
     {
         return session()->forget(static::$session_string . '.shipping');
+    }
+
+    /*******************************************************************************
+     *                                Copyright : AGmedia                           *
+     *                              email: filip@agmedia.hr                         *
+     *******************************************************************************/
+
+    /**
+     * SHIPPING
+     *
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Session\SessionManager|\Illuminate\Session\Store|mixed
+     */
+    public static function getComment()
+    {
+        return session(static::$session_string . '.comment');
+    }
+
+
+    /**
+     * @return bool
+     */
+    public static function hasComment()
+    {
+        return session()->has(static::$session_string . '.comment');
+    }
+
+
+    /**
+     * @param array|string $value
+     *
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Session\SessionManager|\Illuminate\Session\Store|mixed
+     */
+    public static function setComment($value)
+    {
+        return session([static::$session_string . '.comment' => $value]);
+    }
+
+
+    /**
+     * @return bool
+     */
+    public static function forgetComment()
+    {
+        return session()->forget(static::$session_string . '.comment');
     }
 
     /*******************************************************************************

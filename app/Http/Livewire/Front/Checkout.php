@@ -52,7 +52,7 @@ class Checkout extends Component
         'zip' => '',
         'company' => '',
         'oib' => '',
-        'state' => '',
+        'state' => ''
     ];
 
     /**
@@ -80,6 +80,9 @@ class Checkout extends Component
     public $gdl_shipping = false;
 
     public $gdl_payment = false;
+
+    public $comment = '';
+    public $view_comment = false;
 
     protected $cart = false;
 
@@ -140,11 +143,23 @@ class Checkout extends Component
             $this->selectPayment('corvus');
         }
 
+        if (CheckoutSession::hasComment()) {
+            $this->comment = CheckoutSession::getComment();
+        }
+
         $this->secondary_price = Currency::secondary() ? Currency::secondary()->value : false;
 
         $this->checkCart();
 
         $this->changeStep($this->step);
+    }
+
+
+    public function updatingComment($value)
+    {
+        $this->comment = $value;
+
+        CheckoutSession::setComment($this->comment);
     }
 
 
@@ -239,6 +254,7 @@ class Checkout extends Component
 
         CheckoutSession::forgetShipping();
         $this->shipping = '';
+        $this->comment = '';
         CheckoutSession::forgetPayment();
         $this->payment = '';
 
@@ -343,12 +359,6 @@ class Checkout extends Component
 
         CheckoutSession::setAddress($this->address);
 
-        /*CheckoutSession::setGeoZone(
-            GeoZone::findState($this->address['state'])
-        );*/
-
-        //dd($this->address);
-
         return $this->address;
     }
 
@@ -364,6 +374,12 @@ class Checkout extends Component
             $this->gdl_shipping = 'osobno preuzimanje';
         } else {
             $this->gdl_shipping = 'dostava';
+        }
+
+        if ($shipping == 'gls_eu') {
+            $this->view_comment = true;
+        } else {
+            $this->view_comment = false;
         }
     }
 

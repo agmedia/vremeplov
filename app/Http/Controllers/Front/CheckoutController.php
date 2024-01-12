@@ -162,14 +162,7 @@ class CheckoutController extends Controller
                 }
             }
 
-            // Sent labels to gls
-           // $gls   = new Gls($order);
-          //  $label = $gls->resolve();
-
-            CheckoutSession::forgetOrder();
-            CheckoutSession::forgetStep();
-            CheckoutSession::forgetPayment();
-            CheckoutSession::forgetShipping();
+            $this->forgetCheckoutCache();
 
             $cart = $this->shoppingCart();
             $cart->flush()->resolveDB();
@@ -199,6 +192,8 @@ class CheckoutController extends Controller
             $order->update([
                 'order_status_id' => config('settings.order.new_status')
             ]);
+
+            $this->forgetCheckoutCache();
 
             return response()->json(['status' => 0, 'message' => 'Accepted']);
         }
@@ -230,7 +225,8 @@ class CheckoutController extends Controller
             return [
                 'address'  => CheckoutSession::getAddress(),
                 'shipping' => CheckoutSession::getShipping(),
-                'payment'  => CheckoutSession::getPayment()
+                'payment'  => CheckoutSession::getPayment(),
+                'comment'  => CheckoutSession::getComment()
             ];
         }
 
@@ -250,9 +246,10 @@ class CheckoutController extends Controller
         $payment  = Settings::getList('payment')->where('code', $data['payment'])->first();
 
         $response                    = [];
-        $response['address']         = $data['address'];
+        $response['address']         = isset($data['address']) ? $data['address'] : [];
         $response['shipping']        = $shipping;
         $response['payment']         = $payment;
+        $response['comment']         = isset($data['comment']) ? $data['comment'] : '';
         $response['cart']            = $this->shoppingCart()->get();
         $response['order_status_id'] = $order_status_id;
 
@@ -295,6 +292,16 @@ class CheckoutController extends Controller
         }
 
         return new AgCart(config('session.cart'));
+    }
+
+
+    private function forgetCheckoutCache()
+    {
+        CheckoutSession::forgetOrder();
+        CheckoutSession::forgetStep();
+        CheckoutSession::forgetPayment();
+        CheckoutSession::forgetShipping();
+        CheckoutSession::forgetComment();
     }
 
 }
