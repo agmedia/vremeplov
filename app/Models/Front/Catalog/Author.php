@@ -187,7 +187,7 @@ class Author extends Model
 
             return $auts->orderBy('title')
                         ->withCount('products')
-                        ->paginate(36)
+                        ->paginate(72)
                         ->appends(request()->query());
         });
     }
