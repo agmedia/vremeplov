@@ -107,6 +107,6 @@ return [
         ],
     ],
 
-    'admin' => 'tomislav@agmedia.hr'
+    'admin' => 'info@antiqueshop.hr'
 
 ];
