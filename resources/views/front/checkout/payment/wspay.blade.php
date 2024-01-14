@@ -4,7 +4,7 @@
     <input type="hidden" name="TotalAmount" value="{{ $data['total'] }}">
     <input type="hidden" name="Signature" value="{{ $data['md5'] }}">
     <input type="hidden" name="CustomerFirstname" value="{{ $data['firstname'] }}">
-    <input type="hidden" name="CustomerLastName" value="{{ $data['md5'] }}{{ $data['lastname'] }}">
+    <input type="hidden" name="CustomerLastName" value="{{ $data['lastname'] }}">
     <input type="hidden" name="CustomerAddress" value="{{ $data['address'] }}">
     <input type="hidden" name="CustomerCity" value="{{ $data['city'] }}">
     <input type="hidden" name="CustomerCountry" value="{{ $data['country'] }}">
