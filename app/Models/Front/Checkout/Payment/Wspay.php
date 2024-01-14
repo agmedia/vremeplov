@@ -90,7 +90,7 @@ class Wspay
         $data['currency'] = 'HRK';
         $data['rate'] = 1;
         $data['return'] = $payment_method->data->callback;
-        $data['cancel'] = route('index');
+        $data['cancel'] = route('kosarica');
         $data['method'] = 'POST';
 
         return view('front.checkout.payment.wspay', compact('data'));
