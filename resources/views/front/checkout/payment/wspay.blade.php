@@ -3,6 +3,7 @@
     <input type="hidden" name="ShoppingCartID" value="{{ $data['order_id'] }}">
     <input type="hidden" name="TotalAmount" value="{{ $data['total'] }}">
     <input type="hidden" name="Signature" value="{{ $data['md5'] }}">
+    <input type="hidden" name="Version" value="2.0">
     <input type="hidden" name="CustomerFirstname" value="{{ $data['firstname'] }}">
     <input type="hidden" name="CustomerLastName" value="{{ $data['lastname'] }}">
     <input type="hidden" name="CustomerAddress" value="{{ $data['address'] }}">
