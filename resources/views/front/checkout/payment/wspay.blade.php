@@ -12,10 +12,10 @@
     <input type="hidden" name="CustomerPhone" value="{{ $data['phone'] }}">
     <input type="hidden" name="CustomerEmail" value="{{ $data['email'] }}">
     <input type="hidden" name="Lang" value="{{ $data['lang'] }}">
-    <input type="hidden" name="PaymentPlan" value="{{ $data['plan'] }}">
+  {{--  <input type="hidden" name="PaymentPlan" value="{{ $data['plan'] }}">
     <input type="hidden" name="CreditCardName" value="{{ $data['cc_name'] }}">
     <input type="hidden" name="valuta" value="{{ $data['currency'] }}">
-    <input type="hidden" name="tecaj" value="{{ $data['rate'] }}">
+    <input type="hidden" name="tecaj" value="{{ $data['rate'] }}"> --}}
     <input type="hidden" name="ReturnErrorURL" value="{{ $data['cancel'] }}">
     <input type="hidden" name="ReturnURL" value="{{ $data['return'] }}">
     <input type="hidden" name="CancelURL" value="{{ $data['cancel'] }}">
