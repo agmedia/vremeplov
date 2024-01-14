@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
  * Class Payway
  * @package App\Models\Front\Checkout\Payment
  */
-class Payway
+class WSpay
 {
 
     /**
