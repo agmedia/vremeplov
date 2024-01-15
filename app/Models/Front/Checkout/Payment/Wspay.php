@@ -119,11 +119,13 @@ class WSpay
             'order_status_id' => $status
         ]);
 
+
+
         if ($request->input('Success')) {
             Transaction::insert([
                 'order_id' => $order->id,
                 'success' => 1,
-                'amount' => $request->input('Amount'),
+               /* 'amount' => $request->input('Amount'),
                 'signature' => $request->input('Signature'),
                 'payment_type' => $request->input('PaymentType'),
                 'payment_plan' => $request->input('PaymentPlan'),
@@ -133,7 +135,7 @@ class WSpay
                 'pg_order_id' => $request->input('WsPayOrderId'),
                 'lang' => $request->input('Lang'),
                 'stan' => $request->input('STAN'),
-                'error' => $request->input('ErrorMessage'),
+                'error' => $request->input('ErrorMessage'),*/
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ]);
@@ -144,7 +146,7 @@ class WSpay
         Transaction::insert([
             'order_id' => $order->id,
             'success' => 0,
-            'amount' => $request->input('Amount'),
+           /* 'amount' => $request->input('Amount'),
             'signature' => $request->input('Signature'),
             'payment_type' => $request->input('PaymentType'),
             'payment_plan' => $request->input('PaymentPlan'),
@@ -154,7 +156,7 @@ class WSpay
             'pg_order_id' => null,
             'lang' => $request->input('Lang'),
             'stan' => null,
-            'error' => $request->input('ErrorMessage'),
+            'error' => $request->input('ErrorMessage'),*/
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now()
         ]);
