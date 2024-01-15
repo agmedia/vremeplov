@@ -27,9 +27,18 @@
     @if (config('app.env') == 'production')
         @yield('google_data_layer')
         <!-- Google Tag Manager -->
-            <!-- Google Tag Manager -->
 
-            <!-- End Google Tag Manager -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-RK67XDPD14"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-RK67XDPD14');
+        </script>
+
+
+        <!-- End Google Tag Manager -->
 
         <!-- Global site tag (gtag.js) - Google Analytics -->
      <!--   <script async src="https://www.googletagmanager.com/gtag/js?id=xxxxxxx"></script>-->
