@@ -121,6 +121,12 @@ class CheckoutController extends Controller
             $order->setData($request->input('order_number'));
         }
 
+        if ($request->has('ShoppingCartID')) {
+            $id = str_replace('-' . now()->format('Y'), '', $request->input('ShoppingCartID'));
+
+            $order->setData($id);
+        }
+
         if ($order->finish($request)) {
             return redirect()->route('checkout.success');
         }
