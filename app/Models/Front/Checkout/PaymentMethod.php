@@ -178,6 +178,12 @@ class PaymentMethod
             }
         }
 
+        foreach ($this->methods as $method) {
+            if ($shipping == 'gls_eu' && $method->code == 'cod') {
+                $this->response_methods->forget($method->code);
+            }
+        }
+
         return $this;
     }
 
