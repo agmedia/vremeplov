@@ -75,7 +75,13 @@ class RouteResolver
             }
 
             if ( ! $group_exist) {
-                abort(404);
+                $product = Product::query()->where('slug', $this->group)->first();
+
+                if ( ! $product) {
+                    abort(404);
+                }
+
+                $this->product = $product;
             }
         }
 
