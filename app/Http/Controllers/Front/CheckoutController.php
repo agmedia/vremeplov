@@ -48,9 +48,8 @@ class CheckoutController extends Controller
             $step = $request->input('step');
         }
 
-       // dd($this->shoppingCart()->get());
 
-        $is_free_shipping = (config('settings.free_shipping') < $this->shoppingCart()->get()['total'] and  $this->shoppingCart()->get()['total']['conditions']['']['attributes']['geo_zone'] == 1) ? true : false;
+        $is_free_shipping = (config('settings.free_shipping') < $this->shoppingCart()->get()['total']) ? true : false;
 
         return view('front.checkout.checkout', compact('step', 'is_free_shipping'));
     }
