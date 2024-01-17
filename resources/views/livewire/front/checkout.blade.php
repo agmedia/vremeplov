@@ -244,6 +244,10 @@
                 </thead>
                 <tbody>
                 @foreach ($shippingMethods as $s_method)
+
+
+
+               {{-- dd($shippingMethods) --}}
                     <tr wire:click="selectShipping('{{ $s_method->code }}')" style="cursor: pointer;">
                         <td>
                             <div class="form-check mb-4">
@@ -259,7 +263,7 @@
                         </td>
                         <td class="align-middle">{{ $s_method->data->time }}</td>
                         <td class="align-middle">
-                            @if ($is_free_shipping)
+                            @if ($is_free_shipping and $s_method->geo_zone == 1)
                                 € 0
                                 @if ($secondary_price)
                                     <br>0 kn

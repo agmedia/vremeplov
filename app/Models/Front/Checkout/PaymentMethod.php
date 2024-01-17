@@ -277,7 +277,7 @@ class PaymentMethod
         if ($payment) {
             $value = $payment->data->price;
 
-            if ($cart->getTotal() > config('settings.free_shipping') and $payment->geo_zone == 1) {
+            if ($cart->getSubTotal() > config('settings.free_shipping') and $payment->geo_zone == 1) {
                 $value = 0;
             }
 

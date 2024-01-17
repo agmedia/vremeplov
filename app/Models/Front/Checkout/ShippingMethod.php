@@ -147,7 +147,7 @@ class ShippingMethod
 
 
 
-            if ($cart->getTotal() > config('settings.free_shipping') and $shipping->geo_zone == 1) {
+            if ($cart->getSubTotal() > config('settings.free_shipping') and $shipping->geo_zone == 1) {
                 $value = 0;
             }
 
