@@ -73,7 +73,7 @@
             <span class=" me-1">Podrška</span>
             <a class="topbar-link" href="tel:00385917627441">091 762 7441</a>
         </div>
-        <div class="topbar-text  d-none  d-md-inline-block">Besplatna dostava za sve narudžbe iznad 70 €</div>
+        <div class="topbar-text  d-none  d-md-inline-block">Besplatna dostava U RH za narudžbe iznad 70 €</div>
         <div class="ms-3 text-nowrap ">
             <a class="topbar-link me-2 d-inline-block" aria-label="Follow us on facebook" href="https://www.facebook.com/antikavrijatvremeplov">
                 <i class="ci-facebook"></i>
