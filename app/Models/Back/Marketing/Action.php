@@ -29,6 +29,12 @@ class Action extends Model
     protected $request;
 
 
+    public function getDataAttribute($value)
+    {
+        return json_decode($value, true);
+    }
+
+
     /**
      * Validate new action Request.
      *
@@ -178,6 +184,7 @@ class Action extends Model
             'links'      => $data['links']->flatten()->toJson(),
             'date_start' => $data['start'],
             'date_end'   => $data['end'],
+            'data'       => $data['data'],
             'coupon'     => $this->request->coupon,
             'quantity'   => $data['coupon_quantity'],
             'status'     => $data['status'],
@@ -203,13 +210,34 @@ class Action extends Model
             $links = collect($this->request->action_list);
         }
 
+        $data = $this->setActionData();
+
         return [
             'links'           => $links,
             'status'          => (isset($this->request->status) and $this->request->status == 'on') ? 1 : 0,
             'start'           => $this->request->date_start ? Carbon::make($this->request->date_start) : null,
             'end'             => $this->request->date_end ? Carbon::make($this->request->date_end) : null,
-            'coupon_quantity' => (isset($this->request->coupon_quantity) and $this->request->coupon_quantity == 'on') ? 1 : 0
+            'coupon_quantity' => (isset($this->request->coupon_quantity) and $this->request->coupon_quantity == 'on') ? 1 : 0,
+            'data'            => ! empty($data) ? collect($data)->toJson() : null
         ];
+    }
+
+
+    /**
+     * @return array
+     */
+    private function setActionData(): array
+    {
+        $response = [];
+
+        if ($this->request->min) {
+            $response['min'] = $this->request->min;
+        }
+        if ($this->request->max) {
+            $response['max'] = $this->request->max;
+        }
+
+        return $response;
     }
 
 
@@ -281,12 +309,20 @@ class Action extends Model
     private function updateProducts($target, int $id, $start, $end): void
     {
         $query = [];
+        $products = Product::query();
 
-        if ($target == 'all') {
-            $products = Product::pluck('price', 'id');
-        } else {
-            $products = Product::whereIn('id', $target)->pluck('price', 'id');
+        if ($target != 'all') {
+            $products->whereIn('id', $target);
         }
+
+        if ($this->request->min) {
+            $products->where('price', '>', $this->request->min);
+        }
+        if ($this->request->max) {
+            $products->where('price', '<', $this->request->max);
+        }
+
+        $products = $products->pluck('price', 'id');
 
         foreach ($products->all() as $k_id => $price) {
             $query[] = [

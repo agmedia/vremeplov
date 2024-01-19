@@ -99,6 +99,16 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="form-group row items-push mb-2">
+                                        <div class="col-md-6">
+                                            <label for="min-input">Obuhvati artikle u rasponu cijene</label>
+                                            <input type="text" class="form-control" id="min-input" name="min" placeholder="Cijena od" value="{{ isset($action->data['min']) ? $action->data['min'] : old('min') }}">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="max-input">&nbsp;</label>
+                                            <input type="text" class="form-control" id="max-input" name="max" placeholder="Cijena do" value="{{ isset($action->data['max']) ? $action->data['max'] : old('max') }}">
+                                        </div>
+                                    </div>
                                     <div class="form-group row items-push mb-0 mt-4">
                                         <div class="col-md-4 pt-2">
                                             <label>Zahtjeva Kupon kod @include('back.layouts.partials.popover', ['title' => 'Ako upišete Kupon Kod', 'content' => 'Smatrat će se da ga zahtjevate prilikom kupnje za ostvarivanje akcije i pripadajučeg popusta...'])</label>
