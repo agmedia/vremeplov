@@ -25,10 +25,10 @@ class Njuskalo
             $this->response[] = [
                 'id' => $product->id,
                 'name' => $product->name,
-                'description' => $product->description,
+                'description' => $product->description ?: $product->name,
                 'group' => config('settings.njuskalo.sync.' . $product->group),
                 'price' => $product->price,
-                'image' => $product->image,
+                'image' => asset($product->image),
             ];
         }
 
