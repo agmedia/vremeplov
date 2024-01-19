@@ -94,6 +94,24 @@ return [
         2 => 'products',
         3 => 'authors',
         4 => 'publishers'
+    ],
+
+    'njuskalo' => [
+        'sync' => [
+            'ambalaza' => 9760, //*
+            'antikviteti' => 9750,
+            'dionice' => 9760, //*
+            'diplome' => 9760, //*
+            'heraldika' => 9760, //*
+            'jelovnici' => 9760, //*
+            'novine-i-casopisi' => 9755,
+            'reklame' => 9760, //*
+            'stari-dokumenti' => 9800,
+            'knjige' => 9760, // Ostala literatura
+            'razglednice' => 12799,
+            'plakati' => 13107,
+            'zamljopisne-karte' => 9760 //*
+        ]
     ]
 
 ];

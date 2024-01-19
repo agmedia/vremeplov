@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Front;
 
 use App\Helpers\Helper;
+use App\Helpers\Njuskalo;
 use App\Helpers\Recaptcha;
 use App\Http\Controllers\Controller;
 use App\Imports\ProductImport;
@@ -221,6 +222,16 @@ class HomeController extends Controller
 
         return response()->view('front.layouts.partials.sitemap-image', [
             'items' => $sm->getResponse()
+        ])->header('Content-Type', 'text/xml');
+    }
+
+
+    public function njuskaloXML(Request $request)
+    {
+        $njuskalo = new Njuskalo();
+
+        return response()->view('front.layouts.partials.njuskalo', [
+            'items' => $njuskalo->getItems()
         ])->header('Content-Type', 'text/xml');
     }
 
