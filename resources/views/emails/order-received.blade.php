@@ -25,8 +25,8 @@
                     <b>{{ __('Općom uplatnicom / Virmanom / Internet bankarstvom') }}</b>
                 @elseif ($order->payment_code == 'cod')
                     <b>{{ __('Gotovinom prilikom pouzeća') }}</b>
-                @elseif ($order->payment_code == 'corvus')
-                    <b>{{ __('CorvusPay') }}</b>
+                @elseif ($order->payment_code == 'wspay')
+                    <b>{{ __('WSPay') }}</b>
                 @else
                     <b>{{ __('Plaćanje prilikom preuzimanja') }}</b>
                 @endif
