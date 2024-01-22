@@ -8,6 +8,8 @@ use App\Helpers\ProductHelper;
 use App\Http\Controllers\Controller;
 use App\Mail\StatusCanceled;
 use App\Mail\StatusPaid;
+use App\Mail\StatusReady;
+use App\Mail\StatusSend;
 use App\Models\Back\Orders\Order;
 use App\Models\Back\Orders\OrderHistory;
 use App\Models\Back\Settings\Settings;
