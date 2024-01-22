@@ -11,7 +11,7 @@ class Njuskalo
 {
 
     /**
-     * @var array 
+     * @var array
      */
     private $response = [];
 
@@ -24,6 +24,7 @@ class Njuskalo
         $products = Product::query()->where('status', 1)
                                     ->where('price', '!=', 0)
                                     ->where('quantity', '!=', 0)
+                                    ->select('id', 'name', 'description', 'quantity', 'status', 'price', 'group', 'image', 'pages', 'dimensions', 'origin', 'letter', 'condition', 'binding', 'year')
                                     ->get();
 
         foreach ($products as $product) {
