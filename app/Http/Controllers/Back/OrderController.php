@@ -178,6 +178,23 @@ class OrderController extends Controller
                         Mail::to($order->payment_email)->send(new StatusCanceled($order));
                     });
                 }
+
+                if ($request->input('status') == config('settings.order.status.ready')) {
+                    $order = Order::find($request->input('order_id'));
+
+                    dispatch(function () use ($order) {
+                        Mail::to($order->payment_email)->send(new StatusReady($order));
+                    });
+                }
+
+
+                if ($request->input('status') == config('settings.order.status.send')) {
+                    $order = Order::find($request->input('order_id'));
+
+                    dispatch(function () use ($order) {
+                        Mail::to($order->payment_email)->send(new StatusSend($order));
+                    });
+                }
             }
 
             OrderHistory::store($request->input('order_id'), $request);
