@@ -22,7 +22,7 @@
             <gmap_lng></gmap_lng>
             <gmap_lat></gmap_lat>
             <videoCallOption>0</videoCallOption>
-            <webshopLink>https://www.antikvarijat-vremeplov.hr/</webshopLink>
+            <webshopLink>https://www.antikvarijat-vremeplov.hr/{{ $item['slug'] }}</webshopLink>
             <image_list>
                 <image>{{ $item['image'] }}</image>
             </image_list>
