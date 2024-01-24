@@ -73,13 +73,11 @@ class ProductController extends Controller
             if ($product) {
                 if ($request->input('value')) {
                     $product->update([
-                        'status' => 1,
-                        'quantity' => $product->quantity ?: 1
+                        'status' => 1
                     ]);
                 } else {
                     $product->update([
-                        'status' => 0,
-                        'quantity' => 0
+                        'status' => 0
                     ]);
                 }
 
