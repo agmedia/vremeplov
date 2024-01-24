@@ -156,6 +156,14 @@ class CheckoutController extends Controller
                 Mail::to($order->payment_email)->send(new OrderSent($order));
             });
 
+            foreach ($order->products as $product) {
+                $real = $product->real;
+
+                if ($real->decrease) {
+                    $real->decrement('quantity', $product->quantity);
+                }
+            }
+
             $this->forgetCheckoutCache();
 
             $cart = $this->shoppingCart();
