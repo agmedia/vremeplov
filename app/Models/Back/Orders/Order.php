@@ -131,7 +131,7 @@ class Order extends Model
     public function scopeChartData($query, array $params)
     {
         return $query
-            ->whereBetween('created_at', [$params['from'], $params['to']])->whereIn('order_status_id', [4, 1, 2, 3])
+            ->whereBetween('created_at', [$params['from'], $params['to']])->whereIn('order_status_id', [1, 2, 3, 4, 9, 10, 11])
             ->orderBy('created_at')
             ->get()
             ->groupBy(function ($val) use ($params) {
