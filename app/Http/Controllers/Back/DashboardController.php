@@ -42,7 +42,7 @@ class DashboardController extends Controller
         $data['proccess']         = Order::query()->whereIn('order_status_id', [1, 2, 3])->count();
         $data['finished']         = Order::query()->whereIn('order_status_id', [4, 5, 6, 7])->count();
         $data['this_month']       = Order::query()->whereMonth('created_at', '=', Carbon::now()->month)->count();
-        $data['this_month_total'] = Order::query()->whereMonth('created_at', '=', Carbon::now()->month)->whereIn('order_status_id', [4, 1, 2, 3])->sum('total');
+        $data['this_month_total'] = Order::query()->whereMonth('created_at', '=', Carbon::now()->month)->whereIn('order_status_id', [1, 2, 3, 4, 9, 10, 11])->sum('total');
 
         $data['users'] = UserDetail::query()->whereIn('role', ['customer'])->count();
 
@@ -61,7 +61,7 @@ class DashboardController extends Controller
                          ->select('order_products.name', 'order_products.product_id',
                              DB::raw('SUM(order_products.quantity) as total'))
                          ->groupBy('order_products.product_id')
-                         ->whereIn('orders.order_status_id', [1, 2, 3, 4])
+                         ->whereIn('orders.order_status_id', [1, 2, 3, 4, 9, 10, 11])
                          ->orderBy('total', 'desc')
                          ->limit(10)
                          ->get();
