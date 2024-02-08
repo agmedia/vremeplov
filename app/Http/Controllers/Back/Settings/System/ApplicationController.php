@@ -36,6 +36,9 @@ class ApplicationController extends Controller
      */
     public function basicInfoStore(Request $request): JsonResponse
     {
+        Log::info($request->toArray());
+        return response()->json(['success' => 'Osnovni info aplikacije je snimljen...']);
+
         $is_valid = Validator::make($request->toArray(), [
             'title' => 'required',
             'address' => 'required',

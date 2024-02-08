@@ -90,7 +90,7 @@ class Order extends Model
      */
     public function setData(string $id)
     {
-        $data = \App\Models\Back\Orders\Order::where('id', $id)->first();
+        $data = \App\Models\Back\Orders\Order::query()->where('id', $id)->orWhere('tracking_code', $id)->first();
 
         if ($data) {
             $this->oc_data = $data;

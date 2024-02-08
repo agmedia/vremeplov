@@ -115,6 +115,9 @@ class CheckoutController extends Controller
     {
         $order = new Order();
 
+        Log::info('order::::: $request::');
+        Log::info($request->toArray());
+
         if ($request->has('provjera')) {
             $order->setData($request->input('provjera'));
         }
@@ -130,6 +133,10 @@ class CheckoutController extends Controller
         }
 
         if ($order->finish($request)) {
+            if ($request->has('return_json') && intval($request->input('return_json'))) {
+                return response()->json(['success' => 1, 'href' => route('checkout.success')]);
+            }
+
             return redirect()->route('checkout.success');
         }
 
@@ -159,7 +166,7 @@ class CheckoutController extends Controller
             foreach ($order->products as $product) {
                 $real = $product->real;
 
-                if ($real->decrease) {
+                if ($real->decrease && $real->quantity) {
                     $real->decrement('quantity', $product->quantity);
                 }
             }
