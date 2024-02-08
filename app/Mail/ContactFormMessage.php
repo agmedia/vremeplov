@@ -16,12 +16,7 @@ class ContactFormMessage extends Mailable
     /**
      * @var array
      */
-    private $contact;
-
-    /**
-     * @var mixed
-     */
-    public $from;
+    private $data;
 
 
     /**
@@ -29,10 +24,9 @@ class ContactFormMessage extends Mailable
      *
      * @param $contact
      */
-    public function __construct($contact)
+    public function __construct($data)
     {
-        $this->contact = $contact;
-        $this->from    = $contact['email'];
+        $this->data = $data;
     }
 
 
@@ -43,6 +37,6 @@ class ContactFormMessage extends Mailable
      */
     public function build()
     {
-        return $this->view('emails.contact-form')->with(['contact' => $this->contact]);
+        return $this->view('emails.contact-form')->with(['data' => $this->data]);
     }
 }

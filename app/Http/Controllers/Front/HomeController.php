@@ -133,9 +133,9 @@ class HomeController extends Controller
 
         dispatch(function () use ($message) {
             Mail::to(config('mail.admin'))->send(new ContactFormMessage($message));
-        });
+        })->afterResponse();
 
-        return view('front.contact')->with(['success' => 'Vaša poruka je uspješno poslana.! Odgovoriti ćemo vam uskoro.']);
+        return back()->with(['success' => 'Vaša poruka je uspješno poslana.! Odgovoriti ćemo vam uskoro.']);
     }
 
 

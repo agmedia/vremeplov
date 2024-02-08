@@ -27,7 +27,7 @@
     <section class="container pt-grid-gutter">
         <div class="row">
 
-            @include('front.layouts.partials.success-session')
+            @include('front.layouts.partials.session')
 
             <div class="col-12 col-sm-6 mb-5">
 
