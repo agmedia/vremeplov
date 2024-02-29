@@ -67,6 +67,9 @@ class PayPal
         $paypal->setApiCredentials($this->config);
         $paypal->setAccessToken($paypal->getAccessToken());
 
+        Log::info('$paypal->setApiCredentials(;:::::::::::$this->config)::');
+        Log::info($this->config);
+
         $order = $paypal->createOrder([
             "intent"         => "CAPTURE",
             "purchase_units" => [
@@ -167,8 +170,14 @@ class PayPal
                 $this->config['live'] = [
                     'client_id'     => $this->client_id,
                     'client_secret' => $paypal_data->data->live_secret,
-                    'app_id'        => $paypal_data->data->live_app,
                 ];
+
+                $paypal = new PaypalClient($this->config);
+                $app_id = $paypal->getAccessToken();
+
+                if (isset($app_id['app_id'])) {
+                    $this->config['live']['app_id'] = $app_id['app_id'];
+                }
             }
 
             return $this->config;
