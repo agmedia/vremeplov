@@ -83,6 +83,7 @@ class Checkout extends Component
 
     public $comment = '';
     public $view_comment = false;
+    public $view_r1 = '';
 
     protected $cart = false;
 
@@ -242,6 +243,19 @@ class Checkout extends Component
         $this->step = $step;
 
         CheckoutSession::setStep($step);
+    }
+
+
+    /**
+     * @return void
+     */
+    public function viewR1()
+    {
+        if ($this->view_r1 == '') {
+            $this->view_r1 = 'show';
+        } else {
+            $this->view_r1 = '';
+        }
     }
 
 

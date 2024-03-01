@@ -199,9 +199,9 @@
             </div>
         </div>
 
-        <h2 class="h6 pt-3 pb-3 mb-2"><a data-bs-toggle="collapse" href="#collapseOib" role="button" aria-expanded="false" aria-controls="collapseLogin" class="alert-link">Trebate R1 račun?</a></h2>
+        <h2 class="h6 pt-3 pb-3 mb-2"><a data-bs-toggle="collapse" href="#collapseOib" role="button" wire:click="viewR1()" aria-expanded="false" aria-controls="collapseLogin" class="alert-link">Trebate R1 račun?</a></h2>
 
-        <div id="collapseOib" aria-expanded="false" class="collapse">
+        <div id="collapseOib" aria-expanded="false" class="collapse {{ $view_r1 }}">
 
             <div class="row ">
                 <div class="col-sm-6">
