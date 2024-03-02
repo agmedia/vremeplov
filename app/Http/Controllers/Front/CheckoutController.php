@@ -161,7 +161,7 @@ class CheckoutController extends Controller
             dispatch(function () use ($order) {
                 Mail::to(config('mail.admin'))->send(new OrderReceived($order));
                 Mail::to($order->payment_email)->send(new OrderSent($order));
-            });
+            })->afterResponse();
 
             foreach ($order->products as $product) {
                 $real = $product->real;

@@ -89,16 +89,13 @@ class PayPal
         Log::info($order);
 
         if (isset($order['status']) && $order['status'] == 'CREATED') {
+            $data['order_id']    = $this->order->id;
             $data['vendor_id']   = $order['id'];
             $data['currency']    = $this->currency;
             $data['client_id']   = $this->client_id;
             $data['approve_url'] = route('checkout');
             $data['error_url']   = route('checkout.error');
             $data['status']      = $order['status'];
-
-            $this->order->update([
-                'tracking_code' => $order['id']
-            ]);
         }
 
         return view('front.checkout.payment.paypal', compact('data'));
@@ -128,7 +125,7 @@ class PayPal
             'success'       => 0,
             'signature'     => $request->input('signature'),
             //'approval_code' => $request->input('approval_code'),
-            'pg_order_id'   => $request->input('provjera'),
+            'pg_order_id'   => $request->input('vendor_order_id'),
             'created_at'    => Carbon::now(),
             'updated_at'    => Carbon::now()
         ]);

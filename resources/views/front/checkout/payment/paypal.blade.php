@@ -69,8 +69,8 @@
                     switchAlert('success');
 
                     let url = '{{ $data['approve_url'] }}?status={{ $data['status'] }}' +
-                        '&provjera=' + data.orderID +
-                        //'&approval_code=' + data.facilitatorAccessToken +
+                        '&provjera={{ $data['order_id'] }}' +
+                        '&vendor_order_id=' + data.orderID +
                         '&signature=' + data.payerID +
                         '&return_json=1';
 
