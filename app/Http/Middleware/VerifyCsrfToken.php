@@ -13,7 +13,6 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         //
-        'keks/uspjeh',
-        'https://www.antikvarijat-vremeplov.hr/api/v2/cart/add'
+        'keks/uspjeh'
     ];
 }
