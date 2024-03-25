@@ -50,6 +50,11 @@ class AgService {
                 return false;
             }
 
+            if (error.response && 419 === error.response.status) {
+                window.location.reload()
+            }
+
+
             let product = response.data.items[item.id].associatedModel;
 
             window.dataLayer = window.dataLayer || [];
