@@ -3877,8 +3877,6 @@ var AgService = /*#__PURE__*/function () {
       var _this3 = this;
       return axios.post('cart/add', {
         item: item
-      }, {
-        withCredentials: true
       }).then(function (response) {
         if (response.data.error) {
           _this3.returnError(response.data.error);
