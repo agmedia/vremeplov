@@ -404,6 +404,10 @@ Route::get('{group}/{cat?}/{subcat?}/{prod?}', [CatalogRouteController::class, '
 // SPECIAL ROUTES
 Route::post('kekspay/provjera-narudzbe', [\App\Models\Front\Checkout\Payment\Keks::class, 'check'])->name('keks.provjera');
 
+$router->get('csrf-token', function() {
+    return request()->session()->token();
+});
+
 
 Route::fallback(function () {
     return view('front.404');
