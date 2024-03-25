@@ -43,7 +43,7 @@ class AgService {
      * @returns {*}
      */
     addToCart(item) {
-        return axios.post('cart/add', {item: item})
+        return axios.post('cart/add', {item: item},{ withCredentials: true })
         .then(response => {
             if (response.data.error) {
                 this.returnError(response.data.error);
