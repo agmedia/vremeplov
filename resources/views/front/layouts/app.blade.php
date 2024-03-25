@@ -19,7 +19,6 @@
     <link rel="mask-icon" href="{{ config('settings.images_domain') . 'safari-pinned-tab.svg' }}" color="#2d2224">
     <meta name="msapplication-TileColor" content="#2d2224">
     <meta name="theme-color" content="#ffffff">
-    <script>window.Laravel = {csrfToken: '{{ csrf_token() }}'}</script>
 
     <!-- Vendor Styles including: Font Icons, Plugins, etc.-->
     <link rel="preconnect" href="https://fonts.gstatic.com">
