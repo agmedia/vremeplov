@@ -46,13 +46,11 @@ class AgService {
         return axios.post('cart/add', {item: item})
         .then(response => {
             if (response.data.error) {
+                window.location.reload();
                 this.returnError(response.data.error);
                 return false;
             }
 
-            if (error.response && 419 === error.response.status) {
-                window.location.reload()
-            }
 
 
             let product = response.data.items[item.id].associatedModel;

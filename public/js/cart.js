@@ -3879,11 +3879,9 @@ var AgService = /*#__PURE__*/function () {
         item: item
       }).then(function (response) {
         if (response.data.error) {
+          window.location.reload();
           _this3.returnError(response.data.error);
           return false;
-        }
-        if (error.response && 419 === error.response.status) {
-          window.location.reload();
         }
         var product = response.data.items[item.id].associatedModel;
         window.dataLayer = window.dataLayer || [];
