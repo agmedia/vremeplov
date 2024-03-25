@@ -51,7 +51,6 @@ class AgService {
             }
 
 
-
             let product = response.data.items[item.id].associatedModel;
 
             window.dataLayer = window.dataLayer || [];
