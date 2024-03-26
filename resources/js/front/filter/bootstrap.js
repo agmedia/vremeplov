@@ -27,9 +27,7 @@ const API_PATH = BASE_PATH + '/api/v2/';
 window.axios = require('axios');
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-
 axios.defaults.headers.common['X-CSRF-TOKEN'] = window.agtoken;
-
 window.axios.defaults.baseURL = API_PATH;
 
 /**
