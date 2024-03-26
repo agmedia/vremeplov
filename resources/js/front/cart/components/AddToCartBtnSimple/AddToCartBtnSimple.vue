@@ -48,6 +48,7 @@ export default {
         addToCart() {
             let item = {
                 id: this.id,
+              _token: '{{csrf_token()}}',
                 quantity: this.quantity
             }
 
