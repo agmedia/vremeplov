@@ -2113,7 +2113,6 @@ __webpack_require__.r(__webpack_exports__);
     addToCart: function addToCart() {
       var item = {
         id: this.id,
-        _token: '{{csrf_token()}}',
         quantity: this.quantity
       };
       this.$store.dispatch('addToCart', item);
@@ -2201,7 +2200,6 @@ __webpack_require__.r(__webpack_exports__);
     addToCart: function addToCart() {
       var item = {
         id: this.id,
-        _token: '{{csrf_token()}}',
         quantity: this.quantity
       };
       this.$store.dispatch('addToCart', item);
