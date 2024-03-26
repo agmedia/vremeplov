@@ -23,10 +23,11 @@ export default {
 
     mounted() {
         let cart = this.$store.state.storage.getCart();
-
-        for (const key in cart.items) {
-            if (this.id == cart.items[key].id) {
-                this.has_in_cart = cart.items[key].quantity;
+        if(cart) {
+            for (const key in cart.items) {
+                if (this.id == cart.items[key].id) {
+                    this.has_in_cart = cart.items[key].quantity;
+                }
             }
         }
 
