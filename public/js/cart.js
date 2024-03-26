@@ -2088,9 +2088,11 @@ __webpack_require__.r(__webpack_exports__);
   },
   mounted: function mounted() {
     var cart = this.$store.state.storage.getCart();
-    for (var key in cart.items) {
-      if (this.id == cart.items[key].id) {
-        this.has_in_cart = cart.items[key].quantity;
+    if (cart) {
+      for (var key in cart.items) {
+        if (this.id == cart.items[key].id) {
+          this.has_in_cart = cart.items[key].quantity;
+        }
       }
     }
     if (this.available == undefined) {
@@ -2176,10 +2178,12 @@ __webpack_require__.r(__webpack_exports__);
   },
   mounted: function mounted() {
     var cart = this.$store.state.storage.getCart();
-    for (var key in cart.items) {
-      if (this.id == cart.items[key].id) {
-        this.has_in_cart = true;
-        this.quantity = cart.items[key].quantity;
+    if (cart) {
+      for (var key in cart.items) {
+        if (this.id == cart.items[key].id) {
+          this.has_in_cart = true;
+          this.quantity = cart.items[key].quantity;
+        }
       }
     }
     this.checkAvailability();
