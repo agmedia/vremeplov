@@ -44,7 +44,7 @@
 {{--                            <a href="{{ route('set.group') }}" class="btn btn-hero-sm btn-rounded btn-hero-danger mb-3 mr-3">Set New Category Group</a>--}}
 {{--                            <a href="{{ route('set.unlimited') }}" class="btn btn-hero-sm btn-rounded btn-hero-danger mb-3 mr-3">Set Unlimited Quantity</a>--}}
                             {{--<a href="{{ route('statuses.cron') }}" class="btn btn-hero-sm btn-rounded btn-hero-success mb-3 mr-3">Statuses</a>--}}
-                            {{--<a href="{{ route('slugs.revision') }}" class="btn btn-hero-sm btn-rounded btn-hero-primary mb-3 mr-3">Slugs revision</a>--}}
+                            <a href="{{ route('slugs.revision') }}" class="btn btn-hero-sm btn-rounded btn-hero-primary mb-3 mr-3">Slugs revision</a>
                             {{--<a href="{{ route('duplicate.revision', ['target' => 'images']) }}" class="btn btn-hero-sm btn-rounded btn-hero-primary mb-3 mr-3">Duplicate Images revision</a>--}}
                             {{--<a href="{{ route('duplicate.revision', ['target' => 'publishers']) }}" class="btn btn-hero-sm btn-rounded btn-hero-primary mb-3 mr-3">Duplicate Publishers revision</a>--}}
                         </div>
