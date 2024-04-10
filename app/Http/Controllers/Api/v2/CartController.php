@@ -63,7 +63,7 @@ class CartController extends Controller
     {
         $response = $this->cart->get();
         
-        $this->resolveDB($response);
+        $this->cart->resolveDB($response);
         
         return response()->json($response);
     }
@@ -78,7 +78,7 @@ class CartController extends Controller
     {
         $response = $this->cart->check($request);
 
-        $this->resolveDB($response);
+        $this->cart->resolveDB($response);
 
         return response()->json($response);
     }
@@ -93,7 +93,7 @@ class CartController extends Controller
     {
         $response = $this->cart->add($request);
 
-        $this->resolveDB($response);
+        $this->cart->resolveDB($response);
 
         return response()->json($response);
     }
@@ -109,7 +109,7 @@ class CartController extends Controller
     {
         $response = $this->cart->add($request, $id);
     
-        $this->resolveDB($response);
+        $this->cart->resolveDB($response);
     
         return response()->json($response);
     }
@@ -124,7 +124,7 @@ class CartController extends Controller
     {
         $response = $this->cart->remove($id);
     
-        $this->resolveDB($response);
+        $this->cart->resolveDB($response);
     
         return response()->json($response);
     }
@@ -156,25 +156,4 @@ class CartController extends Controller
         Cart::checkLogged($this->cart, $sl_cart_id);
     }
 
-
-    /**
-     * If user is logged store or update the DB session.
-     *
-     * @param $response
-     */
-    private function resolveDB($response): void
-    {
-        if (Auth::user()) {
-            // Queue the storage of cart data.
-            dispatch(function () use ($response) {
-                $has_cart = Cart::where('user_id', Auth::user()->id)->first();
-    
-                if ($has_cart) {
-                    Cart::edit($response);
-                } else {
-                    Cart::store($response);
-                }
-            });
-        }
-    }
 }

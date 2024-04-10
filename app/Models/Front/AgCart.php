@@ -274,21 +274,25 @@ class AgCart extends Model
     /**
      * If user is logged store or update the DB session.
      *
-     * @param $response
+     * @return $this
      */
-    public function resolveDB(): void
+    public function resolveDB(array $data = null): static
     {
-        $cart = $this->get();
+        if ( ! $data) {
+            $data = $this->get();
+        }
 
         if (Auth::user()) {
             $has_cart = \App\Models\Cart::where('user_id', Auth::user()->id)->first();
 
             if ($has_cart) {
-                \App\Models\Cart::edit($cart);
+                \App\Models\Cart::edit($data);
             } else {
-                \App\Models\Cart::store($cart);
+                \App\Models\Cart::store($data);
             }
         }
+
+        return $this;
     }
 
 
