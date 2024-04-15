@@ -130,7 +130,7 @@
                         <div class="product-details ms-auto me-auto pb-3 ps-2 pe-2">
                             <div class="order-lg-1 pe-lg-4 text-center text-lg-start mt-3">
                                 @if ( $prod->quantity < 1)
-                                    <span class="badge bg-warning mb-2">Rasprodano</span>
+                                    <span class="badge bg-warning mb-2 mt-3 " style="font-size:20px">Rasprodano</span>
                                 @endif
                                 <h1 class="h3 text-dark mb-0"> {{ $prod->name }}</h1>
                             </div>

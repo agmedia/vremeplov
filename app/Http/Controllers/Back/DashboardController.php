@@ -573,7 +573,7 @@ class DashboardController extends Controller
 
         Product::query()->whereIn('id', $products)->update([
             'quantity' => 100,
-            'decrease' => 0,
+            'decrease' => 1,
             'status'   => 1
         ]);
 
