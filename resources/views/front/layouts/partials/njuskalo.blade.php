@@ -2,7 +2,7 @@
 <ad_list>
     @foreach ($items as $item)
         <ad_item class="ad_simple">
-            <user_id>2168914</user_id>
+            <user_id>{{ config('settings.njuskalo.user_id') }}</user_id>
             <original_id>{{ $item['id'] }}</original_id>
             <category_id>{{ $item['group'] }}</category_id>
             <title>{{ $item['name'] }}</title>

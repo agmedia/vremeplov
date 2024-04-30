@@ -99,6 +99,7 @@ return [
     ],
 
     'njuskalo' => [
+        'user_id' => '2168914',
         'sync' => [
             'ambalaza' => 9760, //*
             'antikviteti' => 9750,
@@ -106,7 +107,7 @@ return [
             'diplome' => 9760, //*
             'heraldika' => 9760, //*
             'jelovnici' => 9760, //*
-            'novine-i-casopisi' => 9755,
+            'novine-i-casopisi' => 15347,
             'reklame' => 9760, //*
             'stari-dokumenti' => 9800,
             'knjige' => 9760, // Ostala literatura
