@@ -132,7 +132,11 @@ class PayPalStandard
         $curl_request = 'cmd=_notify-validate';
 
         foreach ($request->toArray() as $key => $value) {
-            $curl_request .= '&' . $key . '=' . urlencode(html_entity_decode($value, ENT_QUOTES, 'UTF-8'));
+            if ($key == 'payment_date') {
+                $curl_request .= '&' . $key . '=' . urlencode(html_entity_decode(Carbon::make($value)->addHours(2)->toIso8601ZuluString(), ENT_QUOTES, 'UTF-8'));
+            } else {
+                $curl_request .= '&' . $key . '=' . urlencode(html_entity_decode($value, ENT_QUOTES, 'UTF-8'));
+            }
         }
 
         $paypal_settings = Settings::get('payment', 'list.paypal');
