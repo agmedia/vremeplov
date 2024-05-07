@@ -81,7 +81,7 @@ return [
     'payment' => [
         'providers' => [
             'wspay'  => \App\Models\Front\Checkout\Payment\Wspay::class,
-            'paypal'  => \App\Models\Front\Checkout\Payment\PayPal::class,
+            'paypal'  => \App\Models\Front\Checkout\Payment\PayPalStandard::class,
             //'payway' => \App\Models\Front\Checkout\Payment\Payway::class,
             //'corvus' => \App\Models\Front\Checkout\Payment\Corvus::class,
             'cod'    => \App\Models\Front\Checkout\Payment\Cod::class,
