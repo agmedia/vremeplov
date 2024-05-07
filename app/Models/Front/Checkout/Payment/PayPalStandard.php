@@ -70,7 +70,7 @@ class PayPalStandard
             $data['products'][] = [
                 'name'     => htmlspecialchars($item->name),
                 'model'    => htmlspecialchars($item->product()->first()->sku),
-                'price'    => number_format($item->price,2, ',', ''),
+                'price'    => number_format($item->price,2),
                 'quantity' => $item->quantity
             ];
         }
@@ -91,11 +91,11 @@ class PayPalStandard
             $data['products'][] = array(
                 'name'     => 'Discount item',
                 'model'    => '',
-                'price'    => $total,
+                'price'    => number_format($total, 2),
                 'quantity' => 1
             );
         } else {
-            $data['discount_amount_cart'] -= $total;
+            $data['discount_amount_cart'] -= number_format($total, 2);
         }
 
         $data['currency'] = 'EUR';
