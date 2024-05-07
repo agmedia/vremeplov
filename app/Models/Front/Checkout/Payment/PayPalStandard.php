@@ -53,7 +53,7 @@ class PayPalStandard
             return '';
         }
 
-        $order_id = 27;//$this->order->id;
+        $order_id = $this->order->id;
 
         $payment_method = $payment_method->first();
 
