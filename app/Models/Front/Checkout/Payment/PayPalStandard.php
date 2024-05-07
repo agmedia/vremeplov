@@ -56,14 +56,15 @@ class PayPalStandard
 
         $action = $this->url['live'];
         $data['testmode'] = false;
+        $data['business'] = 'info@antiqueshop.hr';
 
         if ($payment_method->data->test) {
             $action = $this->url['test'];
             $data['testmode'] = true;
+            $data['business'] = 'tomislav-facilitator@agmedia.hr';
         }
 
         $data['action'] = $action;
-        $data['business'] = 'info@antiqueshop.hr';
         $data['order_id'] = $this->order->id;
 
         foreach ($this->order->products()->get() as $item) {
