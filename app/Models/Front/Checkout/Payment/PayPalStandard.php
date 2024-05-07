@@ -4,6 +4,7 @@ namespace App\Models\Front\Checkout\Payment;
 
 use App\Models\Back\Orders\Order;
 use App\Models\Back\Orders\Transaction;
+use App\Models\Back\Settings\Settings;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -52,6 +53,8 @@ class PayPalStandard
             return '';
         }
 
+        $order_id = 27;//$this->order->id;
+
         $payment_method = $payment_method->first();
 
         $action = $this->url['live'];
@@ -65,7 +68,7 @@ class PayPalStandard
         }
 
         $data['action'] = $action;
-        $data['order_id'] = $this->order->id;
+        $data['order_id'] = $order_id;
 
         foreach ($this->order->products()->get() as $item) {
             $data['products'][] = [
@@ -108,7 +111,7 @@ class PayPalStandard
         $data['postcode'] = $this->order->payment_zip;
         $data['phone'] = $this->order->payment_phone;
         $data['email'] = $this->order->payment_email;
-        $data['invoice'] = $this->order->id . ' - ' . $this->order->payment_fname . ' ' . $this->order->payment_lname;
+        $data['invoice'] = $order_id . ' - ' . $this->order->payment_fname . ' ' . $this->order->payment_lname;
         $data['lc'] = 'HR';
         $data['return'] = url($payment_method->data->callback);
         $data['notify_url'] = url($payment_method->data->callback);
@@ -126,7 +129,39 @@ class PayPalStandard
      */
     public function finishOrder(Order $order, Request $request): bool
     {
-        $status = $request->input('Success') ? config('settings.order.status.paid') : config('settings.order.status.declined');
+        $curl_request = 'cmd=_notify-validate';
+
+        foreach ($request->toArray() as $key => $value) {
+            $curl_request .= '&' . $key . '=' . urlencode(html_entity_decode($value, ENT_QUOTES, 'UTF-8'));
+        }
+
+        $paypal_settings = Settings::get('payment', 'list.paypal');
+        $curl = curl_init('https://www.sandbox.paypal.com/cgi-bin/webscr');
+
+        if ($paypal_settings && ! $paypal_settings->first()->data->test) {
+            $curl = curl_init('https://www.paypal.com/cgi-bin/webscr');
+        }
+
+        Log::info('$curl_request callback()');
+        Log::info($curl_request);
+
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $curl_request);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+
+        $response = curl_exec($curl);
+
+        Log::info('$response callback()');
+        Log::info($response);
+
+        Log::info('$response error callback()');
+        Log::info(curl_error($curl));
+
+
+        /*$status = $request->input('Success') ? config('settings.order.status.paid') : config('settings.order.status.declined');
 
         $order->update([
             'order_status_id' => $status
@@ -170,7 +205,7 @@ class PayPalStandard
             'error' => $request->input('ErrorMessage'),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now()
-        ]);
+        ]);*/
 
         return false;
     }
