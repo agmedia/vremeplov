@@ -134,7 +134,7 @@ class CheckoutController extends Controller
 
         // paypal standard
         if ($request->has('PayerID') && $request->has('custom')) {
-            $order->setData($request->has('custom'));
+            $order->setData($request->input('custom'));
         }
 
         if ($order->finish($request)) {
