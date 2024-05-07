@@ -132,6 +132,11 @@ class CheckoutController extends Controller
             $order->setData($id);
         }
 
+        // paypal standard
+        if ($request->has('PayerID') && $request->has('custom')) {
+            $order->setData($request->has('custom'));
+        }
+
         if ($order->finish($request)) {
             if ($request->has('return_json') && intval($request->input('return_json'))) {
                 return response()->json(['success' => 1, 'href' => route('checkout.success')]);
