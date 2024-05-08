@@ -31,7 +31,7 @@
     <input type="hidden" name="rm" value="2" />
     <input type="hidden" name="no_note" value="1" />
     <input type="hidden" name="no_shipping" value="1" />
-    <input type="hidden" name="charset" value="utf-8" />
+    <input type="hidden" name="charset" value="UTF-8" />
     <input type="hidden" name="return" value="{{ $data['return'] }}" />
     <input type="hidden" name="notify_url" value="{{ $data['notify_url'] }}" />
     <input type="hidden" name="cancel_return" value="{{ $data['cancel_return'] }}" />
