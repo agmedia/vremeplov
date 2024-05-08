@@ -47,6 +47,10 @@
                 @elseif ($order->payment_code == 'wspay')
                     <b>{{ __('WSPay') }}</b>
                     <p style="font-size:12px">Uredno smo zaprimili Vašu narudžbu broj {{ $order->id }} i zahvaljujemo Vam.</p>
+
+                @elseif ($order->payment_code == 'paypal')
+                    <b>{{ __('PayPal') }}</b>
+                    <p style="font-size:12px">Uredno smo zaprimili Vašu narudžbu broj {{ $order->id }} i zahvaljujemo Vam.</p>
                 @else
                     <b>{{ __('Plaćanje prilikom preuzimanja') }}</b>
                     <p style="font-size:12px">Uredno smo zaprimili Vašu narudžbu broj {{ $order->id }} i zahvaljujemo Vam.</p>
