@@ -221,6 +221,8 @@ class CheckoutController extends Controller
         Log::info('public function successPaypal(Request $request)');
         Log::info($request->toArray());
 
+        $order = new Order();
+
         // paypal standard
         if ($request->has('PayerID') && $request->has('custom')) {
             $order->setData($request->input('custom'));
