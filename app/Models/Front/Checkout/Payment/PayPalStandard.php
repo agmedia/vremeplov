@@ -114,6 +114,7 @@ class PayPalStandard
         $data['invoice'] = $order_id . ' - ' . $this->order->payment_fname . ' ' . $this->order->payment_lname;
         $data['lc'] = 'HR';
         $data['return'] = url($payment_method->data->callback);
+        $data['rm'] = 2;
         $data['notify_url'] = url($payment_method->data->callback);
         $data['cancel_return'] = route('kosarica');
 
@@ -129,6 +130,8 @@ class PayPalStandard
      */
     public function finishOrder(Order $order, Request $request): bool
     {
+        $return = true;
+
         $curl_request = 'cmd=_notify-validate';
 
         foreach ($request->toArray() as $key => $value) {
@@ -211,7 +214,7 @@ class PayPalStandard
             'updated_at' => Carbon::now()
         ]);*/
 
-        return false;
+        return $return;
     }
 
 }
