@@ -134,9 +134,9 @@ class PayPalStandard
 
         foreach ($request->toArray() as $key => $value) {
             if ($key == 'payment_date') {
-                $curl_request .= '&' . $key . '=' . urlencode(html_entity_decode($value/*Carbon::make($value)->addHours(2)->toIso8601ZuluString()*/, ENT_QUOTES, 'UTF-8'));
+                $curl_request .= '&' . $key . '=' . rawurlencode(html_entity_decode($value/*Carbon::make($value)->addHours(2)->toIso8601ZuluString()*/, ENT_QUOTES, 'UTF-8'));
             } else {
-                $curl_request .= '&' . $key . '=' . urlencode(html_entity_decode($value, ENT_QUOTES, 'UTF-8'));
+                $curl_request .= '&' . $key . '=' . rawurlencode(html_entity_decode($value, ENT_QUOTES, 'UTF-8'));
             }
         }
 
