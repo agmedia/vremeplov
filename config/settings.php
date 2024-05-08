@@ -69,6 +69,7 @@ return [
             'unfinished' => 8,
             'declined'   => 7,
             'canceled'   => 5,
+            'returned'   => 6,
             'paid'       => 3,
             'send'       => 4,
             'ready'      => 10,

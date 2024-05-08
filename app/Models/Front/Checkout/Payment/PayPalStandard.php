@@ -130,14 +130,10 @@ class PayPalStandard
      */
     public function finishOrder(Order $order, Request $request): bool
     {
-        $curl_request = 'cmd=_notify-validate';
+        /*$curl_request = 'cmd=_notify-validate';
 
         foreach ($request->toArray() as $key => $value) {
-            if ($key == 'payment_date') {
-                $curl_request .= '&' . $key . '=' . rawurlencode(html_entity_decode($value/*Carbon::make($value)->addHours(2)->toIso8601ZuluString()*/, ENT_QUOTES, 'UTF-8'));
-            } else {
-                $curl_request .= '&' . $key . '=' . rawurlencode(html_entity_decode($value, ENT_QUOTES, 'UTF-8'));
-            }
+            $curl_request .= '&' . $key . '=' . rawurlencode(html_entity_decode($value, ENT_QUOTES, 'UTF-8'));
         }
 
         $paypal_settings = Settings::get('payment', 'list.paypal');
@@ -147,9 +143,6 @@ class PayPalStandard
             $curl = curl_init('https://ipnpb.paypal.com/cgi-bin/webscr');
         }
 
-        Log::info('$curl_request callback()');
-        Log::info($curl_request);
-
         curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_POSTFIELDS, $curl_request);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -157,45 +150,72 @@ class PayPalStandard
         curl_setopt($curl, CURLOPT_TIMEOUT, 30);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 
-        $response = curl_exec($curl);
+        $response = curl_exec($curl);*/
 
-        Log::info('$response callback()');
-        Log::info($response);
+        $order_status_id = 0;
 
-        Log::info('$response error callback()');
-        Log::info(curl_error($curl));
-
-        return false;
-
-        /*$status = $request->has('PayerID') ? config('settings.order.status.paid') : config('settings.order.status.declined');
+        switch($request->input('payment_status')) {
+            case 'Canceled_Reversal':
+                $order_status_id = config('settings.order.status.canceled');
+                break;
+            case 'Completed':
+                $order_status_id = config('settings.order.status.paid');
+                break;
+            case 'Denied':
+                $order_status_id = config('settings.order.status.declined');
+                break;
+            case 'Expired':
+                $order_status_id = config('settings.order.status.declined');
+                break;
+            case 'Failed':
+                $order_status_id = config('settings.order.status.unfinished');
+                break;
+            case 'Pending':
+                $order_status_id = config('settings.order.status.new');
+                break;
+            case 'Processed':
+                $order_status_id = config('settings.order.status.new');
+                break;
+            case 'Refunded':
+                $order_status_id = config('settings.order.status.returned');
+                break;
+            case 'Reversed':
+                $order_status_id = config('settings.order.status.returned');
+                break;
+            case 'Voided':
+                $order_status_id = config('settings.order.status.declined');
+                break;
+        }
 
         $order->update([
-            'order_status_id' => $status
+            'order_status_id' => $order_status_id
         ]);
 
-        if ($request->input('PayerID')) {
-            Transaction::insert([
-                'order_id' => $order->id,
-                'success' => 1,
-                'amount' => $order->total,
-                'signature' => $request->input('PayerID'),
-                'payment_type' => 'paypal',
-                'payment_plan' => '',
-                'payment_partner' => 'Paypal',
-                'datetime' => now(),
-                'approval_code' => $request->input('PayerID'),
-                'pg_order_id' => $request->input('PayerID'),
-                'lang' => 'hr',
-                'stan' => $request->input('PayerID'),
-                'error' => '',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ]);
+        Transaction::insert([
+            'order_id' => $order->id,
+            'success' => 1,
+            'amount' => $order->total,
+            'signature' => $request->input('PayerID') ?? '',
+            'payment_type' => $request->input('payment_type') ?? '',
+            'payment_plan' => '',
+            'payment_partner' => 'Paypal',
+            'datetime' => $request->input('payment_date') ?? now(),
+            'approval_code' => $request->input('verify_sign') ?? '',
+            'pg_order_id' => $request->input('PayerID'),
+            'lang' => 'hr',
+            'stan' => $request->input('invoice'),
+            'error' => '',
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now()
+        ]);
 
+        Log::info($order->id . '_ Order status ID = ' . $order_status_id);
+
+        if ($order_status_id == config('settings.order.status.paid')) {
             return true;
         }
 
-        return false;*/
+        return false;
     }
 
 }
