@@ -130,7 +130,7 @@ class PayPalStandard
      */
     public function finishOrder(Order $order, Request $request): bool
     {
-        /*$curl_request = 'cmd=_notify-validate';
+        $curl_request = 'cmd=_notify-validate';
 
         foreach ($request->toArray() as $key => $value) {
             if ($key == 'payment_date') {
@@ -163,10 +163,11 @@ class PayPalStandard
         Log::info($response);
 
         Log::info('$response error callback()');
-        Log::info(curl_error($curl));*/
+        Log::info(curl_error($curl));
 
+        return false;
 
-        $status = $request->has('PayerID') ? config('settings.order.status.paid') : config('settings.order.status.declined');
+        /*$status = $request->has('PayerID') ? config('settings.order.status.paid') : config('settings.order.status.declined');
 
         $order->update([
             'order_status_id' => $status
@@ -194,7 +195,7 @@ class PayPalStandard
             return true;
         }
 
-        return false;
+        return false;*/
     }
 
 }

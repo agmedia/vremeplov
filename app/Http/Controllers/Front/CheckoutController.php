@@ -220,6 +220,21 @@ class CheckoutController extends Controller
     {
         Log::info('public function successPaypal(Request $request)');
         Log::info($request->toArray());
+
+        // paypal standard
+        if ($request->has('PayerID') && $request->has('custom')) {
+            $order->setData($request->input('custom'));
+        }
+
+        if ($order->finish($request)) {
+            if ($request->has('return_json') && intval($request->input('return_json'))) {
+                return response()->json(['success' => 1, 'href' => route('checkout.success')]);
+            }
+
+            return redirect()->route('checkout.success');
+        }
+
+        return redirect()->route('checkout.error');
     }
 
 
