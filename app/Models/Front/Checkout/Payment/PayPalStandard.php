@@ -130,9 +130,7 @@ class PayPalStandard
      */
     public function finishOrder(Order $order, Request $request): bool
     {
-        $return = true;
-
-        $curl_request = 'cmd=_notify-validate';
+        /*$curl_request = 'cmd=_notify-validate';
 
         foreach ($request->toArray() as $key => $value) {
             if ($key == 'payment_date') {
@@ -165,30 +163,30 @@ class PayPalStandard
         Log::info($response);
 
         Log::info('$response error callback()');
-        Log::info(curl_error($curl));
+        Log::info(curl_error($curl));*/
 
 
-        /*$status = $request->input('Success') ? config('settings.order.status.paid') : config('settings.order.status.declined');
+        $status = $request->has('PayerID') ? config('settings.order.status.paid') : config('settings.order.status.declined');
 
         $order->update([
             'order_status_id' => $status
         ]);
 
-        if ($request->input('Success')) {
+        if ($request->input('PayerID')) {
             Transaction::insert([
                 'order_id' => $order->id,
                 'success' => 1,
-                'amount' => $request->input('Amount'),
-                'signature' => $request->input('Signature'),
-                'payment_type' => $request->input('PaymentType'),
-                'payment_plan' => $request->input('PaymentPlan'),
-                'payment_partner' => $request->input('Partner'),
-                'datetime' => $request->input('DateTime'),
-                'approval_code' => $request->input('ApprovalCode'),
-                'pg_order_id' => $request->input('WsPayOrderId'),
-                'lang' => $request->input('Lang'),
-                'stan' => $request->input('STAN'),
-                'error' => $request->input('ErrorMessage'),
+                'amount' => $order->total,
+                'signature' => $request->input('PayerID'),
+                'payment_type' => 'paypal',
+                'payment_plan' => '',
+                'payment_partner' => 'Paypal',
+                'datetime' => now(),
+                'approval_code' => $request->input('PayerID'),
+                'pg_order_id' => $request->input('PayerID'),
+                'lang' => 'hr',
+                'stan' => $request->input('PayerID'),
+                'error' => '',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ]);
@@ -196,25 +194,7 @@ class PayPalStandard
             return true;
         }
 
-        Transaction::insert([
-            'order_id' => $order->id,
-            'success' => 0,
-            'amount' => $request->input('Amount'),
-            'signature' => $request->input('Signature'),
-            'payment_type' => $request->input('PaymentType'),
-            'payment_plan' => $request->input('PaymentPlan'),
-            'payment_partner' => null,
-            'datetime' => $request->input('DateTime'),
-            'approval_code' => $request->input('ApprovalCode'),
-            'pg_order_id' => null,
-            'lang' => $request->input('Lang'),
-            'stan' => null,
-            'error' => $request->input('ErrorMessage'),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);*/
-
-        return $return;
+        return false;
     }
 
 }
