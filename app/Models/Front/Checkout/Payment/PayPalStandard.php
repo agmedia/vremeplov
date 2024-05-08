@@ -144,7 +144,7 @@ class PayPalStandard
         $curl = curl_init('https://www.sandbox.paypal.com/cgi-bin/webscr');
 
         if ($paypal_settings && ! $paypal_settings->first()->data->test) {
-            $curl = curl_init('https://www.paypal.com/cgi-bin/webscr');
+            $curl = curl_init('https://ipnpb.paypal.com/cgi-bin/webscr');
         }
 
         Log::info('$curl_request callback()');
