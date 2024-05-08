@@ -217,6 +217,31 @@ class CheckoutController extends Controller
 
 
     /**
+     * @param Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function successPaypal(Request $request)
+    {
+        $order = new Order();
+
+        if ($request->has('PayerID') && $request->has('custom')) {
+            $order->setData($request->input('custom'));
+        }
+
+        if ($order->finish($request)) {
+            if ($request->has('return_json') && intval($request->input('return_json'))) {
+                return response()->json(['success' => 1, 'href' => route('checkout.success')]);
+            }
+
+            return redirect()->route('checkout.success');
+        }
+
+        return redirect()->route('checkout.error');
+    }
+
+
+    /**
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
     public function error()
