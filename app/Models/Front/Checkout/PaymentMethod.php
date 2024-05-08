@@ -173,7 +173,7 @@ class PaymentMethod
         }
 
         foreach ($this->methods as $method) {
-            if ($method->code == 'wspay' && $shipping == 'pickup') {
+            if ($method->code == 'wspay' && $shipping == 'pickup' || $method->code == 'paypal' && $shipping == 'pickup' ) {
                 $this->response_methods->put($method->code, $method);
             }
         }
