@@ -216,6 +216,13 @@ class CheckoutController extends Controller
     }
 
 
+    public function successPaypal(Request $request)
+    {
+        Log::info('public function successPaypal(Request $request)');
+        Log::info($request->toArray());
+    }
+
+
     /**
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */

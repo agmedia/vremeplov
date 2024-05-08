@@ -28,7 +28,7 @@
     <input type="hidden" name="email" value="{{ $data['email'] }}" />
     <input type="hidden" name="invoice" value="{{ $data['invoice'] }}" />
     <input type="hidden" name="lc" value="{{ $data['lc'] }}" />
-    <input type="hidden" name="rm" value="1" />
+    <input type="hidden" name="rm" value="2" />
     <input type="hidden" name="no_note" value="1" />
     <input type="hidden" name="no_shipping" value="1" />
     <input type="hidden" name="charset" value="utf-8" />
