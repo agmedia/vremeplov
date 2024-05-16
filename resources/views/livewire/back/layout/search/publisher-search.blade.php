@@ -27,8 +27,8 @@
         <div class="autocomplete pt-1" style="position:absolute; z-index:10; top:38px; background-color: #f6f6f6; border: 1px solid #d7d7d7;width:100%">
             <div id="myInputautocomplete-list" class="autocomplete-items">
                 @foreach($search_results as $publisher)
-                    <div style="cursor: pointer;border-bottom: 1px solid #d7d7d7;padding-bottom: 10px;padding-left: 10px;font-size: 16px" wire:click="addPublisher('{{ $publisher->id }}')">
-                        <small class="font-weight-lighter">Ime: <strong>{{ $publisher->title }}</small>
+                    <div style="cursor: pointer;border-bottom: 1px solid #d7d7d7;padding-bottom: 10px;padding-left: 10px;font-size: 16px" wire:click="addPublisher('{{ $publisher['id'] }}')">
+                        <small class="font-weight-lighter">Ime: <strong>{{ $publisher['title'] }}</small>
                     </div>
                 @endforeach
             </div>
