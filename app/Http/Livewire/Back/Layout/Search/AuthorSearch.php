@@ -79,7 +79,7 @@ class AuthorSearch extends Component
         if ($this->search != '') {
             $this->search_results = (new Author())->where('title', 'LIKE', '%' . $this->search . '%')
                                                   ->limit(5)
-                                                  ->get();
+                                                  ->get()->toArray();
         }
     }
 
