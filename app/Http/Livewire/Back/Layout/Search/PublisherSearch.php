@@ -79,7 +79,7 @@ class PublisherSearch extends Component
         if ($this->search != '') {
             $this->search_results = (new Publisher())->where('title', 'LIKE', '' . $this->search . '%')
                                                   ->limit(10)
-                                                  ->get();
+                                                  ->get()->toArray();
         }
     }
 
