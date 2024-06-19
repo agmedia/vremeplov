@@ -152,6 +152,14 @@ class OrderController extends Controller
                 }
             }
 
+            if (OrderHelper::isReturned((int) $request->input('selected'))) {
+                $orders = Order::query()->whereIn('id', $orders)->pluck('id');
+
+                foreach ($orders as $order_id) {
+                    ProductHelper::makeScarce($order_id);
+                }
+            }
+
             return response()->json(['message' => 'Statusi su uspješno promijenjeni..!']);
         }
 
@@ -163,6 +171,10 @@ class OrderController extends Controller
 
                 if (OrderHelper::isCanceled((int) $request->input('selected'))) {
                     ProductHelper::makeAvailable($request->input('order_id'));
+                }
+
+                if (OrderHelper::isReturned((int) $request->input('selected'))) {
+                    ProductHelper::makeScarce($request->input('order_id'));
                 }
 
                 if ($request->input('status') == config('settings.order.status.paid')) {

@@ -77,6 +77,7 @@ return [
         // Can be number or array.
         'new_status' => 1,
         'canceled_status' => [7, 5],
+        'returned_status' => [1,3,4,10],
     ],
 
     'payment' => [

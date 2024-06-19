@@ -6,6 +6,7 @@ use App\Models\Back\Catalog\Product\Product;
 use App\Models\Back\Orders\OrderProduct;
 use App\Models\Front\Catalog\Category;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ProductHelper
@@ -198,6 +199,23 @@ class ProductHelper
 
         foreach ($ops as $op) {
             Product::query()->where('id', $op->product_id)->increment('quantity', $op->quantity);
+        }
+
+        return true;
+    }
+
+
+    /**
+     * @param int|string $order_id
+     *
+     * @return bool
+     */
+    public static function makeScarce($order_id): bool
+    {
+        $ops = OrderProduct::query()->where('order_id', $order_id)->get();
+
+        foreach ($ops as $op) {
+            Product::query()->where('id', $op->product_id)->decrement('quantity', $op->quantity);
         }
 
         return true;
