@@ -50,7 +50,7 @@
                 </p>
                 <p>
                     Ljetno radno vrijeme<br>
-                    (01.07 - 01.09.2024)<br>
+                    (01.07 - 01.09.2024)<br><br>
                     Ponedjeljak - petak<br>
                     09 -14h i 16 - 19h<br>
 
