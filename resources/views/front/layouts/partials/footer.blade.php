@@ -45,7 +45,7 @@
                   091 762 7441</p>
 
                 <p class=" text-white  fs-md pb-1 d-none d-sm-block">  <strong>Ljetno radno vrijeme
-                        <br>(01.07 - 01.09.2024)</strong><br>
+                        <br>(01.07 - 01.09.2024)</strong><br><br>
                     Pon-Pet: 09 -14h i 16 - 19h<br>
                     Sub: 10 - 13h
 
