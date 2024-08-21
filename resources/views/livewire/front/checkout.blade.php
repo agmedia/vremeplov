@@ -280,6 +280,27 @@
                 </tbody>
             </table>
         </div>
+
+
+        @foreach ($shippingMethods as $s_method)
+            @if ($s_method->code == 'gls_paketomat' && $view_commentp)
+
+                <div style="height: 600px">
+                    <gls-dpm country="hr" id="test-map" ></gls-dpm>
+                </div>
+
+                <input class="form-control mt-2" type="text" id="commentp"  wire:model="commentp" placeholder="" readonly required>
+                @error('commentp')             <script>location.reload();</script>         @enderror
+                @error('commentp') <small class="text-danger">Obavezan odabir gls paketomata </small> @enderror
+
+
+            @endif
+
+
+
+        @endforeach
+
+
         @error('shipping') <small class="text-danger">Način dostave je obvezan</small> @enderror
         <div class=" d-flex pt-4 mt-3">
             <div class="w-50 pe-3"><a class="btn btn-secondary d-block w-100" wire:click="changeStep('podaci')" href="javascript:void(0);"><i class="ci-arrow-left mt-sm-0 me-1"></i><span class="d-none d-sm-inline">Povratak na unos podataka</span><span class="d-inline d-sm-none">Povratak</span></a></div>
@@ -322,10 +343,23 @@
     {{--    <script src="{{ asset('js/plugins/select2/js/select2.full.min.js') }}"></script>--}}
 
     <script>
-        $( document ).ready(function() {
-            /*$('#state-select').select2();*/
-            $('input').attr('autocomplete','off');
+
+        var el = document.getElementById('test-map');
+        el.addEventListener('change', (e) => {
+
+            document.getElementById('commentp').value = e.detail.contact.address + ', ' + e.detail.contact.city + '_' + e.detail.id;
+            document.getElementById("commentp").dispatchEvent(new Event('input'));
+
+            alert('Odabrali ste:' + e.detail.name);
         });
     </script>
+    <!--
+    Javascript to initialize the custom element, it can be placed anywhere.
+    -->
+    <script type="module" src="https://map.gls-croatia.com/widget/gls-dpm.js"></script>
+
+
+
+
 
 @endpush

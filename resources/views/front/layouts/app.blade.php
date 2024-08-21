@@ -126,6 +126,8 @@
 <script src="{{ asset('js/shufflejs/dist/shuffle.min.js') }}"></script>
 <!-- Main theme script-->
 
+
+
 <script src="{{ asset('js/cart.js?v=2.1.3') }}"></script>
 
 <script src="{{ asset('js/theme.min.js') }}"></script>

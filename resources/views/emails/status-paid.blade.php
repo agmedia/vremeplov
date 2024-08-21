@@ -31,6 +31,8 @@
                     <b>{{ __('Gotovinom prilikom pouzeća') }}</b>
                 @elseif ($order->payment_code == 'wspay')
                     <b>{{ __('WSPay') }}</b>
+                @elseif ($order->payment_code == 'paypal')
+                    <b>{{ __('PayPal') }}</b>
                 @else
                     <b>{{ __('Plaćanje prilikom preuzimanja') }}</b>
                 @endif

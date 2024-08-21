@@ -105,7 +105,7 @@
                         <h3 class="block-title">Napomene</h3>
                     </div>
                     <div class="block-content">
-                        <p>{{ $order->comment }}</p>
+                        <p>{{ $order->comment }}{{ $order->commentp }}</p>
                     </div>
                 </div>
                 <!-- END Shipping Address -->

@@ -38,14 +38,18 @@ class Gls
             ini_set('max_execution_time', 600);
 
             //Test ClientNumber:
-            $clientNumber = 383013700; //!!!NOT FOR CUSTOMER TESTING, USE YOUR OWN, USE YOUR OWN!!!
+            $clientNumber = 380007000; //!!!NOT FOR CUSTOMER TESTING, USE YOUR OWN, USE YOUR OWN!!!
             //Test username:
-            $username = "marko@plavakrava.hr"; //!!!NOT FOR CUSTOMER TESTING, USE YOUR OWN, USE YOUR OWN!!!
+            $username = "info@antiqueshop.hr"; //!!!NOT FOR CUSTOMER TESTING, USE YOUR OWN, USE YOUR OWN!!!
             //Test password:
-            $pwd      = "Pringles99@"; //!!!NOT FOR CUSTOMER TESTING, USE YOUR OWN, USE YOUR OWN!!!
+            $pwd      = "Sasaandrej2410"; //!!!NOT FOR CUSTOMER TESTING, USE YOUR OWN, USE YOUR OWN!!!
             $password = hash('sha512', $pwd, true);
 
             $brojracuna = $this->order['id'];
+
+            $komentar = $this->order['commentp'];
+
+            $idmjesta = substr($komentar, strpos($komentar, "_") + 1);
 
             $parcels                 = [];
             $parcel                  = new StdClass();
@@ -68,26 +72,28 @@ class Gls
             $deliveryAddress->HouseNumberInfo = "";
             $parcel->DeliveryAddress          = $deliveryAddress;
             $pickupAddress                    = new StdClass();
-            $pickupAddress->ContactName       = "Ines Draganić";
-            $pickupAddress->ContactPhone      = "+38512132487";
-            $pickupAddress->ContactEmail      = "webshop@plavakrava.hr";
-            $pickupAddress->Name              = "Plava krava izdavaštvo";
-            $pickupAddress->Street            = "Nova cesta";
-            $pickupAddress->HouseNumber       = "150";
+            $pickupAddress->ContactName       = "Tamara Vučić";
+            $pickupAddress->ContactPhone      = "+385917627441";
+            $pickupAddress->ContactEmail      = "info@antiqueshop.hr";
+            $pickupAddress->Name              = "Antikvarijat Vremeplov";
+            $pickupAddress->Street            = "Radoslava Lopašića";
+            $pickupAddress->HouseNumber       = "11";
             $pickupAddress->City              = "Zagreb";
             $pickupAddress->ZipCode           = "10000";
             $pickupAddress->CountryIsoCode    = "HR";
             $pickupAddress->HouseNumberInfo   = "";
             $parcel->PickupAddress            = $pickupAddress;
             $parcel->PickupDate               = date('Y-m-d');
-            /* $service1 = new StdClass();
-             $service1->Code = "PSD";
-             $parameter1 = new StdClass();
-             $parameter1->StringValue = "2351-CSOMAGPONT";
-             $service1->PSDParameter = $parameter1;
-             $services = [];
-             $services[] = $service1;
-             $parcel->ServiceList = $services;*/
+            if( $this->order['shipping_code']=='gls_paketomat'){
+                $service1 = new StdClass();
+                $service1->Code = "PSD";
+                $parameter1 = new StdClass();
+                $parameter1->StringValue = $idmjesta;
+                $service1->PSDParameter = $parameter1;
+                $services = [];
+                $services[] = $service1;
+                $parcel->ServiceList = $services;
+            }
 
             $parcels[] = $parcel;
 

@@ -264,7 +264,8 @@ class CheckoutController extends Controller
                 'address'  => CheckoutSession::getAddress(),
                 'shipping' => CheckoutSession::getShipping(),
                 'payment'  => CheckoutSession::getPayment(),
-                'comment'  => CheckoutSession::getComment()
+                'comment'  => CheckoutSession::getComment(),
+                'commentp'  => CheckoutSession::getCommentp()
             ];
         }
 
@@ -288,6 +289,7 @@ class CheckoutController extends Controller
         $response['shipping']        = $shipping;
         $response['payment']         = $payment;
         $response['comment']         = isset($data['comment']) ? $data['comment'] : '';
+        $response['commentp']         = isset($data['commentp']) ? $data['commentp'] : '';
         $response['cart']            = $this->shoppingCart()->get();
         $response['order_status_id'] = $order_status_id;
 
@@ -340,6 +342,7 @@ class CheckoutController extends Controller
         CheckoutSession::forgetPayment();
         CheckoutSession::forgetShipping();
         CheckoutSession::forgetComment();
+        CheckoutSession::forgetCommentp();
     }
 
 }

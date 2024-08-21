@@ -33,6 +33,8 @@
                 @else
                     <b>{{ __('Plaćanje prilikom preuzimanja') }}</b>
                 @endif
+                <br>
+                {{ __('Način dostave') }}: {{ $order->shipping_method }}<br> {{ $order->comment }}
                 <br><br>
 
                 Lijep pozdrav,<br>Antikvarijat Vremeplov

@@ -153,6 +153,7 @@
              *
              */
             checkIfEmpty() {
+
                 let cart = this.$store.state.storage.getCart();
 
                 if (cart && ! cart.count && window.location.pathname != '/kosarica') {

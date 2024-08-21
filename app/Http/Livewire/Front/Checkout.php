@@ -82,7 +82,9 @@ class Checkout extends Component
     public $gdl_payment = false;
 
     public $comment = '';
+    public $commentp = '';
     public $view_comment = false;
+    public $view_commentp = false;
     public $view_r1 = '';
 
     protected $cart = false;
@@ -106,6 +108,14 @@ class Checkout extends Component
      */
     protected $shipping_rules = [
         'shipping' => 'required',
+    ];
+
+    /**
+     * @var string[]
+     */
+    protected $comment_rules = [
+
+        'commentp'=> 'required',
     ];
 
     /**
@@ -148,6 +158,13 @@ class Checkout extends Component
             $this->comment = CheckoutSession::getComment();
         }
 
+
+
+        if (CheckoutSession::hasCommentp()) {
+            $this->commentp = CheckoutSession::getCommentp();
+        }
+
+
         $this->secondary_price = Currency::secondary() ? Currency::secondary()->value : false;
 
         $this->checkCart();
@@ -164,7 +181,15 @@ class Checkout extends Component
     }
 
 
-    /**
+    public function updatingCommentp($value)
+    {
+        $this->commentp = $value;
+
+        CheckoutSession::setCommentp($this->commentp);
+
+    }
+
+        /**
      * @throws \Illuminate\Validation\ValidationException
      */
     public function authUser()
@@ -240,6 +265,11 @@ class Checkout extends Component
             $this->validate($this->shipping_rules);
         }
 
+        if ($step == 'placanje' and $this->shipping == 'gls_paketomat') {
+            $this->validate($this->comment_rules);
+        }
+
+
         $this->step = $step;
 
         CheckoutSession::setStep($step);
@@ -269,6 +299,7 @@ class Checkout extends Component
         CheckoutSession::forgetShipping();
         $this->shipping = '';
         $this->comment = '';
+        $this->commentp = '';
         CheckoutSession::forgetPayment();
         $this->payment = '';
 
@@ -394,6 +425,12 @@ class Checkout extends Component
             $this->view_comment = true;
         } else {
             $this->view_comment = false;
+        }
+
+        if ($shipping == 'gls_paketomat') {
+            $this->view_commentp = true;
+        } else {
+            $this->view_commentp = false;
         }
     }
 

@@ -20,7 +20,6 @@ export default {
             disabled: false
         }
     },
-
     mounted() {
         let cart = this.$store.state.storage.getCart();
         if(cart) {

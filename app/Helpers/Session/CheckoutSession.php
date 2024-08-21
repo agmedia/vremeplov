@@ -142,6 +142,52 @@ class CheckoutSession
         return session()->forget(static::$session_string . '.comment');
     }
 
+
+
+    /*******************************************************************************
+     *                                Copyright : AGmedia                           *
+     *                              email: filip@agmedia.hr                         *
+     *******************************************************************************/
+
+    /**
+     * SHIPPING
+     *
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Session\SessionManager|\Illuminate\Session\Store|mixed
+     */
+    public static function getCommentp()
+    {
+        return session(static::$session_string . '.commentp');
+    }
+
+
+    /**
+     * @return bool
+     */
+    public static function hasCommentp()
+    {
+        return session()->has(static::$session_string . '.commentp');
+    }
+
+
+    /**
+     * @param array|string $value
+     *
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Session\SessionManager|\Illuminate\Session\Store|mixed
+     */
+    public static function setCommentp($value)
+    {
+        return session([static::$session_string . '.commentp' => $value]);
+    }
+
+
+    /**
+     * @return bool
+     */
+    public static function forgetCommentp()
+    {
+        return session()->forget(static::$session_string . '.commentp');
+    }
+
     /*******************************************************************************
     *                                Copyright : AGmedia                           *
     *                              email: filip@agmedia.hr                         *
@@ -308,5 +354,22 @@ class CheckoutSession
     public static function forgetOrder()
     {
         return session()->forget(static::$session_string . '.order');
+    }
+
+    /*******************************************************************************
+     *                                Copyright : AGmedia                           *
+     *                              email: filip@agmedia.hr                         *
+     *******************************************************************************/
+
+    /**
+     * @return void
+     */
+    public static function forgetCheckout(): void
+    {
+        CheckoutSession::forgetOrder();
+        CheckoutSession::forgetStep();
+        CheckoutSession::forgetPayment();
+        CheckoutSession::forgetShipping();
+        CheckoutSession::forgetComment();
     }
 }

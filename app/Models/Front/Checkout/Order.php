@@ -158,6 +158,7 @@ class Order extends Model
                 'company'          => $this->order['address']['company'],
                 'oib'              => $this->order['address']['oib'],
                 'comment'          => $this->order['comment'],
+                'commentp'          => $this->order['commentp'],
                 'created_at'       => Carbon::now(),
                 'updated_at'       => Carbon::now()
             ]);
@@ -220,6 +221,7 @@ class Order extends Model
             'company'          => $this->order['address']['company'],
             'oib'              => $this->order['address']['oib'],
             'comment'          => $this->order['comment'],
+            'commentp'          => $this->order['commentp'],
             'updated_at'       => Carbon::now()
         ]);
 
