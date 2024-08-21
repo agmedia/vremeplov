@@ -71,17 +71,18 @@ export default {
             let kos = [];
             let cart = this.$store.state.storage.getCart();
 
-            console.log(cart)
+            if(cart) {
 
-            this.$store.dispatch('getSettings');
+                this.$store.dispatch('getSettings');
 
-            if ( ! cart) {
-                return this.$store.dispatch('getCart');
+                if (!cart) {
+                    return this.$store.dispatch('getCart');
+                }
+
+                Object.keys(cart.items).forEach(function (key) {
+                    kos.push(cart.items[key].id)
+                });
             }
-
-            Object.keys(cart.items).forEach(function(key) {
-                kos.push(cart.items[key].id)
-            });
 
             this.$store.dispatch('checkCart', kos);
         },

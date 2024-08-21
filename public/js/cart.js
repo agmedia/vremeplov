@@ -2309,14 +2309,15 @@ __webpack_require__.r(__webpack_exports__);
     checkCart: function checkCart() {
       var kos = [];
       var cart = this.$store.state.storage.getCart();
-      console.log(cart);
-      this.$store.dispatch('getSettings');
-      if (!cart) {
-        return this.$store.dispatch('getCart');
+      if (cart) {
+        this.$store.dispatch('getSettings');
+        if (!cart) {
+          return this.$store.dispatch('getCart');
+        }
+        Object.keys(cart.items).forEach(function (key) {
+          kos.push(cart.items[key].id);
+        });
       }
-      Object.keys(cart.items).forEach(function (key) {
-        kos.push(cart.items[key].id);
-      });
       this.$store.dispatch('checkCart', kos);
     },
     /**
@@ -5095,17 +5096,20 @@ var store = {
      */
     checkCart: function checkCart(context, ids) {
       var state = context.state;
-      state.service.checkCart(ids).then(function (response) {
-        state.storage.setCart(response.cart);
-        if (response.message && window.location.pathname != '/uspjeh') {
-          window.ToastWarningLong.fire(response.message);
-          if (window.location.pathname != '/kosarica') {
-            window.setTimeout(function () {
-              window.location.href = '/kosarica';
-            }, 5000);
+      var response = '';
+      if (state.storage && response) {
+        state.service.checkCart(ids).then(function (response) {
+          state.storage.setCart(response.cart);
+          if (response.message && window.location.pathname != '/uspjeh') {
+            window.ToastWarningLong.fire(response.message);
+            if (window.location.pathname != '/kosarica') {
+              window.setTimeout(function () {
+                window.location.href = '/kosarica';
+              }, 5000);
+            }
           }
-        }
-      });
+        });
+      }
     },
     /**
      *

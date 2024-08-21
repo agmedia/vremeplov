@@ -251,7 +251,7 @@
                     <tr wire:click="selectShipping('{{ $s_method->code }}')" style="cursor: pointer;">
                         <td>
                             <div class="form-check mb-4">
-                                <input class="form-check-input" type="radio" value="{{ $s_method->code }}" wire:model="shipping">
+                                <input class="form-check-input" type="radio" id="{{ $s_method->code }}" value="{{ $s_method->code }}" wire:model="shipping">
                                 <label class="form-check-label" for="courier"></label>
                             </div>
                         </td>
@@ -286,12 +286,27 @@
             @if ($s_method->code == 'gls_paketomat' && $view_commentp)
 
                 <div style="height: 600px">
-                    <gls-dpm country="hr" id="test-map" ></gls-dpm>
+                    <gls-dpm country="hr" id="test-map"></gls-dpm>
                 </div>
 
                 <input class="form-control mt-2" type="text" id="commentp"  wire:model="commentp" placeholder="" readonly required>
                 @error('commentp')             <script>location.reload();</script>         @enderror
                 @error('commentp') <small class="text-danger">Obavezan odabir gls paketomata </small> @enderror
+
+                <script>
+                    var el = document.getElementById('test-map');
+                    el.addEventListener('change', (e) => {
+                        document.getElementById('commentp').value = e.detail.contact.address + ', ' + e.detail.contact.city + '_' + e.detail.id;
+                        document.getElementById("commentp").dispatchEvent(new Event('input'));
+                        alert('Odabrali ste:' + e.detail.name);
+
+                    });
+                </script>
+
+
+
+
+                <script type="module" src="https://map.gls-croatia.com/widget/gls-dpm.js"></script>
 
 
             @endif
@@ -337,26 +352,21 @@
 
 </div>
 
+@push('css_after')
+
+
+
+
+
+@endpush
 
 @push('js_after')
-    {{--    <link rel="stylesheet" href="{{ asset('js/plugins/select2/css/select2.min.css') }}">--}}
-    {{--    <script src="{{ asset('js/plugins/select2/js/select2.full.min.js') }}"></script>--}}
 
-    <script>
 
-        var el = document.getElementById('test-map');
-        el.addEventListener('change', (e) => {
 
-            document.getElementById('commentp').value = e.detail.contact.address + ', ' + e.detail.contact.city + '_' + e.detail.id;
-            document.getElementById("commentp").dispatchEvent(new Event('input'));
 
-            alert('Odabrali ste:' + e.detail.name);
-        });
-    </script>
-    <!--
-    Javascript to initialize the custom element, it can be placed anywhere.
-    -->
-    <script type="module" src="https://map.gls-croatia.com/widget/gls-dpm.js"></script>
+
+
 
 
 

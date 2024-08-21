@@ -362,20 +362,25 @@ let store = {
         checkCart(context, ids) {
             let state = context.state;
 
-            state.service.checkCart(ids).then(response => {
-                state.storage.setCart(response.cart);
+            let response ='';
 
-                if (response.message && window.location.pathname != '/uspjeh') {
-                    window.ToastWarningLong.fire(response.message)
+            if (state.storage && response) {
 
-                    if (window.location.pathname != '/kosarica') {
-                        window.setTimeout(() => {
-                            window.location.href = '/kosarica';
-                        }, 5000);
+                state.service.checkCart(ids).then(response => {
+                    state.storage.setCart(response.cart);
+
+                    if (response.message && window.location.pathname != '/uspjeh') {
+                        window.ToastWarningLong.fire(response.message)
+
+                        if (window.location.pathname != '/kosarica') {
+                            window.setTimeout(() => {
+                                window.location.href = '/kosarica';
+                            }, 5000);
+                        }
                     }
-                }
 
-            })
+                })
+            }
         },
 
         /**
