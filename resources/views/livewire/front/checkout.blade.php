@@ -293,21 +293,6 @@
                 @error('commentp')             <script>location.reload();</script>         @enderror
                 @error('commentp') <small class="text-danger">Obavezan odabir gls paketomata </small> @enderror
 
-                <script>
-                    var el = document.getElementById('test-map');
-                    el.addEventListener('change', (e) => {
-                        document.getElementById('commentp').value = e.detail.contact.address + ', ' + e.detail.contact.city + '_' + e.detail.id;
-                        document.getElementById("commentp").dispatchEvent(new Event('input'));
-                        alert('Odabrali ste:' + e.detail.name);
-
-                    });
-                </script>
-
-
-
-
-
-
 
             @endif
 
@@ -362,7 +347,15 @@
 
 @push('js_after')
 
+    <script>
+        var el = document.getElementById('test-map');
+        el.addEventListener('change', (e) => {
+            document.getElementById('commentp').value = e.detail.contact.address + ', ' + e.detail.contact.city + '_' + e.detail.id;
+            document.getElementById("commentp").dispatchEvent(new Event('input'));
+            alert('Odabrali ste:' + e.detail.name);
 
+        });
+    </script>
 
     <script type="module" src="https://map.gls-croatia.com/widget/gls-dpm.js"></script>
 
