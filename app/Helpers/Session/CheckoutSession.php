@@ -371,5 +371,6 @@ class CheckoutSession
         CheckoutSession::forgetPayment();
         CheckoutSession::forgetShipping();
         CheckoutSession::forgetComment();
+        heckoutSession::forgetCommentp();
     }
 }
