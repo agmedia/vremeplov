@@ -22,7 +22,7 @@
         </a>
     </div>
 
-    @if ( ! empty($gdl) && ! $gdl_shipping && ! $gdl_payment)
+    @if ( ! empty($gdl) && ! $gdl_shipping && ! $gdl_payment && $gdl_event)
         @section('google_data_layer')
             <script>
                 window.dataLayer = window.dataLayer || [];
