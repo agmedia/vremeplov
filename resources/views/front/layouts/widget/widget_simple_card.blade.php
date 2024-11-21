@@ -21,7 +21,7 @@
 
                 <div class="col-sm-12 col-lg-{{ $widget['width'] }} mb-grid-gutter">
                     <div class="d-block d-sm-flex justify-content-between align-items-center  rounded-3" style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
-                        <a  href="{{ url($widget['url']) }}">   <img class="d-block mx-auto mx-sm-0 rounded-end pb-4 pb-sm-0 "  src="https://www.antikvarijat-vremeplov.hr/media/img/aukcija.jpg"  alt="{{ $widget['title'] }}"></a>
+                        <a  href="{{ url($widget['url']) }}">   <img class="d-block mx-auto mx-sm-0 rounded-3  pb-4 pb-sm-0 "  src="https://www.antikvarijat-vremeplov.hr/media/img/aukcija.jpg"  alt="{{ $widget['title'] }}"></a>
                     </div>
                 </div>
 
