@@ -19,8 +19,11 @@
             </phone_list>
             <youtubeUrl></youtubeUrl>
             <location_id>2656</location_id>
-            <gmap_lng></gmap_lng>
-            <gmap_lat></gmap_lat>
+            <gmap_lng>15.989029329152421</gmap_lng>
+            <gmap_lat>45.812110541331315</gmap_lat>
+            <isOnlinePaymentEnabled>1</isOnlinePaymentEnabled>
+            <availableParcelShops>boxNow</availableParcelShops>
+            <deliveryPackageWeight>1</deliveryPackageWeight>
             <videoCallOption>0</videoCallOption>
             <webshopLink>https://www.antikvarijat-vremeplov.hr/{{ $item['slug'] }}</webshopLink>
             <image_list>
