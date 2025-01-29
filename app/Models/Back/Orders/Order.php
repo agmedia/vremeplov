@@ -398,12 +398,25 @@ class Order extends Model
         }
 
         if ($request->has('search') && ! empty($request->input('search'))) {
-            $query->where(function ($query) use ($request) {
-                $query->where('id', 'like', '%' . $request->input('search') . '%')
-                      ->orWhere('payment_fname', 'like', '%' . $request->input('search'))
-                      ->orWhere('payment_lname', 'like', '%' . $request->input('search'))
-                      ->orWhere('payment_email', 'like', '%' . $request->input('search'));
-            });
+            $search = $request->input('search');
+
+            if (strpos($search, ' ') !== false) {
+                $search = explode(' ', $search);
+            }
+
+            if (is_array($search)) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('payment_fname', 'like', '%' . $search[0] . '%')
+                          ->orWhere('payment_lname', 'like', '%' . $search[1] . '%');
+                });
+            } else {
+                $query->where(function ($query) use ($search) {
+                    $query->where('id', 'like', '%' . $search . '%')
+                          ->orWhere('payment_email', 'like', '%' . $search)
+                          ->orWhere('payment_fname', 'like', '%' . $search)
+                          ->orWhere('payment_lname', 'like', '%' . $search);
+                });
+            }
         }
 
         return $query->orderBy('created_at', 'desc');
