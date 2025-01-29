@@ -102,6 +102,10 @@
                                         <option value="danger">Danger</option>
                                         <option value="warning">Warning</option>
                                         <option value="dark">Dark</option>
+                                        <option value="purple">Purple</option>
+                                        <option value="pink">Pink</option>
+                                        <option value="green">Green</option>
+                                        <option value="yellow">Yellow</option>
                                     </select>
                                 </div>
 
