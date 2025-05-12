@@ -139,14 +139,14 @@ class OrderController extends Controller
      */
     public function api_status_change(Request $request)
     {
-        /*if ($request->has('orders')) {
+        if ($request->has('orders')) {
             $orders = explode(',', substr($request->input('orders'), 1, -1));
 
             Order::whereIn('id', $orders)->update([
                 'order_status_id' => $request->input('selected')
             ]);
 
-            if (OrderHelper::isCanceled((int) $request->input('selected'))) {
+            /*if (OrderHelper::isCanceled((int) $request->input('selected'))) {
                 $orders = Order::query()->whereIn('id', $orders)->pluck('id');
 
                 foreach ($orders as $order_id) {
@@ -160,7 +160,7 @@ class OrderController extends Controller
                 foreach ($orders as $order_id) {
                     ProductHelper::makeScarce($order_id);
                 }
-            }
+            }*/
 
             return response()->json(['message' => 'Statusi su uspješno promijenjeni..!']);
         }
@@ -171,13 +171,13 @@ class OrderController extends Controller
                     'order_status_id' => $request->input('status')
                 ]);
 
-                if (OrderHelper::isCanceled((int) $request->input('selected'))) {
+                /*if (OrderHelper::isCanceled((int) $request->input('selected'))) {
                     ProductHelper::makeAvailable($request->input('order_id'));
                 }
 
                 if (OrderHelper::isReturned((int) $request->input('selected'))) {
                     ProductHelper::makeScarce($request->input('order_id'));
-                }
+                }*/
 
                 if ($request->input('status') == config('settings.order.status.paid')) {
                     $order = Order::find($request->input('order_id'));
@@ -216,7 +216,7 @@ class OrderController extends Controller
             OrderHistory::store($request->input('order_id'), $request);
 
             return response()->json(['message' => 'Status je uspješno promijenjen..!']);
-        }*/
+        }
 
         return response()->json(['error' => 'Greška..! Molimo pokušajte ponovo ili kontaktirajte administratora..']);
     }
