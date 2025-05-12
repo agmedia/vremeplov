@@ -139,7 +139,7 @@ class OrderController extends Controller
      */
     public function api_status_change(Request $request)
     {
-        if ($request->has('orders')) {
+        /*if ($request->has('orders')) {
             $orders = explode(',', substr($request->input('orders'), 1, -1));
 
             Order::whereIn('id', $orders)->update([
@@ -216,7 +216,7 @@ class OrderController extends Controller
             OrderHistory::store($request->input('order_id'), $request);
 
             return response()->json(['message' => 'Status je uspješno promijenjen..!']);
-        }
+        }*/
 
         return response()->json(['error' => 'Greška..! Molimo pokušajte ponovo ili kontaktirajte administratora..']);
     }
