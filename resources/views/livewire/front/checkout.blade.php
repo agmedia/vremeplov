@@ -283,15 +283,15 @@
 
 
         @foreach ($shippingMethods as $s_method)
-            @if ($s_method->code == 'gls_paketomat' && $view_commentp)
+            @if ($s_method->code == 'gls_paketomat' && $view_comment)
 
                 <div style="height: 600px">
                     <gls-dpm country="hr" id="test-map"></gls-dpm>
                 </div>
 
-                <input class="form-control mt-2" type="text" id="commentp"  wire:model="commentp" placeholder="" readonly required>
-                @error('commentp')             <script>location.reload();</script>         @enderror
-                @error('commentp') <small class="text-danger">Obavezan odabir gls paketomata </small> @enderror
+                <input class="form-control mt-2" type="text" id="comment"  wire:model="comment" placeholder="" readonly required>
+                @error('comment')             <script>location.reload();</script>         @enderror
+                @error('comment') <small class="text-danger">Obavezan odabir gls paketomata </small> @enderror
 
 
             @endif
@@ -350,8 +350,8 @@
     <script>
         var el = document.getElementById('test-map');
         el.addEventListener('change', (e) => {
-            document.getElementById('commentp').value = e.detail.contact.address + ', ' + e.detail.contact.city + '_' + e.detail.id;
-            document.getElementById("commentp").dispatchEvent(new Event('input'));
+            document.getElementById('comment').value = e.detail.contact.address + ', ' + e.detail.contact.city + '_' + e.detail.id;
+            document.getElementById("comment").dispatchEvent(new Event('input'));
             alert('Odabrali ste:' + e.detail.name);
 
         });
