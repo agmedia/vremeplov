@@ -87,6 +87,17 @@
         </div>
     </div>
 
+    <section class="container">
+        <div class="row mt-2">
+            <div class="col-sm-12 ">
+                <div class="alert alert-danger mb-0" role="alert" style="font-size: 0.875rem;">
+                    Zatvoreni od 25.6.do 3.7.2025. zbog selidbe u novi prostor (Zvonimirova 24).
+                    <strong>Online narudžbe su moguće</strong>, preuzimanje po dogovoru: 097 7820 935 (Tamara).
+                </div>
+            </div>
+        </div>
+    </section>
+
     <div class="container">
         <!-- Gallery + details-->
         <div class="  rounded-3 px-2 py-3 mt-3 mb-3">
