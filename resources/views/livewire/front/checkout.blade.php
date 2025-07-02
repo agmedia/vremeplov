@@ -289,9 +289,9 @@
                     <gls-dpm country="hr" id="test-map"></gls-dpm>
                 </div>
 
-                <input class="form-control mt-2" type="text" id="commentp"  wire:model="comment" placeholder="" readonly required>
-                @error('comment')             <script>location.reload();</script>         @enderror
-                @error('comment') <small class="text-danger">Obavezan odabir gls paketomata </small> @enderror
+                <input class="form-control mt-2" type="text" id="commentp"  wire:model="commentp" placeholder="" readonly required>
+                @error('commentp')             <script>location.reload();</script>         @enderror
+                @error('commentp') <small class="text-danger">Obavezan odabir gls paketomata </small> @enderror
 
 
             @endif
