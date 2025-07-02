@@ -36,7 +36,7 @@
                         <br>
                            <strong> Vremeplov razglednica d.o.o.</strong></p>
 
-                <p> Sjedište: Radoslava Lopašića br.11, 10000 Zagreb<br><br>
+                <p> Sjedište: Zvonimirova 24, 10000 Zagreb<br><br>
 
                             OIB: 34413434459<br>
                             MB: 2623196<br>
