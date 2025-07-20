@@ -87,7 +87,7 @@
         </div>
     </div>
 
-    <section class="container">
+  <!--  <section class="container">
         <div class="row mt-2">
             <div class="col-sm-12 ">
                 <div class="alert alert-danger mb-0" role="alert" style="font-size: 0.875rem;">
@@ -96,7 +96,7 @@
                 </div>
             </div>
         </div>
-    </section>
+    </section>-->
 
     <div class="container">
         <!-- Gallery + details-->
