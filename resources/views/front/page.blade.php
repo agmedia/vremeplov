@@ -36,7 +36,7 @@
 
     @if (request()->routeIs(['index']))
 
-        <section class="container">
+       <!-- <section class="container">
             <div class="row mt-2">
                 <div class="col-sm-12 ">
                     <div class="alert alert-danger" role="alert" style="font-size: 0.875rem;">
@@ -45,7 +45,7 @@
                     </div>
                 </div>
             </div>
-        </section>
+        </section>-->
 
 
         {!! $page->description !!}
