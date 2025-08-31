@@ -89,13 +89,17 @@ export default {
             return Number(this.cart.count) || 0
         },
         cartItems() {
-            return Array.isArray(this.cart.items) ? this.cart.items : []
+            const it = this.cart && this.cart.items
+            if (Array.isArray(it)) return it
+            if (it && typeof it === 'object') return Object.keys(it).map(k => it[k])
+            return []
         },
         cartTotal() {
             return Number(this.cart.total) || 0
         },
         hasCartItems() {
-            return this.cartCount > 0 && this.cartItems.length > 0
+            // vjeruj count-u, ali i fallback na duljinu items
+            return (Number(this.cart.count) > 0) || (this.cartItems.length > 0)
         },
         hasSecondary() {
             return !!this.cart.secondary_price
