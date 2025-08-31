@@ -2280,6 +2280,7 @@ __webpack_require__.r(__webpack_exports__);
     carturl: String,
     checkouturl: String
   },
+  //
   data: function data() {
     return {
       base_path: window.location.origin + '/',
@@ -2287,83 +2288,45 @@ __webpack_require__.r(__webpack_exports__);
       mobile: false
     };
   },
-  computed: {
-    cart: function cart() {
-      // Always return an object so templates don’t explode when cart is missing.
-      return this.$store && this.$store.state && this.$store.state.cart || {
-        count: 0,
-        items: [],
-        total: 0
-      };
-    },
-    cartCount: function cartCount() {
-      return Number(this.cart.count) || 0;
-    },
-    cartItems: function cartItems() {
-      return Array.isArray(this.cart.items) ? this.cart.items : [];
-    },
-    cartTotal: function cartTotal() {
-      return Number(this.cart.total) || 0;
-    },
-    hasCartItems: function hasCartItems() {
-      return this.cartCount > 0 && this.cartItems.length > 0;
-    },
-    hasSecondaryTotal: function hasSecondaryTotal() {
-      return Boolean(this.cart.secondary_price);
-    }
-  },
+  //
   mounted: function mounted() {
     this.checkCart();
-    if (window.location.pathname === '/kosarica/success') {
-      // This is safe provided your store’s flushCart keeps state.cart as a valid object.
+    if (window.location.pathname == '/kosarica/success') {
       this.$store.dispatch('flushCart');
     }
-    this.mobile = window.innerWidth < 800;
-    if (window.location.pathname === '/pregled') {
+    if (window.innerWidth < 800) {
+      this.mobile = true;
+    }
+    if (window.location.pathname == '/pregled') {
       window.setInterval(this.checkCart, 15000);
     }
   },
+  //
   methods: {
-    hasConditions: function hasConditions(item) {
-      // robustly handle missing conditions
-      return item && item.conditions && Object.keys(item.conditions).length > 0;
-    },
-    formatMainPrice: function formatMainPrice(value) {
-      var svc = this.$store && this.$store.state && this.$store.state.service;
-      return svc && svc.formatMainPrice ? svc.formatMainPrice(value) : value;
-    },
-    formatSecondaryPrice: function formatSecondaryPrice(value) {
-      var svc = this.$store && this.$store.state && this.$store.state.service;
-      return svc && svc.formatSecondaryPrice ? svc.formatSecondaryPrice(value) : '';
-    },
     /**
-     * Make the logic clear and reachable in both branches.
+     *
      */
     checkCart: function checkCart() {
-      var storage = this.$store && this.$store.state && this.$store.state.storage;
-      var storedCart = storage && storage.getCart ? storage.getCart() : null;
-
-      // If there’s no stored cart yet, fetch it and bail.
-      if (!storedCart) {
+      var kos = [];
+      var cart = this.$store.state.storage.getCart();
+      if (cart) {
         this.$store.dispatch('getSettings');
-        this.$store.dispatch('getCart');
-        this.$store.dispatch('checkCart', []);
-        return;
-      }
-
-      // We have a stored cart – proceed.
-      this.$store.dispatch('getSettings');
-      var ids = [];
-      if (storedCart.items) {
-        Object.keys(storedCart.items).forEach(function (key) {
-          var it = storedCart.items[key];
-          if (it && it.id) ids.push(it.id);
+        if (!cart) {
+          return this.$store.dispatch('getCart');
+        }
+        Object.keys(cart.items).forEach(function (key) {
+          kos.push(cart.items[key].id);
         });
       }
-      this.$store.dispatch('checkCart', ids);
+      this.$store.dispatch('checkCart', kos);
     },
+    /**
+     *
+     * @param item
+     */
     removeFromCart: function removeFromCart(item) {
       this.$store.dispatch('removeFromCart', item);
+      //setTimeout(window.location.reload(), 1000);
     }
   }
 });
@@ -3512,22 +3475,21 @@ var render = function render() {
     }
   }, [_c("span", {
     staticClass: "navbar-tool-label"
-  }, [_vm._v(_vm._s(_vm.cartCount))]), _vm._v(" "), _c("i", {
+  }, [_vm._v(_vm._s(_vm.$store.state.cart ? _vm.$store.state.cart.count : 0))]), _c("i", {
     staticClass: "navbar-tool-icon ci-bag"
   })]), _vm._v(" "), _c("div", {
     staticClass: "dropdown-menu dropdown-menu-end"
-  }, [_vm.hasCartItems ? _c("div", {
+  }, [_vm.$store.state.cart.count ? _c("div", {
     staticClass: "widget widget-cart px-3 pt-2 pb-3",
     staticStyle: {
       width: "24rem"
     }
-  }, [_c("div", {
-    attrs: {
-      "data-simplebar-auto-hide": "false"
-    }
-  }, _vm._l(_vm.cartItems, function (item) {
+  }, [_vm._l(_vm.$store.state.cart.items, function (item) {
     return _c("div", {
-      key: item.id || item.rowId || item.name,
+      attrs: {
+        "data-simplebar-auto-hide": "false"
+      }
+    }, [_c("div", {
       staticClass: "widget-cart-item pb-2 border-bottom"
     }, [_c("button", {
       staticClass: "btn-close text-danger",
@@ -3557,7 +3519,7 @@ var render = function render() {
         width: "5rem"
       },
       attrs: {
-        src: item.associatedModel && item.associatedModel.image,
+        src: item.associatedModel.image,
         alt: item.name,
         title: item.name
       }
@@ -3567,39 +3529,39 @@ var render = function render() {
       staticClass: "widget-product-title"
     }, [_c("a", {
       attrs: {
-        href: _vm.base_path + (item.attributes && item.attributes.path || "")
+        href: _vm.base_path + item.attributes.path
       }
-    }, [_vm._v("\n                                    " + _vm._s(item.name) + "\n                                ")])]), _vm._v(" "), _c("div", {
+    }, [_vm._v(_vm._s(item.name))])]), _vm._v(" "), _c("div", {
       staticClass: "widget-product-meta"
     }, [_c("span", {
       staticClass: "text-primary me-2"
-    }, [_vm._v("\n                " + _vm._s(_vm.hasConditions(item) ? item.associatedModel && item.associatedModel.main_special_text : item.associatedModel && item.associatedModel.main_price_text) + "\n              ")]), _vm._v(" "), _c("span", {
+    }, [_vm._v(_vm._s(Object.keys(item.conditions).length ? item.associatedModel.main_special_text : item.associatedModel.main_price_text))]), _c("span", {
       staticClass: "text-muted"
-    }, [_vm._v("x " + _vm._s(item.quantity))])]), _vm._v(" "), item.associatedModel && item.associatedModel.secondary_price ? _c("div", {
+    }, [_vm._v("x " + _vm._s(item.quantity))])]), _vm._v(" "), _c("div", {
       staticClass: "widget-product-meta"
-    }, [_c("span", {
+    }, [item.associatedModel.secondary_price ? _c("span", {
       staticClass: "text-dark fs-sm me-2"
-    }, [_vm._v("\n                " + _vm._s(_vm.hasConditions(item) ? item.associatedModel && item.associatedModel.secondary_special_text : item.associatedModel && item.associatedModel.secondary_price_text) + "\n              ")]), _vm._v(" "), _c("span", {
+    }, [_vm._v(_vm._s(Object.keys(item.conditions).length ? item.associatedModel.secondary_special_text : item.associatedModel.secondary_price_text))]) : _vm._e(), _c("span", {
       staticClass: "text-muted"
-    }, [_vm._v("x " + _vm._s(item.quantity))])]) : _vm._e()])])]);
-  }), 0), _vm._v(" "), _c("div", {
+    }, [_vm._v("x " + _vm._s(item.quantity))])])])])])]);
+  }), _vm._v(" "), _c("div", {
     staticClass: "d-flex flex-wrap justify-content-between align-items-center py-3"
   }, [_c("div", {
     staticClass: "fs-sm me-2 py-2"
   }, [_c("span", {
     staticClass: "text-muted"
-  }, [_vm._v("Ukupno:")]), _vm._v(" "), _c("span", {
+  }, [_vm._v("Ukupno:")]), _c("span", {
     staticClass: "text-primary fs-base ms-1"
-  }, [_vm._v("\n          " + _vm._s(_vm.formatMainPrice(_vm.cartTotal)) + "\n        ")]), _vm._v(" "), _vm.hasSecondaryTotal ? _c("span", {
+  }, [_vm._v(_vm._s(_vm.$store.state.service.formatMainPrice(_vm.$store.state.cart.total)))]), _vm._v(" "), _vm.$store.state.cart.secondary_price ? _c("span", {
     staticClass: "text-muted"
-  }, [_vm._v("\n          " + _vm._s(_vm.formatSecondaryPrice(_vm.cartTotal)) + "\n        ")]) : _vm._e()])]), _vm._v(" "), _c("a", {
+  }, [_vm._v(_vm._s(_vm.$store.state.service.formatSecondaryPrice(_vm.$store.state.cart.total)))]) : _vm._e()])]), _c("a", {
     staticClass: "btn btn-primary btn-sm d-block w-100",
     attrs: {
       href: _vm.carturl
     }
   }, [_c("i", {
     staticClass: "ci-card me-2 fs-base align-middle"
-  }), _vm._v("Dovrši kupnju\n            ")])]) : _c("div", {
+  }), _vm._v("Dovrši kupnju")])], 2) : _c("div", {
     staticClass: "widget widget-cart text-center pt-2",
     staticStyle: {
       width: "20rem"
