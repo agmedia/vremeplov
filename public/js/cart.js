@@ -2440,6 +2440,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   props: {
     continueurl: String,
@@ -2459,61 +2460,97 @@ __webpack_require__.r(__webpack_exports__);
       tax: 0
     };
   },
-  mounted: function mounted() {
-    if (window.innerWidth < 800) {
-      this.mobile = true;
+  computed: {
+    // uvijek vrati valjan oblik košarice da template ne puca
+    cart: function cart() {
+      var _this$$store;
+      var c = (_this$$store = this.$store) === null || _this$$store === void 0 || (_this$$store = _this$$store.state) === null || _this$$store === void 0 ? void 0 : _this$$store.cart;
+      return c && _typeof(c) === 'object' ? c : {
+        count: 0,
+        items: [],
+        subtotal: 0,
+        total: 0,
+        detail_con: [],
+        secondary_price: false,
+        coupon: ''
+      };
+    },
+    cartItems: function cartItems() {
+      return Array.isArray(this.cart.items) ? this.cart.items : [];
+    },
+    cartSubtotal: function cartSubtotal() {
+      return Number(this.cart.subtotal) || 0;
+    },
+    cartTotal: function cartTotal() {
+      return Number(this.cart.total) || 0;
+    },
+    hasSecondary: function hasSecondary() {
+      return !!this.cart.secondary_price;
+    },
+    conditions: function conditions() {
+      return Array.isArray(this.cart.detail_con) ? this.cart.detail_con : [];
+    },
+    svc: function svc() {
+      var _this$$store2;
+      return ((_this$$store2 = this.$store) === null || _this$$store2 === void 0 || (_this$$store2 = _this$$store2.state) === null || _this$$store2 === void 0 ? void 0 : _this$$store2.service) || {};
     }
+  },
+  mounted: function mounted() {
+    this.mobile = window.innerWidth < 800;
+
+    // sigurni init – ne čitaj storage bez provjere
     this.checkIfEmpty();
-    this.setCoupon();
+    this.setCouponSafe();
+  },
+  watch: {
+    // kad se košarica kasnije dovuče iz backenda, postavi kupon
+    cart: {
+      handler: function handler(n) {
+        if (n && _typeof(n) === 'object' && !this.coupon && n.coupon) {
+          this.coupon = n.coupon;
+        }
+      },
+      deep: false
+    }
   },
   methods: {
-    /**
-     *
-     * @param item
-     */
     updateCart: function updateCart(item) {
       this.$store.dispatch('updateCart', item);
     },
-    /**
-     *
-     * @param item
-     */
     removeFromCart: function removeFromCart(item) {
       this.$store.dispatch('removeFromCart', item);
     },
-    /**
-     *
-     * @param qty
-     * @returns {number|*}
-     * @constructor
-     */
     CheckQuantity: function CheckQuantity(qty) {
-      if (qty < 1) {
-        return 1;
-      }
-      return qty;
+      return qty < 1 ? 1 : qty;
     },
-    /**
-     *
-     */
     checkIfEmpty: function checkIfEmpty() {
-      var cart = this.$store.state.storage.getCart();
-      if (cart && !cart.count && window.location.pathname != '/kosarica') {
+      var _this$$store3;
+      var storage = (_this$$store3 = this.$store) === null || _this$$store3 === void 0 || (_this$$store3 = _this$$store3.state) === null || _this$$store3 === void 0 ? void 0 : _this$$store3.storage;
+      var stored = storage !== null && storage !== void 0 && storage.getCart ? storage.getCart() : null;
+      if (stored && !stored.count && window.location.pathname !== '/kosarica') {
         window.location.href = '/kosarica';
       }
     },
-    /**
-     *
-     */
-    setCoupon: function setCoupon() {
-      var cart = this.$store.state.storage.getCart();
-      this.coupon = cart.coupon;
+    // >>> ovo je bila točka pucanja – sada je null-safe
+    setCouponSafe: function setCouponSafe() {
+      var _this$$store4;
+      var storage = (_this$$store4 = this.$store) === null || _this$$store4 === void 0 || (_this$$store4 = _this$$store4.state) === null || _this$$store4 === void 0 ? void 0 : _this$$store4.storage;
+      var stored = storage !== null && storage !== void 0 && storage.getCart ? storage.getCart() : null;
+
+      // prioritet: storage.coupon -> state.cart.coupon -> ''
+      this.coupon = stored && stored.coupon || this.cart && this.cart.coupon || '';
     },
-    /**
-     *
-     */
     checkCoupon: function checkCoupon() {
       this.$store.dispatch('checkCoupon', this.coupon);
+    },
+    hasConditions: function hasConditions(item) {
+      return !!(item && item.conditions && Object.keys(item.conditions).length);
+    },
+    fmtMain: function fmtMain(val) {
+      return this.svc.formatMainPrice ? this.svc.formatMainPrice(val) : val;
+    },
+    fmtSecondary: function fmtSecondary(val) {
+      return this.svc.formatSecondaryPrice ? this.svc.formatSecondaryPrice(val) : val;
     }
   }
 });
@@ -3719,11 +3756,11 @@ __webpack_require__.r(__webpack_exports__);
 var render = function render() {
   var _vm = this,
     _c = _vm._self._c;
-  return _c("div", [_vm.route == "kosarica" ? _c("div", {
+  return _c("div", [_vm.route === "kosarica" ? _c("div", {
     staticClass: "rounded-3 p-4",
     staticStyle: {
       border: "2px dashed rgb(230, 209, 171)",
-      "background-color": "rgb(255, 255, 255) !important"
+      "background-color": "#fff !important"
     }
   }, [_c("div", {
     staticClass: "py-2 px-xl-2"
@@ -3733,20 +3770,20 @@ var render = function render() {
     staticClass: "h6 mb-3 pb-1"
   }, [_vm._v("Ukupno")]), _vm._v(" "), _c("h3", {
     staticClass: "fw-bold text-primary"
-  }, [_vm._v(_vm._s(_vm.$store.state.service.formatMainPrice(_vm.$store.state.cart.total)))]), _vm._v(" "), _vm.$store.state.cart.secondary_price ? _c("h4", {
+  }, [_vm._v(_vm._s(_vm.fmtMain(_vm.cartTotal)))]), _vm._v(" "), _vm.hasSecondary ? _c("h4", {
     staticClass: "fs-sm"
-  }, [_vm._v(_vm._s(_vm.$store.state.service.formatSecondaryPrice(_vm.$store.state.cart.total)))]) : _vm._e()]), _vm._v(" "), _c("a", {
+  }, [_vm._v(_vm._s(_vm.fmtSecondary(_vm.cartTotal)))]) : _vm._e()]), _vm._v(" "), _c("a", {
     staticClass: "btn btn-primary btn-shadow d-block w-100 mt-4",
     attrs: {
       href: _vm.checkouturl
     }
-  }, [_vm._v("NASTAVI NA NAPLATU "), _c("i", {
+  }, [_vm._v("\n                NASTAVI NA NAPLATU "), _c("i", {
     staticClass: "ci-arrow-right fs-sm"
-  })])])]) : _vm._e(), _vm._v(" "), _vm.route == "naplata" ? _c("div", {
+  })])])]) : _vm._e(), _vm._v(" "), _vm.route === "naplata" ? _c("div", {
     staticClass: "rounded-3 p-4 ms-lg-auto",
     staticStyle: {
       border: "2px dashed rgb(230, 209, 171)",
-      "background-color": "rgb(255, 255, 255) !important"
+      "background-color": "#fff !important"
     }
   }, [_c("div", {
     staticClass: "py-2 px-xl-2"
@@ -3754,17 +3791,19 @@ var render = function render() {
     staticClass: "widget mb-3"
   }, [_c("h2", {
     staticClass: "widget-title text-center mb-2"
-  }, [_vm._v("Sažetak narudžbe")]), _vm._v(" "), _vm._l(_vm.$store.state.cart.items, function (item) {
+  }, [_vm._v("Sažetak narudžbe")]), _vm._v(" "), _vm._l(_vm.cartItems, function (item) {
+    var _item$attributes, _item$associatedModel, _item$attributes2, _item$associatedModel2, _item$associatedModel3, _item$associatedModel4, _item$associatedModel5, _item$associatedModel6, _item$associatedModel7, _item$associatedModel8;
     return _c("div", {
+      key: item.id || item.rowId || item.name,
       staticClass: "d-flex align-items-center pb-2 border-bottom"
     }, [_c("a", {
       staticClass: "d-block flex-shrink-0",
       attrs: {
-        href: _vm.base_path + item.attributes.path
+        href: _vm.base_path + (((_item$attributes = item.attributes) === null || _item$attributes === void 0 ? void 0 : _item$attributes.path) || "")
       }
     }, [_c("img", {
       attrs: {
-        src: item.associatedModel.image,
+        src: (_item$associatedModel = item.associatedModel) === null || _item$associatedModel === void 0 ? void 0 : _item$associatedModel.image,
         alt: item.name,
         width: "64"
       }
@@ -3774,65 +3813,67 @@ var render = function render() {
       staticClass: "widget-product-title"
     }, [_c("a", {
       attrs: {
-        href: _vm.base_path + item.attributes.path
+        href: _vm.base_path + (((_item$attributes2 = item.attributes) === null || _item$attributes2 === void 0 ? void 0 : _item$attributes2.path) || "")
       }
     }, [_vm._v(_vm._s(item.name))])]), _vm._v(" "), _c("div", {
       staticClass: "widget-product-meta"
     }, [_c("span", {
       staticClass: "text-primary me-2"
-    }, [_vm._v(_vm._s(Object.keys(item.conditions).length ? item.associatedModel.main_special_text : item.associatedModel.main_price_text))]), _vm._v(" "), _c("span", {
+    }, [_vm._v("\n              " + _vm._s(_vm.hasConditions(item) ? (_item$associatedModel2 = item.associatedModel) === null || _item$associatedModel2 === void 0 ? void 0 : _item$associatedModel2.main_special_text : (_item$associatedModel3 = item.associatedModel) === null || _item$associatedModel3 === void 0 ? void 0 : _item$associatedModel3.main_price_text) + "\n            ")]), _vm._v(" "), _c("span", {
       staticClass: "text-muted"
-    }, [_vm._v("x " + _vm._s(item.quantity))]), _vm._v(" "), Object.keys(item.conditions).length && item.associatedModel.action && item.associatedModel.action.coupon == _vm.$store.state.cart.coupon ? _c("span", {
+    }, [_vm._v("x " + _vm._s(item.quantity))]), _vm._v(" "), _vm.hasConditions(item) && (_item$associatedModel4 = item.associatedModel) !== null && _item$associatedModel4 !== void 0 && _item$associatedModel4.action && ((_item$associatedModel5 = item.associatedModel) === null || _item$associatedModel5 === void 0 || (_item$associatedModel5 = _item$associatedModel5.action) === null || _item$associatedModel5 === void 0 ? void 0 : _item$associatedModel5.coupon) === _vm.cart.coupon ? _c("span", {
       staticClass: "text-primary fs-md fw-light",
       staticStyle: {
         "margin-left": "20px"
       }
-    }, [_vm._v("\n                                Kupon kod: " + _vm._s(item.associatedModel.action.title) + " (" + _vm._s(Math.round(item.associatedModel.action.discount).toFixed(0)) + "%)\n                            ")]) : _vm._e()]), _vm._v(" "), _c("div", {
+    }, [_vm._v("\n              Kupon kod: " + _vm._s(item.associatedModel.action.title) + "\n              (" + _vm._s(Math.round(item.associatedModel.action.discount).toFixed(0)) + "%)\n            ")]) : _vm._e()]), _vm._v(" "), (_item$associatedModel6 = item.associatedModel) !== null && _item$associatedModel6 !== void 0 && _item$associatedModel6.secondary_price_text ? _c("div", {
       staticClass: "widget-product-meta"
-    }, [item.associatedModel.secondary_price_text ? _c("span", {
+    }, [_c("span", {
       staticClass: "text-muted me-2"
-    }, [_vm._v(_vm._s(Object.keys(item.conditions).length ? item.associatedModel.secondary_special_text : item.associatedModel.secondary_price_text))]) : _vm._e(), _c("span", {
+    }, [_vm._v("\n              " + _vm._s(_vm.hasConditions(item) ? (_item$associatedModel7 = item.associatedModel) === null || _item$associatedModel7 === void 0 ? void 0 : _item$associatedModel7.secondary_special_text : (_item$associatedModel8 = item.associatedModel) === null || _item$associatedModel8 === void 0 ? void 0 : _item$associatedModel8.secondary_price_text) + "\n            ")]), _vm._v(" "), _c("span", {
       staticClass: "text-muted"
-    }, [_vm._v("x " + _vm._s(item.quantity))])])])]);
+    }, [_vm._v("x " + _vm._s(item.quantity))])]) : _vm._e()])]);
   })], 2), _vm._v(" "), _c("ul", {
     staticClass: "list-unstyled fs-sm pb-2 border-bottom"
   }, [_c("li", {
     staticClass: "d-flex justify-content-between align-items-center"
   }, [_c("span", {
     staticClass: "me-2"
-  }, [_vm._v("Ukupno:")]), _c("span", {
+  }, [_vm._v("Ukupno:")]), _vm._v(" "), _c("span", {
     staticClass: "text-end"
-  }, [_vm._v(_vm._s(_vm.$store.state.service.formatMainPrice(_vm.$store.state.cart.subtotal)))])]), _vm._v(" "), _vm.$store.state.cart.secondary_price ? _c("li", {
+  }, [_vm._v(_vm._s(_vm.fmtMain(_vm.cartSubtotal)))])]), _vm._v(" "), _vm.hasSecondary ? _c("li", {
     staticClass: "d-flex justify-content-between align-items-center"
   }, [_c("span", {
     staticClass: "me-2"
-  }), _c("span", {
+  }), _vm._v(" "), _c("span", {
     staticClass: "text-end"
-  }, [_vm._v(_vm._s(_vm.$store.state.service.formatSecondaryPrice(_vm.$store.state.cart.subtotal)))])]) : _vm._e(), _vm._v(" "), _vm._l(_vm.$store.state.cart.detail_con, function (condition) {
-    return _c("div", [_c("li", {
+  }, [_vm._v(_vm._s(_vm.fmtSecondary(_vm.cartSubtotal)))])]) : _vm._e(), _vm._v(" "), _vm._l(_vm.conditions, function (condition) {
+    return _c("div", {
+      key: condition.name
+    }, [_c("li", {
       staticClass: "d-flex justify-content-between align-items-center"
     }, [_c("span", {
       staticClass: "me-2"
-    }, [_vm._v(_vm._s(condition.name))]), _c("span", {
+    }, [_vm._v(_vm._s(condition.name))]), _vm._v(" "), _c("span", {
       staticClass: "text-end"
-    }, [_vm._v(_vm._s(_vm.$store.state.service.formatMainPrice(condition.value)))])]), _vm._v(" "), _vm.$store.state.cart.secondary_price ? _c("li", {
+    }, [_vm._v(_vm._s(_vm.fmtMain(condition.value)))])]), _vm._v(" "), _vm.hasSecondary ? _c("li", {
       staticClass: "d-flex justify-content-between align-items-center"
     }, [_c("span", {
       staticClass: "me-2"
-    }), _c("span", {
+    }), _vm._v(" "), _c("span", {
       staticClass: "text-end"
-    }, [_vm._v(_vm._s(_vm.$store.state.service.formatSecondaryPrice(condition.value)))])]) : _vm._e()]);
+    }, [_vm._v(_vm._s(_vm.fmtSecondary(condition.value)))])]) : _vm._e()]);
   })], 2), _vm._v(" "), _c("h3", {
     staticClass: "fw-bold text-primary text-center my-2"
-  }, [_vm._v(_vm._s(_vm.$store.state.service.formatMainPrice(_vm.$store.state.cart.total)))]), _vm._v(" "), _vm.$store.state.cart.secondary_price ? _c("h4", {
+  }, [_vm._v(_vm._s(_vm.fmtMain(_vm.cartTotal)))]), _vm._v(" "), _vm.hasSecondary ? _c("h4", {
     staticClass: "fs-sm text-center my-2"
-  }, [_vm._v(_vm._s(_vm.$store.state.service.formatSecondaryPrice(_vm.$store.state.cart.total)))]) : _vm._e(), _vm._v(" "), _c("p", {
+  }, [_vm._v(_vm._s(_vm.fmtSecondary(_vm.cartTotal)))]) : _vm._e(), _vm._v(" "), _c("p", {
     staticClass: "small text-center mt-0 mb-0"
-  }, [_vm._v("PDV uračunat u cijeni")])])]) : _vm._e(), _vm._v(" "), _vm.route == "pregled" ? _c("div", {
+  }, [_vm._v("PDV uračunat u cijeni")])])]) : _vm._e(), _vm._v(" "), _vm.route === "pregled" ? _c("div", {
     staticClass: "rounded-3 p-4 ms-lg-auto",
     staticStyle: {
       border: "2px dashed rgb(230, 209, 171)",
-      "background-color": "rgb(255, 255, 255) !important"
+      "background-color": "#fff !important"
     }
   }, [_c("div", {
     staticClass: "py-2 px-xl-2"
@@ -3842,33 +3883,35 @@ var render = function render() {
     staticClass: "d-flex justify-content-between align-items-center"
   }, [_c("span", {
     staticClass: "me-2"
-  }, [_vm._v("Ukupno:")]), _c("span", {
+  }, [_vm._v("Ukupno:")]), _vm._v(" "), _c("span", {
     staticClass: "text-end"
-  }, [_vm._v(_vm._s(_vm.$store.state.service.formatMainPrice(_vm.$store.state.cart.subtotal)))])]), _vm._v(" "), _vm.$store.state.cart.secondary_price ? _c("li", {
+  }, [_vm._v(_vm._s(_vm.fmtMain(_vm.cartSubtotal)))])]), _vm._v(" "), _vm.hasSecondary ? _c("li", {
     staticClass: "d-flex justify-content-between align-items-center"
   }, [_c("span", {
     staticClass: "me-2"
-  }), _c("span", {
+  }), _vm._v(" "), _c("span", {
     staticClass: "text-end"
-  }, [_vm._v(_vm._s(_vm.$store.state.service.formatSecondaryPrice(_vm.$store.state.cart.subtotal)))])]) : _vm._e(), _vm._v(" "), _vm._l(_vm.$store.state.cart.detail_con, function (condition) {
-    return _c("div", [_c("li", {
+  }, [_vm._v(_vm._s(_vm.fmtSecondary(_vm.cartSubtotal)))])]) : _vm._e(), _vm._v(" "), _vm._l(_vm.conditions, function (condition) {
+    return _c("div", {
+      key: condition.name
+    }, [_c("li", {
       staticClass: "d-flex justify-content-between align-items-center"
     }, [_c("span", {
       staticClass: "me-2"
-    }, [_vm._v(_vm._s(condition.name))]), _c("span", {
+    }, [_vm._v(_vm._s(condition.name))]), _vm._v(" "), _c("span", {
       staticClass: "text-end"
-    }, [_vm._v(_vm._s(_vm.$store.state.service.formatMainPrice(condition.value)))])]), _vm._v(" "), _vm.$store.state.cart.secondary_price ? _c("li", {
+    }, [_vm._v(_vm._s(_vm.fmtMain(condition.value)))])]), _vm._v(" "), _vm.hasSecondary ? _c("li", {
       staticClass: "d-flex justify-content-between align-items-center"
     }, [_c("span", {
       staticClass: "me-2"
-    }), _c("span", {
+    }), _vm._v(" "), _c("span", {
       staticClass: "text-end"
-    }, [_vm._v(_vm._s(_vm.$store.state.service.formatSecondaryPrice(condition.value)))])]) : _vm._e()]);
+    }, [_vm._v(_vm._s(_vm.fmtSecondary(condition.value)))])]) : _vm._e()]);
   })], 2), _vm._v(" "), _c("h3", {
     staticClass: "fw-bold text-primary text-center my-2"
-  }, [_vm._v(_vm._s(_vm.$store.state.service.formatMainPrice(_vm.$store.state.cart.total)))]), _vm._v(" "), _vm.$store.state.cart.secondary_price ? _c("h4", {
+  }, [_vm._v(_vm._s(_vm.fmtMain(_vm.cartTotal)))]), _vm._v(" "), _vm.hasSecondary ? _c("h4", {
     staticClass: "fs-sm text-center my-2"
-  }, [_vm._v(_vm._s(_vm.$store.state.service.formatSecondaryPrice(_vm.$store.state.cart.total)))]) : _vm._e(), _vm._v(" "), _c("p", {
+  }, [_vm._v(_vm._s(_vm.fmtSecondary(_vm.cartTotal)))]) : _vm._e(), _vm._v(" "), _c("p", {
     staticClass: "small text-center mt-0 mb-0"
   }, [_vm._v("PDV uračunat u cijeni")])])]) : _vm._e()]);
 };
@@ -5233,7 +5276,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\n.table th, .table td {\n    padding: 0.75rem 0.45rem !important;\n    vertical-align: top;\n    border-top: 1px solid #dee2e6;\n}\n.empty th, .empty td {\n    padding: 1rem !important;\n    vertical-align: top;\n    border-top: 1px solid #dee2e6;\n}\n.mobile-prices {\n    font-size: .66rem;\n    color: #999999;\n}\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\n.table th,\n.table td {\n    padding: 0.75rem 0.45rem !important;\n    vertical-align: top;\n    border-top: 1px solid #dee2e6;\n}\n.empty th,\n.empty td {\n    padding: 1rem !important;\n    vertical-align: top;\n    border-top: 1px solid #dee2e6;\n}\n.mobile-prices {\n    font-size: 0.66rem;\n    color: #999999;\n}\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
