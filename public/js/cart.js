@@ -3556,10 +3556,7 @@ var render = function render() {
   }, [_vm._v(_vm._s(_vm.cartCount))]), _vm._v(" "), _c("i", {
     staticClass: "navbar-tool-icon ci-bag"
   })]), _vm._v(" "), _c("div", {
-    staticClass: "dropdown-menu dropdown-menu-end",
-    staticStyle: {
-      display: "none"
-    }
+    staticClass: "dropdown-menu dropdown-menu-end"
   }, [_vm.hasCartItems ? _c("div", {
     staticClass: "widget widget-cart px-3 pt-2 pb-3",
     staticStyle: {

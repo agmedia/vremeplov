@@ -130,7 +130,7 @@
 
 
 
-<script src="{{ asset('js/cart.js?v=2.1.1129') }}"></script>
+<script src="{{ asset('js/cart.js?v=2.1.11239') }}"></script>
 
 <script src="{{ asset('js/theme.min.js') }}"></script>
 
