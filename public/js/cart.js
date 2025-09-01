@@ -2304,19 +2304,13 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
       return Number(this.cart.count) || 0;
     },
     cartItems: function cartItems() {
-      var it = this.cart && this.cart.items;
-      if (Array.isArray(it)) return it;
-      if (it && _typeof(it) === 'object') return Object.keys(it).map(function (k) {
-        return it[k];
-      });
-      return [];
+      return Array.isArray(this.cart.items) ? this.cart.items : [];
     },
     cartTotal: function cartTotal() {
       return Number(this.cart.total) || 0;
     },
     hasCartItems: function hasCartItems() {
-      // vjeruj count-u, ali i fallback na duljinu items
-      return Number(this.cart.count) > 0 || this.cartItems.length > 0;
+      return this.cartCount > 0 && this.cartItems.length > 0;
     },
     hasSecondary: function hasSecondary() {
       return !!this.cart.secondary_price;
