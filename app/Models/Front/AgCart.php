@@ -15,16 +15,18 @@ use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AgCart extends Model
 {
+
     /**
      * @var string
      */
     private $cart_id;
 
     /**
-     * @var \Darryldecode\Cart\Cart
+     * @var
      */
     private $cart;
 
@@ -37,6 +39,7 @@ class AgCart extends Model
      * @var string
      */
     private $coupon;
+
 
     /**
      * AgCart constructor.
@@ -51,32 +54,34 @@ class AgCart extends Model
         $this->coupon      = session()->has($this->session_key . '_coupon') ? session($this->session_key . '_coupon') : '';
     }
 
+
     /**
-     * Vraća stabilizirani payload košarice.
-     *
      * @return array
      */
-    public function get(): array
+    public function get()
     {
         $eur = $this->getEur();
 
-        // Pazimo da su numeric polja uvijek numerička i da polja postoje.
-        return [
+        $response = [
             'id'              => $this->cart_id,
-            'coupon'          => $this->coupon ?: '',
-            'items'           => $this->cart->getContent(),                    // Collection -> u JSON-u niz stavki
-            'count'           => (int) $this->cart->getTotalQuantity(),
-            'subtotal'        => (float) $this->cart->getSubTotal(),
+            'coupon'          => $this->coupon,
+            'items'           => $this->cart->getContent(),
+            'count'           => $this->cart->getTotalQuantity(),
+            'subtotal'        => $this->cart->getSubTotal(),
             'conditions'      => $this->cart->getConditions(),
-            'detail_con'      => $this->setCartConditions(),                   // stilizirani uvjeti
-            'total'           => (float) $this->cart->getTotal(),
-            'eur'             => $eur,                                         // može biti null
-            'secondary_price' => (bool) $eur,
+            'detail_con'      => $this->setCartConditions(),
+            'total'           => $this->cart->getTotal(),
+            'eur'             => $eur,
+            'secondary_price' => $eur
         ];
+
+        return $response;
     }
+
 
     /**
      * @param bool $just_basic
+     *
      * @return Collection
      */
     public function getCartItems(bool $just_basic = false): Collection
@@ -85,7 +90,8 @@ class AgCart extends Model
 
         foreach ($this->cart->getContent() as $item) {
             if ($just_basic) {
-                $response->push(['id' => $item->id, 'quantity' => $item->quantity]);
+                $data = ['id' => $item->id, 'quantity' => $item->quantity];
+                $response->push($data);
             } else {
                 $response->push($item);
             }
@@ -94,9 +100,11 @@ class AgCart extends Model
         return $response;
     }
 
+
     /**
-     * @return mixed|null
+     * @return null
      */
+
     public function getEur()
     {
         if (isset(Currency::secondary()->value)) {
@@ -106,94 +114,99 @@ class AgCart extends Model
         return null;
     }
 
+
+
+
     /**
-     * Provjera dostupnosti; uvijek vraća { cart, message }.
+     * @param      $request
+     * @param null $id
      *
-     * @param array $request
      * @return array
      */
-    public function check($request): array
+    public function check($request)
     {
-        $ids = isset($request['ids']) && is_array($request['ids']) ? $request['ids'] : [];
+        //$message = Helper::resolveCache('cart')->remember($this->cart_id, config('cache.cart_life'), function () use ($request) {
+        $products = Product::whereIn('id', $request['ids'])->pluck('quantity', 'id');
+        $message  = null;
 
-        $message = null;
+        foreach ($products as $id => $quantity) {
+            if ( ! $quantity) {
+                $this->remove(intval($id));
 
-        if (!empty($ids)) {
-            $products = Product::whereIn('id', $ids)->pluck('quantity', 'id');
+                $product = Product::where('id', intval($id))->first();
 
-            foreach ($products as $id => $quantity) {
-                if (!$quantity) {
-                    $this->remove((int) $id);
-
-                    if ($product = Product::find((int) $id)) {
-                        $message = 'Nažalost, knjiga ' . substr($product->name, 0, 150) . ' više nije dostupna.';
-                    } else {
-                        $message = 'Nažalost, artikl više nije dostupan.';
-                    }
-                }
+                $message = 'Nažalost, knjiga ' . substr($product->name, 0, 150) . ' više nije dostupna.';
             }
         }
 
+        return $message;
+
+        //});
+
         return [
             'cart'    => $this->get(),
-            'message' => $message,
+            'message' => $message
         ];
     }
 
+
     /**
-     * Dodaj ili ažuriraj postojeću stavku.
+     * @param      $request
+     * @param null $id
      *
-     * @param array    $request
-     * @param int|null $id
      * @return array
      */
-    public function add($request, $id = null): array
+    public function add($request, $id = null)
     {
-        // Updejtaj artikl s apsolutnom količinom ako već postoji u košarici.
+        // Updejtaj artikl sa apsolutnom količinom.
         foreach ($this->cart->getContent() as $item) {
             if ($item->id == $request['item']['id']) {
-                $quantity = (int) $request['item']['quantity'];
-                $product  = Product::find($request['item']['id']);
-
-                if (!$product) {
-                    return ['error' => 'Artikl ne postoji.'];
-                }
+                $quantity = $request['item']['quantity'];
+                $product  = Product::where('id', $request['item']['id'])->first();
 
                 if ($quantity > $product->quantity) {
                     return ['error' => 'Nažalost nema dovoljnih količina artikla..!'];
                 }
 
                 if ($quantity == 1 && ($item->quantity == 1 || $item->quantity > $quantity)) {
-                    if (!$id) {
+                    if ( ! $id) {
                         $quantity = $item->quantity + 1;
                     }
                 }
 
-                $relative = isset($request['item']['relative']) && $request['item']['relative'] ? true : false;
+                $relative = false;
+
+                if (isset($request['item']['relative']) && $request['item']['relative']) {
+                    $relative = true;
+                }
 
                 return $this->updateCartItem($item->id, $quantity, $relative);
             }
         }
 
-        // Inače – dodaj novu stavku.
         return $this->addToCart($request);
     }
 
+
     /**
-     * @param int $id
+     * @param $id
+     *
      * @return array
      */
-    public function remove($id): array
+    public function remove($id)
     {
         $this->cart->remove($id);
 
         return $this->get();
     }
 
+
     /**
-     * Provjeriti metodu da li se koristi negdje (ostavljena identična signatura/ponašanje).
+     * Provjeriti metodu da li se koristi negdje.
+     *  ????????????????????????????????????????
      *
-     * @param string $coupon
+     * @param $coupon
+     *
      * @return int
      */
     public function coupon($coupon): int
@@ -208,58 +221,64 @@ class AgCart extends Model
 
         $has_coupon = ProductAction::active()->where('coupon', $coupon)->get();
 
-        return $has_coupon->count() ? 1 : 0;
+        if ($has_coupon->count()) {
+            return 1;
+        }
+
+        return 0;
     }
 
+
     /**
-     * Očisti košaricu i VRATI VALJANI PAYLOAD (ne model).
      *
      * @return array
      */
-    public function flush(): array
+    public function flush()
     {
-        if ($this->coupon !== '') {
+        if ($this->coupon != '') {
             $is_used = Helper::isCouponUsed($this->cart);
 
-            if ($is_used !== '') {
+            if ($is_used != '') {
                 $action = Action::query()->where('coupon', $is_used)->first();
 
-                if ($action && (int) $action->quantity === 1) {
+                if ($action && $action->quantity == 1) {
                     $action->update(['status' => 0]);
                 }
             }
         }
 
         $this->cart->clear();
+
         Helper::flushCache('cart', $this->cart_id);
 
-        // Vrati uvijek stabilizirani, “prazni” prikaz košarice.
-        return $this->get();
+        return $this;
     }
+
 
     /**
      * @param $item
+     *
      * @return array[]
      */
-    public function resolveItemRequest($item): array
+    public function resolveItemRequest($item)
     {
         return [
             'item' => [
                 'id'       => $item['id'],
-                'quantity' => $item['quantity'],
-            ],
+                'quantity' => $item['quantity']
+            ]
         ];
     }
 
+
     /**
-     * Ako je korisnik logiran, spremi/azuriraj DB snapshot košarice.
+     * If user is logged store or update the DB session.
      *
-     * @param array|null $data
-     * @return static
+     * @return $this
      */
     public function resolveDB(array $data = null): static
     {
-        if (!$data) {
+        if ( ! $data) {
             $data = $this->get();
         }
 
@@ -276,17 +295,13 @@ class AgCart extends Model
         return $this;
     }
 
+
     /*******************************************************************************
-     *                                Copyright : AG media                           *
-     *                              email: filip@agmedia.hr                          *
+     *                                Copyright : AGmedia                           *
+     *                              email: filip@agmedia.hr                         *
      *******************************************************************************/
 
-    /**
-     * Resetira i preračunava uvjete košarice te vraća stilizirani niz za frontend.
-     *
-     * @return array
-     */
-    public function setCartConditions(): array
+    public function setCartConditions()
     {
         $this->cart->clearCartConditions();
 
@@ -297,7 +312,7 @@ class AgCart extends Model
 
         if ($payment_method) {
             $str = str_replace('+', '', $payment_method->getValue());
-            if (number_format((float) $str, 2) > 0) {
+            if (number_format(floatval($str), 2) > 0) {
                 $this->cart->condition($payment_method);
             }
         }
@@ -323,17 +338,19 @@ class AgCart extends Model
             $response[] = [
                 'name'       => $condition->getName(),
                 'type'       => $condition->getType(),
-                'target'     => 'total',
+                'target'     => 'total', // this condition will be applied to cart's subtotal when getSubTotal() is called.
                 'value'      => $value,
-                'attributes' => $condition->getAttributes(),
+                'attributes' => $condition->getAttributes()
             ];
         }
 
         return $response;
     }
 
+
     /**
-     * @param array $request
+     * @param $request
+     *
      * @return array
      */
     private function addToCart($request): array
@@ -343,10 +360,12 @@ class AgCart extends Model
         return $this->get();
     }
 
+
     /**
-     * @param int  $id
-     * @param int  $quantity
+     * @param      $id
+     * @param      $quantity
      * @param bool $relative
+     *
      * @return array
      */
     private function updateCartItem($id, $quantity, bool $relative): array
@@ -354,35 +373,26 @@ class AgCart extends Model
         $this->cart->update($id, [
             'quantity' => [
                 'relative' => $relative,
-                'value'    => (int) $quantity,
+                'value'    => $quantity
             ],
         ]);
 
         return $this->get();
     }
 
+
     /**
-     * @param array $request
+     * @param $request
+     *
      * @return array
      */
-    private function structureCartItem($request): array
+    private function structureCartItem($request)
     {
-        $productId = $request['item']['id'] ?? null;
-        $qty       = (int) ($request['item']['quantity'] ?? 0);
-
-        if (!$productId || $qty < 1) {
-            return ['error' => 'Neispravan zahtjev.'];
-        }
-
-        $product = Product::find($productId);
-
-        if (!$product) {
-            return ['error' => 'Artikl ne postoji.'];
-        }
+        $product = Product::where('id', $request['item']['id'])->first();
 
         $product->dataLayer = TagManager::getGoogleProductDataLayer($product);
 
-        if ($qty > $product->quantity) {
+        if ($request['item']['quantity'] > $product->quantity) {
             return ['error' => 'Nažalost nema dovoljnih količina artikla..!'];
         }
 
@@ -391,9 +401,9 @@ class AgCart extends Model
             'name'            => $product->name,
             'price'           => $product->price,
             'sec_price'       => $product->secondary_price,
-            'quantity'        => $qty,
+            'quantity'        => $request['item']['quantity'],
             'associatedModel' => $product,
-            'attributes'      => $this->structureCartItemAttributes($product),
+            'attributes'      => $this->structureCartItemAttributes($product)
         ];
 
         $conditions = $this->structureCartItemConditions($product);
@@ -405,20 +415,24 @@ class AgCart extends Model
         return $response;
     }
 
+
     /**
-     * @param \App\Models\Front\Catalog\Product $product
-     * @return array
+     * @param $product
+     *
+     * @return string[]
      */
-    private function structureCartItemAttributes($product): array
+    private function structureCartItemAttributes($product)
     {
         return [
             'path' => $product->url,
-            'tax'  => $product->tax($product->tax_id),
+            'tax'  => $product->tax($product->tax_id)
         ];
     }
 
+
     /**
-     * @param \App\Models\Front\Catalog\Product $product
+     * @param $product
+     *
      * @return CartCondition|bool
      * @throws \Darryldecode\Cart\Exceptions\InvalidConditionException
      */
@@ -433,7 +447,7 @@ class AgCart extends Model
                     'name'   => 'Kupon akcija',
                     'type'   => 'coupon',
                     'target' => $coupon,
-                    'value'  => -($product->price - $product->special()),
+                    'value'  => -($product->price - $product->special())
                 ]);
             }
 
@@ -441,11 +455,13 @@ class AgCart extends Model
                 'name'   => 'Akcija',
                 'type'   => 'promo',
                 'target' => '',
-                'value'  => -($product->price - $product->special()),
+                'value'  => -($product->price - $product->special())
             ]);
         }
 
-        // Ako nema akcije na artiklu / nije ispravan kupon.
+        // Ako nema akcije na artiklu.
+        // Ako nije ispravan kupon.
         return false;
     }
+
 }
