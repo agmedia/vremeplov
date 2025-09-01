@@ -344,7 +344,7 @@
 
 
 @endpush
-@if ($step == 'dostava')
+
 @push('js_after')
 
     <script>
@@ -358,10 +358,10 @@
     </script>
 
     <script type="module" src="https://map.gls-croatia.com/widget/gls-dpm.js"></script>
+
+
+
+
+
+
 @endpush
-
-
-@endif
-
-
-
