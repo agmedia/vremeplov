@@ -38,7 +38,7 @@
                 <h3 class="widget-title fw-700 d-none d-md-block text-white"><span>Antikvarijat Vremeplov</span></h3>
                 <p class=" text-white  fs-md pb-1 d-none d-sm-block">
 
-                    <strong>Adresa</strong><br>Radoslava Lopašića br.11<br> 10000 Zagreb</p>
+                    <strong>Adresa</strong><br>Zvonimirova 24<br> 10000 Zagreb</p>
 
 
                 <p class=" text-white  fs-md pb-1 d-none d-sm-block">  <strong>Broj telefona</strong><br>
