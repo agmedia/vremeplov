@@ -5,7 +5,7 @@
             <i class="navbar-tool-icon ci-bag"></i>
         </a>
 
-        <div class="dropdown-menu dropdown-menu-end"  style="display:none">
+        <div class="dropdown-menu dropdown-menu-end">
             <div class="widget widget-cart px-3 pt-2 pb-3" style="width: 24rem;" v-if="hasCartItems">
                 <div data-simplebar-auto-hide="false">
                     <div class="widget-cart-item pb-2 border-bottom" v-for="item in cartItems" :key="item.id || item.rowId || item.name">
