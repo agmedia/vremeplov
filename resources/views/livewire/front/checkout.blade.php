@@ -344,16 +344,20 @@
 
 
 @endpush
-@if ($step == 'dostava')
+
 @push('js_after')
 
     <script>
-        var el = document.getElementById('test-map');
-        el.addEventListener('change', (e) => {
-            document.getElementById('commentp').value = e.detail.contact.address + ', ' + e.detail.contact.city + '_' + e.detail.id;
-            document.getElementById("commentp").dispatchEvent(new Event('input'));
-            alert('Odabrali ste:' + e.detail.name);
-
+        document.addEventListener("DOMContentLoaded", () => {
+            var el = document.getElementById('test-map');
+            if (el) {
+                el.addEventListener('change', (e) => {
+                    document.getElementById('commentp').value =
+                        e.detail.contact.address + ', ' + e.detail.contact.city + '_' + e.detail.id;
+                    document.getElementById("commentp").dispatchEvent(new Event('input'));
+                    alert('Odabrali ste:' + e.detail.name);
+                });
+            }
         });
     </script>
 
@@ -361,7 +365,7 @@
 @endpush
 
 
-@endif
+
 
 
 
