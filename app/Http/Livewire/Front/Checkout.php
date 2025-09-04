@@ -169,6 +169,10 @@ class Checkout extends Component
 
         $this->checkCart();
 
+        if (! $this->cart || ($this->cart->get()['count'] ?? 0) <= 0) {
+            return redirect()->route('kosarica');
+        }
+
         $this->changeStep($this->step);
     }
 

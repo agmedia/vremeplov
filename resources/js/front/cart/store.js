@@ -1,7 +1,7 @@
 /* */
 let storage_cart = {
     name: 'sl_cart',
-    cart: { count: 0 }
+    cart: { count: 0, items: [], total: 0, subtotal: 0, secondary_price: 0, coupon: null, detail_con: null }
 };
 let messages = {
     error: 'Whoops!... Greška u vezi sa poslužiteljem!',
@@ -21,8 +21,12 @@ class AgService {
      */
     getCart() {
         return axios.get('cart/get')
-        .then(response => { return response.data })
-        .catch(error => { return this.returnError(messages.error) })
+        .then(response => response.data)
+        .catch(() => {
+            // Silent fallback on first load (no toast)
+            try { return store.state.storage.getCart() || storage_cart.cart; }
+            catch (e) { return storage_cart.cart; }
+        });
     }
 
     /**
@@ -31,9 +35,20 @@ class AgService {
      * @returns {*}
      */
     checkCart(ids) {
-        return axios.post('cart/check', {ids: ids})
-        .then(response => { return response.data })
-        .catch(error => { return this.returnError(messages.error) })
+        // If nothing to validate, skip server call and avoid error toast
+        if (!ids || (Array.isArray(ids) && ids.length === 0)) {
+            return Promise.resolve({
+                cart: (store.state.storage.getCart() || storage_cart.cart),
+                message: null
+            });
+        }
+
+        return axios.post('cart/check', { ids })
+        .then(response => response.data)
+        .catch(() => ({
+            cart: (store.state.storage.getCart() || storage_cart.cart),
+            message: null
+        }));
     }
 
 
@@ -122,10 +137,23 @@ class AgService {
      *
      * @returns {*}
      */
+    
     getSettings() {
         return axios.get('settings/get')
-        .then(response => { return response.data })
-        .catch(error => { return this.returnError(messages.error) })
+        .then(response => {
+            const data = (response && response.data) ? response.data : null;
+            if (data) {
+                try { store.state.settings = data; } catch (e) {}
+                return data;
+            }
+            // fallback if response was malformed
+            return { 'currency.list': [ { main: true, value: 1, symbol_left: '', symbol_right: '€', decimal_places: 2 } ] };
+        })
+        .catch(() => {
+            // Never return undefined; return last known or a sane default
+            const fallback = (store && store.state && store.state.settings) ? store.state.settings : { 'currency.list': [ { main: true, value: 1, symbol_left: '', symbol_right: '€', decimal_places: 2 } ] };
+            return fallback;
+        });
     }
 
     /**
@@ -176,21 +204,25 @@ class AgService {
      * @param price
      * @returns {string}
      */
+    
     formatMainPrice(price) {
-
+        // If settings not yet loaded, kick off load but return a synchronous fallback
         if (!store.state.settings) {
-            this.getSettings().then((response) => {
-                return this.resolvePrice(response['currency.list'], price);
+            this.getSettings().then((settings) => {
+                if (settings && settings['currency.list']) {
+                    try { store.state.settings = settings; } catch (e) {}
+                }
             });
-
-        } else {
-            return this.resolvePrice(store.state.settings['currency.list'], price);
+            return this.formatPrice(price);
         }
+        return this.resolvePrice(store.state.settings['currency.list'], price);
     }
 
 
+
     resolvePrice(currency_list, price, main = true) {
-        let list = currency_list;
+        let list = Array.isArray(currency_list) ? currency_list : [];
+        if (!list.length) { return this.formatPrice(price); }
         let main_currency = {};
 
         list.forEach((item) => {
@@ -219,16 +251,19 @@ class AgService {
      * @param price
      * @returns {string}
      */
+    
     formatSecondaryPrice(price) {
         if (!store.state.settings) {
-            this.getSettings().then((response) => {
-                return this.resolvePrice(response['currency.list'], price, false);
+            this.getSettings().then((settings) => {
+                if (settings && settings['currency.list']) {
+                    try { store.state.settings = settings; } catch (e) {}
+                }
             });
-
-        } else {
-            return this.resolvePrice(store.state.settings['currency.list'], price, false);
+            return this.formatPrice(price);
         }
+        return this.resolvePrice(store.state.settings['currency.list'], price, false);
     }
+
 
     /**
      * Calculate tax on items.
@@ -275,7 +310,7 @@ class AgStorage {
     getCart() {
         let item = localStorage.getItem(storage_cart.name);
 
-        return (item && item != 'undefined') ? JSON.parse(item) : null;
+        return (item && item != 'undefined') ? JSON.parse(item) : storage_cart.cart;
     }
 
     /**
@@ -295,7 +330,8 @@ let store = {
         service: new AgService(),
         cart: storage_cart.cart,
         messages: messages,
-        settings: null
+        settings: null,
+        fetched: { cart: false }
     },
 
     actions: {
@@ -304,9 +340,19 @@ let store = {
          * @param context
          * @returns {*}
          */
-        getCart(context) {
-            context.commit('setCart');
+        async getCart({ state, commit }) {
+            try {
+                const cart = await state.service.getCart();
+                commit('setCart', cart);
+                state.storage.setCart(cart);
+            } catch (e) {
+                commit('setCart', state.storage.getCart());
+            } finally {
+                state.fetched = state.fetched || {};
+                state.fetched.cart = true;
+            }
         },
+
 
         /**
          *
@@ -369,16 +415,20 @@ let store = {
                 state.service.checkCart(ids).then(response => {
                     state.storage.setCart(response.cart);
 
-                    if (response.message && window.location.pathname != '/uspjeh') {
-                        window.ToastWarningLong.fire(response.message)
+                    if (response.message && window.location.pathname !== '/uspjeh') {
+                        const p = window.location.pathname;
+                        const isCheckout = p.indexOf('/naplata') === 0 || p.indexOf('/pregled') === 0;
 
-                        if (window.location.pathname != '/kosarica') {
-                            window.setTimeout(() => {
-                                window.location.href = '/kosarica';
-                            }, 5000);
+                        // Don’t show toast on checkout to avoid flicker
+                        if (!isCheckout) {
+                            window.ToastWarningLong.fire(response.message);
+                        }
+
+                        // Don’t redirect away from checkout
+                        if (!isCheckout && p !== '/kosarica') {
+                            window.setTimeout(() => { window.location.href = '/kosarica'; }, 5000);
                         }
                     }
-
                 })
             }
         },
@@ -436,12 +486,8 @@ let store = {
          * @param state
          * @returns {*}
          */
-        setCart(state) {
-            return state.cart = state.service.getCart().then(cart => {
-                state.cart = cart;
-
-                return state.storage.setCart(cart);
-            });
+        setCart(state, cart) {
+            state.cart = cart || storage_cart.cart;
         }
     },
 };

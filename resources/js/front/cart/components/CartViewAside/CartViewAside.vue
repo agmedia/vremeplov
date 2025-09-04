@@ -4,8 +4,8 @@
             <div class="py-2 px-xl-2" v-cloak>
                 <div class="text-center mb-2 pb-2">
                     <h2 class="h6 mb-3 pb-1">Ukupno</h2>
-                    <h3 class="fw-bold text-primary">{{ $store.state.service.formatMainPrice($store.state.cart.total) }}</h3>
-                    <h4 class="fs-sm" v-if="$store.state.cart.secondary_price">{{ $store.state.service.formatSecondaryPrice($store.state.cart.total) }}</h4>
+                    <h3 class="fw-bold text-primary">{{ $store.state.service.formatMainPrice(($store.state.cart && $store.state.cart.total) ? $store.state.cart.total : 0) }}</h3>
+                    <h4 class="fs-sm" v-if="$store.state.cart.secondary_price">{{ $store.state.service.formatSecondaryPrice(($store.state.cart && $store.state.cart.total) ? $store.state.cart.total : 0) }}</h4>
                 </div>
                 <a class="btn btn-primary btn-shadow d-block w-100 mt-4" :href="checkouturl">NASTAVI NA NAPLATU <i class="ci-arrow-right fs-sm"></i></a>
                <!-- <p class="small fw-light text-center mt-2">* Cijena dostave će biti izračunata na koraku 3: Dostava</p>-->
@@ -17,7 +17,7 @@
                 <div class="widget mb-3">
                     <h2 class="widget-title text-center mb-2">Sažetak narudžbe</h2>
 
-                    <div class="d-flex align-items-center pb-2 border-bottom" v-for="item in $store.state.cart.items">
+                    <div class="d-flex align-items-center pb-2 border-bottom" v-for="item in (($store.state.cart && $store.state.cart.items) || [])">
                         <a class="d-block flex-shrink-0" :href="base_path + item.attributes.path"><img :src="item.associatedModel.image" :alt="item.name" width="64"></a>
                         <div class="ps-2">
                             <h6 class="widget-product-title"><a :href="base_path + item.attributes.path">{{ item.name }}</a></h6>
@@ -34,17 +34,17 @@
                     </div>
                 </div>
                 <ul class="list-unstyled fs-sm pb-2 border-bottom">
-                    <li class="d-flex justify-content-between align-items-center"><span class="me-2">Ukupno:</span><span class="text-end">{{ $store.state.service.formatMainPrice($store.state.cart.subtotal) }}</span></li>
+                    <li class="d-flex justify-content-between align-items-center"><span class="me-2">Ukupno:</span><span class="text-end">{{ $store.state.service.formatMainPrice(($store.state.cart && $store.state.cart.subtotal) ? $store.state.cart.subtotal : 0) }}</span></li>
                     <li v-if="$store.state.cart.secondary_price" class="d-flex justify-content-between align-items-center">
-                        <span class="me-2"></span><span class="text-end">{{ $store.state.service.formatSecondaryPrice($store.state.cart.subtotal) }}</span>
+                        <span class="me-2"></span><span class="text-end">{{ $store.state.service.formatSecondaryPrice(($store.state.cart && $store.state.cart.subtotal) ? $store.state.cart.subtotal : 0) }}</span>
                     </li>
                     <div v-for="condition in $store.state.cart.detail_con">
                         <li class="d-flex justify-content-between align-items-center"><span class="me-2">{{ condition.name }}</span><span class="text-end">{{ $store.state.service.formatMainPrice(condition.value) }}</span></li>
                         <li v-if="$store.state.cart.secondary_price" class="d-flex justify-content-between align-items-center"><span class="me-2"></span><span class="text-end">{{ $store.state.service.formatSecondaryPrice(condition.value) }}</span></li>
                     </div>
                 </ul>
-                <h3 class="fw-bold text-primary text-center my-2">{{ $store.state.service.formatMainPrice($store.state.cart.total) }}</h3>
-                <h4 v-if="$store.state.cart.secondary_price" class="fs-sm text-center my-2">{{ $store.state.service.formatSecondaryPrice($store.state.cart.total) }}</h4>
+                <h3 class="fw-bold text-primary text-center my-2">{{ $store.state.service.formatMainPrice(($store.state.cart && $store.state.cart.total) ? $store.state.cart.total : 0) }}</h3>
+                <h4 v-if="$store.state.cart.secondary_price" class="fs-sm text-center my-2">{{ $store.state.service.formatSecondaryPrice(($store.state.cart && $store.state.cart.total) ? $store.state.cart.total : 0) }}</h4>
              <!--  <p class="small fw-light text-center mt-4 mb-0">
                     <span class="fw-normal">{{ $store.state.service.formatMainPrice($store.state.service.calculateItemsTax($store.state.cart.items)) }}</span> PDV knjige i
                     <span class="fw-normal">{{ $store.state.service.formatMainPrice($store.state.service.calculateItemsTax($store.state.cart.total - $store.state.cart.subtotal)) }}</span> PDV dostava
@@ -64,17 +64,17 @@
                     <h2 class="widget-title text-center">Sažetak narudžbe</h2>
                 </div>
                 <ul class="list-unstyled fs-sm pb-2 border-bottom">
-                    <li class="d-flex justify-content-between align-items-center"><span class="me-2">Ukupno:</span><span class="text-end">{{ $store.state.service.formatMainPrice($store.state.cart.subtotal) }}</span></li>
+                    <li class="d-flex justify-content-between align-items-center"><span class="me-2">Ukupno:</span><span class="text-end">{{ $store.state.service.formatMainPrice(($store.state.cart && $store.state.cart.subtotal) ? $store.state.cart.subtotal : 0) }}</span></li>
                     <li v-if="$store.state.cart.secondary_price" class="d-flex justify-content-between align-items-center">
-                        <span class="me-2"></span><span class="text-end">{{ $store.state.service.formatSecondaryPrice($store.state.cart.subtotal) }}</span>
+                        <span class="me-2"></span><span class="text-end">{{ $store.state.service.formatSecondaryPrice(($store.state.cart && $store.state.cart.subtotal) ? $store.state.cart.subtotal : 0) }}</span>
                     </li>
                     <div v-for="condition in $store.state.cart.detail_con">
                         <li class="d-flex justify-content-between align-items-center"><span class="me-2">{{ condition.name }}</span><span class="text-end">{{ $store.state.service.formatMainPrice(condition.value) }}</span></li>
                         <li v-if="$store.state.cart.secondary_price" class="d-flex justify-content-between align-items-center"><span class="me-2"></span><span class="text-end">{{ $store.state.service.formatSecondaryPrice(condition.value) }}</span></li>
                     </div>
                 </ul>
-                <h3 class="fw-bold text-primary text-center my-2">{{ $store.state.service.formatMainPrice($store.state.cart.total) }}</h3>
-                <h4 v-if="$store.state.cart.secondary_price" class="fs-sm text-center my-2">{{ $store.state.service.formatSecondaryPrice($store.state.cart.total) }}</h4>
+                <h3 class="fw-bold text-primary text-center my-2">{{ $store.state.service.formatMainPrice(($store.state.cart && $store.state.cart.total) ? $store.state.cart.total : 0) }}</h3>
+                <h4 v-if="$store.state.cart.secondary_price" class="fs-sm text-center my-2">{{ $store.state.service.formatSecondaryPrice(($store.state.cart && $store.state.cart.total) ? $store.state.cart.total : 0) }}</h4>
               <!--  <p class="small fw-light text-center mt-4 mb-0">
                     <span class="fw-normal">{{ $store.state.service.formatMainPrice($store.state.service.calculateItemsTax($store.state.cart.items)) }}</span> PDV knjige i
                     <span class="fw-normal">{{ $store.state.service.formatMainPrice($store.state.service.calculateItemsTax($store.state.cart.total - $store.state.cart.subtotal)) }}</span> PDV dostava
@@ -153,21 +153,25 @@
              *
              */
             checkIfEmpty() {
+                const p = window.location.pathname;
+                const fetched = this.$store.state.fetched && this.$store.state.fetched.cart;
+                if (!fetched || p.indexOf('/naplata') === 0) return;
 
-                let cart = this.$store.state.storage.getCart();
-
-                if (cart && ! cart.count && window.location.pathname != '/kosarica') {
+                const cart = this.$store.state.storage.getCart() || this.$store.state.cart;
+                if (cart && !cart.count && p !== '/kosarica') {
                     window.location.href = '/kosarica';
                 }
             },
+
 
             /**
              *
              */
             setCoupon() {
-                let cart = this.$store.state.storage.getCart();
-
-                this.coupon = cart.coupon;
+                // Prefer persisted cart; fall back to in-memory store; be defensive
+                const fromStorage = this.$store.state.storage.getCart();
+                const cart = fromStorage || this.$store.state.cart || {};
+                this.coupon = cart && cart.coupon ? cart.coupon : null;
             },
 
             /**

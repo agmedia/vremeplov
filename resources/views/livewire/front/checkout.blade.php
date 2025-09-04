@@ -347,21 +347,20 @@
 
 @push('js_after')
 
-    <script>
-        var el = document.getElementById('test-map');
-        el.addEventListener('change', (e) => {
-            document.getElementById('commentp').value = e.detail.contact.address + ', ' + e.detail.contact.city + '_' + e.detail.id;
-            document.getElementById("commentp").dispatchEvent(new Event('input'));
-            alert('Odabrali ste:' + e.detail.name);
+    @foreach ($shippingMethods as $s_method)
+        @if ($s_method->code == 'gls_paketomat' && $view_commentp)
+            <script>
+                var el = document.getElementById('test-map');
+                el.addEventListener('change', (e) => {
+                    document.getElementById('commentp').value = e.detail.contact.address + ', ' + e.detail.contact.city + '_' + e.detail.id;
+                    document.getElementById("commentp").dispatchEvent(new Event('input'));
+                    alert('Odabrali ste:' + e.detail.name);
 
-        });
-    </script>
+                });
+            </script>
 
-    <script type="module" src="https://map.gls-croatia.com/widget/gls-dpm.js"></script>
-
-
-
-
-
+            <script type="module" src="https://map.gls-croatia.com/widget/gls-dpm.js"></script>
+        @endif
+    @endforeach
 
 @endpush

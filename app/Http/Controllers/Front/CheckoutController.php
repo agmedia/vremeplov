@@ -48,7 +48,10 @@ class CheckoutController extends Controller
             $step = $request->input('step');
         }
 
-
+        $cart = $this->shoppingCart()->get();
+        if (empty($cart['count']) || (int) $cart['count'] <= 0) {
+            return redirect()->route('kosarica');
+        }
 
         $is_free_shipping = (config('settings.free_shipping') < $this->shoppingCart()->get()['subtotal']) ? true : false;
 

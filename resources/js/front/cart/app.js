@@ -44,34 +44,45 @@ Vue.component('pagination', require('./../filter/components/Pagination/LaravelVu
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-const app = new Vue({
-    el: '#agapp',
-    router,
-    store: new Vuex.Store(store)
-});
+// Prevent double boot if the script is included twice (layout + view)
+if (!window.__AG_CART_BOOTED__) {
+    window.__AG_CART_BOOTED__ = true;
 
+    const storeInstance = new Vuex.Store(store);
 
-window.ToastSuccess = app.$swal.mixin({
-    toast: true,
-    icon: 'success',
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 2500,
-})
+    storeInstance.state.service.getSettings().then(s => {
+        if (s) storeInstance.state.settings = s;
+    });
 
-window.ToastWarning = app.$swal.mixin({
-    toast: true,
-    icon: 'warning',
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 2500,
-})
+    storeInstance.dispatch('getCart');
 
-window.ToastWarningLong = app.$swal.mixin({
-    toast: true,
-    icon: 'warning',
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 5000,
-})
+    const app = new Vue({
+        el: '#agapp',
+        router,
+        store: storeInstance
+    });
 
+    window.ToastSuccess = app.$swal.mixin({
+        toast: true,
+        icon: 'success',
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+    });
+
+    window.ToastWarning = app.$swal.mixin({
+        toast: true,
+        icon: 'warning',
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+    });
+
+    window.ToastWarningLong = app.$swal.mixin({
+        toast: true,
+        icon: 'warning',
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 5000,
+    });
+}
