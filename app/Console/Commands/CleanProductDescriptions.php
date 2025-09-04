@@ -8,6 +8,7 @@ use App\Models\Back\Catalog\Product\Product;
 use App\Models\Back\Settings\Api\OC_Import;
 use Illuminate\Console\Command;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CleanProductDescriptions extends Command
 {
@@ -52,19 +53,17 @@ class CleanProductDescriptions extends Command
         }
 
         foreach ($products as $item) {
-            $attributes = $import->resolveAttributes($item->description, $item->id);
-            $publisher = $import->resolvePublisher(isset($attributes['Izdavač']) ? $attributes['Izdavač'] : '');
+            $seo = DB::connection('oc')->table('oc_seo_url')->where('query', '=', 'product_id=' . $item->ean)->first();
 
-            $item->update([
-                'publisher_id'     => $publisher,
-                'sku'              => isset($attributes['Šifra']) ? $attributes['Šifra'] : $item->model . '-' . $item->product_id,
-                'pages'            => isset($attributes['Broj stranica']) ? $attributes['Broj stranica'] : null,
-                'origin'           => isset($attributes['Jezik']) ? $attributes['Jezik'] : null,
-                'letter'           => isset($attributes['Pismo']) ? $attributes['Pismo'] : null,
-                'condition'        => isset($attributes['Stanje']) ? $attributes['Stanje'] : null,
-                'binding'          => isset($attributes['Uvez']) ? $attributes['Uvez'] : null,
-                'year'             => isset($attributes['Godina']) ? str_replace('.', '', $attributes['Godina']) : null,
-            ]);
+            if ($seo) {
+                $item->update([
+                    'slug' => $seo->keyword
+                ]);
+
+                $item->update([
+                    'url' => ProductHelper::url($item)
+                ]);
+            }
         }
 
         $import->resolveProductsImportRange(($range->offset + $range->limit), $range->limit);

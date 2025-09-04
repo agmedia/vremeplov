@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Back\Catalog\Product\Product;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ProductsSlugRevision extends Command
@@ -39,6 +40,8 @@ class ProductsSlugRevision extends Command
      */
     public function handle()
     {
+        $log_start = microtime(true);
+
         $slugs = Product::query()->groupBy('slug')->havingRaw('COUNT(id) > 1')->pluck('slug', 'id')->toArray();
 
         foreach ($slugs as $slug) {
@@ -55,6 +58,9 @@ class ProductsSlugRevision extends Command
             }
         }
 
-        return response()->json(['success' => 'Import atributa iz opisa je uspješno obavljen..!']);
+        $log_end = microtime(true);
+        Log::info('__Clean & resolve all products slugs. - Total Execution Time: ' . number_format(($log_end - $log_start), 2, ',', '.') . ' sec.');
+
+        return 1;
     }
 }
