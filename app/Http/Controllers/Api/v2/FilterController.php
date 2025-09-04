@@ -240,7 +240,7 @@ class FilterController extends Controller
         $request = new Request($request_data);
 
         // Build the query once
-        $query = (new Product())->filter($request)
+        /*$query = (new Product())->filter($request)
                                 ->select(['id','name','slug','image','price','special','quantity','author_id','publisher_id','updated_at'])
                                 ->with(['author:id,title,slug']); // keep this lean
 
@@ -268,8 +268,14 @@ class FilterController extends Controller
             ->setEtag($etag)
             ->setPublic()
             ->setMaxAge($ttl)
-            ->header('Cache-Control', 'public, max-age=' . $ttl . ', stale-while-revalidate=30');
+            ->header('Cache-Control', 'public, max-age=' . $ttl . ', stale-while-revalidate=30');*/
 
+        $products = (new Product())->filter($request)
+                                   ->with('author')
+                                   ->paginate(config('settings.pagination.front'));
+
+
+        return response()->json($products);
     }
 
 
