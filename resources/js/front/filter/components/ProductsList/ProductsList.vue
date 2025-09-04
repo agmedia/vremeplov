@@ -135,7 +135,7 @@
                 this.products_loaded = false;
                 let params = this.setParams();
 
-                axios.post('filter/getProducts', { params }).then(response => {
+                axios.get('filter/getProducts', { params: { params } }).then(response => {
                     this.products_loaded = true;
                     this.products = response.data;
                     this.checkHrTotal();
@@ -164,7 +164,7 @@
                 let params = this.setParams();
                 window.scrollTo({top: 0, behavior: 'smooth'});
 
-                axios.post('filter/getProducts?page=' + page, { params }).then(response => {
+                axios.get('filter/getProducts?page=' + page, { params: { params } }).then(response => {
                     this.products_loaded = true;
                     this.products = response.data;
                     this.checkHrTotal();

@@ -65,7 +65,7 @@ class CartController extends Controller
         
         $this->cart->resolveDB($response);
         
-        return response()->json($response);
+        return response()->json($response)->header('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     }
 
 
@@ -80,7 +80,7 @@ class CartController extends Controller
 
         $this->cart->resolveDB($response);
 
-        return response()->json($response);
+        return response()->json($response)->header('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     }
 
 
@@ -95,7 +95,7 @@ class CartController extends Controller
 
         $this->cart->resolveDB($response);
 
-        return response()->json($response);
+        return response()->json($response)->header('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     }
 
 
@@ -111,7 +111,7 @@ class CartController extends Controller
     
         $this->cart->resolveDB($response);
     
-        return response()->json($response);
+        return response()->json($response)->header('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     }
 
 
@@ -126,7 +126,7 @@ class CartController extends Controller
     
         $this->cart->resolveDB($response);
     
-        return response()->json($response);
+        return response()->json($response)->header('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     }
 
 
@@ -139,7 +139,7 @@ class CartController extends Controller
     {
         session([$this->key . '_coupon' => $coupon]);
 
-        return response()->json($this->cart->coupon($coupon));
+        return response()->json($this->cart->coupon($coupon))->header('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     }
     
     

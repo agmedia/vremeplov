@@ -204,7 +204,7 @@
             getCategories() {
                 let params = this.setParams();
 
-                axios.post('filter/getCategories', { params }).then(response => {
+                axios.get('filter/getCategories', { params: { params } }).then(response => {
                     this.categories = response.data;
 
                     if (this.group != '') {
@@ -238,7 +238,7 @@
                 this.authors_loaded = false;
                 let params = this.setParams();
 
-                axios.post('filter/getAuthors', { params }).then(response => {
+                axios.get('filter/getAuthors', { params: { params } }).then(response => {
                     this.authors_loaded = true;
                     this.authors = response.data;
                 });
@@ -251,7 +251,7 @@
                 this.publishers_loaded = false;
                 let params = this.setParams();
 
-                axios.post('filter/getPublishers', { params }).then(response => {
+                axios.get('filter/getPublishers', { params: { params } }).then(response => {
                     this.publishers_loaded = true;
                     this.publishers = response.data;
                 });

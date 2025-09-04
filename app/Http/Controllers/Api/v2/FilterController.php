@@ -55,7 +55,7 @@ class FilterController extends Controller
         //}
 
         // Ako su posebni ID artikala.
-        if ($params['ids'] && $params['ids'] != '[]') {
+        if (isset($params['ids']) && $params['ids'] != '[]') {
             $_ids = collect(explode(',', substr($params['ids'], 1, -1)))->unique();
 
             $categories = Category::active()->whereHas('products', function ($query) use ($_ids) {
@@ -65,7 +65,13 @@ class FilterController extends Controller
             $response = $this->resolveCategoryArray($categories, 'categories');
         }
 
-        return response()->json($response);
+        $etag = sha1(json_encode($response));
+        return response()
+            ->json($response)
+            ->setEtag($etag)
+            ->setPublic()
+            ->setMaxAge(config('cache.one_day'))        // 1 day
+            ->header('Cache-Control', 'public, max-age=' . config('cache.one_day'));
     }
 
 
@@ -233,11 +239,37 @@ class FilterController extends Controller
 
         $request = new Request($request_data);
 
-        $products = (new Product())->filter($request)
-                                   ->with('author')
-                                   ->paginate(config('settings.pagination.front'));
+        // Build the query once
+        $query = (new Product())->filter($request)
+                                ->select(['id','name','slug','image','price','special','quantity','author_id','publisher_id','updated_at'])
+                                ->with(['author:id,title,slug']); // keep this lean
 
-        return response()->json($products);
+        $page = (int) ($request->input('page', 1));
+        $key  = 'filter.products:' . sha1(json_encode($request_data)) . ':p:' . $page;
+
+        // Short TTL caches (shields bursts) – still fresh because we also add ETag
+        $ttl  = 60; // seconds
+
+        $products = \Cache::remember($key, $ttl, function () use ($query) {
+            return $query->paginate(config('settings.pagination.front'));
+        });
+
+        // ETag tied to filter + last change time of the page slice
+        $lastUpdated = optional(collect($products->items())->max('updated_at'))->timestamp ?? 0;
+        $etag = sha1($key . ':' . $lastUpdated);
+
+        // Honor If-None-Match
+        $response = response()->json($products);
+        if (request()->headers->get('If-None-Match') === $etag) {
+            return $response->setEtag($etag)->setNotModified();
+        }
+
+        return $response
+            ->setEtag($etag)
+            ->setPublic()
+            ->setMaxAge($ttl)
+            ->header('Cache-Control', 'public, max-age=' . $ttl . ', stale-while-revalidate=30');
+
     }
 
 
@@ -249,23 +281,30 @@ class FilterController extends Controller
     public function authors(Request $request)
     {
         if ($request->has('params')) {
-            return response()->json(
-                (new Author())->filter($request->input('params'))
-                              ->get()
-                              ->toArray()
-            );
-        }
+            $params = json_decode($request->input('params'), true);
 
-        return response()->json(
-            Helper::resolveCache('authors')->remember('featured', config('cache.life'), function () {
+            $response = (new Author())->filter($params)
+                                      ->get()
+                                      ->toArray();
+
+        } else {
+            $response = Helper::resolveCache('authors')->remember('featured', config('cache.life'), function () {
                 return Author::query()->active()
                              ->featured()
                              ->basicData()
                              ->withCount('products')
                              ->get()
                              ->toArray();
-            })
-        );
+            });
+        }
+
+        $etag = sha1(json_encode($response));
+        return response()
+            ->json($response)
+            ->setEtag($etag)
+            ->setPublic()
+            ->setMaxAge(config('cache.one_day'))        // 1 day
+            ->header('Cache-Control', 'public, max-age=' . config('cache.one_day'));
     }
 
 
@@ -277,25 +316,32 @@ class FilterController extends Controller
     public function publishers(Request $request)
     {
         if ($request->has('params')) {
-            return response()->json(
-                (new Publisher())->filter($request->input('params'))
-                                 ->basicData()
-                                 ->withCount('products')
-                                 ->get()
-                                 ->toArray()
-            );
-        }
+            $params = json_decode($request->input('params'), true);
 
-        return response()->json(
-            Helper::resolveCache('publishers')->remember('featured', config('cache.life'), function () {
+            $response = (new Publisher())->filter($params)
+                                         ->basicData()
+                                         ->withCount('products')
+                                         ->get()
+                                         ->toArray();
+
+        } else {
+            $response = Helper::resolveCache('publishers')->remember('featured', config('cache.life'), function () {
                 return Publisher::active()
                                 ->featured()
                                 ->basicData()
                                 ->withCount('products')
                                 ->get()
                                 ->toArray();
-            })
-        );
+            });
+        }
+
+        $etag = sha1(json_encode($response));
+        return response()
+            ->json($response)
+            ->setEtag($etag)
+            ->setPublic()
+            ->setMaxAge(config('cache.one_day'))        // 1 day
+            ->header('Cache-Control', 'public, max-age=' . config('cache.one_day'));
     }
 
 }
