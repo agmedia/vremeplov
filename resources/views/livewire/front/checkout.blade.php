@@ -22,7 +22,7 @@
         </a>
     </div>
 
-    @if ( ! empty($gdl) && ! $gdl_shipping && ! $gdl_payment && $gdl_event)
+   {{--  @if ( ! empty($gdl) && ! $gdl_shipping && ! $gdl_payment && $gdl_event)
         @section('google_data_layer')
             <script>
                 window.dataLayer = window.dataLayer || [];
@@ -65,7 +65,7 @@
             </script>
         @endsection
     @endif
-
+--}}
     @if ($step == 'podaci')
         <h2 class="h6 pt-1 pb-3 mb-3 border-bottom">Adresa dostave</h2>
 
@@ -140,7 +140,7 @@
             <div class="col-sm-6">
                 <div class="mb-3">
                     <label class="form-label" for="checkout-ln">Prezime <span class="text-danger">*</span></label>
-                    <input class="form-control @error('address.lname') is-invalid @enderror" type="text" wire:model.deferl="address.lname">
+                    <input class="form-control @error('address.lname') is-invalid @enderror" type="text" wire:model.defer="address.lname">
                     @error('address.lname') <div class="invalid-feedback animated fadeIn">Prezime je obvezno</div> @enderror
                 </div>
             </div>
@@ -346,6 +346,13 @@
 @endpush
 
 @push('js_after')
+
+    <script>
+        window.addEventListener('load', () => {
+            const root = document.querySelector('[wire\\:id]');
+            console.log('LW root on first load?', !!root, root);
+        });
+    </script>
 
     @foreach ($shippingMethods as $s_method)
         @if ($s_method->code == 'gls_paketomat' && $view_commentp)

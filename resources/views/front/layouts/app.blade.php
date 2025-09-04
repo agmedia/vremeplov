@@ -19,11 +19,13 @@
     <link rel="mask-icon" href="{{ config('settings.images_domain') . 'safari-pinned-tab.svg' }}" color="#2d2224">
     <meta name="msapplication-TileColor" content="#2d2224">
     <meta name="theme-color" content="#ffffff">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <script>window.Laravel = {csrfToken: '{{ csrf_token() }}'}</script>
+    @livewireStyles
 
     <!-- Vendor Styles including: Font Icons, Plugins, etc.-->
     <link rel="preconnect" href="https://fonts.gstatic.com">
+
     <!-- Main Theme Styles + Bootstrap-->
     <link rel="stylesheet" media="screen" href="{{ asset(config('settings.images_domain') . 'css/theme.css?v=1.91') }}">
     @if (config('app.env') == 'production')
@@ -146,13 +148,27 @@
 </script>
 
 
-
-
-
-
 @stack('js_after')
 
 
+@livewireScripts
 
+
+<script>
+
+    document.addEventListener('livewire:load', () => console.log('✅ Livewire loaded'));
+    // Ako Livewire nije inicijaliziran nakon prvog painta, napravi jedan reload.
+    window.addEventListener('load', function () {
+        if (!window.livewire && !window.Livewire) {
+            // Izbjegni beskonačnu petlju
+            if (!sessionStorage.getItem('lw-reloaded')) {
+                sessionStorage.setItem('lw-reloaded', '1');
+                location.reload();
+            }
+        } else {
+            sessionStorage.removeItem('lw-reloaded');
+        }
+    });
+</script>
 </body>
 </html>

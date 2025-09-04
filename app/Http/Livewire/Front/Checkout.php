@@ -134,42 +134,46 @@ class Checkout extends Component
     /**
      *
      */
-    public function mount()
+    public function mount($step = 'podaci', $is_free_shipping = false)
     {
+        // inicijaliziraj ulazne vrijednosti
+        $this->step = $step ?: 'podaci';
+        $this->is_free_shipping = (bool) $is_free_shipping;
+
+        // address iz sessiona ili usera
         if (CheckoutSession::hasAddress()) {
             $this->setAddress(CheckoutSession::getAddress());
         } else {
             $this->setAddress();
         }
 
+        // 🛑 NEMA redirecta ovdje – samo postavi defaulte i session
         if (CheckoutSession::hasShipping()) {
             $this->shipping = CheckoutSession::getShipping();
+            $this->checkShipping($this->shipping);
         } else {
-            $this->selectShipping('gls');
+            $this->shipping = 'gls';
+            $this->checkShipping('gls');
+            CheckoutSession::setShipping('gls');
         }
 
         if (CheckoutSession::hasPayment()) {
             $this->payment = CheckoutSession::getPayment();
+            $this->checkPayment($this->payment);
         } else {
-            $this->selectPayment('corvus');
+            $this->payment = 'corvus';
+            $this->checkPayment('corvus');
+            CheckoutSession::setPayment('corvus');
         }
 
-        if (CheckoutSession::hasComment()) {
-            $this->comment = CheckoutSession::getComment();
-        }
-
-
-
-        if (CheckoutSession::hasCommentp()) {
-            $this->commentp = CheckoutSession::getCommentp();
-        }
-
+        if (CheckoutSession::hasComment())   $this->comment  = CheckoutSession::getComment();
+        if (CheckoutSession::hasCommentp())  $this->commentp = CheckoutSession::getCommentp();
 
         $this->secondary_price = Currency::secondary() ? Currency::secondary()->value : false;
 
         $this->checkCart();
-
-        if (! $this->cart || ($this->cart->get()['count'] ?? 0) <= 0) {
+        if (!$this->cart || ($this->cart->get()['count'] ?? 0) <= 0) {
+            // Ovaj redirect je OK jer je to cijeli response (nema Livewire ssr-a kad je košarica prazna)
             return redirect()->route('kosarica');
         }
 
@@ -307,7 +311,7 @@ class Checkout extends Component
         CheckoutSession::forgetPayment();
         $this->payment = '';
 
-        $this->render();
+       // $this->render();
     }
 
 

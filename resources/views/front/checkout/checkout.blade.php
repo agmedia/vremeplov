@@ -1,8 +1,6 @@
 @extends('front.layouts.app')
 
-@push('css_after')
-    @livewireStyles
-@endpush
+
 
 @section('content')
 
@@ -26,7 +24,12 @@
     <div class="container pb-5 mb-2 mb-md-4">
         <div class="row">
             <section class="col-lg-8">
-                @livewire('front.checkout', ['step' => $step, 'is_free_shipping' => $is_free_shipping])
+
+
+
+                @livewire('front.checkout', ['step' => $step, 'is_free_shipping' => $is_free_shipping], key('checkout-' . ($step ?? 'init')))
+
+
             </section>
             <!-- Sidebar-->
             <aside class="col-lg-4 pt-4 pt-lg-0 ps-xl-5 d-none d-lg-block">
@@ -38,5 +41,10 @@
 @endsection
 
 @push('js_after')
-    @livewireScripts
+
+
+
+
+
+
 @endpush
