@@ -241,7 +241,7 @@ class FilterController extends Controller
 
         // Build the query once
         /*$query = (new Product())->filter($request)
-                                ->select(['id','name','slug','image','price','special','quantity','author_id','publisher_id','updated_at'])
+                                ->select(['id','name','slug','url','image','price','special','quantity','author_id','publisher_id','updated_at'])
                                 ->with(['author:id,title,slug']); // keep this lean
 
         $page = (int) ($request->input('page', 1));
@@ -269,6 +269,7 @@ class FilterController extends Controller
             ->setPublic()
             ->setMaxAge($ttl)
             ->header('Cache-Control', 'public, max-age=' . $ttl . ', stale-while-revalidate=30');*/
+
 
         $products = (new Product())->filter($request)
                                    ->with('author')
