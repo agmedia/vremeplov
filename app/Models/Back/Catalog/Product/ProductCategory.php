@@ -36,13 +36,6 @@ class ProductCategory extends Model
             $cat = Category::find($category);
 
             if ($cat) {
-                if ($cat->parent_id) {
-                    $created[] = self::insert([
-                        'product_id'  => $product_id,
-                        'category_id' => $cat->parent_id
-                    ]);
-                }
-
                 $created[] = self::insert([
                     'product_id'  => $product_id,
                     'category_id' => $category
