@@ -209,7 +209,8 @@ class ProductController extends Controller
     public function duplicate(Request $request, Product $product)
     {
         $clone = $product->replicate()->fill([
-            'sku' => $product->sku . '_copy'
+            'sku' => $product->sku . '_copy',
+            'slug' => $product->slug . '_copy'
         ]);
 
         $clone->save();
