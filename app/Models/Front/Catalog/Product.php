@@ -576,7 +576,7 @@ class Product extends Model
             $sort = $request->input('sort');
 
             if ($sort == 'novi') {
-                $query->orderBy('created_at', 'desc');
+                $query->orderBy('updated_at', 'desc');
             }
 
             if ($sort == 'price_up') {
