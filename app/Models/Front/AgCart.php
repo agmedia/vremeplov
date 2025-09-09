@@ -355,7 +355,14 @@ class AgCart extends Model
      */
     private function addToCart($request): array
     {
-        $this->cart->add($this->structureCartItem($request));
+        $item = $this->structureCartItem($request);
+
+        // Ako je structureCartItem vratio grešku, odmah je proslijedi van
+        if (isset($item['error'])) {
+            return ['error' => $item['error']];
+        }
+
+        $this->cart->add($item);
 
         return $this->get();
     }
@@ -388,7 +395,19 @@ class AgCart extends Model
      */
     private function structureCartItem($request)
     {
+        if (
+            !isset($request['item']['id']) ||
+            !isset($request['item']['quantity']) ||
+            !is_numeric($request['item']['quantity']) ||
+            $request['item']['quantity'] < 1
+        ) {
+            return ['error' => 'Neispravan zahtjev za artikl.'];
+        }
+
         $product = Product::where('id', $request['item']['id'])->first();
+        if (!$product) {
+            return ['error' => 'Artikl nije pronađen.'];
+        }
 
         $product->dataLayer = TagManager::getGoogleProductDataLayer($product);
 
@@ -401,14 +420,12 @@ class AgCart extends Model
             'name'            => $product->name,
             'price'           => $product->price,
             'sec_price'       => $product->secondary_price,
-            'quantity'        => $request['item']['quantity'],
+            'quantity'        => (int) $request['item']['quantity'],
             'associatedModel' => $product,
-            'attributes'      => $this->structureCartItemAttributes($product)
+            'attributes'      => $this->structureCartItemAttributes($product),
         ];
 
-        $conditions = $this->structureCartItemConditions($product);
-
-        if ($conditions) {
+        if ($conditions = $this->structureCartItemConditions($product)) {
             $response['conditions'] = $conditions;
         }
 
