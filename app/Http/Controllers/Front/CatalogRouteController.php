@@ -17,6 +17,7 @@ use App\Models\Front\Catalog\Publisher;
 use App\Models\Seo;
 use App\Models\TagManager;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CatalogRouteController extends Controller
 {
@@ -26,7 +27,7 @@ class CatalogRouteController extends Controller
      * Route::get('{group}/{cat?}/{subcat?}/{prod?}', 'Front\GCP_RouteController::resolve()')->name('gcp_route');
      *
      * @param               $group
-     * @param Category|null $cat
+     * @param Category||null $cat
      * @param Category|null $subcat
      * @param Product|null  $prod
      *
@@ -46,6 +47,11 @@ class CatalogRouteController extends Controller
         $cat = $resolver->category;
         $subcat = $resolver->subcategory;
         $prod = $resolver->product;
+
+        Log::info($group);
+        Log::info($cat);
+        Log::info($subcat);
+        Log::info($prod);
 
         // Ako je artikl prvotno postavljen ili
         // ako je postavljen umjest kategorije ili podkategorije
