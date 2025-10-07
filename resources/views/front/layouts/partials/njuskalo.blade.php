@@ -8,7 +8,7 @@
             <title>{{ $item['name'] }}</title>
             <currency_id>2</currency_id>
             <price>{{ $item['price'] }}</price>
-            <description>{{ $item['description'] }}</description>
+            <description><![CDATA[{!! $item['description'] !!}]]></description>
             <conditionId>20</conditionId>
             <phone_list>
                 <phone>
