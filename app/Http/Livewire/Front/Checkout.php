@@ -407,7 +407,7 @@ class Checkout extends Component
                     'company' => auth()->user()->details->company,
                     'oib' => auth()->user()->details->oib,
                     'zip' => auth()->user()->details->zip,
-                    'state' => auth()->user()->details->state
+                    'state' => auth()->user()->details->state ?: 'Croatia',
                 ];
             }
         }

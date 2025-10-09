@@ -186,7 +186,7 @@
                 </div>
             </div>
             <div class="col-sm-6">
-                <div class="mb-3" wire:ignore>
+                <div class="mb-3" >
                     <label class="form-label" for="checkout-country">Država <span class="text-danger">*</span></label>
                     <select class="form-select @error('address.state') is-invalid @enderror" id="state-select" wire:model="address.state" wire:change="stateSelected($event.target.value)">
                         <option value=""></option>
