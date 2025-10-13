@@ -53,7 +53,7 @@
 
 
                 <div class="widget mt-4 text-md-nowrap text-center text-sm-start">
-                    <a class="btn-social bs-light bg-primary bs-instagram me-2 mb-2" aria-label="Follow us on instagram" href="https://www.instagram.com/antiqueshopvremeplov/"><i class="ci-instagram"></i></a>
+                    <a class="btn-social bs-light bg-primary bs-instagram me-2 mb-2" aria-label="Follow us on instagram" href="https://www.instagram.com/antikvarijatvremeplov"><i class="ci-instagram"></i></a>
                     <a class="btn-social bs-light bg-primary bs-facebook me-2 mb-2" aria-label="Follow us on facebook" href="https://www.facebook.com/antikavrijatvremeplov"><i class="ci-facebook"></i></a>
                 </div>
             </div>
