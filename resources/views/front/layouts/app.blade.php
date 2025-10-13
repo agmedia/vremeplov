@@ -91,7 +91,7 @@
                 <i class="ci-facebook"></i>
             </a>
 
-            <a class="topbar-link me-2 d-inline-block" aria-label="Follow us on instagram" href="https://www.instagram.com/antiqueshopvremeplov/">
+            <a class="topbar-link me-2 d-inline-block" aria-label="Follow us on instagram" href="https://www.instagram.com/antikvarijatvremeplov">
                 <i class="ci-instagram"></i>
             </a>
 
