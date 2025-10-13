@@ -374,7 +374,9 @@ class Checkout extends Component
     private function setAddress(array $value = [], bool $only_state = false)
     {
         if ( ! empty($value)) {
-            $value['state'] = isset($value['state']) ? $value['state'] : 'Croatia';
+          //  $value['state'] = isset($value['state']) ? $value['state'] : 'Croatia';
+
+            $value['state'] = (isset($value['state']) && $value['state']) ? $value['state'] : 'Croatia';
 
             if ($only_state) {
                 $this->address['state'] = $value['state'];
@@ -405,7 +407,7 @@ class Checkout extends Component
                     'company' => auth()->user()->details->company,
                     'oib' => auth()->user()->details->oib,
                     'zip' => auth()->user()->details->zip,
-                    'state' => auth()->user()->details->state
+                    'state' => auth()->user()->details->state ?: 'Croatia',
                 ];
             }
         }
