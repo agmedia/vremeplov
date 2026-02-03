@@ -97,6 +97,9 @@ class Njuskalo
         $items = [];
 
         foreach ($products as $p) {
+            if (stripos($p->name, 'hitler') !== false) {
+                continue;
+            }
             $items[] = [
                 'id'          => (int) $p->id,
                 'name'        => (string) $p->name,
