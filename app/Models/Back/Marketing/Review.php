@@ -114,7 +114,6 @@ class Review extends Model
             'product_id'   => $this->request->product_id,
             'order_id'     => 0,
             'user_id'      => 0,
-            'lang'         => 'hr',
             'fname'        => $this->request->name,
             'lname'        => isset($this->request->lastname) ? $this->request->lastname : '',
             'email'        => $this->request->email,

@@ -5,7 +5,7 @@
     <div class="bg-body-light">
         <div class="content content-full">
             <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center">
-                <h1 class="flex-sm-fill font-size-h3 font-w400 mt-2 mb-0 mb-sm-2">Nadzorna ploča</h1>
+                <h1 class="flex-sm-fill font-size-h2 font-w400 mt-2 mb-0 mb-sm-2">Nadzorna ploča</h1>
                 <nav class="flex-sm-00-auto ml-sm-3" aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item active" aria-current="page">Nadzorna ploča</li>
@@ -19,7 +19,7 @@
     <!-- Page Content -->
     <div class="content">
         @include('back.layouts.partials.session')
-        <!-- Super-admin view -->
+
         @if (auth()->user()->can('*'))
             <div class="row">
                 <div class="col-md-12">
@@ -31,386 +31,459 @@
                             </div>
                         </div>
                         <div class="block-content">
-{{--                            <a href="{{ route('roles.set') }}" class="btn btn-hero-sm btn-rounded btn-hero-secondary mb-3 mr-3">Set Roles</a>
-                            <a href="{{ route('import.categories') }}" class="btn btn-hero-sm btn-rounded btn-hero-info mb-3 mr-3">Import Categories</a>--}}
                             <a href="{{ route('import.products') }}" class="btn btn-hero-sm btn-rounded btn-hero-info mb-3 mr-3">Import Products</a>
                             <a href="{{ route('products.duplicates') }}" class="btn btn-hero-sm btn-rounded btn-hero-warning mb-3 mr-3">Delete Products Duplicates</a>
                             <a href="{{ route('import.customers') }}" class="btn btn-hero-sm btn-rounded btn-hero-info mb-3 mr-3">Import Customers</a>
                             <a href="{{ route('mailing.test') }}" class="btn btn-hero-sm btn-rounded btn-hero-info mb-3 mr-3">Mail Test</a>
-                            <br>
-{{--                            <a href="{{ route('letters.import') }}" class="btn btn-hero-sm btn-rounded btn-hero-warning mb-3 mr-3">First Letters Import</a>--}}
-{{--                            <a href="{{ route('set.pdv.products') }}" class="btn btn-hero-sm btn-rounded btn-hero-warning mb-3 mr-3">Set PDV 25 Products</a>--}}
-{{--                            <br>--}}
-{{--                            <a href="{{ route('set.group') }}" class="btn btn-hero-sm btn-rounded btn-hero-danger mb-3 mr-3">Set New Category Group</a>--}}
-{{--                            <a href="{{ route('set.unlimited') }}" class="btn btn-hero-sm btn-rounded btn-hero-danger mb-3 mr-3">Set Unlimited Quantity</a>--}}
-                            {{--<a href="{{ route('statuses.cron') }}" class="btn btn-hero-sm btn-rounded btn-hero-success mb-3 mr-3">Statuses</a>--}}
                             <a href="{{ route('slugs.revision') }}" class="btn btn-hero-sm btn-rounded btn-hero-primary mb-3 mr-3">Slugs revision</a>
-                            {{--<a href="{{ route('duplicate.revision', ['target' => 'images']) }}" class="btn btn-hero-sm btn-rounded btn-hero-primary mb-3 mr-3">Duplicate Images revision</a>--}}
-                            {{--<a href="{{ route('duplicate.revision', ['target' => 'publishers']) }}" class="btn btn-hero-sm btn-rounded btn-hero-primary mb-3 mr-3">Duplicate Publishers revision</a>--}}
                         </div>
                     </div>
                 </div>
             </div>
         @endif
 
+            <!-- Quick Overview -->
+        <div class="row row-deck">
+                 <div class="col-6 col-lg-3">
+                     <a class="block block-rounded block-link-shadow text-center" href="{{ route('orders') }}">
+                         <div class="block-content py-5">
+                             <div class="font-size-h3 font-w600 text-warning mb-1">{{ $data['proccess'] }}</div>
+                             <p class="font-w600 font-size-sm text-muted text-uppercase mb-0">Narudžbi u obradi</p>
+                         </div>
+                     </a>
+                 </div>
+                 <div class="col-6 col-lg-3">
+                     <a class="block block-rounded block-link-shadow text-center" href="{{ route('orders') }}">
+                         <div class="block-content py-5">
+                             <div class="font-size-h3 font-w600 text-success mb-1">{{ $data['finished'] }}</div>
+                             <p class="font-w600 font-size-sm text-muted text-uppercase mb-0">Dovršenih narudžbi</p>
+                         </div>
+                     </a>
+                 </div>
+                 <div class="col-6 col-lg-3">
+                     <a class="block block-rounded block-link-shadow text-center" href="{{ route('orders') }}">
+                         <div class="block-content py-5">
+                             <div class="font-size-h3 text-success font-w600 mb-1">{{ $data['today'] }}</div>
+                             <p class="font-w600 font-size-sm text-muted text-uppercase mb-0">Narudžbi danas</p>
+                         </div>
+                     </a>
+                 </div>
+                 <div class="col-6 col-lg-3">
+                     <a class="block block-rounded block-link-shadow text-center" href="{{ route('orders') }}">
+                         <div class="block-content py-5">
+                             <div class="font-size-h3 text-success font-w600 mb-1">{{ $data['this_month'] }}</div>
+                             <p class="font-w600 font-size-sm text-muted text-uppercase mb-0">Narudžbi ovaj mjesec</p>
+                         </div>
+                     </a>
+                 </div>
+             </div>
+            <!-- END Quick Overview -->
 
-        <!-- Overview -->
-            <div class="row items-push">
-                <div class="col-sm-6 col-xl-3">
-                    <div class="block block-rounded text-center d-flex flex-column h-100 mb-0">
-                        <div class="block-content block-content-full">
-                            <div class="item rounded-circle bg-body mx-auto my-3">
-                                <i class="fa fa-wallet fa-lg text-primary"></i>
-                            </div>
-                            <div class="font-size-h3 text-success font-w600 mb-1">{{ number_format($data['this_month_total'], 2) }} €</div>
-                            <div class="text-muted ">Mjesečni promet</div>
-
-                        </div>
-                        <div class="block-content block-content-full block-content-sm bg-body-light fs-sm">
-                            <a class="fw-medium" href="{{ route('orders') }}">
-                                Pregled narudžbi
-                                <i class="fa fa-arrow-right ms-1 opacity-25"></i>
-                            </a>
-                        </div>
-                    </div>
+            <!-- Sales Overview Block with Tabs -->
+            <div class="block block-rounded mt-4">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">Statistika prometa</h3>
                 </div>
-                <div class="col-sm-6 col-xl-3">
-                    <div class="block block-rounded text-center d-flex flex-column h-100 mb-0">
-                        <div class="block-content block-content-full flex-grow-1">
-                            <div class="item rounded-circle bg-body mx-auto my-3">
-                                <i class="fa fa-chart-line fa-lg text-primary"></i>
-                            </div>
-                            <div class="font-size-h3 text-success font-w600 mb-1">{{ $data['this_month'] }}</div>
-                            <div class="text-muted ">Narudžbi ovaj mjesec</div>
+                <div class="block-content">
+                    <!-- Tabs nav -->
+                    <!-- Tabs nav -->
+                    <ul class="nav nav-tabs" id="salesTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="sales-tab" data-toggle="tab" href="#tab-sales" role="tab"
+                               aria-controls="tab-sales" aria-selected="true">Mjesečni pregled</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="monthly-tab" data-toggle="tab" href="#tab-monthly" role="tab"
+                               aria-controls="tab-monthly" aria-selected="false">Godišnji pregled</a>
+                        </li>
+                    </ul>
 
+                    <!-- Tabs content -->
+                    <div class="tab-content mt-3" id="salesTabsContent">
+                        <!-- Tab 1: Mjesečni pregled (po danima) -->
+                        <div class="tab-pane fade show active" id="tab-sales" role="tabpanel" aria-labelledby="sales-tab">
+                            <div class="row mb-4 mt-3">
+                                <div class="col-md-3">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label>Godina</label>
+                                            <select id="chart-year" class="form-control">
+                                                @foreach($yearsWithOrders as $y)
+                                                    <option value="{{ $y }}">{{ $y }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Mjesec</label>
+                                            <select id="chart-month" class="form-control">
+                                                @php
+                                                    $hrMonths = [
+                                                        1 => 'Siječanj',
+                                                        2 => 'Veljača',
+                                                        3 => 'Ožujak',
+                                                        4 => 'Travanj',
+                                                        5 => 'Svibanj',
+                                                        6 => 'Lipanj',
+                                                        7 => 'Srpanj',
+                                                        8 => 'Kolovoz',
+                                                        9 => 'Rujan',
+                                                        10 => 'Listopad',
+                                                        11 => 'Studeni',
+                                                        12 => 'Prosinac',
+                                                    ];
+                                                @endphp
+
+                                                @foreach($hrMonths as $m => $name)
+                                                    <option value="{{ $m }}">{{ $name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- KPI boxevi -->
+                                <div class="col-md-9">
+                                    <div class="row">
+                                        <!-- Mjesečni promet -->
+                                        <div class="col-12 col-md-3 mb-3">
+                                            <div class="block block-rounded text-center h-100">
+                                                <div class="block-content py-3">
+                                                    <div class="font-size-sm text-muted text-uppercase">Mjesečni promet</div>
+                                                    <div id="kpi-month-total" class="font-size-h3 font-w600 mt-1">—</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Broj narudžbi u mjesecu (računa se iz JS serije) -->
+                                        <div class="col-12 col-md-3 mb-3">
+                                            <div class="block block-rounded text-center h-100">
+                                                <div class="block-content py-3">
+                                                    <div class="font-size-sm text-muted text-uppercase">Narudžbe mjesec</div>
+                                                    <div id="kpi-month-orders" class="font-size-h3 font-w600 mt-1">—</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Narudžbi danas (iz backend varijable) -->
+                                        <div class="col-12 col-md-3 mb-3">
+                                            <div class="block block-rounded text-center h-100">
+                                                <div class="block-content py-3">
+                                                    <div class="font-size-sm text-muted text-uppercase">Narudžbe danas</div>
+                                                    <div class="font-size-h3 font-w600 mt-1">
+                                                        {{ $data['today'] }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Prosj. narudžba -->
+                                        <div class="col-12 col-md-3 mb-3">
+                                            <div class="block block-rounded text-center h-100">
+                                                <div class="block-content py-3">
+                                                    <div class="font-size-sm text-muted text-uppercase">Prosj. narudžba</div>
+                                                    <div id="kpi-month-aov" class="font-size-h3 font-w600 mt-1">—</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+                            <div class="chart-container large">
+                                <canvas id="salesChart"></canvas>
+                            </div>
                         </div>
-                        <div class="block-content block-content-full block-content-sm bg-body-light fs-sm">
-                            <a class="fw-medium" href="{{ route('orders') }}">
-                                Pregled narudžbi
-                                <i class="fa fa-arrow-right ms-1 opacity-25"></i>
-                            </a>
+
+                        <!-- Tab 2: Godišnji pregled -->
+                        <div class="tab-pane fade" id="tab-monthly" role="tabpanel" aria-labelledby="monthly-tab">
+                            <div class="chart-container large">
+                                <canvas class="js-chartjs-overview"></canvas>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-sm-6 col-xl-3">
-                    <div class="block block-rounded text-center d-flex flex-column h-100 mb-0">
-                        <div class="block-content block-content-full flex-grow-1">
-                            <div class="item rounded-circle bg-body mx-auto my-3">
-                                <i class="fa fa-chart-line fa-lg text-primary"></i>
-                            </div>
-                            <div class="font-size-h3 text-success font-w600 mb-1">{{ $data['today'] }}</div>
-                            <div class="text-muted ">Narudžbi danas</div>
 
-                        </div>
-                        <div class="block-content block-content-full block-content-sm bg-body-light fs-sm">
-                            <a class="fw-medium" href="{{ route('orders') }}">
-                                Pregled narudžbi
-                                <i class="fa fa-arrow-right ms-1 opacity-25"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-xl-3">
-                    <div class="block block-rounded text-center d-flex flex-column h-100 mb-0">
-                        <div class="block-content block-content-full flex-grow-1">
-                            <div class="item rounded-circle bg-body mx-auto my-3">
-                                <i class="fa fa-users fa-lg text-primary"></i>
-                            </div>
-                            <div class="font-size-h3 text-success font-w600 mb-1">{{ $data['users'] }}</div>
-                            <div class="text-muted ">Registriranih korisnika</div>
-
-                        </div>
-                        <div class="block-content block-content-full block-content-sm bg-body-light fs-sm">
-                            <a class="fw-medium" href="{{ route('users') }}">
-                                Pregled korisnika
-                                <i class="fa fa-arrow-right ms-1 opacity-25"></i>
-                            </a>
-                        </div>
-                    </div>
                 </div>
             </div>
-            <!-- END Overview -->
-
-
-        <!-- Orders Overview -->
-        <div class="block block-rounded">
-            <div class="block-header block-header-default">
-                <h3 class="block-title">Prodaja</h3>
-                <div class="block-options">
-                    <button type="button" class="btn-block-option" data-toggle="block-option" data-action="state_toggle" data-action-mode="demo">
-                        <i class="si si-refresh"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="block-content block-content-full">
-{{--                Chart.js is initialized in js/pages/be_pages_ecom_dashboard.min.js which was auto compiled from _js/pages/be_pages_ecom_dashboard.js)--}}
-{{--                For more info and examples you can check out http://www.chartjs.org/docs/--}}
-                <div style="height: 420px;"><canvas class="js-chartjs-overview"></canvas></div>
-            </div>
-        </div>
-
-
         <!-- Top Products and Latest Orders -->
-        <div class="row">
-
-            <div class="col-xl-12">
-                <!-- Latest Orders -->
+        <div class="row mt-4">
+            <div class="col-xl-6">
+                <div class="block block-rounded">
+                    <div class="block-header block-header-default">
+                        <h3 class="block-title">Zadnje prodani artikli</h3>
+                    </div>
+                    <div class="block-content">
+                        <table class="table table-borderless table-striped table-vcenter font-size-sm">
+                            <tbody>
+                            @foreach ($products->take(9) as $product)
+                                <tr>
+                                    <td class="text-center" style="width: 5%;">
+                                        <a class="font-w600" href="{{ route('products.edit', ['product' => $product->product_id]) }}">{{ $product->id }}</a>
+                                    </td>
+                                    <td>
+                                        <a href="{{ route('products.edit', ['product' => $product->product_id]) }}">{{ $product->name }}</a>
+                                    </td>
+                                    <td class="font-w600 text-right" style="width: 20%;">{{ \App\Helpers\Currency::main($product->price, true) }}</td>
+                                </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-6">
                 <div class="block block-rounded">
                     <div class="block-header block-header-default">
                         <h3 class="block-title">Zadnje narudžbe</h3>
-                        <div class="block-options">
-                            <button type="button" class="btn-block-option" data-toggle="block-option" data-action="state_toggle" data-action-mode="demo">
-                                <i class="si si-refresh"></i>
-                            </button>
-                        </div>
                     </div>
                     <div class="block-content">
-                        <!-- All Orders Table -->
-                        <div class="table-responsive">
-                            <table class="table table-borderless table-striped table-vcenter font-size-sm">
-                                <thead>
+                        <table class="table table-borderless table-striped table-vcenter font-size-sm">
+                            <tbody>
+                            @foreach ($orders as $order)
                                 <tr>
-
-                                    <th class="text-center" style="width: 36px;">Br.</th>
-                                    <th class="text-center">Datum</th>
-                                    <th>Status</th>
-                                    <th>Plaćanje</th>
-                                    <th>Kupac</th>
-                                    <th class="text-center">Artikli</th>
-                                    <th class="text-right">Vrijednost</th>
-                                    <th class="text-right">Detalji</th>
+                                    <td class="font-w600 text-center" style="width: 5%;">
+                                        <a href="{{ route('orders.edit', ['order' => $order]) }}">{{ $order->id }}</a>
+                                    </td>
+                                    <td class="d-none d-sm-table-cell">
+                                        <a href="{{ route('orders.edit', ['order' => $order]) }}">{{ $order->payment_fname . ' ' . $order->payment_lname }}</a>
+                                    </td>
+                                    <td class="text-right" style="width: 5%;">
+                                        <span class="badge badge-pill badge-{{ $order->status->color }}">{{ $order->status->title }}</span>
+                                    </td>
+                                    <td class="font-w600 text-right" style="width: 20%;">{{ \App\Helpers\Currency::main($order->total, true) }}</td>
                                 </tr>
-                                </thead>
-                                <tbody>
-                                @forelse ($orders->sortByDesc('id') as $order)
-                                    <tr>
-                                        <td class="text-center">
-                                            <a class="font-w600" href="{{ route('orders.show', ['order' => $order]) }}">
-                                                <strong>{{ $order->id }}</strong>
-                                            </a>
-                                        </td>
-                                        <td class="text-center">{{ \Illuminate\Support\Carbon::make($order->created_at)->format('d.m.Y') }}</td>
-                                        <td class="font-size-base">
-                                            <span class="badge badge-pill badge-{{ $order->status->color }}">{{ $order->status->title }}</span>
-                                        </td>
-                                        <td class="text-lwft">{{ $order->payment_method }}</td>
-                                        <td>
-                                            <a class="font-w600" href="{{ route('orders.show', ['order' => $order]) }}">{{ $order->shipping_fname }} {{ $order->shipping_lname }}</a>
-                                        </td>
-                                        <td class="text-center">{{ $order->products->count() }}</td>
-                                        <td class="text-right">
-                                            <strong>{{ number_format($order->total, 2, ',', '.') }}€ </strong>
-                                        </td>
-                                        <td class="text-right font-size-base">
-                                            <a class="btn btn-sm btn-alt-secondary" href="{{ route('orders.show', ['order' => $order]) }}">
-                                                <i class="fa fa-fw fa-eye"></i>
-                                            </a>
-                                            <a class="btn btn-sm btn-alt-info" href="{{ route('orders.edit', ['order' => $order]) }}">
-                                                <i class="fa fa-fw fa-edit"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td class="text-center font-size-sm" colspan="8">
-                                            <label>Nema narudžbi...</label>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                        <!-- Pagination -->
-
+                            @endforeach
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="block-content block-content-full text-center block-content-sm bg-body-light fs-sm">
-                        <a class="fw-medium" href="{{ route('orders') }}">
-                            Sve narudžbe
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 d-flex flex-column">
+                <div class="block block-rounded">
+                    <div class="block-header block-header-default">
+                        <h3 class="block-title">Komentari kupaca</h3>
+                    </div>
+                    <div class="block-content block-content-full d-flex justify-content-between align-items-center flex-grow-1">
+                        <div class="me-3">
+                            <div class="font-size-h3 text-warning font-w600 mb-1">{{ $data['comments'] }}</div>
+                            <p class="text-muted mb-0">Novih komentara</p>
+                        </div>
+                        <div class="item rounded-circle bg-body">
+                            <i class="fas fa-comments fa-lg text-primary"></i>
+                        </div>
+                    </div>
+                    <div class="block-content block-content-full block-content-sm bg-body-light fs-sm text-center">
+                        <a class="fw-medium" href="{{ route('reviews') }}">
+                            Pogledaj komentare
                             <i class="fa fa-arrow-right ms-1 opacity-25"></i>
                         </a>
                     </div>
                 </div>
-                <!-- END Latest Orders -->
             </div>
-
+            <div class="col-md-6 d-flex flex-column">
+                <div class="block block-rounded">
+                    <div class="block-header block-header-default">
+                        <h3 class="block-title">Rasprodano</h3>
+                    </div>
+                    <div class="block-content block-content-full d-flex justify-content-between align-items-center flex-grow-1">
+                        <div class="me-3">
+                            <div class="font-size-h3 text-warning font-w600 mb-1">{{ $data['zeroproducts'] }}</div>
+                            <p class="text-muted mb-0">Rasprodanih artikala</p>
+                        </div>
+                        <div class="item rounded-circle bg-body">
+                            <i class="fas fa-exclamation-triangle fa-lg text-primary"></i>
+                        </div>
+                    </div>
+                    <div class="block-content block-content-full block-content-sm bg-body-light fs-sm text-center">
+                        <a class="fw-medium" href="{{ route('products') }}?status=kolicina">
+                            Pogledaj artikle
+                            <i class="fa fa-arrow-right ms-1 opacity-25"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-
-
-            <div class="row">
-
-                <div class="col-md-6 d-flex flex-column">
-                    <div class="block block-rounded">
-                        <div class="block-header block-header-default">
-                            <h3 class="block-title">Komentari kupaca</h3>
-
-                        </div>
-                        <div class="block-content block-content-full d-flex justify-content-between align-items-center flex-grow-1">
-                            <div class="me-3">
-                                <div class="font-size-h3 text-warning font-w600 mb-1">{{ $data['comments'] }}</div>
-
-                                <p class="text-muted mb-0">
-                                    Novih komentara
-                                </p>
-                            </div>
-                            <div class="item rounded-circle bg-body">
-                                <i class="fas fa-comments fa-lg text-primary"></i>
-
-                            </div>
-                        </div>
-                        <div class="block-content block-content-full block-content-sm bg-body-light fs-sm text-center">
-                            <a class="fw-medium" href="{{ route('reviews') }}">
-                                Pogledaj komentare
-                                <i class="fa fa-arrow-right ms-1 opacity-25"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 d-flex flex-column">
-                    <div class="block block-rounded">
-                        <div class="block-header block-header-default">
-                            <h3 class="block-title">Rasprodano</h3>
-
-                        </div>
-                        <div class="block-content block-content-full d-flex justify-content-between align-items-center flex-grow-1">
-                            <div class="me-3">
-                                <div class="font-size-h3 text-warning font-w600 mb-1">{{ $data['zeroproducts'] }}</div>
-                                <p class="text-muted mb-0">
-                                    Rasprodanih artikala
-                                </p>
-                            </div>
-                            <div class="item rounded-circle bg-body">
-                                <i class="fas fa-exclamation-triangle fa-lg text-primary"></i>
-                            </div>
-                        </div>
-                        <div class="block-content block-content-full block-content-sm bg-body-light fs-sm text-center">
-                            <a class="fw-medium" href="{{ route('products') }}?status=kolicina">
-                                Pogledaj artikle
-                                <i class="fa fa-arrow-right ms-1 opacity-25"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-xl-6">
-                    <!-- Top Products -->
-                    <div class="block block-rounded">
-                        <div class="block-header block-header-default">
-                            <h3 class="block-title">Najprodavaniji artikli</h3>
-                            <div class="block-options">
-                                <button type="button" class="btn-block-option" data-toggle="block-option" data-action="state_toggle" data-action-mode="demo">
-                                    <i class="si si-refresh"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="block-content">
-                            <table class="table table-borderless table-striped table-vcenter font-size-sm">
-                                <tbody>
-                                @foreach ($bestsellers as $product)
-                                    <tr>
-                                        <td class="text-center" style="width: 5%;">
-                                            <a class="font-w600" href="{{ route('products.edit', ['product' => $product->product_id]) }}">{{ $product->product_id }}</a>
-                                        </td>
-                                        <td>
-                                            <a href="{{ route('products.edit', ['product' => $product->product_id]) }}">{{ $product->name }}</a>
-                                        </td>
-                                        <td class="font-w600 text-right" style="width: 20%;">{{ $product->total }}</td>
-                                    </tr>
-                                @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <!-- END Top Products -->
-                </div>
-                <div class="col-xl-6">
-                    <!-- Top Products -->
-                    <div class="block block-rounded">
-                        <div class="block-header block-header-default">
-                            <h3 class="block-title">Zadnje prodani artikli</h3>
-                            <div class="block-options">
-                                <button type="button" class="btn-block-option" data-toggle="block-option" data-action="state_toggle" data-action-mode="demo">
-                                    <i class="si si-refresh"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="block-content">
-                            <table class="table table-borderless table-striped table-vcenter font-size-sm">
-                                <tbody>
-                                @foreach ($products->take(9) as $product)
-                                    <tr>
-                                        <td class="text-center" style="width: 5%;">
-                                            <a class="font-w600" href="{{ route('products.edit', ['product' => $product->product_id]) }}">{{ $product->id }}</a>
-                                        </td>
-                                        <td>
-                                            <a href="{{ route('products.edit', ['product' => $product->product_id]) }}">{{ $product->name }}</a>
-                                        </td>
-                                        <td class="font-w600 text-right" style="width: 20%;">{{ \App\Helpers\Currency::main($product->price, true) }}</td>
-                                    </tr>
-                                @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <!-- END Top Products -->
-                </div>
-
-            </div>
-        <!-- END Top Products and Latest Orders -->
     </div>
-    <!-- END Page Content -->
 @endsection
 
-@push('js_after')
+@push('css_after')
+    <style>
+        .chart-container { position: relative; width: 100%; }
+        .chart-container.small { height: 200px; }
+        .chart-container.medium { height: 280px; }
+        .chart-container.large { height: 400px; }
+    </style>
+@endpush
 
-    <!-- Page JS Plugins -->
+@push('js_after')
     <script src="{{ asset('js/plugins/chart.js/Chart.bundle.min.js') }}"></script>
 
     <script>
+        // =====================
+        // PROMET I NARUDŽBE (po danima u mjesecu)
+        // =====================
+        let ctx = document.getElementById('salesChart').getContext('2d');
+        let salesChart;
+
+        // Formatiranje valuta i brojeva (hr-HR, EUR)
+        const fmtCurrency = new Intl.NumberFormat('hr-HR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 2 });
+        const fmtInt = new Intl.NumberFormat('hr-HR', { maximumFractionDigits: 0 });
+
+        // Helper: složi pune serije za sve dane u mjesecu (prazno => 0)
+        function prepareMonthSeries(year, month, raw) {
+            const daysInMonth = new Date(year, month, 0).getDate(); // month: 1–12
+            const map = {};
+            (raw || []).forEach(d => {
+                const day = parseInt(d.day, 10);
+                map[day] = {
+                    total: Number(d.total) || 0,
+                    orders: Number(d.orders) || 0
+                };
+            });
+
+            const labels = [];
+            const values = [];
+            const counts = [];
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                labels.push(day + '.');
+                const row = map[day] || { total: 0, orders: 0 };
+                values.push(row.total);
+                counts.push(row.orders);
+            }
+            return { labels, values, counts };
+        }
+
+        // Izračun KPI-ja i upis u DOM
+        function updateMonthStats(total, orders) {
+            const aov = orders > 0 ? (total / orders) : 0;
+            document.getElementById('kpi-month-total').textContent  = fmtCurrency.format(total);
+            document.getElementById('kpi-month-orders').textContent = fmtInt.format(orders);
+            document.getElementById('kpi-month-aov').textContent    = fmtCurrency.format(aov);
+        }
+
+        function loadMonth(year, month) {
+            $.get('{{ route('dashboard.chart.month') }}', { year, month }, function(data) {
+                const series = prepareMonthSeries(Number(year), Number(month), data);
+
+                // KPI: sumiraj promet i narudžbe za mjesec
+                const monthTotal  = series.values.reduce((s, v) => s + Number(v || 0), 0);
+                const monthOrders = series.counts.reduce((s, v) => s + Number(v || 0), 0);
+                updateMonthStats(monthTotal, monthOrders);
+
+                renderChart(series);
+            });
+        }
+
+        function renderChart(series) {
+            const labels = series.labels;
+            const values = series.values;
+            const counts = series.counts;
+
+            if (salesChart) salesChart.destroy();
+            salesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Promet (€)',
+                            data: values,
+                            borderColor: 'rgba(6, 101, 208, 1)',
+                            backgroundColor: 'rgba(6, 101, 208, .3)',
+                            fill: true,
+                            yAxisID: 'y-axis-1',
+                            tension: 0,
+                            lineTension: 0
+                        },
+                        {
+                            label: 'Broj narudžbi',
+                            data: counts,
+                            borderColor: 'rgba(0, 51, 153, 1)',
+                            backgroundColor: 'rgba(0, 51, 153, .2)',
+                            fill: false,
+                            yAxisID: 'y-axis-2',
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: 'rgba(0, 51, 153, 1)',
+                            pointBorderColor: '#fff',
+                            tension: 0,
+                            lineTension: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                const label = data.datasets[tooltipItem.datasetIndex].label || '';
+                                const value = tooltipItem.yLabel;
+                                if (label.includes('Promet')) {
+                                    return label + ': ' + value + '€';
+                                } else {
+                                    return label + ': ' + value;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        yAxes: [
+                            {
+                                id: 'y-axis-1',
+                                position: 'left',
+                                ticks: {
+                                    beginAtZero: true,
+                                    callback: value => value + '€'
+                                }
+                            },
+                            {
+                                id: 'y-axis-2',
+                                position: 'right',
+                                ticks: { beginAtZero: true },
+                                gridLines: { drawOnChartArea: false }
+                            }
+                        ]
+                    }
+                }
+            });
+        }
+
+        // Automatski refresh na promjenu selecta
+        $('#chart-year, #chart-month').on('change', function() {
+            const year  = $('#chart-year').val();
+            const month = $('#chart-month').val();
+            loadMonth(year, month);
+        });
+
+        // Inicijalni prikaz trenutnog mjeseca
+        const now = new Date();
+        $('#chart-year').val(now.getFullYear());
+        $('#chart-month').val(now.getMonth() + 1);
+        loadMonth(now.getFullYear(), now.getMonth() + 1);
+
+
+        // =====================
+        // MJESEČNI PREGLED (ova vs prošla godina)
+        // =====================
         $(() => {
-            let this_year = sort('{{ $this_year }}');
-            let last_year = sort('{{ $last_year }}');
+            let this_year = sort('{!! $this_year !!}');
+            let last_year = sort('{!! $last_year !!}');
 
-            if (this_year.top > 20000) {
-                this_year.step = 5000;
-            }
-            if (this_year.top < 20000 && this_year.top > 4000) {
-                this_year.step = 1000;
-            }
-            if (this_year.top < 4000 && this_year.top > 1000) {
-                this_year.step = 500;
-            }
-
-            console.log(this_year.names, this_year.values, this_year.step, this_year.top)
-            console.log(last_year.names, last_year.values, last_year.step, last_year.top)
-
-            // Set Global Chart.js configuration
-            Chart.defaults.global.defaultFontColor              = '#818d96';
-            Chart.defaults.scale.gridLines.color                = 'rgba(0,0,0,.04)';
-            Chart.defaults.scale.gridLines.zeroLineColor        = 'rgba(0,0,0,.1)';
-            Chart.defaults.scale.ticks.beginAtZero              = true;
-            Chart.defaults.global.elements.line.borderWidth     = 2;
-            Chart.defaults.global.elements.point.radius         = 5;
-            Chart.defaults.global.elements.point.hoverRadius    = 7;
-            Chart.defaults.global.tooltips.cornerRadius         = 3;
-            Chart.defaults.global.legend.labels.boxWidth        = 12;
-
-            // Get Chart Container
             let chartOverviewCon  = jQuery('.js-chartjs-overview');
 
-            // Set Chart Variables
-            let chartOverview, chartOverviewOptions, chartOverviewData;
-
-            // Overview Chart Options
-            chartOverviewOptions = {
+            let chartOverviewOptions = {
                 maintainAspectRatio: false,
-                tension: .4,
+                responsive: true,
                 scales: {
                     yAxes: [{
-                        ticks: {
-                            suggestedMax: this_year.top + ( this_year.top * 0.1)
-                        }
+                        ticks: { suggestedMax: this_year.top }
                     }]
                 },
                 tooltips: {
@@ -423,38 +496,34 @@
                 }
             };
 
-            // Overview Chart Data
-            chartOverviewData = {
+            let chartOverviewData = {
                 labels: this_year.names,
                 datasets: [
                     {
                         label: 'Ova godina',
-                        fill: true,
-                        backgroundColor: 'rgba(45, 34, 36, 0.75)',
-                        borderColor: 'rgb(45, 34, 36)',
-                        pointBackgroundColor: 'rgba(45, 34, 36, 1)',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: 'rgba(45, 34, 36, 1)',
-                        data: this_year.values
+                        fill: false,
+                        borderColor: 'rgba(6, 101, 208, 1)',
+                        backgroundColor: 'rgba(6, 101, 208, .3)',
+                        data: this_year.values,
+                        tension: 0, lineTension: 0,
+                        pointRadius: 3,
+                        pointHoverRadius: 5
                     },
                     {
-                        label: 'Zadnja godina',
-                        fill: true,
-                        backgroundColor: 'rgba(230, 209, 171, .25)',
-                        borderColor: 'rgba(230, 209, 171, .75)',
-                        pointBackgroundColor: 'rgba(230, 209, 171, 1)',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: 'rgba(230, 209, 171, 1)',
-                        data: last_year.values
+                        label: 'Prošla godina',
+                        fill: false,
+                        borderColor: 'rgba(0, 51, 153, 1)',
+                        backgroundColor: 'rgba(0, 51, 153, .2)',
+                        data: last_year.values,
+                        tension: 0, lineTension: 0,
+                        pointRadius: 3,
+                        pointHoverRadius: 5
                     }
                 ]
             };
 
-            // Init Overview Chart
-            if (chartOverviewCon !== null) {
-                chartOverview = new Chart(chartOverviewCon, {
+            if (chartOverviewCon.length) {
+                new Chart(chartOverviewCon, {
                     type: 'line',
                     data: chartOverviewData,
                     options: chartOverviewOptions
@@ -462,7 +531,7 @@
             }
         });
 
-
+        // helper za dekodiranje podataka iz PHP
         function sort(data) {
             let data_data = JSON.parse(data.replace(/&quot;/g,'"'));
             let data_names = [];
@@ -474,21 +543,11 @@
                 data_names.push(data_data[i].title + '.');
                 data_values.push(data_data[i].value);
             }
-
             for (let i = 0; i < data_values.length; i++) {
-                if (data_values[i] > top) {
-                    top = data_values[i];
-                }
+                if (data_values[i] > top) top = data_values[i];
             }
 
-            return {
-                values: data_values,
-                names: data_names,
-                top: top,
-                step: step_size
-            };
+            return { values: data_values, names: data_names, top: top, step: step_size };
         }
     </script>
-
 @endpush
-

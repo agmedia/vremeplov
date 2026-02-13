@@ -20,7 +20,6 @@ use App\Models\Back\Marketing\Review;
 use App\Models\Back\Orders\Order;
 use App\Models\Back\Settings\Api\OC_Import;
 use App\Models\Back\Settings\Settings;
-use App\Models\UserDetail;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Bouncer;
@@ -38,35 +37,20 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        $data['today']            = Order::query()->whereDate('created_at', Carbon::today())->count();
-        $data['proccess']         = Order::query()->whereIn('order_status_id', [1, 2, 3])->count();
+        $data['today'] = Order::whereDate('created_at', Carbon::today())
+            ->whereNotIn('order_status_id', [7, 5, 8])
+            ->count();
+        $data['proccess']         = Order::query()->whereIn('order_status_id', [1, 2, 3, 11])->count();
         $data['finished']         = Order::query()->whereIn('order_status_id', [4, 5, 6, 7])->count();
         $data['this_month'] = Order::whereYear('created_at', '=', Carbon::now()->year)->whereMonth('created_at', '=', Carbon::now()->month)->count();
-
-        $data['this_month_total'] = Order::whereYear('created_at', '=', Carbon::now()->year)->whereMonth('created_at', '=', Carbon::now()->month)->whereIn('order_status_id', [1, 2, 3, 4, 9, 10, 11])->sum('total');
-
-
-        $data['users'] = UserDetail::query()->whereIn('role', ['customer'])->count();
-
-        $data['comments']     = Review::query()->whereIn('status', ['0'])->count();
-        $data['zeroproducts'] = Product::query()->whereIn('quantity', ['0'])->count();
+        $data['comments'] = Review::query()->where('status', 0)->count();
+        $data['zeroproducts'] = Product::query()->where('quantity', 0)->count();
 
         $orders = Order::query()->last()->with('products')->get();
 
-        $ordersfinished = Order::query()->finished()->with('products')->get();
-        $products       = $ordersfinished->map(function ($item) {
+        $products = $orders->map(function ($item) {
             return $item->products()->get();
-        })->take(9)->flatten();
-
-        $bestsellers = DB::table('order_products')
-                         ->leftJoin('orders', 'orders.id', '=', 'order_products.order_id')
-                         ->select('order_products.name', 'order_products.product_id',
-                             DB::raw('SUM(order_products.quantity) as total'))
-                         ->groupBy('order_products.product_id')
-                         ->whereIn('orders.order_status_id', [1, 2, 3, 4, 9, 10, 11])
-                         ->orderBy('total', 'desc')
-                         ->limit(10)
-                         ->get();
+        })->flatten();
 
         $chart     = new Chart();
         $this_year = json_encode($chart->setDataByYear(
@@ -76,9 +60,14 @@ class DashboardController extends Controller
             Order::chartData($chart->setQueryParams(true))
         ));
 
-        // dd($data['users']);
+        $yearsWithOrders = Order::query()
+            ->selectRaw('YEAR(created_at) as year')
+            ->whereNotNull('created_at')
+            ->groupBy('year')
+            ->orderBy('year', 'desc')
+            ->pluck('year');
 
-        return view('back.dashboard', compact('data', 'orders', 'bestsellers', 'products', 'this_year', 'last_year'));
+        return view('back.dashboard', compact('data', 'orders', 'products', 'this_year', 'last_year', 'yearsWithOrders'));
     }
 
 
@@ -495,6 +484,61 @@ class DashboardController extends Controller
         });
 
         return redirect()->route('dashboard');
+    }
+
+
+    /**
+     * Vrati promet i broj narudžbi po danima za određeni mjesec.
+     */
+    public function chartByMonth(Request $request)
+    {
+        $year  = $request->get('year', Carbon::now()->year);
+        $month = $request->get('month', Carbon::now()->month);
+
+        $data = Order::query()
+            ->selectRaw('DAY(created_at) as day, SUM(total) as total, COUNT(id) as orders')
+            ->whereYear('created_at', $year)
+            ->whereMonth('created_at', $month)
+            ->whereNotIn('order_status_id', [5, 7, 8])
+            ->groupBy('day')
+            ->orderBy('day')
+            ->get();
+
+        return response()->json($data);
+    }
+
+    public function chartByDay(Request $request)
+    {
+        $date = $request->get('date', Carbon::today()->toDateString());
+
+        $data = Order::query()
+            ->selectRaw('HOUR(created_at) as hour, SUM(total) as total, COUNT(id) as orders')
+            ->whereDate('created_at', $date)
+            ->whereNotIn('order_status_id', [5, 7, 8])
+            ->groupBy('hour')
+            ->orderBy('hour')
+            ->get();
+
+        return response()->json($data);
+    }
+
+    public function chartByRange(Request $request)
+    {
+        $from = $request->get('from');
+        $to   = $request->get('to');
+
+        $data = Order::query()
+            ->selectRaw('DATE(created_at) as date, SUM(total) as total, COUNT(id) as orders')
+            ->whereBetween('created_at', [
+                Carbon::parse($from)->startOfDay(),
+                Carbon::parse($to)->endOfDay()
+            ])
+            ->whereNotIn('order_status_id', [5, 7, 8])
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        return response()->json($data);
     }
 
 

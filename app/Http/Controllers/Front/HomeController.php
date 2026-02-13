@@ -97,6 +97,18 @@ class HomeController extends Controller
      */
     public function sendProductComment(Request $request)
     {
+        $siteKey = config('services.recaptcha.sitekey');
+        $secretKey = config('services.recaptcha.secret');
+
+        if ($siteKey && $secretKey) {
+            $recaptcha = (new Recaptcha())->check($request->toArray());
+
+            if (! $recaptcha || ! $recaptcha->ok()) {
+                return back()->withErrors(['error' => 'ReCaptcha Error! Kontaktirajte administratora!'])
+                    ->withInput();
+            }
+        }
+
         $review = new Review();
 
         $created_review = $review->validateRequest($request)->create();

@@ -341,7 +341,7 @@
                <!-- Tabs-->
                <ul class="nav nav-tabs" role="tablist">
                    <li class="nav-item"><a class="nav-link py-4 px-sm-4 active" href="#specs" data-bs-toggle="tab" role="tab"><span>Opis</span> </a></li>
-
+                    <li class="nav-item"><a class="nav-link py-4 px-sm-4" href="#reviews" data-bs-toggle="tab" role="tab"><span>Recenzije ({{ $reviews->count() }})</span></a></li>
                </ul>
                <div class="px-4 pt-lg-3 pb-3 mb-5">
                    <div class="tab-content px-lg-3">
@@ -464,7 +464,77 @@
                            </div>
 
                        </div>
-                       <!-- Reviews tab-->
+                       <div class="tab-pane fade" id="reviews" role="tabpanel">
+                           <div class="row pt-3">
+                               <div class="col-lg-7">
+                                   <h3 class="h6 mb-3">Recenzije kupaca</h3>
+
+                                   @forelse ($reviews as $review)
+                                       <article class="border rounded-3 p-3 mb-3">
+                                           <div class="d-flex justify-content-between align-items-center mb-2">
+                                               <strong>{{ $review->fname }} {{ $review->lname }}</strong>
+                                               <small class="text-muted">{{ \Illuminate\Support\Carbon::make($review->created_at)->format('d.m.Y.') }}</small>
+                                           </div>
+                                           <div class="mb-2 text-warning">
+                                               @for ($i = 1; $i <= 5; $i++)
+                                                   <i class="ci-star{{ $i <= (int) $review->stars ? '-filled active' : '' }}"></i>
+                                               @endfor
+                                           </div>
+                                           <p class="mb-0">{!! nl2br(e(strip_tags($review->message))) !!}</p>
+                                       </article>
+                                   @empty
+                                       <p class="text-muted mb-0">Još nema recenzija za ovaj proizvod.</p>
+                                   @endforelse
+                               </div>
+
+                               <div class="col-lg-5 mt-4 mt-lg-0">
+                                   <h3 class="h6 mb-3">Napišite recenziju</h3>
+                                   @php
+                                       $authUser = auth()->user();
+                                       $detail = $authUser ? optional($authUser->details) : null;
+                                       $defaultReviewName = $authUser
+                                           ? trim(($detail && $detail->fname ? $detail->fname : '') . ' ' . ($detail && $detail->lname ? $detail->lname : ''))
+                                           : '';
+                                       if ($defaultReviewName === '' && $authUser) {
+                                           $defaultReviewName = $authUser->name;
+                                       }
+                                   @endphp
+                                   <form method="POST" action="{{ route('komentar.proizvoda') }}">
+                                       @csrf
+                                       <input type="hidden" name="product_id" value="{{ $prod->id }}">
+                                       <input type="hidden" name="recaptcha" id="recaptcha_review">
+
+                                       <div class="mb-3">
+                                           <label class="form-label" for="review-name">Ime</label>
+                                           <input class="form-control" id="review-name" type="text" name="name" value="{{ old('name', $defaultReviewName) }}" required>
+                                       </div>
+
+                                       <div class="mb-3">
+                                           <label class="form-label" for="review-email">Email</label>
+                                           <input class="form-control" id="review-email" type="email" name="email" value="{{ old('email', $authUser ? $authUser->email : '') }}" required>
+                                       </div>
+
+                                       <div class="mb-3">
+                                           <label class="form-label" for="review-stars">Ocjena</label>
+                                           <select class="form-select" id="review-stars" name="stars" required>
+                                               <option value="5" {{ old('stars', '5') == '5' ? 'selected' : '' }}>5 - Odlično</option>
+                                               <option value="4" {{ old('stars') == '4' ? 'selected' : '' }}>4 - Vrlo dobro</option>
+                                               <option value="3" {{ old('stars') == '3' ? 'selected' : '' }}>3 - Dobro</option>
+                                               <option value="2" {{ old('stars') == '2' ? 'selected' : '' }}>2 - Dovoljno</option>
+                                               <option value="1" {{ old('stars') == '1' ? 'selected' : '' }}>1 - Slabo</option>
+                                           </select>
+                                       </div>
+
+                                       <div class="mb-3">
+                                           <label class="form-label" for="review-message">Komentar</label>
+                                           <textarea class="form-control" id="review-message" name="message" rows="5" maxlength="1000" required>{{ old('message') }}</textarea>
+                                       </div>
+
+                                       <button type="submit" class="btn btn-primary w-100">Pošalji recenziju</button>
+                                   </form>
+                               </div>
+                           </div>
+                       </div>
 
                    </div>
                </div>
@@ -584,6 +654,27 @@
             var $gallery = new SimpleLightbox('a.gal', {});
         })();
     </script>
+
+    @if (config('services.recaptcha.sitekey'))
+        <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.sitekey') }}"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                if (typeof grecaptcha === 'undefined') {
+                    return;
+                }
+
+                grecaptcha.ready(function () {
+                    grecaptcha.execute('{{ config('services.recaptcha.sitekey') }}', {action: 'review'})
+                        .then(function (token) {
+                            var el = document.getElementById('recaptcha_review');
+                            if (el) {
+                                el.value = token;
+                            }
+                        });
+                });
+            });
+        </script>
+    @endif
 
     @include('front.layouts.modals.wishlist-email')
 @endpush
