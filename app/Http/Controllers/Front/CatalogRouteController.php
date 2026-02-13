@@ -7,6 +7,7 @@ use App\Helpers\Helper;
 use App\Helpers\RouteResolver;
 use App\Http\Controllers\Controller;
 use App\Imports\ProductImport;
+use App\Models\Back\Settings\Settings;
 use App\Models\Front\Blog;
 use App\Models\Front\Page;
 use App\Models\Front\Faq;
@@ -60,8 +61,33 @@ class CatalogRouteController extends Controller
                 abort(404);
             }
 
+            $prod->timestamps = false;
+            $prod->increment('viewed');
+            $prod->timestamps = true;
+
             $seo = Seo::getProductData($prod);
             $gdl = TagManager::getGoogleProductDataLayer($prod);
+
+            $recent = collect(session('recent_products', []));
+            $recent = $recent->prepend($prod->id)->unique()->values()->take(50);
+            session(['recent_products' => $recent->all()]);
+
+            $recentIds = $recent
+                ->filter(fn ($id) => (int) $id !== (int) $prod->id)
+                ->take(15)
+                ->values()
+                ->all();
+
+            $recentProducts = collect();
+
+            if (! empty($recentIds)) {
+                $recentProducts = Product::query()
+                    ->whereIn('id', $recentIds)
+                    ->where('status', 1)
+                    ->get()
+                    ->sortBy(fn ($product) => array_search($product->id, $recentIds))
+                    ->values();
+            }
 
             $bc = new Breadcrumb();
             $crumbs = $bc->product($group, $cat, $subcat, $prod)->resolve();
@@ -69,8 +95,24 @@ class CatalogRouteController extends Controller
 
             $reviews = $prod->reviews()->get();
             $related = Helper::getRelated($group, $cat, $subcat);
+            $shipping_methods = Settings::getList('shipping', 'list.%', true);
+            $payment_methods = Settings::getList('payment', 'list.%', true);
 
-            return view('front.catalog.product.index', compact('prod', 'group', 'cat', 'subcat', 'related', 'seo', 'crumbs', 'bookscheme', 'gdl', 'reviews'));
+            return view('front.catalog.product.index', compact(
+                'prod',
+                'group',
+                'cat',
+                'subcat',
+                'related',
+                'seo',
+                'crumbs',
+                'bookscheme',
+                'gdl',
+                'reviews',
+                'shipping_methods',
+                'payment_methods',
+                'recentProducts'
+            ));
         }
 
         $meta = $resolver->setMeta();
@@ -160,6 +202,31 @@ class CatalogRouteController extends Controller
         }
 
         return response()->json(['error' => 'Greška kod pretrage..! Molimo pokušajte ponovo ili nas kotaktirajte! HVALA...']);
+    }
+
+
+    public function tag(Request $request)
+    {
+        $key = config('settings.search_keyword', 'pojam');
+        $query = $request->input($key);
+
+        if ($query === null) {
+            return redirect()->back()->with(['error' => 'Nedostaje parametar pretrage.']);
+        }
+
+        if ($query === '') {
+            return redirect()->back()->with(['error' => 'Oops..! Zaboravili ste upisati pojam za pretraživanje..!']);
+        }
+
+        $products = Helper::search($query, true);
+        $ids = collect($products->get('products', collect()));
+
+        $group = null;
+        $cat = null;
+        $subcat = null;
+        $crumbs = null;
+
+        return view('front.catalog.category.index', compact('group', 'cat', 'subcat', 'ids', 'crumbs'));
     }
 
 

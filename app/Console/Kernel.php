@@ -30,6 +30,7 @@ class Kernel extends ConsoleKernel
         //$schedule->command('clean:products')->everyMinute();
         //$schedule->command('clean:descriptions')->everyTwoMinutes();
         $schedule->command('clean:product_slugs')->everyThirtyMinutes();
+        $schedule->command('check:wishlist')->everySixHours();
     }
 
     /**

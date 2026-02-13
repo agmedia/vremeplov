@@ -42,3 +42,18 @@ ALTER TABLE categories
 
 ALTER TABLE product_category
     ADD UNIQUE KEY `pc_product_category_unique` (`product_id`,`category_id`);
+
+CREATE TABLE IF NOT EXISTS `wishlist` (
+    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    `user_id` bigint(20) unsigned NOT NULL DEFAULT '0',
+    `email` varchar(191) NOT NULL,
+    `product_id` bigint(20) unsigned NOT NULL DEFAULT '0',
+    `sent` tinyint(4) NOT NULL DEFAULT '0',
+    `sent_at` timestamp NULL DEFAULT NULL,
+    `status` tinyint(4) NOT NULL DEFAULT '1',
+    `created_at` timestamp NULL DEFAULT NULL,
+    `updated_at` timestamp NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `wishlist_product_sent_index` (`product_id`, `sent`),
+    KEY `wishlist_email_product_index` (`email`, `product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

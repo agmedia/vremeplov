@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Imports\ProductImport;
 use App\Mail\ContactFormMessage;
 use App\Models\Back\Marketing\Review;
+use App\Models\Back\Marketing\Wishlist;
 use App\Models\Front\Blog;
 use App\Models\Front\Faq;
 use App\Models\Front\Page;
@@ -105,6 +106,36 @@ class HomeController extends Controller
         }
 
         return back()->with(['error' => 'Whoops..! Greška kod snimanja komentara']);
+    }
+
+
+    /**
+     * @param Request $request
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function wishlist(Request $request)
+    {
+        $wish = new Wishlist();
+        $wish->validateRequest($request);
+
+        $siteKey = config('services.recaptcha.sitekey');
+        $secretKey = config('services.recaptcha.secret');
+
+        if ($siteKey && $secretKey) {
+            $recaptcha = (new Recaptcha())->check($request->toArray());
+
+            if (! $recaptcha || ! $recaptcha->ok()) {
+                return back()->withErrors(['error' => 'ReCaptcha Error! Kontaktirajte administratora!'])
+                    ->withInput();
+            }
+        }
+
+        if ($wish->create()) {
+            return back()->with(['success' => 'Vaš Email je upisan u listu želja za ovaj artikl..!']);
+        }
+
+        return back()->with(['error' => 'Već ste prijavljeni za obavijest za ovaj artikl ili je došlo do greške.']);
     }
 
 

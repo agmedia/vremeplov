@@ -9,6 +9,7 @@ use App\Http\Controllers\Back\Catalog\ProductController;
 use App\Http\Controllers\Back\Catalog\PublisherController;
 use App\Http\Controllers\Back\DashboardController;
 use App\Http\Controllers\Back\Marketing\ReviewController;
+use App\Http\Controllers\Back\Marketing\WishlistController;
 use App\Http\Controllers\Back\OrderController;
 use App\Http\Controllers\Back\Marketing\ActionController;
 use App\Http\Controllers\Back\Marketing\BlogController;
@@ -157,6 +158,9 @@ Route::middleware(['auth:sanctum', 'verified', 'no.customers'])->prefix('admin')
         Route::get('faq/{faq}/edit', [FaqController::class, 'edit'])->name('faqs.edit');
         Route::patch('faq/{faq}', [FaqController::class, 'update'])->name('faqs.update');
         Route::delete('faq/{faq}', [FaqController::class, 'destroy'])->name('faqs.destroy');
+
+        // WISHLIST
+        Route::get('wishlists', [WishlistController::class, 'index'])->name('wishlists');
     });
 
     // KORISNICI
@@ -359,6 +363,7 @@ Route::get('/kontakt', [HomeController::class, 'contact'])->name('kontakt');
 Route::post('/kontakt/posalji', [HomeController::class, 'sendContactMessage'])->name('poruka');
 Route::get('/faq', [HomeController::class, 'faq'])->name('faq');
 Route::post('/komentar/proizvoda/posalji', [HomeController::class, 'sendProductComment'])->name('komentar.proizvoda');
+Route::post('/dodaj-u-listu-zelja', [HomeController::class, 'wishlist'])->name('wishlist');
 //
 Route::get('/kosarica', [CheckoutController::class, 'cart'])->name('kosarica');
 Route::get('/naplata', [CheckoutController::class, 'checkout'])->name('naplata');
@@ -370,6 +375,7 @@ Route::post('/paypal/uspjeh', [CheckoutController::class, 'successPaypal'])->nam
 Route::get('/greska', [CheckoutController::class, 'error'])->name('checkout.error');
 //
 Route::get('pretrazi', [CatalogRouteController::class, 'search'])->name('pretrazi');
+Route::get('tag', [CatalogRouteController::class, 'tag'])->name('tag');
 //
 Route::get('info/{page}', [HomeController::class, 'page'])->name('catalog.route.page');
 Route::get('blog/{blog?}', [HomeController::class, 'blog'])->name('catalog.route.blog');
