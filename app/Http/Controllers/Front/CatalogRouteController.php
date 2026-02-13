@@ -17,7 +17,9 @@ use App\Models\Front\Catalog\Product;
 use App\Models\Front\Catalog\Publisher;
 use App\Models\Seo;
 use App\Models\TagManager;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class CatalogRouteController extends Controller
@@ -202,6 +204,106 @@ class CatalogRouteController extends Controller
         }
 
         return response()->json(['error' => 'Greška kod pretrage..! Molimo pokušajte ponovo ili nas kotaktirajte! HVALA...']);
+    }
+
+
+    /**
+     * Lightweight autosuggest for header search.
+     */
+    public function suggest(Request $request)
+    {
+        $query = trim((string) $request->get('q', ''));
+
+        if (mb_strlen($query) < 2) {
+            return response()->json(['authors' => [], 'products' => []]);
+        }
+
+        $authorBasePath = trim((string) config('settings.author_path'), '/');
+
+        $authors = DB::table('authors')
+            ->where('status', 1)
+            ->where('title', 'like', '%' . $query . '%')
+            ->orderByRaw('CASE WHEN title LIKE ? THEN 0 ELSE 1 END', [$query . '%'])
+            ->orderBy('title')
+            ->limit(8)
+            ->get(['title', 'slug', 'url'])
+            ->map(function ($author) use ($authorBasePath) {
+                $url = $author->url ?: ($authorBasePath . '/' . $author->slug);
+
+                return [
+                    'title' => $author->title,
+                    'url' => $url
+                ];
+            })
+            ->unique(function ($author) {
+                return mb_strtolower(trim((string) $author['title']));
+            })
+            ->take(4)
+            ->values();
+
+        $products = DB::table('products as p')
+            ->leftJoin('authors as a', 'a.id', '=', 'p.author_id')
+            ->where('p.status', 1)
+            ->where(function ($q) use ($query) {
+                $q->where('p.name', 'like', '%' . $query . '%')
+                    ->orWhere('p.sku', 'like', '%' . $query . '%')
+                    ->orWhere('a.title', 'like', '%' . $query . '%');
+            })
+            ->orderByRaw('CASE WHEN p.name LIKE ? THEN 0 ELSE 1 END', [$query . '%'])
+            ->orderByRaw('CASE WHEN p.quantity > 0 THEN 0 ELSE 1 END')
+            ->orderByDesc('p.viewed')
+            ->limit(40)
+            ->get([
+                'p.name',
+                'p.url',
+                'p.image',
+                'p.quantity',
+                'p.price',
+                'p.special',
+                'p.special_from',
+                'p.special_to',
+                'a.title as author'
+            ])
+            ->map(function ($product) {
+                $now = now();
+                $imagesDomain = rtrim((string) config('settings.images_domain'), '/') . '/';
+
+                $hasSpecial = !is_null($product->special);
+                $specialFromOk = !$product->special_from || Carbon::parse($product->special_from) <= $now;
+                $specialToOk = !$product->special_to || Carbon::parse($product->special_to) >= $now;
+
+                $effectivePrice = ($hasSpecial && $specialFromOk && $specialToOk)
+                    ? (float) $product->special
+                    : (float) $product->price;
+
+                $rawImage = ltrim((string) ($product->image ?? ''), '/');
+                $baseImage = $rawImage !== ''
+                    ? str_replace('.jpg', '.webp', $rawImage)
+                    : 'media/img/knjiga-detalj.jpg';
+                $image = $imagesDomain . $baseImage;
+                $thumb = str_ends_with($baseImage, '.webp')
+                    ? $imagesDomain . str_replace('.webp', '-thumb.webp', $baseImage)
+                    : $image;
+
+                return [
+                    'name' => $product->name,
+                    'url' => $product->url,
+                    'author' => $product->author,
+                    'quantity' => (int) $product->quantity,
+                    'price' => round($effectivePrice, 2),
+                    'image' => $thumb,
+                ];
+            })
+            ->unique(function ($product) {
+                return mb_strtolower(trim((string) $product['name'])) . '|' . mb_strtolower(trim((string) $product['author']));
+            })
+            ->take(6)
+            ->values();
+
+        return response()->json([
+            'authors' => $authors,
+            'products' => $products
+        ]);
     }
 
 

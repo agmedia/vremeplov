@@ -380,6 +380,7 @@ Route::post('/paypal/uspjeh', [CheckoutController::class, 'successPaypal'])->nam
 Route::get('/greska', [CheckoutController::class, 'error'])->name('checkout.error');
 //
 Route::get('pretrazi', [CatalogRouteController::class, 'search'])->name('pretrazi');
+Route::get('pretrazi/suggest', [CatalogRouteController::class, 'suggest'])->name('pretrazi.suggest');
 Route::get('tag', [CatalogRouteController::class, 'tag'])->name('tag');
 //
 Route::get('info/{page}', [HomeController::class, 'page'])->name('catalog.route.page');
