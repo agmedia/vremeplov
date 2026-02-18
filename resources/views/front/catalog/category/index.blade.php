@@ -11,6 +11,12 @@
     @endpush
 @endif
 
+@if (Route::currentRouteName() == 'pretrazi')
+    @push('meta_tags')
+        <meta name="robots" content="noindex,follow">
+    @endpush
+@endif
+
 @section('content')
 
     <!-- Page Title-->

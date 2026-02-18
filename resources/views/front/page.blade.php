@@ -6,12 +6,12 @@
 
 @push('meta_tags')
 
-    <link rel="canonical" href="{{ env('APP_URL')}}" />
+    <link rel="canonical" href="{{ url('/') }}" />
     <meta property="og:locale" content="hr_HR" />
     <meta property="og:type" content="product" />
     <meta property="og:title" content="Antikvarijat Vremeplov | Prodaja knjiga | Otkup knjiga | Webshop" />
     <meta property="og:description" content="Dobro došli na stranice antikvarijata Vremeplov. Specijalizirani smo za stare razglednice, pisma, knjige, plakate,časopise te vršimo otkup i prodaju navedenih." />
-    <meta property="og:url" content="{{ env('APP_URL')}}"  />
+    <meta property="og:url" content="{{ url('/') }}"  />
     <meta property="og:site_name" content="Antikvarijat Vremeplov | Prodaja knjiga | Otkup knjiga | Webshop" />
     <meta property="og:image" content="{{ asset('media/img/cover-vremeplov.jpg') }}" />
     <meta property="og:image:secure_url" content="{{ asset('media/img/cover-vremeplov.jpg') }}" />

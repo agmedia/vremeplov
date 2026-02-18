@@ -21,7 +21,7 @@
                 <form action="{{ route('pretrazi') }}" id="search-form-mobile" method="get">
                     <div class="input-group d-lg-none my-3"><i class="ci-search position-absolute top-50 start-0 translate-middle-y text-muted fs-base ms-3"></i>
                         <input class="form-control rounded-start" type="text" name="{{ config('settings.search_keyword') }}" value="{{ request()->query('pojam') ?: '' }}" placeholder="Pretražite po nazivu ili autoru">
-                        <button type="submit" class="btn btn-primary btn-lg fs-base"><i class="ci-search"></i></button>
+                        <button type="submit" class="btn btn-primary btn-lg fs-base rounded-end"><i class="ci-search"></i></button>
                     </div>
                 </form>
 
@@ -44,7 +44,7 @@
                 <form action="{{ route('pretrazi') }}" id="search-form-desktop" method="get">
                     <div class="input-group position-relative">
                         <input class="form-control rounded-start" id="search-input-desktop" type="text" name="{{ config('settings.search_keyword') }}" value="{{ request()->query('pojam') ?: '' }}" placeholder="Pretražite po nazivu, autoru ili šifri" autocomplete="off">
-                        <button type="submit" class="btn btn-primary btn-lg fs-base"><i class="ci-search"></i></button>
+                        <button type="submit" class="btn btn-primary btn-lg fs-base rounded-end"><i class="ci-search"></i></button>
                         <div class="list-group d-none"
                              id="desktop-search-suggest"
                              style="position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:1091;max-height:420px;overflow-y:auto;border:1px solid #e3dfd5;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.08);"></div>
@@ -61,7 +61,7 @@
                 <form action="{{ route('pretrazi') }}" id="search-form" method="get">
                     <div class="input-group">
                         <input class="form-control rounded-start" type="text" name="{{ config('settings.search_keyword') }}" value="{{ request()->query('pojam') ?: '' }}" placeholder="Pretražite po nazivu ili autoru">
-                        <button type="submit" class="btn btn-primary btn-lg fs-base"><i class="ci-search"></i></button>
+                        <button type="submit" class="btn btn-primary btn-lg fs-base rounded-end"><i class="ci-search"></i></button>
                     </div>
                 </form>
             </div>

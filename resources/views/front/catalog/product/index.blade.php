@@ -3,12 +3,12 @@
 @section ('description', $seo['description'])
 @push('meta_tags')
 
-    <link rel="canonical" href="{{ env('APP_URL')}}/{{ $prod->url }}" />
+    <link rel="canonical" href="{{ url($prod->url) }}" />
     <meta property="og:locale" content="hr_HR" />
     <meta property="og:type" content="product" />
     <meta property="og:title" content="{{ $seo['title'] }}" />
     <meta property="og:description" content="{{ $seo['description']  }}" />
-    <meta property="og:url" content="{{ env('APP_URL')}}/{{ $prod->url }}"  />
+    <meta property="og:url" content="{{ url($prod->url) }}"  />
     <meta property="og:site_name" content="Antikvarijat Biblos" />
     <meta property="og:updated_time" content="{{ $prod->updated_at  }}" />
     <meta property="og:image" content="{{ asset($prod->image) }}" />
@@ -147,7 +147,7 @@
 
                                    <div class="item single-product" >
                                        <a class="link" href="{{  ($prod->image) }}">
-                                           <img src="{{  ($prod->image) }}" alt="{{ $prod->name }}" height="600" style="max-height:600px">
+                                           <img src="{{  ($prod->image) }}" alt="{{ $prod->name }}" height="600" style="max-height:600px" fetchpriority="high">
                                        </a>
                                    </div>
 
@@ -548,7 +548,7 @@
            </div>
            <div class="tns-carousel tns-controls-static tns-controls-outside tns-nav-enabled pt-2">
                <div class="tns-carousel-inner tns-nav-enabled" data-carousel-options='{"items": 2, "controls": false, "nav": true, "responsive": {"0":{"items":2, "gutter": 5},"500":{"items":2, "gutter": 10},"768":{"items":3, "gutter": 10}, "1100":{"items":4, "controls": true, "gutter": 10}, "1300":{"items":5, "controls": true, "gutter": 10}, "1600":{"items":5, "controls": true, "gutter": 10}}}'>
-                   @foreach ($cat->products()->where('quantity', '>', 0)->take(15)->get()->unique() as $cat_product)
+                   @foreach (collect($related)->where('quantity', '>', 0)->unique('id')->take(15) as $cat_product)
                        @if ($cat_product->id  != $prod->id)
                            <div>
                                @include('front.catalog.category.product', ['product' => $cat_product])

@@ -267,10 +267,14 @@ class CatalogRouteController extends Controller
             ->map(function ($product) {
                 $now = now();
                 $imagesDomain = rtrim((string) config('settings.images_domain'), '/') . '/';
+                $specialFrom = $product->special_from;
+                $specialTo = $product->special_to;
+                $hasSpecialFrom = $specialFrom && $specialFrom !== '0000-00-00 00:00:00';
+                $hasSpecialTo = $specialTo && $specialTo !== '0000-00-00 00:00:00';
 
                 $hasSpecial = !is_null($product->special);
-                $specialFromOk = !$product->special_from || Carbon::parse($product->special_from) <= $now;
-                $specialToOk = !$product->special_to || Carbon::parse($product->special_to) >= $now;
+                $specialFromOk = !$hasSpecialFrom || Carbon::parse($specialFrom) <= $now;
+                $specialToOk = !$hasSpecialTo || Carbon::parse($specialTo) >= $now;
 
                 $effectivePrice = ($hasSpecial && $specialFromOk && $specialToOk)
                     ? (float) $product->special

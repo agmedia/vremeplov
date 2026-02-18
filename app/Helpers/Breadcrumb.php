@@ -200,7 +200,11 @@ class Breadcrumb
     public function productBookSchema(Product $prod = null)
     {
         if ($prod) {
-            return [
+            $approvedReviews = $prod->reviews()->take(5)->get();
+            $reviewCount = $prod->reviews()->count();
+            $averageRating = $reviewCount ? round((float) $prod->reviews()->avg('stars'), 2) : null;
+
+            $schema = [
                 '@context' => 'https://schema.org/',
                 '@type' => 'Book',
                 'datePublished' => $prod->year ?: '...',
@@ -209,18 +213,50 @@ class Breadcrumb
                 'name' => $prod->name,
                 'url' => url($prod->url),
                 'publisher' => [
-                    '@type' => 'Organization', 
+                    '@type' => 'Organization',
                     'name' => ($prod->publisher) ? $prod->publisher->title : 'Izdavačka kuća',
                 ],
                 'author' => ($prod->author) ? $prod->author->title : 'Autor',
                 'offers' => [
                     '@type' => 'Offer',
-                    'priceCurrency' => 'HRK',
+                    'priceCurrency' => 'EUR',
                     'price' => ($prod->special()) ? $prod->special() : number_format($prod->price, 2, '.', ''),
                     'sku' => $prod->sku,
                     'availability' => ($prod->quantity) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'
                 ],
             ];
+
+            if ($reviewCount > 0 && $averageRating !== null) {
+                $schema['aggregateRating'] = [
+                    '@type' => 'AggregateRating',
+                    'ratingValue' => $averageRating,
+                    'reviewCount' => $reviewCount,
+                    'bestRating' => 5,
+                    'worstRating' => 1,
+                ];
+            }
+
+            if ($approvedReviews->count()) {
+                $schema['review'] = $approvedReviews->map(function ($review) {
+                    return [
+                        '@type' => 'Review',
+                        'author' => [
+                            '@type' => 'Person',
+                            'name' => trim(($review->fname ?: '') . ' ' . ($review->lname ?: '')) ?: 'Kupac',
+                        ],
+                        'datePublished' => optional($review->created_at)->format('Y-m-d'),
+                        'reviewBody' => trim(strip_tags((string) $review->message)),
+                        'reviewRating' => [
+                            '@type' => 'Rating',
+                            'ratingValue' => (float) $review->stars,
+                            'bestRating' => 5,
+                            'worstRating' => 1,
+                        ],
+                    ];
+                })->values()->toArray();
+            }
+
+            return $schema;
         }
     }
 
