@@ -3,7 +3,10 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center pt-1  pb-3 mb-3">
         <h2 class="h3 mb-0 pt-3 font-title me-3"> {{ $data['title'] }}</h2>
 
-        <a class="btn btn-outline-primary btn-sm  mt-3" aria-label="Pogledajte sve" href="{{ route('catalog.route', ['group' => '/knjige']) }}"><span class="d-none d-sm-inline-block">Pogledajte sve</span> <i class="ci-arrow-right "></i></a>
+        <a class="btn btn-outline-primary btn-sm  mt-3" aria-label="Pogledajte sve"
+           href="{{ in_array($data['tablename'], ['category', 'publisher', 'reviews']) ? route('catalog.route', ['group' => '/knjige']) : route('catalog.route.blog') }}">
+            <span class="d-none d-sm-inline-block">Pogledajte sve</span> <i class="ci-arrow-right "></i>
+        </a>
     </div>
 
     @if ($data['tablename'] == 'category')
