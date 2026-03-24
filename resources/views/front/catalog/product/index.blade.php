@@ -425,7 +425,7 @@
 
                                        @if ($prod->origin)
                                            <li class="d-flex justify-content-between pb-2 border-bottom">
-                                               <span class="text-muted">Mjesto izdavanja:</span><span>{{ $prod->origin }}</span>
+                                               <span class="text-muted">Jezik:</span><span>{{ $prod->origin }}</span>
                                            </li>
                                        @endif
 
