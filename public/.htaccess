@@ -332,8 +332,6 @@ FileETag None
 
   RewriteRule ^.?proizvod/?$ /$1-$2 [R=301,L]
 
-    RewriteRule ^.?kategorija-proizvoda/?$ /$1-$2 [R=301,L]
-
     Redirect /o-nama /info/o-nama
     Redirect /uvjeti-kupnje /info/opci-uvjeti-kupnje
 
@@ -428,7 +426,7 @@ RewriteRule ^(.*?)index\.php(?:/(.*))?$ /$1$2? [L,R=302,NC,NE]
 
  <IfModule mod_rewrite.c>
    RewriteCond %{SERVER_PORT} !^443
-   RewriteRule ^ https://www.antikvarijat-biblos.hr%{REQUEST_URI} [R=301,L]
+   RewriteRule ^ https://www.antikvarijat-vremeplov.hr%{REQUEST_URI} [R=301,L]
 </IfModule>
 
 # ----------------------------------------------------------------------
@@ -556,4 +554,3 @@ AddCharset utf-8 .atom .css .js .json .rss .vtt .xml
 <IfModule mod_php5.c>
   php_value session.cookie_httponly true
 </IfModule>
-
