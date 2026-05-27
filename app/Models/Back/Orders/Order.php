@@ -49,7 +49,12 @@ class Order extends Model
     {
         $statuses = Settings::get('order', 'statuses');
 
-        return $statuses->where('id', $id)->first();
+        return $statuses->where('id', $id)->first() ?: (object) [
+            'id'    => $id,
+            'title' => 'Nepoznat status',
+            'name'  => 'Nepoznat status',
+            'color' => 'light',
+        ];
     }
 
 
