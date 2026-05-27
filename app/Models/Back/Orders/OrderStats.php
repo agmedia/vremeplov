@@ -71,7 +71,7 @@ class OrderStats extends Model
             DB::raw('count(*) as count'))->with('status')->groupBy('order_status_id')->get();
 
         foreach ($response as $item) {
-            array_push($labels, $item->status->name);
+            array_push($labels, $item->status->title ?? $item->status->name ?? 'Nepoznat status');
             array_push($data, $item->count);
         }
 

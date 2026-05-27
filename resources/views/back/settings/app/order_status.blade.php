@@ -251,11 +251,11 @@
          * @param item
          */
         function editStatus(item) {
-            $('#status-id').val(item.id);
-            $('#status-title').val(item.title);
-            $('#status-sort-order').val(item.sort_order);
+            $('#status-id').val(item.id || 0);
+            $('#status-title').val(item.title || '');
+            $('#status-sort-order').val(item.sort_order || '');
 
-            $('#status-color-select').val(item.color);
+            $('#status-color-select').val(item.color || 'primary');
             $('#status-color-select').trigger('change');
         }
     </script>

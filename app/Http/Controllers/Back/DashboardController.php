@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Back;
 
 use App\Helpers\Chart;
 use App\Helpers\Helper;
+use App\Helpers\OrderHelper;
 use App\Helpers\ProductHelper;
 use App\Http\Controllers\Controller;
 use App\Imports\ProductImport;
@@ -38,17 +39,17 @@ class DashboardController extends Controller
     public function index()
     {
         $data['today'] = Order::whereDate('created_at', Carbon::today())
-            ->whereNotIn('order_status_id', [7, 5, 8])
+            ->includedInStatistics()
             ->count();
-        $data['proccess']         = Order::query()->whereIn('order_status_id', [1, 2, 3, 11])->count();
-        $data['finished']         = Order::query()->whereIn('order_status_id', [4, 5, 6, 7])->count();
-        $data['this_month'] = Order::whereYear('created_at', '=', Carbon::now()->year)->whereMonth('created_at', '=', Carbon::now()->month)->count();
+        $data['proccess']         = Order::query()->whereIn('order_status_id', OrderHelper::processingStatuses())->count();
+        $data['finished']         = Order::query()->whereIn('order_status_id', OrderHelper::finishedStatuses())->count();
+        $data['this_month'] = Order::whereYear('created_at', '=', Carbon::now()->year)->whereMonth('created_at', '=', Carbon::now()->month)->includedInStatistics()->count();
         $data['comments'] = Review::query()->where('status', 0)->count();
         $data['zeroproducts'] = Product::query()->where('quantity', 0)->count();
 
         $orders = Order::query()->last()->with('products')->get();
 
-        $products = $orders->map(function ($item) {
+        $products = Order::query()->turnover()->last()->with('products')->get()->map(function ($item) {
             return $item->products()->get();
         })->flatten();
 
@@ -499,7 +500,7 @@ class DashboardController extends Controller
             ->selectRaw('DAY(created_at) as day, SUM(total) as total, COUNT(id) as orders')
             ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month)
-            ->whereNotIn('order_status_id', [5, 7, 8])
+            ->turnover()
             ->groupBy('day')
             ->orderBy('day')
             ->get();
@@ -514,7 +515,7 @@ class DashboardController extends Controller
         $data = Order::query()
             ->selectRaw('HOUR(created_at) as hour, SUM(total) as total, COUNT(id) as orders')
             ->whereDate('created_at', $date)
-            ->whereNotIn('order_status_id', [5, 7, 8])
+            ->turnover()
             ->groupBy('hour')
             ->orderBy('hour')
             ->get();
@@ -533,7 +534,7 @@ class DashboardController extends Controller
                 Carbon::parse($from)->startOfDay(),
                 Carbon::parse($to)->endOfDay()
             ])
-            ->whereNotIn('order_status_id', [5, 7, 8])
+            ->turnover()
             ->groupBy('date')
             ->orderBy('date')
             ->get();

@@ -2,6 +2,7 @@
 
 namespace App\Models\Back\Orders;
 
+use App\Helpers\OrderHelper;
 use App\Models\Back\Settings\Settings;
 use App\Models\Back\Users\Client;
 use App\User;
@@ -101,7 +102,7 @@ class Order extends Model
      */
     public function scopePaid($query)
     {
-        return $query->where('order_status_id', 3)->orWhere('order_status_id', 4);
+        return $query->whereIn('order_status_id', OrderHelper::paidStatuses());
     }
 
 
@@ -112,7 +113,7 @@ class Order extends Model
      */
     public function scopeLast($query, $count = 9)
     {
-        return $query->whereIn('order_status_id', [1, 2, 3, 4, 5, 6, 7,8])->orderBy('created_at', 'desc')->limit($count);
+        return $query->orderBy('created_at', 'desc')->limit($count);
     }
 
     /**
@@ -122,7 +123,29 @@ class Order extends Model
      */
     public function scopeFinished($query, $count = 9)
     {
-        return $query->whereIn('order_status_id', [1, 2, 3, 4 ])->orderBy('created_at', 'desc')->limit($count);
+        return $query->whereIn('order_status_id', OrderHelper::finishedStatuses())->orderBy('created_at', 'desc')->limit($count);
+    }
+
+
+    /**
+     * @param $query
+     *
+     * @return mixed
+     */
+    public function scopeIncludedInStatistics($query)
+    {
+        return $query->whereNotIn('order_status_id', OrderHelper::statisticsExcludedStatuses());
+    }
+
+
+    /**
+     * @param $query
+     *
+     * @return mixed
+     */
+    public function scopeTurnover($query)
+    {
+        return $query->whereIn('order_status_id', OrderHelper::turnoverStatuses());
     }
 
 
@@ -136,7 +159,7 @@ class Order extends Model
     public function scopeChartData($query, array $params)
     {
         return $query
-            ->whereBetween('created_at', [$params['from'], $params['to']])->whereIn('order_status_id', [1, 2, 3, 4, 9, 10, 11])
+            ->whereBetween('created_at', [$params['from'], $params['to']])->whereIn('order_status_id', OrderHelper::turnoverStatuses())
             ->orderBy('created_at')
             ->get()
             ->groupBy(function ($val) use ($params) {
@@ -212,7 +235,7 @@ class Order extends Model
     {
         $id = $this->insertGetId([
             'user_id'          => auth()->user() ? auth()->user()->id : 0,
-            'order_status_id'  => 1,
+            'order_status_id'  => config('settings.order.status.new'),
             'payment_fname'    => $this->request->fname,
             'payment_lname'    => $this->request->lname,
             'payment_address'  => $this->request->address,
@@ -280,6 +303,7 @@ class Order extends Model
         $shipping = Settings::get('shipping', 'list.' . $this->request->shipping)->first();
 
         $id = $this->insertGetId([
+            'order_status_id'  => config('settings.order.status.new'),
             'payment_fname'    => $this->request->fname,
             'payment_lname'    => $this->request->lname,
             'payment_address'  => $this->request->address,
