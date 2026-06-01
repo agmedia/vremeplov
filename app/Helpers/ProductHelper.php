@@ -198,7 +198,10 @@ class ProductHelper
         $ops = OrderProduct::query()->where('order_id', $order_id)->get();
 
         foreach ($ops as $op) {
-            Product::query()->where('id', $op->product_id)->increment('quantity', $op->quantity);
+            Product::query()
+                   ->where('id', $op->product_id)
+                   ->where('decrease', true)
+                   ->increment('quantity', $op->quantity);
         }
 
         return true;
@@ -215,7 +218,10 @@ class ProductHelper
         $ops = OrderProduct::query()->where('order_id', $order_id)->get();
 
         foreach ($ops as $op) {
-            Product::query()->where('id', $op->product_id)->decrement('quantity', $op->quantity);
+            Product::query()
+                   ->where('id', $op->product_id)
+                   ->where('decrease', true)
+                   ->decrement('quantity', $op->quantity);
         }
 
         return true;

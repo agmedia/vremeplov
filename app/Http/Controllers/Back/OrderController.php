@@ -12,6 +12,7 @@ use App\Models\Back\Orders\OrderHistory;
 use App\Models\Back\Settings\Settings;
 use App\Models\Front\Checkout\Shipping\Gls;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -137,47 +138,25 @@ class OrderController extends Controller
     public function api_status_change(Request $request)
     {
         if ($request->has('orders')) {
-            $orders = explode(',', substr($request->input('orders'), 1, -1));
+            $orders = $this->parseOrderIds($request->input('orders'));
+            $status = (int) $request->input('selected');
 
-            Order::whereIn('id', $orders)->update([
-                'order_status_id' => $request->input('selected')
-            ]);
-
-            /*if (OrderHelper::isCanceled((int) $request->input('selected'))) {
-                $orders = Order::query()->whereIn('id', $orders)->pluck('id');
-
+            DB::transaction(function () use ($orders, $status) {
                 foreach ($orders as $order_id) {
-                    ProductHelper::makeAvailable($order_id);
+                    $this->changeOrderStatus($order_id, $status);
                 }
-            }
-
-            if (OrderHelper::isReturned((int) $request->input('selected'))) {
-                $orders = Order::query()->whereIn('id', $orders)->pluck('id');
-
-                foreach ($orders as $order_id) {
-                    ProductHelper::makeScarce($order_id);
-                }
-            }*/
+            });
 
             return response()->json(['message' => 'Statusi su uspješno promijenjeni..!']);
         }
 
         if ($request->has('order_id')) {
             if ($request->has('status') && $request->input('status')) {
-                Order::where('id', $request->input('order_id'))->update([
-                    'order_status_id' => $request->input('status')
-                ]);
-
-                /*if (OrderHelper::isCanceled((int) $request->input('selected'))) {
-                    ProductHelper::makeAvailable($request->input('order_id'));
-                }
-
-                if (OrderHelper::isReturned((int) $request->input('selected'))) {
-                    ProductHelper::makeScarce($request->input('order_id'));
-                }*/
-
-                $status = (int) $request->input('status');
-                $order  = Order::find($request->input('order_id'));
+                $status   = (int) $request->input('status');
+                $order_id = (int) $request->input('order_id');
+                $order    = DB::transaction(function () use ($order_id, $status) {
+                    return $this->changeOrderStatus($order_id, $status);
+                });
 
                 if ($order && $order->payment_email) {
                     Mail::to($order->payment_email)->send(
@@ -192,6 +171,56 @@ class OrderController extends Controller
         }
 
         return response()->json(['error' => 'Greška..! Molimo pokušajte ponovo ili kontaktirajte administratora..']);
+    }
+
+
+    /**
+     * @param string $orders
+     *
+     * @return array
+     */
+    private function parseOrderIds(string $orders): array
+    {
+        return array_values(array_filter(array_map('intval', explode(',', trim($orders, '[]')))));
+    }
+
+
+    /**
+     * @param int $order_id
+     * @param int $status
+     *
+     * @return Order|null
+     */
+    private function changeOrderStatus(int $order_id, int $status): ?Order
+    {
+        $order = Order::query()
+                      ->where('id', $order_id)
+                      ->lockForUpdate()
+                      ->first();
+
+        if ( ! $order) {
+            return null;
+        }
+
+        $previous_status = (int) $order->order_status_id;
+
+        if ($previous_status === $status) {
+            return $order;
+        }
+
+        $order->update([
+            'order_status_id' => $status
+        ]);
+
+        if (in_array($previous_status, OrderHelper::turnoverStatuses(), true) && OrderHelper::isCanceled($status)) {
+            ProductHelper::makeAvailable($order->id);
+        }
+
+        if (OrderHelper::isCanceled($previous_status) && in_array($status, OrderHelper::turnoverStatuses(), true)) {
+            ProductHelper::makeScarce($order->id);
+        }
+
+        return $order;
     }
 
 
