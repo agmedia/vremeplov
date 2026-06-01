@@ -107,6 +107,6 @@ return [
         ],
     ],
 
-    'admin' => env('MAIL_ADMIN_ADDRESS', 'info@antikvarijat-vremeplov.hr')
+    'admin' => env('MAIL_ADMIN_ADDRESS', 'info@antiqueshop.hr')
 
 ];
