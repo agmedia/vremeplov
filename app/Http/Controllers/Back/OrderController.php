@@ -6,10 +6,7 @@ use App\Helpers\Country;
 use App\Helpers\OrderHelper;
 use App\Helpers\ProductHelper;
 use App\Http\Controllers\Controller;
-use App\Mail\StatusCanceled;
-use App\Mail\StatusPaid;
-use App\Mail\StatusReady;
-use App\Mail\StatusSend;
+use App\Mail\OrderStatusChanged;
 use App\Models\Back\Orders\Order;
 use App\Models\Back\Orders\OrderHistory;
 use App\Models\Back\Settings\Settings;
@@ -179,37 +176,13 @@ class OrderController extends Controller
                     ProductHelper::makeScarce($request->input('order_id'));
                 }*/
 
-                if ($request->input('status') == config('settings.order.status.paid')) {
-                    $order = Order::find($request->input('order_id'));
+                $status = (int) $request->input('status');
+                $order  = Order::find($request->input('order_id'));
 
-                    dispatch(function () use ($order) {
-                        Mail::to($order->payment_email)->send(new StatusPaid($order));
-                    });
-                }
-
-                if ($request->input('status') == config('settings.order.status.canceled')) {
-                    $order = Order::find($request->input('order_id'));
-
-                    dispatch(function () use ($order) {
-                        Mail::to($order->payment_email)->send(new StatusCanceled($order));
-                    });
-                }
-
-                if ($request->input('status') == config('settings.order.status.ready')) {
-                    $order = Order::find($request->input('order_id'));
-
-                    dispatch(function () use ($order) {
-                        Mail::to($order->payment_email)->send(new StatusReady($order));
-                    });
-                }
-
-
-                if ($request->input('status') == config('settings.order.status.send')) {
-                    $order = Order::find($request->input('order_id'));
-
-                    dispatch(function () use ($order) {
-                        Mail::to($order->payment_email)->send(new StatusSend($order));
-                    });
+                if ($order && $order->payment_email) {
+                    Mail::to($order->payment_email)->send(
+                        new OrderStatusChanged($order, $order->status($status), $request->input('comment'))
+                    );
                 }
             }
 
