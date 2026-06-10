@@ -19,4 +19,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('wspay/callback', function () {
+    return response()->json([
+        'success' => true,
+        'message' => 'WSPay callback endpoint is ready. Transaction reports must be sent with POST.',
+    ]);
+})->name('wspay.callback.health');
+
 Route::post('wspay/callback', [CheckoutController::class, 'wspayCallback'])->name('wspay.callback');
