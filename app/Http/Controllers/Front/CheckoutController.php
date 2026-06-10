@@ -6,9 +6,11 @@ use App\Helpers\Session\CheckoutSession;
 use App\Http\Controllers\Controller;
 use App\Mail\OrderReceived;
 use App\Mail\OrderSent;
+use App\Models\Back\Orders\Order as BackOrder;
 use App\Models\Back\Settings\Settings;
 use App\Models\Front\AgCart;
 use App\Models\Front\Checkout\Order;
+use App\Models\Front\Checkout\Payment\Wspay;
 use App\Models\Front\Checkout\Shipping\Gls;
 use App\Models\TagManager;
 use Illuminate\Http\Request;
@@ -118,8 +120,7 @@ class CheckoutController extends Controller
     {
         $order = new Order();
 
-        Log::info('order::::: $request::');
-        Log::info($request->toArray());
+        $this->logWspayReturn($request, 'received');
 
         if ($request->has('provjera')) {
             $order->setData($request->input('provjera'));
@@ -130,7 +131,12 @@ class CheckoutController extends Controller
         }
 
         if ($request->has('ShoppingCartID')) {
-            $id = str_replace('-' . now()->format('Y'), '', $request->input('ShoppingCartID'));
+            $id = $this->orderIdFromShoppingCartId($request->input('ShoppingCartID'));
+
+            Log::channel('wspay')->info('WSPay ShoppingCartID resolved', [
+                'shopping_cart_id' => $request->input('ShoppingCartID'),
+                'order_id' => $id,
+            ]);
 
             $order->setData($id);
         }
@@ -140,7 +146,13 @@ class CheckoutController extends Controller
             $order->setData(isset(CheckoutSession::getOrder()['id']) ? CheckoutSession::getOrder()['id'] : 0);
         }
 
-        if ($order->finish($request)) {
+        $finished = $order->finish($request);
+
+        $this->logWspayReturn($request, 'finish_result', [
+            'finished' => (bool) $finished,
+        ]);
+
+        if ($finished) {
             if ($request->has('return_json') && intval($request->input('return_json'))) {
                 return response()->json(['success' => 1, 'href' => route('checkout.success')]);
             }
@@ -149,6 +161,22 @@ class CheckoutController extends Controller
         }
 
         return redirect()->route('checkout.error');
+    }
+
+
+    /**
+     * @param Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function wspayCallback(Request $request)
+    {
+        $result = (new Wspay(new BackOrder()))->handleCallback($request);
+        $status = $result['http_status'] ?? 200;
+
+        unset($result['http_status']);
+
+        return response()->json($result, $status);
     }
 
 
@@ -322,6 +350,104 @@ class CheckoutController extends Controller
         }
 
         return false;
+    }
+
+
+    /**
+     * @param Request    $request
+     * @param string     $stage
+     * @param array|null $extra
+     */
+    private function logWspayReturn(Request $request, string $stage, ?array $extra = null): void
+    {
+        if ( ! $this->isWspayReturn($request)) {
+            return;
+        }
+
+        Log::channel('wspay')->info('WSPay return ' . $stage, array_merge([
+            'method' => $request->method(),
+            'path' => $request->path(),
+            'ip' => $request->ip(),
+            'shopping_cart_id' => $request->input('ShoppingCartID'),
+            'order_id' => $request->has('ShoppingCartID') ? $this->orderIdFromShoppingCartId($request->input('ShoppingCartID')) : null,
+            'success' => $request->input('Success'),
+            'approval_code_present' => filled($request->input('ApprovalCode')),
+            'amount' => $request->input('Amount'),
+            'wspay_order_id' => $request->input('WsPayOrderId'),
+            'stan' => $request->input('STAN'),
+            'payment_type' => $request->input('PaymentType'),
+            'payment_plan' => $request->input('PaymentPlan'),
+            'partner' => $request->input('Partner'),
+            'datetime' => $request->input('DateTime'),
+            'lang' => $request->input('Lang'),
+            'response_code' => $request->input('ResponseCode'),
+            'error_message' => $request->input('ErrorMessage'),
+            'error_codes' => $request->input('ErrorCodes'),
+            'signature' => $this->wspaySignatureMeta($request->input('Signature')),
+            'received_keys' => array_keys($request->all()),
+        ], $extra ?: []));
+    }
+
+
+    /**
+     * @param Request $request
+     *
+     * @return bool
+     */
+    private function isWspayReturn(Request $request): bool
+    {
+        $keys = [
+            'ShoppingCartID',
+            'WsPayOrderId',
+            'Success',
+            'ApprovalCode',
+            'ErrorMessage',
+            'ErrorCodes',
+            'ResponseCode',
+            'STAN',
+        ];
+
+        foreach ($keys as $key) {
+            if ($request->has($key)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    /**
+     * @param string|null $shopping_cart_id
+     *
+     * @return string
+     */
+    private function orderIdFromShoppingCartId(?string $shopping_cart_id): string
+    {
+        return preg_replace('/-\d{4}$/', '', (string) $shopping_cart_id);
+    }
+
+
+    /**
+     * @param string|null $signature
+     *
+     * @return array
+     */
+    private function wspaySignatureMeta(?string $signature): array
+    {
+        if ( ! $signature) {
+            return [
+                'present' => false,
+                'length' => 0,
+                'preview' => null,
+            ];
+        }
+
+        return [
+            'present' => true,
+            'length' => strlen($signature),
+            'preview' => substr($signature, 0, 8) . '...' . substr($signature, -8),
+        ];
     }
 
 

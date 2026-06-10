@@ -97,13 +97,24 @@ class Order extends Model
     {
         $data = \App\Models\Back\Orders\Order::query()->where('id', $id)->first();
 
-        Log::info('order::::: $id:: $data::');
-        Log::info($id);
-        Log::info($data->toArray());
-
         if ($data) {
             $this->oc_data = $data;
+
+            if ($data->payment_code == 'wspay') {
+                Log::channel('wspay')->info('Order loaded for WSPay return', [
+                    'order_id' => $data->id,
+                    'order_status_id' => $data->order_status_id,
+                    'payment_code' => $data->payment_code,
+                    'total' => $data->total,
+                ]);
+            }
+
+            return $this;
         }
+
+        Log::channel('wspay')->warning('Order lookup failed during checkout return', [
+            'order_id' => $id,
+        ]);
 
         return $this;
     }
@@ -404,8 +415,31 @@ class Order extends Model
         if ($this->isCreated()) {
             $method = new PaymentMethod($this->oc_data['payment_code']);
 
-            return $method->finish($this->oc_data, $request);
+            if ($this->oc_data['payment_code'] == 'wspay') {
+                Log::channel('wspay')->info('Order finish resolving WSPay provider', [
+                    'order_id' => $this->oc_data['id'],
+                    'order_status_id' => $this->oc_data['order_status_id'],
+                    'request_keys' => array_keys($request->all()),
+                ]);
+            }
+
+            $result = $method->finish($this->oc_data, $request);
+
+            if ($this->oc_data['payment_code'] == 'wspay') {
+                Log::channel('wspay')->info('Order finish completed for WSPay provider', [
+                    'order_id' => $this->oc_data['id'],
+                    'result' => (bool) $result,
+                ]);
+            }
+
+            return $result;
         }
+
+        Log::channel('wspay')->warning('Order finish skipped because order data was not loaded', [
+            'shopping_cart_id' => $request->input('ShoppingCartID'),
+            'success' => $request->input('Success'),
+            'request_keys' => array_keys($request->all()),
+        ]);
 
         return null;
     }

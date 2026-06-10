@@ -1,10 +1,11 @@
 <form name="pay" class="w-100" action="{{ $data['action'] }}" method="POST">
     <input type="hidden" name="ShopID" value="{{ $data['shop_id'] }}">
     <input type="hidden" name="ShoppingCartID" value="{{ $data['order_id'] }}">
+    <input type="hidden" name="Version" value="{{ $data['version'] }}">
     <input type="hidden" name="TotalAmount" value="{{ $data['total'] }}">
     <input type="hidden" name="Signature" value="{{ $data['md5'] }}">
 
-    <input type="hidden" name="CustomerFirstname" value="{{ $data['firstname'] }}">
+    <input type="hidden" name="CustomerFirstName" value="{{ $data['firstname'] }}">
     <input type="hidden" name="CustomerLastName" value="{{ $data['lastname'] }}">
     <input type="hidden" name="CustomerAddress" value="{{ $data['address'] }}">
     <input type="hidden" name="CustomerCity" value="{{ $data['city'] }}">
@@ -17,7 +18,7 @@
     <input type="hidden" name="CreditCardName" value="{{ $data['cc_name'] }}">
     <input type="hidden" name="valuta" value="{{ $data['currency'] }}">
     <input type="hidden" name="tecaj" value="{{ $data['rate'] }}"> --}}
-    <input type="hidden" name="ReturnErrorURL" value="{{ $data['cancel'] }}">
+    <input type="hidden" name="ReturnErrorURL" value="{{ $data['error'] }}">
     <input type="hidden" name="ReturnURL" value="{{ $data['return'] }}">
     <input type="hidden" name="CancelURL" value="{{ $data['cancel'] }}">
     <input type="hidden" name="ReturnMethod" value="GET">
