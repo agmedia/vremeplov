@@ -16,13 +16,13 @@ class CatalogRouteResolverTest extends TestCase
     use DatabaseTransactions;
 
     /** @test */
-    public function it_resolves_a_stored_product_url_after_its_category_slug_changes()
+    public function it_resolves_an_old_product_url_after_its_category_slug_changes()
     {
         $slug = 'route-resolver-test-' . Str::random(12);
         $product = Product::create([
             'name' => 'Route resolver test product',
             'slug' => $slug,
-            'url' => 'plakati/stari-naziv-kategorije/' . $slug,
+            'url' => 'plakati/novi-naziv-kategorije/' . $slug,
             'price' => 10,
             'quantity' => 1,
             'status' => 1,

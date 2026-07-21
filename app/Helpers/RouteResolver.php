@@ -91,9 +91,9 @@ class RouteResolver
 
     public function setRoute()
     {
-        // Product URLs are stored in the database. Keep those exact URLs
-        // resolvable even when a category slug is renamed afterwards.
-        if ($this->product && $this->isRequestedProductUrl($this->product)) {
+        // Keep product URLs resolvable when a category slug is renamed,
+        // including old links still present in caches or search engines.
+        if ($this->product && $this->isRequestedProductRoute($this->product)) {
             return $this->setProductRoute($this->product);
         }
 
@@ -124,7 +124,7 @@ class RouteResolver
             if ( ! $category) {
                 $product = Product::query()->where('slug', $this->subcategory)->first();
 
-                if ($product && $this->isRequestedProductUrl($product)) {
+                if ($product && $this->isRequestedProductRoute($product)) {
                     return $this->setProductRoute($product);
                 }
 
@@ -140,7 +140,7 @@ class RouteResolver
                     abort(404);
                 }
 
-                if ($this->isRequestedProductUrl($this->product)) {
+                if ($this->isRequestedProductRoute($this->product)) {
                     return $this->setProductRoute($this->product);
                 }
 
@@ -179,11 +179,15 @@ class RouteResolver
     }
 
     /**
-     * Only bypass category resolution for the product's actual stored URL.
+     * Match the product slug and catalog group while allowing an old category path.
      */
-    private function isRequestedProductUrl(Product $product): bool
+    private function isRequestedProductRoute(Product $product): bool
     {
-        return trim((string) $product->url, '/') === trim($this->request->path(), '/');
+        $storedPath = explode('/', trim((string) $product->url, '/'));
+        $requestedPath = explode('/', trim($this->request->path(), '/'));
+
+        return reset($storedPath) === reset($requestedPath)
+            && end($requestedPath) === $product->slug;
     }
 
 
