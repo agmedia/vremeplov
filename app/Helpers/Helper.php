@@ -225,7 +225,9 @@ class Helper
             return '';
         }
 
-        $ids = Cache::remember('wg_ids', config('cache.life'), function () use ($description) {
+        $cache_key = md5($description);
+
+        $ids = Cache::remember('wg_ids.' . $cache_key, config('cache.life'), function () use ($description) {
             $iterator = substr_count($description, '++');
             $offset   = 0;
             $ids      = [];
@@ -241,15 +243,21 @@ class Helper
             return $ids;
         });
 
-        $wgs = Cache::remember('wgs', config('cache.life'), function () use ($ids) {
-            return WidgetGroup::whereIn('id', $ids)->orWhereIn('slug', $ids)->where('status', 1)->with('widgets')->get();
+        if (empty($ids)) {
+            return $description;
+        }
+
+        $wgs = Cache::remember('wgs.' . md5(implode('|', $ids)), config('cache.life'), function () use ($ids) {
+            return WidgetGroup::where('status', 1)
+                              ->where(function ($query) use ($ids) {
+                                  $query->whereIn('id', $ids)->orWhereIn('slug', $ids);
+                              })
+                              ->with('widgets')
+                              ->get();
         });
 
         foreach ($ids as $id) {
-            $description = Cache::remember('wg.' . $id, config('cache.life'), function () use ($wgs, $description, $id) {
-                return static::resolveDescription($wgs, $description, $id);
-            });
-            //$description = static::resolveDescription($wgs, $description, $id);
+            $description = static::resolveDescription($wgs, $description, $id);
         }
 
         return $description;
@@ -386,10 +394,14 @@ class Helper
     {
         $prods = (new Product())->newQuery();
 
-        $prods->active()->available()->last();
+        $prods->active()->available();
 
         if (isset($data['popular']) && $data['popular'] == 'on') {
             $prods->popular();
+        } elseif (isset($data['new']) && $data['new'] == 'on') {
+            $prods->created(12);
+        } else {
+            $prods->last();
         }
 
         if (isset($data['list']) && $data['list']) {

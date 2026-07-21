@@ -91,6 +91,12 @@ class RouteResolver
 
     public function setRoute()
     {
+        // Product URLs are stored in the database. Keep those exact URLs
+        // resolvable even when a category slug is renamed afterwards.
+        if ($this->product && $this->isRequestedProductUrl($this->product)) {
+            return $this->setProductRoute($this->product);
+        }
+
         // Ako je grupa i kategorija_ili_artikl
         if ( ! $this->product && ! $this->subcategory && $this->category) {
             $category = Category::query()->where('slug', $this->category)->where('parent_id', 0)->first();
@@ -116,6 +122,12 @@ class RouteResolver
             $category = Category::query()->where('slug', $this->category)->where('parent_id', 0)->first();
 
             if ( ! $category) {
+                $product = Product::query()->where('slug', $this->subcategory)->first();
+
+                if ($product && $this->isRequestedProductUrl($product)) {
+                    return $this->setProductRoute($product);
+                }
+
                 abort(404);
             }
 
@@ -126,6 +138,10 @@ class RouteResolver
 
                 if ( ! $this->product) {
                     abort(404);
+                }
+
+                if ($this->isRequestedProductUrl($this->product)) {
+                    return $this->setProductRoute($this->product);
                 }
 
             } else {
@@ -158,6 +174,34 @@ class RouteResolver
             $this->category = $category;
             $this->subcategory = $subcategory;
         }
+
+        return $this;
+    }
+
+    /**
+     * Only bypass category resolution for the product's actual stored URL.
+     */
+    private function isRequestedProductUrl(Product $product): bool
+    {
+        return trim((string) $product->url, '/') === trim($this->request->path(), '/');
+    }
+
+
+    /**
+     * Resolve the current categories for breadcrumbs and related products.
+     */
+    private function setProductRoute(Product $product): self
+    {
+        $category = $product->category();
+        $subcategory = $product->subcategory();
+
+        if ($subcategory && ( ! $category || (int) $subcategory->parent_id !== (int) $category->id)) {
+            $subcategory = null;
+        }
+
+        $this->product = $product;
+        $this->category = $category;
+        $this->subcategory = $subcategory;
 
         return $this;
     }
