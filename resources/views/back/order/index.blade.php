@@ -87,7 +87,7 @@
                             <th>Kupac</th>
                             <th class="text-center">Artikli</th>
                             <th class="text-right">Vrijednost</th>
-                            <th class="text-right">GLS</th>
+                            <th class="text-center">Dostava</th>
                             <th class="text-right">Detalji</th>
                         </tr>
                         </thead>
@@ -119,11 +119,53 @@
                                     <strong>€ {{ number_format($order->total, 2, ',', '.') }}</strong>
                                 </td>
 
+                                @php
+                                    $shipmentCarrierHint = \Illuminate\Support\Str::lower(
+                                        (string) $order->shipping_carrier . ' '
+                                        . (string) $order->shipping_code . ' '
+                                        . (string) $order->shipping_method
+                                    );
+                                    $isBoxNowShipment = \Illuminate\Support\Str::contains($shipmentCarrierHint, ['boxnow', 'box now']);
+                                    $isGlsShipment = \Illuminate\Support\Str::contains($shipmentCarrierHint, 'gls');
+                                    $boxNowTrackingId = $boxNowPolicy->parcelId($order);
+                                    $boxNowCanDispatch = $boxNowPolicy->canDispatch($order);
+                                @endphp
                                 <td class="text-center">
-                                    @if($order->printed)
-                                        <i class="fa fa-fw fa-check text-success"></i>
+                                    @if($isBoxNowShipment)
+                                        @if($boxNowTrackingId)
+                                            <div class="mb-1">
+                                                @if($order->shipping_tracking_url)
+                                                    <a href="{{ $order->shipping_tracking_url }}" target="_blank" rel="noopener"><strong>{{ $boxNowTrackingId }}</strong></a>
+                                                @else
+                                                    <strong>{{ $boxNowTrackingId }}</strong>
+                                                @endif
+                                            </div>
+                                            @if($order->shipping_tracking_status)
+                                                <small class="d-block text-muted mb-1">{{ $order->shipping_tracking_status }}</small>
+                                            @endif
+                                            @if($canManageBoxNow)
+                                                <button type="button" class="btn btn-alt-info btn-sm" onclick="refreshBoxNow({{ $order->id }})" title="Osvježi Box Now status">
+                                                    <i class="fa fa-sync-alt"></i>
+                                                </button>
+                                                <a class="btn btn-alt-success btn-sm" href="{{ route('order.boxnow.label', ['order' => $order]) }}" title="Preuzmi PDF adresnicu">
+                                                    <i class="fa fa-file-pdf"></i>
+                                                </a>
+                                            @endif
+                                        @elseif($boxNowCanDispatch && $canManageBoxNow)
+                                            <button type="button" class="btn btn-alt-warning btn-sm" onclick="sendBoxNow({{ $order->id }})" title="Pošalji u Box Now">
+                                                <i class="fa fa-box"></i>
+                                            </button>
+                                        @else
+                                            <span class="text-danger" title="Slanje nije dopušteno za ovaj status">—</span>
+                                        @endif
+                                    @elseif($isGlsShipment)
+                                        @if($order->printed)
+                                            <i class="fa fa-fw fa-check text-success"></i>
+                                        @else
+                                            <button type="button" class="btn btn-light btn-sm" onclick="sendGLS({{ $order->id }})" title="Pošalji u GLS"><i class="fa fa-shipping-fast"></i></button>
+                                        @endif
                                     @else
-                                        <button type="button" class="btn btn-light btn-sm" onclick="sendGLS({{ $order->id }})"><i class="fa fa-shipping-fast ml-1"></i></button>
+                                        <span class="text-muted">—</span>
                                     @endif
                                 </td>
 
@@ -189,8 +231,8 @@
             });
         });
 
-        function sendGLS(order_id) {
-            axios.post("{{ route('api.order.send.gls') }}", {order_id: order_id})
+        function sendShipment(order_id, endpoint) {
+            axios.post(endpoint, {order_id: order_id})
             .then(response => {
                 if (response.data.message) {
                     successToast.fire({
@@ -203,7 +245,24 @@
                 } else {
                     return errorToast.fire(response.data.error);
                 }
+            }).catch(error => {
+                const message = error.response && error.response.data && error.response.data.error
+                    ? error.response.data.error
+                    : 'Slanje pošiljke nije uspjelo.';
+                errorToast.fire(message);
             });
+        }
+
+        function sendGLS(order_id) {
+            sendShipment(order_id, "{{ route('api.order.send.gls') }}");
+        }
+
+        function sendBoxNow(order_id) {
+            sendShipment(order_id, "{{ route('api.order.send.boxnow') }}");
+        }
+
+        function refreshBoxNow(order_id) {
+            sendShipment(order_id, "{{ route('api.order.tracking.boxnow.refresh') }}");
         }
 
         /**

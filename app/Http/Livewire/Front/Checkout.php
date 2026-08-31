@@ -12,6 +12,8 @@ use App\Models\Front\Checkout\GeoZone;
 use App\Models\Front\Checkout\PaymentMethod;
 use App\Models\Front\Checkout\ShippingMethod;
 use App\Models\TagManager;
+use App\Services\Shipping\BoxNowSettingsService;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -85,6 +87,8 @@ class Checkout extends Component
     public $commentp = '';
     public $view_comment = false;
     public $view_commentp = false;
+    public $view_boxnow = false;
+    public $boxnow_widget_partner_id = 123;
     public $view_r1 = '';
 
     protected $cart = false;
@@ -136,6 +140,8 @@ class Checkout extends Component
      */
     public function mount($step = 'podaci', $is_free_shipping = false)
     {
+        $this->boxnow_widget_partner_id = app(BoxNowSettingsService::class)->get()['widget_partner_id'] ?: 123;
+
         // inicijaliziraj ulazne vrijednosti
         $this->step = $step ?: 'podaci';
         $this->is_free_shipping = (bool) $is_free_shipping;
@@ -175,6 +181,32 @@ class Checkout extends Component
         if (!$this->cart || ($this->cart->get()['count'] ?? 0) <= 0) {
             // Ovaj redirect je OK jer je to cijeli response (nema Livewire ssr-a kad je košarica prazna)
             return redirect()->route('kosarica');
+        }
+
+        if (! $this->shippingIsAvailable($this->shipping)) {
+            $this->shipping = '';
+            $this->commentp = '';
+            $this->payment = '';
+            $this->checkShipping('');
+            CheckoutSession::forgetShipping();
+            CheckoutSession::forgetCommentp();
+            CheckoutSession::forgetPayment();
+
+            if ($this->step === 'placanje') {
+                $this->step = 'dostava';
+            }
+        } elseif (! $this->paymentIsAvailable($this->payment)) {
+            $this->payment = '';
+            CheckoutSession::forgetPayment();
+        }
+
+        if ($this->shipping === 'boxnow' && ! $this->hasValidBoxNowLocker()) {
+            $this->commentp = '';
+            CheckoutSession::forgetCommentp();
+
+            if ($this->step === 'placanje') {
+                $this->step = 'dostava';
+            }
         }
 
         $this->changeStep($this->step);
@@ -273,8 +305,16 @@ class Checkout extends Component
             $this->validate($this->shipping_rules);
         }
 
-        if ($step == 'placanje' and $this->shipping == 'gls_paketomat') {
+        if ($step == 'placanje' && $this->shipping === 'gls_paketomat') {
             $this->validate($this->comment_rules);
+        }
+
+        if ($step == 'placanje' && $this->shipping === 'boxnow' && ! $this->hasValidBoxNowLocker()) {
+            $this->commentp = '';
+            CheckoutSession::forgetCommentp();
+            $this->addError('commentp', 'Obavezan je odabir ispravnog Box Now paketomata.');
+
+            return;
         }
 
 
@@ -308,6 +348,8 @@ class Checkout extends Component
         $this->shipping = '';
         $this->comment = '';
         $this->commentp = '';
+        CheckoutSession::forgetComment();
+        CheckoutSession::forgetCommentp();
         CheckoutSession::forgetPayment();
         $this->payment = '';
 
@@ -320,6 +362,19 @@ class Checkout extends Component
      */
     public function selectShipping(string $shipping)
     {
+        if (! $this->shippingIsAvailable($shipping)) {
+            $this->addError('shipping', 'Odabrani način dostave nije dostupan za ovu adresu.');
+
+            return;
+        }
+
+        if (CheckoutSession::getShipping() !== $shipping) {
+            $this->commentp = '';
+            $this->payment = '';
+            CheckoutSession::forgetCommentp();
+            CheckoutSession::forgetPayment();
+        }
+
         $this->shipping = $shipping;
 
         $this->checkShipping($shipping);
@@ -335,6 +390,13 @@ class Checkout extends Component
      */
     public function selectPayment(string $payment)
     {
+        if (! $this->paymentIsAvailable($payment)) {
+            $this->payment = '';
+            CheckoutSession::forgetPayment();
+            $this->addError('payment', 'Odabrani način plaćanja nije dostupan za odabranu dostavu.');
+
+            return;
+        }
 
         $this->payment = $payment;
 
@@ -349,18 +411,12 @@ class Checkout extends Component
      */
     public function render()
     {
-        $geo = (new GeoZone())->findState($this->address['state'] ?: 'Croatia');
-
-        if ( ! isset($geo->id)) {
-            $geo->id = 1;
-        }
-
         $this->checkCart();
         $cart = $this->cart ? $this->cart->get() : [];
 
         return view('livewire.front.checkout', [
-            'shippingMethods' => (new ShippingMethod())->findGeo($geo->id)->checkCart($cart)->resolve(),
-            'paymentMethods' => (new PaymentMethod())->findGeo($geo->id)->checkShipping($this->shipping)->checkCart($cart)->resolve()->sortBy('sort_order'),
+            'shippingMethods' => $this->availableShippingMethods($cart),
+            'paymentMethods' => $this->availablePaymentMethods($cart)->sortBy('sort_order'),
             'countries' => Country::list()
         ]);
     }
@@ -442,6 +498,8 @@ class Checkout extends Component
         } else {
             $this->view_commentp = false;
         }
+
+        $this->view_boxnow = $shipping === 'boxnow';
     }
 
 
@@ -459,6 +517,83 @@ class Checkout extends Component
         } else {
             $this->gdl_payment = 'kartica';
         }
+    }
+
+    protected function availableShippingMethods(?array $cart = null): Collection
+    {
+        $geo = (new GeoZone())->findState($this->address['state'] ?: 'Croatia');
+
+        if (! isset($geo->id)) {
+            return collect();
+        }
+
+        if ($cart === null) {
+            $this->checkCart();
+            $cart = $this->cart ? $this->cart->get() : [];
+        }
+
+        return (new ShippingMethod())
+            ->findGeo((int) $geo->id)
+            ->checkCart($cart)
+            ->resolve();
+    }
+
+
+    protected function availablePaymentMethods(?array $cart = null): Collection
+    {
+        $geo = (new GeoZone())->findState($this->address['state'] ?: 'Croatia');
+
+        if (! isset($geo->id)) {
+            return collect();
+        }
+
+        if ($cart === null) {
+            $this->checkCart();
+            $cart = $this->cart ? $this->cart->get() : [];
+        }
+
+        return (new PaymentMethod())
+            ->findGeo((int) $geo->id)
+            ->checkShipping($this->shipping)
+            ->checkCart($cart)
+            ->resolve();
+    }
+
+
+    private function shippingIsAvailable(string $shipping): bool
+    {
+        if ($shipping === '') {
+            return false;
+        }
+
+        return $this->availableShippingMethods()->contains(function ($method) use ($shipping) {
+            return (string) $method->code === $shipping;
+        });
+    }
+
+
+    private function paymentIsAvailable(string $payment): bool
+    {
+        if ($payment === '') {
+            return false;
+        }
+
+        return $this->availablePaymentMethods()->contains(function ($method) use ($payment) {
+            return (string) $method->code === $payment;
+        });
+    }
+
+
+    private function hasValidBoxNowLocker(): bool
+    {
+        $pickup = trim((string) $this->commentp);
+        $separator = strrpos($pickup, '_');
+        $lockerId = $separator === false ? '' : trim(substr($pickup, $separator + 1));
+
+        return $separator !== false
+            && $lockerId !== ''
+            && strlen($lockerId) <= 191
+            && preg_match('/^[A-Za-z0-9-]+$/', $lockerId) === 1;
     }
 
 

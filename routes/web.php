@@ -21,6 +21,7 @@ use App\Http\Controllers\Back\Settings\App\PaymentController;
 use App\Http\Controllers\Back\Settings\App\ShippingController;
 use App\Http\Controllers\Back\Settings\App\TaxController;
 use App\Http\Controllers\Back\Settings\FaqController;
+use App\Http\Controllers\Back\Settings\BoxNowSettingsController;
 use App\Http\Controllers\Back\Settings\HistoryController;
 use App\Http\Controllers\Back\Settings\PageController;
 use App\Http\Controllers\Back\Settings\QuickMenuController;
@@ -135,6 +136,9 @@ Route::middleware(['auth:sanctum', 'verified', 'no.customers'])->prefix('admin')
     Route::get('order/create', [OrderController::class, 'create'])->name('orders.create');
     Route::post('order', [OrderController::class, 'store'])->name('orders.store');
     Route::get('order/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::get('order/{order}/boxnow-label', [OrderController::class, 'boxnow_label'])
+        ->middleware('boxnow.manager')
+        ->name('order.boxnow.label');
     Route::get('order/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::patch('order/{order}', [OrderController::class, 'update'])->name('orders.update');
 
@@ -197,6 +201,9 @@ Route::middleware(['auth:sanctum', 'verified', 'no.customers'])->prefix('admin')
 
         // API
         Route::get('api', [ApiController::class, 'index'])->name('api.index');
+        Route::patch('boxnow', [BoxNowSettingsController::class, 'update'])
+            ->middleware('boxnow.manager')
+            ->name('boxnow-settings.update');
 
         //Route::get('application', [SettingsController::class, 'index'])->name('settings');
 
@@ -323,8 +330,18 @@ Route::prefix('api/v2')->group(function () {
                 Route::post('store', [OrderStatusController::class, 'store'])->name('api.order.status.store');
                 Route::post('destroy', [OrderStatusController::class, 'destroy'])->name('api.order.status.destroy');
 
-                Route::post('change', [OrderController::class, 'api_status_change'])->name('api.order.status.change');
-                Route::post('send/gls', [OrderController::class, 'api_send_gls'])->name('api.order.send.gls');
+                Route::post('change', [OrderController::class, 'api_status_change'])
+                    ->middleware(['auth:sanctum', 'verified', 'no.customers'])
+                    ->name('api.order.status.change');
+                Route::post('send/gls', [OrderController::class, 'api_send_gls'])
+                    ->middleware(['auth:sanctum', 'verified', 'no.customers'])
+                    ->name('api.order.send.gls');
+                Route::post('send/boxnow', [OrderController::class, 'api_send_boxnow'])
+                    ->middleware(['auth:sanctum', 'verified', 'no.customers', 'boxnow.manager'])
+                    ->name('api.order.send.boxnow');
+                Route::post('tracking/boxnow/refresh', [OrderController::class, 'api_refresh_boxnow_tracking'])
+                    ->middleware(['auth:sanctum', 'verified', 'no.customers', 'boxnow.manager'])
+                    ->name('api.order.tracking.boxnow.refresh');
             });
             // PAYMENTS
             Route::prefix('payment')->group(function () {
@@ -333,8 +350,12 @@ Route::prefix('api/v2')->group(function () {
             });
             // SHIPMENTS
             Route::prefix('shipping')->group(function () {
-                Route::post('store', [ShippingController::class, 'store'])->name('api.shipping.store');
-                Route::post('destroy', [ShippingController::class, 'destroy'])->name('api.shipping.destroy');
+                Route::post('store', [ShippingController::class, 'store'])
+                    ->middleware(['auth:sanctum', 'verified', 'no.customers'])
+                    ->name('api.shipping.store');
+                Route::post('destroy', [ShippingController::class, 'destroy'])
+                    ->middleware(['auth:sanctum', 'verified', 'no.customers'])
+                    ->name('api.shipping.destroy');
             });
             // TAXES
             Route::prefix('taxes')->group(function () {

@@ -113,6 +113,90 @@
         </div>
         <!-- END Customer -->
 
+        @php
+            $shippingHint = \Illuminate\Support\Str::lower(
+                (string) $order->shipping_carrier . ' '
+                . (string) $order->shipping_code . ' '
+                . (string) $order->shipping_method
+            );
+            $isBoxNowOrder = \Illuminate\Support\Str::contains($shippingHint, ['boxnow', 'box now']);
+            $boxNowTrackingId = $boxNowPolicy->parcelId($order);
+            $boxNowCanDispatch = $boxNowPolicy->canDispatch($order);
+        @endphp
+
+        @if($isBoxNowOrder)
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title"><i class="fa fa-box mr-2"></i>Box Now pošiljka</h3>
+                    <div class="block-options">
+                        @if($boxNowTrackingId && $canManageBoxNow)
+                            <a class="btn btn-sm btn-alt-success" href="{{ route('order.boxnow.label', ['order' => $order]) }}">
+                                <i class="fa fa-file-pdf mr-1"></i>PDF adresnica
+                            </a>
+                            <button type="button" class="btn btn-sm btn-alt-info" onclick="refreshBoxNow({{ $order->id }})">
+                                <i class="fa fa-sync-alt mr-1"></i>Osvježi status
+                            </button>
+                        @elseif(! $boxNowTrackingId && $boxNowCanDispatch && $canManageBoxNow)
+                            <button type="button" class="btn btn-sm btn-alt-warning" onclick="sendBoxNow({{ $order->id }})">
+                                <i class="fa fa-box mr-1"></i>Pošalji u Box Now
+                            </button>
+                        @elseif(! $boxNowTrackingId && ! $boxNowCanDispatch)
+                            <span class="badge badge-danger">Slanje nije dopušteno za ovaj status</span>
+                        @endif
+                    </div>
+                </div>
+                <div class="block-content">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row mb-0">
+                                <dt class="col-sm-5">Način dostave</dt>
+                                <dd class="col-sm-7">{{ $order->shipping_method }}</dd>
+                                <dt class="col-sm-5">Odabrani paketomat</dt>
+                                <dd class="col-sm-7">{{ $order->commentp ?: '—' }}</dd>
+                                <dt class="col-sm-5">Carrier</dt>
+                                <dd class="col-sm-7">{{ $order->shipping_carrier ?: 'Box Now' }}</dd>
+                                <dt class="col-sm-5">Parcel ID</dt>
+                                <dd class="col-sm-7">{{ $order->shipping_parcel_id ?: '—' }}</dd>
+                                <dt class="col-sm-5">Tracking broj</dt>
+                                <dd class="col-sm-7">{{ $order->tracking_code ?: '—' }}</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row mb-0">
+                                <dt class="col-sm-5">Status</dt>
+                                <dd class="col-sm-7">{{ $order->shipping_tracking_status ?: 'Pošiljka još nije kreirana.' }}</dd>
+                                <dt class="col-sm-5">Kod statusa</dt>
+                                <dd class="col-sm-7">{{ $order->shipping_tracking_status_code ?: '—' }}</dd>
+                                <dt class="col-sm-5">Zadnje osvježavanje</dt>
+                                <dd class="col-sm-7">
+                                    {{ $order->shipping_tracking_updated_at ? $order->shipping_tracking_updated_at->format('d.m.Y H:i:s') : '—' }}
+                                </dd>
+                                <dt class="col-sm-5">Zadnji pokušaj provjere</dt>
+                                <dd class="col-sm-7">
+                                    {{ $order->shipping_tracking_attempted_at ? $order->shipping_tracking_attempted_at->format('d.m.Y H:i:s') : '—' }}
+                                </dd>
+                                <dt class="col-sm-5">Tracking poveznica</dt>
+                                <dd class="col-sm-7">
+                                    @if($order->shipping_tracking_url)
+                                        <a href="{{ $order->shipping_tracking_url }}" target="_blank" rel="noopener">Otvori praćenje <i class="fa fa-external-link-alt ml-1"></i></a>
+                                    @else
+                                        —
+                                    @endif
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    @if($canManageBoxNow && ! empty($order->shipping_tracking_payload))
+                        <details class="mt-4 mb-3">
+                            <summary class="font-w600" style="cursor: pointer;">Zadnji sirovi Box Now API odgovor</summary>
+                            <pre class="bg-body-dark p-3 mt-3 mb-0" style="max-height: 420px; overflow: auto; white-space: pre-wrap;">{{ json_encode($order->shipping_tracking_payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</pre>
+                        </details>
+                    @endif
+                </div>
+            </div>
+        @endif
+
         <!-- Log Messages -->
         <div class="block block-rounded">
             <div class="block-header block-header-default">
@@ -275,6 +359,35 @@
                     return errorToast.fire(response.data.error);
                 }
             });
+        }
+
+        function boxNowAction(endpoint) {
+            axios.post(endpoint, {order_id: {{ $order->id }}})
+                .then(response => {
+                    if (!response.data.message) {
+                        errorToast.fire(response.data.error || 'Box Now akcija nije uspjela.');
+                        return;
+                    }
+
+                    successToast.fire({
+                        timer: 1800,
+                        text: response.data.message,
+                    }).then(() => location.reload());
+                })
+                .catch(error => {
+                    const message = error.response && error.response.data && error.response.data.error
+                        ? error.response.data.error
+                        : 'Box Now akcija nije uspjela.';
+                    errorToast.fire(message);
+                });
+        }
+
+        function sendBoxNow() {
+            boxNowAction("{{ route('api.order.send.boxnow') }}");
+        }
+
+        function refreshBoxNow() {
+            boxNowAction("{{ route('api.order.tracking.boxnow.refresh') }}");
         }
     </script>
 

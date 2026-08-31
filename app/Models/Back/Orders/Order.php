@@ -26,6 +26,12 @@ class Order extends Model
      */
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
+    protected $casts = [
+        'shipping_tracking_updated_at' => 'datetime',
+        'shipping_tracking_attempted_at' => 'datetime',
+        'shipping_tracking_payload' => 'array',
+    ];
+
     /**
      * @var Request
      */

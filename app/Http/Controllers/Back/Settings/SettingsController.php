@@ -25,10 +25,18 @@ class SettingsController extends Controller
      */
     public function get()
     {
-        $response = Helper::resolveCache('set')->remember('cart', config('cache.life'), function () {
+        // Ovaj endpoint koristi anonimna košarica. Vraćaju se isključivo javne
+        // liste; privatne integracijske postavke (npr. shipping.boxnow_api)
+        // nikad ne smiju završiti u odgovoru ni u novom cacheu.
+        $response = Helper::resolveCache('set')->remember('cart.public.v2', config('cache.life'), function () {
             $codes = ['currency', 'geo_zone', 'payment', 'shipping', 'tax'];
             $response = [];
-            $settings =  Settings::whereIn('code', $codes)->get();
+            $settings = Settings::whereIn('code', $codes)
+                ->where(function ($query) {
+                    $query->where('key', 'list')
+                        ->orWhere('key', 'like', 'list.%');
+                })
+                ->get();
 
             foreach ($settings as $setting) {
                 if ($setting->json) {

@@ -9,7 +9,10 @@ use App\Mail\OrderSent;
 use App\Models\Back\Orders\Order as BackOrder;
 use App\Models\Back\Settings\Settings;
 use App\Models\Front\AgCart;
+use App\Models\Front\Checkout\GeoZone;
 use App\Models\Front\Checkout\Order;
+use App\Models\Front\Checkout\PaymentMethod;
+use App\Models\Front\Checkout\ShippingMethod;
 use App\Models\Front\Checkout\Payment\Wspay;
 use App\Models\Front\Checkout\Shipping\Gls;
 use App\Models\TagManager;
@@ -68,13 +71,19 @@ class CheckoutController extends Controller
      */
     public function view(Request $request)
     {
-        $data = $this->checkSession();
+        $cart = $this->shoppingCart()->get();
+
+        if (empty($cart['count']) || (int) $cart['count'] <= 0) {
+            return redirect()->route('kosarica');
+        }
+
+        $data = $this->checkSession($cart);
+
+        if (isset($data['_redirect_step'])) {
+            return redirect()->route('naplata', ['step' => $data['_redirect_step']]);
+        }
 
         if (empty($data)) {
-            if ( ! session()->has(config('session.cart'))) {
-                return redirect()->route('kosarica');
-            }
-
             return redirect()->route('naplata', ['step' => 'podaci']);
         }
 
@@ -288,19 +297,85 @@ class CheckoutController extends Controller
     /**
      * @return array
      */
-    private function checkSession(): array
+    private function checkSession(array $cart): array
     {
-        if (CheckoutSession::hasAddress() && CheckoutSession::hasShipping() && CheckoutSession::hasPayment()) {
-            return [
-                'address'  => CheckoutSession::getAddress(),
-                'shipping' => CheckoutSession::getShipping(),
-                'payment'  => CheckoutSession::getPayment(),
-                'comment'  => CheckoutSession::getComment(),
-                'commentp'  => CheckoutSession::getCommentp()
-            ];
+        if (! CheckoutSession::hasAddress()) {
+            return [];
         }
 
-        return [];
+        $address = (array) CheckoutSession::getAddress();
+        $state = trim((string) ($address['state'] ?? '')) ?: 'Croatia';
+        $geo = (new GeoZone())->findState($state);
+
+        if (! isset($geo->id)) {
+            return $this->invalidateShippingSelection();
+        }
+
+        $shippingCode = trim((string) CheckoutSession::getShipping());
+        $availableShipping = (new ShippingMethod())
+            ->findGeo((int) $geo->id)
+            ->checkCart($cart)
+            ->resolve();
+
+        if ($shippingCode === ''
+            || ! $availableShipping->contains(function ($method) use ($shippingCode) {
+                return (string) $method->code === $shippingCode;
+            })) {
+            return $this->invalidateShippingSelection();
+        }
+
+        if ($shippingCode === 'boxnow' && ! $this->hasValidBoxNowLocker()) {
+            CheckoutSession::forgetCommentp();
+
+            return ['_redirect_step' => 'dostava'];
+        }
+
+        $paymentCode = trim((string) CheckoutSession::getPayment());
+        $availablePayments = (new PaymentMethod())
+            ->findGeo((int) $geo->id)
+            ->checkShipping($shippingCode)
+            ->checkCart($cart)
+            ->resolve();
+
+        if ($paymentCode === ''
+            || ! $availablePayments->contains(function ($method) use ($paymentCode) {
+                return (string) $method->code === $paymentCode;
+            })) {
+            CheckoutSession::forgetPayment();
+
+            return ['_redirect_step' => 'placanje'];
+        }
+
+        return [
+            'address' => $address,
+            'shipping' => $shippingCode,
+            'payment' => $paymentCode,
+            'comment' => CheckoutSession::getComment(),
+            'commentp' => CheckoutSession::getCommentp(),
+        ];
+    }
+
+
+    private function invalidateShippingSelection(): array
+    {
+        CheckoutSession::forgetShipping();
+        CheckoutSession::forgetCommentp();
+        CheckoutSession::forgetPayment();
+
+        return ['_redirect_step' => 'dostava'];
+    }
+
+
+    private function hasValidBoxNowLocker(): bool
+    {
+        $pickup = trim((string) CheckoutSession::getCommentp());
+        $separator = strrpos($pickup, '_');
+        $lockerId = $separator === false ? '' : trim(substr($pickup, $separator + 1));
+
+        return $separator !== false
+            && $lockerId !== ''
+            && strlen($lockerId) <= 191
+            && preg_match('/^[A-Za-z0-9-]+$/', $lockerId) === 1;
     }
 
 

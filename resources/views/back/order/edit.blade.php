@@ -110,12 +110,16 @@
                             <div class="row mb-4">
                                 <div class="col-md-8">
                                     <label for="shipping-select">Dostava</label>
-                                    <select class="js-select2 form-control" id="shipping-select" name="shipping" style="width: 100%;" data-placeholder="Odaberite način dostave...">
+                                    <select class="js-select2 form-control" id="shipping-select" name="shipping" style="width: 100%;" data-placeholder="Odaberite način dostave..." @if($boxNowShipmentLocked ?? false) disabled @endif>
                                         <option></option>
                                         @foreach ($shippings as $shipping)
                                             <option value="{{ $shipping->code }}" {{ ((isset($order)) and ($order->shipping_code == $shipping->code)) ? 'selected' : '' }}>{{ $shipping->title }}</option>
                                         @endforeach
                                     </select>
+                                    @if($boxNowShipmentLocked ?? false)
+                                        <input type="hidden" name="shipping" value="{{ $order->shipping_code ?: 'boxnow' }}">
+                                        <small class="form-text text-muted">Dostava je zaključana jer je BOX NOW pošiljka već kreirana.</small>
+                                    @endif
                                 </div>
                                 <div class="col-md-4">
                                     <label for="shipping-amount-input">Iznos</label>
@@ -133,12 +137,16 @@
                             <div class="row mb-4">
                                 <div class="col-md-8">
                                     <label for="payment-select">Plaćanje</label>
-                                    <select class="js-select2 form-control" id="payment-select" name="payment" style="width: 100%;" data-placeholder="Odaberite način plaćanja...">
+                                    <select class="js-select2 form-control" id="payment-select" name="payment" style="width: 100%;" data-placeholder="Odaberite način plaćanja..." @if($boxNowShipmentLocked ?? false) disabled @endif>
                                         <option></option>
                                         @foreach ($payments as $payment)
                                             <option value="{{ $payment->code }}" {{ ((isset($order)) and ($order->payment_code == $payment->code)) ? 'selected' : '' }}>{{ $payment->title }}</option>
                                         @endforeach
                                     </select>
+                                    @if($boxNowShipmentLocked ?? false)
+                                        <input type="hidden" name="payment" value="{{ $order->payment_code }}">
+                                        <small class="form-text text-muted">Plaćanje je zaključano jer je BOX NOW pošiljka već kreirana.</small>
+                                    @endif
                                 </div>
                                 <div class="col-md-4">
                                     <label for="payment-amount-input">Iznos</label>

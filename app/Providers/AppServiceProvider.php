@@ -33,7 +33,9 @@ class AppServiceProvider extends ServiceProvider
     {
         //
 
-        $uvjeti_kupnje = Page::where('subgroup', 'Uvjeti kupnje')->get();
+        $uvjeti_kupnje = $this->app->environment('testing') && ! Schema::hasTable('pages')
+            ? collect()
+            : Page::where('subgroup', 'Uvjeti kupnje')->get();
         View::share('uvjeti_kupnje', $uvjeti_kupnje);
 
         /*$nacini_placanja = Page::where('subgroup', 'Načini plaćanja')->get();

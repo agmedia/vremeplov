@@ -1,4 +1,14 @@
 <div>
+    @php
+        $boxNowSeparator = strrpos(trim((string) $commentp), '_');
+        $boxNowLockerId = $boxNowSeparator === false ? '' : trim(substr((string) $commentp, $boxNowSeparator + 1));
+        $boxNowPickupSelected = $shipping !== 'boxnow'
+            || ($boxNowSeparator !== false
+                && $boxNowLockerId !== ''
+                && strlen($boxNowLockerId) <= 191
+                && preg_match('/^[A-Za-z0-9-]+$/', $boxNowLockerId) === 1);
+        $checkoutCanBeReviewed = $payment !== '' && $boxNowPickupSelected;
+    @endphp
     <div class="steps steps-dark pt-2 pb-3 mb-5">
         <a class="step-item active" href="{{ route('kosarica') }}">
             <div class="step-progress"><span class="step-count">1</span></div>
@@ -16,7 +26,7 @@
             <div class="step-progress"><span class="step-count">4</span></div>
             <div class="step-label"><i class="ci-card"></i>Plaćanje</div>
         </a>
-        <a class="step-item" href="{{ ($payment != '') ? route('pregled') : '#' }}">
+        <a class="step-item" @if($checkoutCanBeReviewed) href="{{ route('pregled') }}" @else wire:click="changeStep('placanje')" href="javascript:void(0);" @endif>
             <div class="step-progress"><span class="step-count">5</span></div>
             <div class="step-label"><i class="ci-check-circle"></i>Pregledaj</div>
         </a>
@@ -296,8 +306,17 @@
 
             @endif
 
-
-
+            @if ($s_method->code == 'boxnow' && $view_boxnow)
+                <div class="alert alert-info mt-3" role="status">
+                    Odaberite Box Now paketomat u kojem želite preuzeti pošiljku.
+                </div>
+                <button type="button" class="boxnow-map-widget-button btn btn-primary mb-3">
+                    <i class="ci-location me-2" aria-hidden="true"></i>Odaberi Box Now paketomat
+                </button>
+                <div id="boxnowmap"></div>
+                <input class="form-control mt-2" type="text" id="boxnow-commentp" wire:model="commentp" placeholder="Odabrani Box Now paketomat" readonly required>
+                @error('commentp') <small class="text-danger">Obavezan je odabir Box Now paketomata.</small> @enderror
+            @endif
         @endforeach
 
 
@@ -331,7 +350,7 @@
         @error('payment') <small class="text-danger">Način plaćanja je obvezan</small> @enderror
         <div class=" d-flex pt-4 mt-3">
             <div class="w-50 pe-3"><a class="btn btn-secondary d-block w-100" wire:click="changeStep('dostava')" href="javascript:void(0);"><i class="ci-arrow-left mt-sm-0 me-1"></i><span class="d-none d-sm-inline">Povratak na odabir dostave</span><span class="d-inline d-sm-none">Povratak</span></a></div>
-            <div class="w-50 ps-2"><a class="btn btn-primary d-block w-100" href="{{ ($payment != '') ? route('pregled') : '#' }}"><span class="d-none d-sm-inline">Pregledajte narudžbu</span><span class="d-inline d-sm-none">Nastavi</span><i class="ci-arrow-right mt-sm-0 ms-1"></i></a></div>
+            <div class="w-50 ps-2"><a class="btn btn-primary d-block w-100" @if($checkoutCanBeReviewed) href="{{ route('pregled') }}" @else wire:click="changeStep('placanje')" href="javascript:void(0);" @endif><span class="d-none d-sm-inline">Pregledajte narudžbu</span><span class="d-inline d-sm-none">Nastavi</span><i class="ci-arrow-right mt-sm-0 ms-1"></i></a></div>
         </div>
     @endif
 
@@ -368,6 +387,70 @@
 
             <script type="module" src="https://map.gls-croatia.com/widget/gls-dpm.js"></script>
         @endif
+
     @endforeach
+
+    <script>
+        function initBoxNowMap() {
+            const container = document.getElementById('boxnowmap');
+            const button = document.querySelector('.boxnow-map-widget-button');
+
+            if (!container || !button) {
+                return;
+            }
+
+            window.__boxNowWidgetButtons = window.__boxNowWidgetButtons || new WeakSet();
+
+            if (window.__boxNowWidgetButtons.has(button)) {
+                return;
+            }
+
+            window.__boxNowWidgetButtons.add(button);
+            window._bn_map_widget_config = {
+                type: 'popup',
+                partnerId: @json((int) $boxnow_widget_partner_id),
+                parentElement: '#boxnowmap',
+                afterSelect: function (selected) {
+                    if (!selected || !selected.boxnowLockerId) {
+                        return;
+                    }
+
+                    const postalCode = selected.boxnowLockerPostalCode || '';
+                    const address = selected.boxnowLockerAddressLine1 || selected.boxnowLockerName || '';
+                    const input = document.getElementById('boxnow-commentp');
+
+                    if (!input) {
+                        return;
+                    }
+
+                    input.value = `${postalCode}, ${address}_${selected.boxnowLockerId}`;
+                    input.dispatchEvent(new Event('input', {bubbles: true}));
+                }
+            };
+
+            document.querySelectorAll('script[data-boxnow-widget="1"]').forEach((script) => script.remove());
+
+            const script = document.createElement('script');
+            script.src = 'https://widget-cdn.boxnow.hr/map-widget/client/v5.js';
+            script.async = true;
+            script.defer = true;
+            script.dataset.boxnowWidget = '1';
+            script.addEventListener('error', () => {
+                window.__boxNowWidgetButtons.delete(button);
+            }, {once: true});
+            document.head.appendChild(script);
+        }
+
+        document.addEventListener('DOMContentLoaded', initBoxNowMap);
+        document.addEventListener('livewire:load', () => {
+            initBoxNowMap();
+
+            const livewire = window.Livewire || window.livewire;
+
+            if (livewire && typeof livewire.hook === 'function') {
+                livewire.hook('message.processed', initBoxNowMap);
+            }
+        });
+    </script>
 
 @endpush

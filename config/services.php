@@ -46,6 +46,25 @@ return [
         'server_prefix' => env('MAILCHIMP_SERVER_PREFIX'),
     ],
 
+    // Vrijednosti su samo sigurni fallback. Produkcijske postavke uređuju se
+    // u adminu pod Postavke > Načini dostave > Box Now.
+    'boxnow' => [
+        'base_url' => 'https://api-production.boxnow.hr/api/v1',
+        'client_id' => '',
+        'client_secret' => '',
+        'api_partner_id' => '',
+        'widget_partner_id' => 123,
+        'order_prefix' => 'VREMEPLOV',
+        'warehouse_location_id' => '',
+        'origin_name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Vremeplov')),
+        'origin_email' => env('MAIL_FROM_ADDRESS', ''),
+        'origin_phone' => '',
+        'tracking_url' => 'https://track.boxnow.hr/en?track={parcel}',
+        'allow_return' => true,
+        'cod_enabled' => false,
+        'email_label_on_create' => true,
+    ],
+
     /*******************************************************************************
      *                              END Copyright : AGmedia                         *
      *******************************************************************************/

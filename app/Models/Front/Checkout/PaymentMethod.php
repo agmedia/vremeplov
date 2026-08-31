@@ -4,6 +4,7 @@ namespace App\Models\Front\Checkout;
 
 use App\Helpers\Session\CheckoutSession;
 use App\Models\Back\Settings\Settings;
+use App\Services\Shipping\BoxNowSettingsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -182,6 +183,17 @@ class PaymentMethod
             if ($shipping == 'gls_eu' && $method->code == 'cod') {
                 $this->response_methods->forget($method->code);
             }
+        }
+
+        if ($shipping === 'boxnow') {
+            $codEnabled = app(BoxNowSettingsService::class)->get()['cod_enabled'];
+
+            $this->response_methods = $this->response_methods
+                ->reject(function ($method) use ($codEnabled) {
+                    return $method->code === 'pickup'
+                        || ($method->code === 'cod' && ! $codEnabled);
+                })
+                ->keyBy('code');
         }
 
         return $this;

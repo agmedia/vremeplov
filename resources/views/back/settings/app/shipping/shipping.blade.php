@@ -42,9 +42,13 @@
                                 @include('back.layouts.partials.status', ['status' => $shipping->status])
                             </td>
                             <td class="text-right font-size-sm">
-                                <button type="button" class="btn btn-sm btn-alt-secondary" onclick="event.preventDefault(); edit({{ json_encode($shipping) }}, '{{ $shipping->code }}');">
-                                    <i class="fa fa-fw fa-pencil-alt"></i>
-                                </button>
+                                @if($shipping->code !== 'boxnow' || $canManageBoxNow)
+                                    <button type="button" class="btn btn-sm btn-alt-secondary" onclick="event.preventDefault(); edit({{ json_encode($shipping) }}, '{{ $shipping->code }}');">
+                                        <i class="fa fa-fw fa-pencil-alt"></i>
+                                    </button>
+                                @else
+                                    <span class="text-muted" title="BOX NOW postavke može uređivati samo administrator.">—</span>
+                                @endif
                             </td>
                         </tr>
                     @empty
@@ -62,7 +66,9 @@
 @push('modals')
     <!-- Pop Out Block Modal -->
     @foreach($shippings as $shipping)
-        @include('back.settings.app.shipping.modals.' . $shipping->code)
+        @if($shipping->code !== 'boxnow' || $canManageBoxNow)
+            @include('back.settings.app.shipping.modals.' . $shipping->code)
+        @endif
     @endforeach
 @endpush
 

@@ -63,5 +63,6 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'no.customers' => \App\Http\Middleware\RedirectCustomer::class,
+        'boxnow.manager' => \App\Http\Middleware\RequireBoxNowManager::class,
     ];
 }
