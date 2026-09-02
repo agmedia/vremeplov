@@ -39,6 +39,26 @@
 
 
 
+        <section class="container pt-4" aria-label="BOX NOW dostava">
+            <picture>
+                <source
+                    media="(max-width: 767.98px)"
+                    srcset="{{ asset('media/img/boxnow-banner-mobile.jpg') }}"
+                    width="610"
+                    height="610"
+                >
+                <img
+                    class="img-fluid d-block w-100"
+                    src="{{ asset('media/img/boxnow-banner-desktop.png') }}"
+                    width="2098"
+                    height="750"
+                    alt="BOX NOW – besplatna dostava, dostupna 24/7, brzo i pristupačno"
+                    fetchpriority="high"
+                    decoding="async"
+                >
+            </picture>
+        </section>
+
         {!! $page->description !!}
 
 
