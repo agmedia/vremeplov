@@ -48,7 +48,7 @@
                     height="610"
                 >
                 <img
-                    class="img-fluid d-block w-100"
+                    class="img-fluid d-block w-100 rounded-3"
                     src="{{ asset('media/img/boxnow-banner-desktop.png') }}"
                     width="2098"
                     height="750"
