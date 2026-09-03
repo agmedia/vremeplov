@@ -631,11 +631,11 @@ class WspayHardeningTest extends TestCase
         $secondOrder = $this->startAttempt($this->createOrder());
 
         $this->assertMatchesRegularExpression(
-            '/^[a-f0-9]{64}$/D',
+            '/^[a-f0-9]{40}$/D',
             (string) $firstOrder->payment_attempt_reference
         );
         $this->assertMatchesRegularExpression(
-            '/^[a-f0-9]{64}$/D',
+            '/^[a-f0-9]{40}$/D',
             (string) $secondOrder->payment_attempt_reference
         );
         $this->assertNotSame(
@@ -652,6 +652,40 @@ class WspayHardeningTest extends TestCase
             self::SECRET), $formData['md5']);
     }
 
+    public function test_retry_repairs_the_legacy_reference_that_wspay_rejects(): void
+    {
+        $legacyReference = str_repeat('a', 64);
+        $order = app(PaymentAttemptService::class)->start(
+            $this->createOrder(),
+            'wspay',
+            $legacyReference,
+            'EUR',
+            'test',
+            self::SHOP_ID,
+            self::SECRET
+        );
+        $startedAt = $order->payment_attempt_started_at;
+        $paymentMethod = collect([(object) [
+            'data' => (object) [
+                'shop_id' => self::SHOP_ID,
+                'secret_key' => self::SECRET,
+                'test' => true,
+            ],
+        ]]);
+
+        $view = (new Wspay($order))->resolveFormView($paymentMethod);
+        $formData = $view->getData()['data'];
+        $order = $order->fresh();
+
+        $this->assertMatchesRegularExpression(
+            '/^[a-f0-9]{40}$/D',
+            (string) $order->payment_attempt_reference
+        );
+        $this->assertNotSame($legacyReference, $order->payment_attempt_reference);
+        $this->assertEquals($startedAt, $order->payment_attempt_started_at);
+        $this->assertSame($order->payment_attempt_reference, $formData['order_id']);
+    }
+
     public function test_changed_random_shopping_cart_id_cannot_redirect_a_callback(): void
     {
         $this->runTransactionMigration();
@@ -661,9 +695,9 @@ class WspayHardeningTest extends TestCase
             'wspay-tampered-reference',
             'APPROVED-TAMPERED-REFERENCE'
         );
-        $payload['ShoppingCartID'] = str_repeat('f', 64) === $order->payment_attempt_reference
-            ? str_repeat('e', 64)
-            : str_repeat('f', 64);
+        $payload['ShoppingCartID'] = str_repeat('f', 40) === $order->payment_attempt_reference
+            ? str_repeat('e', 40)
+            : str_repeat('f', 40);
 
         // ShoppingCartID is absent from the callback hash, so the unchanged hash
         // deliberately proves that lookup requires the exact random attempt token.

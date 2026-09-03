@@ -25,6 +25,7 @@ class WSpay
 {
     private const INVENTORY_HOLDING_STATUSES = [1, 2, 3, 4, 9, 10, 11];
     private const LEGACY_CALLBACK_WINDOW_DAYS = 4;
+    private const RANDOM_REFERENCE_PATTERN = '/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/D';
 
     /**
      * @var Order
@@ -710,7 +711,7 @@ class WSpay
 
         $reference = trim((string) $reference);
 
-        if (preg_match('/^[a-f0-9]{64}$/D', $reference)) {
+        if (preg_match(self::RANDOM_REFERENCE_PATTERN, $reference)) {
             return Order::query()
                 ->where('payment_code', 'wspay')
                 ->where('payment_attempt_provider', 'wspay')
@@ -1409,7 +1410,7 @@ class WSpay
 
         $reference = trim((string) $reference);
 
-        return preg_match('/^[a-f0-9]{64}$/D', $reference) === 1
+        return preg_match(self::RANDOM_REFERENCE_PATTERN, $reference) === 1
             || preg_match('/^\d+-\d{4}$/D', $reference) === 1;
     }
 

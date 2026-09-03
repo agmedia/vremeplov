@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Crypt;
 
 class PaymentAttemptService
 {
+    private const DEFAULT_REFERENCE_BYTES = 32;
+    private const WSPAY_REFERENCE_BYTES = 20;
+
     /**
      * Freeze the values sent to an external payment provider. Once frozen, an
      * order must not be silently reused with a different amount or provider.
@@ -66,13 +69,33 @@ class PaymentAttemptService
                     );
                 }
 
+                // WSPay accepts at most 40 characters for ShoppingCartID. The
+                // first snapshot implementation generated 64-character tokens,
+                // so transparently repair attempts that WSPay could not accept.
+                if ($provider === 'wspay'
+                    && $reference === ''
+                    && preg_match(
+                        '/^[a-f0-9]{64}$/D',
+                        (string) $locked->payment_attempt_reference
+                    )) {
+                    $saved = $locked->forceFill([
+                        'payment_attempt_reference' => $this->generateReference($provider),
+                    ])->save();
+
+                    if (! $saved) {
+                        throw new \RuntimeException('Pokušaj plaćanja nije moguće sigurno spremiti.', 409);
+                    }
+
+                    return $locked->fresh();
+                }
+
                 // Mode and merchant deliberately come from the first attempt.
                 // A later settings change must not reinterpret an in-flight payment.
                 return $locked;
             }
 
             if ($reference === '') {
-                $reference = bin2hex(random_bytes(32));
+                $reference = $this->generateReference($provider);
             }
 
             if (mb_strlen($reference) > 191) {
@@ -193,5 +216,14 @@ class PaymentAttemptService
             'total' => number_format((float) $order->total, 4, '.', ''),
             'items' => $items,
         ], JSON_UNESCAPED_SLASHES));
+    }
+
+    private function generateReference(string $provider): string
+    {
+        $bytes = $provider === 'wspay'
+            ? self::WSPAY_REFERENCE_BYTES
+            : self::DEFAULT_REFERENCE_BYTES;
+
+        return bin2hex(random_bytes($bytes));
     }
 }
