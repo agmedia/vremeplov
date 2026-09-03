@@ -119,6 +119,16 @@ class CheckoutController extends Controller
                     return;
                 }
 
+                // An unfinished checkout must not reduce sellable stock. Older
+                // previews created before this rule may still own a temporary
+                // reservation, so release it before reusing or replacing them.
+                if ($existingOrder) {
+                    $existingOrder = $inventory->releaseUncommitted(
+                        $existingOrder,
+                        'checkout_unfinished'
+                    );
+                }
+
                 $startedAttemptMatches = $existingOrder
                     && $existingOrder->payment_attempt_started_at !== null
                     && $existingOrder->inventory_committed_at === null
@@ -149,14 +159,6 @@ class CheckoutController extends Controller
                 if (! $order->isCreated()) {
                     throw new \RuntimeException('Narudžbu nije moguće pripremiti za plaćanje.');
                 }
-
-                $reserved = $inventory->reserve(
-                    BackOrder::query()->findOrFail($order->getData()->id),
-                    now()->addMinutes((int) config('settings.order.inventory_reservation_minutes', 30)),
-                    'checkout_preview'
-                );
-
-                $order->setData((string) $reserved->id);
             });
         } catch (InsufficientStockException $exception) {
             return redirect()->route('kosarica')->with('error', $exception->getMessage());

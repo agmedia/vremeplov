@@ -156,7 +156,7 @@ class OrderInventoryService
         return $order->fresh();
     }
 
-    private function releaseUncommitted(Order $order, string $reason): Order
+    public function releaseUncommitted(Order $order, string $reason): Order
     {
         return DB::transaction(function () use ($order, $reason) {
             $lockedOrder = $this->lockOrder((int) $order->id);
