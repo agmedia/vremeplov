@@ -417,10 +417,18 @@ class CheckoutController extends Controller
     }
 
 
-    public function paypalReturn()
+    public function paypalReturn(Request $request)
     {
-        $sessionOrderId = (int) data_get(CheckoutSession::getOrder(), 'id', 0);
-        $order = $sessionOrderId ? BackOrder::query()->find($sessionOrderId) : null;
+        $attempt = trim((string) $request->query('attempt', ''));
+
+        if ($attempt !== '') {
+            $order = PayPalStandard::findNotificationOrder($attempt);
+        } else {
+            // Compatibility for PayPal forms opened before the return URL
+            // started carrying the payment-attempt reference.
+            $sessionOrderId = (int) data_get(CheckoutSession::getOrder(), 'id', 0);
+            $order = $sessionOrderId ? BackOrder::query()->find($sessionOrderId) : null;
+        }
 
         if (! $order || strtolower((string) $order->payment_code) !== 'paypal') {
             return redirect()->route('index');
@@ -453,7 +461,7 @@ class CheckoutController extends Controller
             return redirect()->route('checkout.error');
         }
 
-        return view('front.checkout.payment_pending', compact('order'));
+        return view('front.checkout.payment_pending', compact('order', 'attempt'));
     }
 
 

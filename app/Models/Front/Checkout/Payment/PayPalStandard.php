@@ -90,7 +90,12 @@ class PayPalStandard
             'email' => $this->order->payment_email,
             'invoice' => $orderId . ' - ' . $this->order->payment_fname . ' ' . $this->order->payment_lname,
             'lc' => 'HR',
-            'return' => route('checkout.return.paypal'),
+            // Do not rely only on the browser session after leaving the shop.
+            // Some browsers do not return the checkout cookie from PayPal, so
+            // carry the unguessable payment-attempt reference in the return URL.
+            'return' => route('checkout.return.paypal', [
+                'attempt' => (string) $this->order->payment_attempt_reference,
+            ]),
             'rm' => 1,
             'notify_url' => route('checkout.notify.paypal'),
             'cancel_return' => route('kosarica'),

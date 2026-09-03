@@ -58,7 +58,10 @@ class PayPalStandardHardeningTest extends TestCase
         [$order, $data] = $this->beginAttempt($order);
 
         $this->assertSame('https://www.sandbox.paypal.com/cgi-bin/webscr', $data['action']);
-        $this->assertSame(route('checkout.return.paypal'), $data['return']);
+        $this->assertSame(
+            route('checkout.return.paypal', ['attempt' => $data['order_id']]),
+            $data['return']
+        );
         $this->assertSame(route('checkout.notify.paypal'), $data['notify_url']);
         $this->assertSame(['GET', 'HEAD'], Route::getRoutes()->getByName('checkout.return.paypal')->methods());
         $this->assertSame(['POST'], Route::getRoutes()->getByName('checkout.notify.paypal')->methods());
@@ -85,6 +88,19 @@ class PayPalStandardHardeningTest extends TestCase
 
         $this->assertSame($statusBefore, (int) $order->fresh()->order_status_id);
         $this->assertSame(0, DB::table('order_transactions')->count());
+    }
+
+    public function test_return_finds_paypal_order_without_checkout_session(): void
+    {
+        $order = $this->createOrder();
+        [$order, $data] = $this->beginAttempt($order);
+
+        $this->get($data['return'])
+            ->assertOk()
+            ->assertViewIs('front.checkout.payment_pending')
+            ->assertViewHas('order', function (Order $returnedOrder) use ($order) {
+                return (int) $returnedOrder->id === (int) $order->id;
+            });
     }
 
     public function test_completed_ipn_replays_the_exact_raw_body_and_commits_inventory_once(): void

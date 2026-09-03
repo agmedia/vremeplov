@@ -12,7 +12,7 @@
                     <p class="fs-sm">
                         Nemojte ponavljati plaćanje. Ova će se stranica uskoro sama osvježiti.
                     </p>
-                    <a class="btn btn-primary mt-3" href="{{ route('checkout.return.paypal') }}">
+                    <a class="btn btn-primary mt-3" href="{{ route('checkout.return.paypal', ['attempt' => $attempt ?? null]) }}">
                         Provjeri ponovno
                     </a>
                 </div>
