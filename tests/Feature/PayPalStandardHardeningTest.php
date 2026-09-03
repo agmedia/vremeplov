@@ -57,7 +57,10 @@ class PayPalStandardHardeningTest extends TestCase
         $order = $this->createOrder();
         [$order, $data] = $this->beginAttempt($order);
 
-        $this->assertSame('https://www.sandbox.paypal.com/cgi-bin/webscr', $data['action']);
+        $this->assertSame(
+            'https://www.sandbox.paypal.com/cgi-bin/webscr&pal=V4T754QB63XXL',
+            $data['action']
+        );
         $this->assertSame(
             route('checkout.return.paypal', ['attempt' => $data['order_id']]),
             $data['return']

@@ -29,8 +29,8 @@ class PayPalStandard
 
     /** @var string[] */
     private $formUrl = [
-        'test' => 'https://www.sandbox.paypal.com/cgi-bin/webscr',
-        'live' => 'https://www.paypal.com/cgi-bin/webscr',
+        'test' => 'https://www.sandbox.paypal.com/cgi-bin/webscr&pal=V4T754QB63XXL',
+        'live' => 'https://www.paypal.com/cgi-bin/webscr&pal=V4T754QB63XXL',
     ];
 
     /** @var string[] */
