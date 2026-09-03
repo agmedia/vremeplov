@@ -4768,15 +4768,10 @@ var AgService = /*#__PURE__*/function () {
   }, {
     key: "checkCart",
     value: function checkCart(ids) {
-      // If nothing to validate, skip server call and avoid error toast
-      if (!ids || Array.isArray(ids) && ids.length === 0) {
-        return Promise.resolve({
-          cart: store.state.storage.getCart() || storage_cart.cart,
-          message: null
-        });
-      }
+      // The browser list may be empty or stale; the server-side cart is the
+      // source of truth and must still be checked in that case.
       return axios.post('cart/check', {
-        ids: ids
+        ids: ids || []
       }).then(function (response) {
         return response.data;
       })["catch"](function () {
@@ -5202,10 +5197,13 @@ var store = {
      */
     checkCart: function checkCart(context, ids) {
       var state = context.state;
-      var response = '';
-      if (state.storage && response) {
-        state.service.checkCart(ids).then(function (response) {
+      if (state.storage) {
+        return state.service.checkCart(ids).then(function (response) {
+          if (!response || !response.cart) {
+            return;
+          }
           state.storage.setCart(response.cart);
+          state.cart = response.cart;
           if (response.message && window.location.pathname !== '/uspjeh') {
             var p = window.location.pathname;
             var isCheckout = p.indexOf('/naplata') === 0 || p.indexOf('/pregled') === 0;

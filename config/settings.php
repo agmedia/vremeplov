@@ -84,6 +84,7 @@ return [
         'statistics_excluded_statuses' => [5, 6, 7, 8, 12, 14],
         'turnover_statuses' => [1, 2, 3, 4, 9, 10, 11],
         'paid_statuses' => [3, 4, 9, 10, 11],
+        'inventory_reservation_minutes' => 30,
         // Can be number or array.
         'new_status' => 1,
         'canceled_status' => [7, 5],

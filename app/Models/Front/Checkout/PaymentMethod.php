@@ -239,8 +239,13 @@ class PaymentMethod
      */
     public function finish(\App\Models\Back\Orders\Order $order, Request $request)
     {
-        if ($this->method->count()) {
-            $provider = $this->providers($this->method->first()->code);
+        $code = strtolower(trim((string) $order->payment_code));
+        $providers = $this->providers();
+
+        // A provider may be disabled for new checkouts while callbacks for
+        // already-started payments are still in flight.
+        if (isset($providers[$code])) {
+            $provider = $providers[$code];
             $payment = new $provider($order);
 
             return $payment->finishOrder($order, $request);

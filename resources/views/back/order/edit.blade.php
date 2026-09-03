@@ -18,6 +18,14 @@
     <div class="content">
         @include('back.layouts.partials.session')
 
+        @if(isset($order) && $order->payment_review_error)
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading"><i class="fa fa-exclamation-triangle mr-2"></i>Potrebna je ručna provjera plaćanja</h4>
+                <p class="mb-1">{{ $order->payment_review_error }}</p>
+                <small>Prije promjene statusa ili zalihe provjerite izvornu transakciju kod pružatelja plaćanja.</small>
+            </div>
+        @endif
+
         <form action="{{ isset($order) ? route('orders.update', ['order' => $order]) : route('orders.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         @if (isset($order))

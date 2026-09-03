@@ -110,7 +110,14 @@
                                 <td class="font-size-base">
                                     <span class="badge badge-pill badge-{{ $order->status->color }}">{{ $order->status->title }}</span>
                                 </td>
-                                <td class="text-lwft">{{ $order->payment_method }}</td>
+                                <td class="text-left">
+                                    {{ $order->payment_method }}
+                                    @if($order->payment_review_error)
+                                        <span class="badge badge-danger d-block mt-1" title="{{ $order->payment_review_error }}">
+                                            <i class="fa fa-exclamation-triangle mr-1"></i>Provjera plaćanja
+                                        </span>
+                                    @endif
+                                </td>
                                 <td>
                                     <a class="font-w600" href="{{ route('orders.show', ['order' => $order]) }}">{{ $order->shipping_fname }} {{ $order->shipping_lname }}</a>
                                 </td>

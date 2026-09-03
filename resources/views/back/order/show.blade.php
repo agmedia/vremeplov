@@ -24,6 +24,13 @@
     <!-- Page Content -->
     <div class="content">
     @include('back.layouts.partials.session')
+        @if($order->payment_review_error)
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading"><i class="fa fa-exclamation-triangle mr-2"></i>Potrebna je ručna provjera plaćanja</h4>
+                <p class="mb-1">{{ $order->payment_review_error }}</p>
+                <small>Prije promjene statusa ili zalihe provjerite izvornu transakciju kod pružatelja plaćanja.</small>
+            </div>
+        @endif
         <!-- Products -->
         <div class="block block-rounded">
             <div class="block-header block-header-default">

@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\Front;
 
+use App\Exceptions\InsufficientStockException;
 use App\Helpers\Session\CheckoutSession;
 use App\Http\Controllers\Controller;
-use App\Mail\OrderReceived;
-use App\Mail\OrderSent;
 use App\Models\Back\Orders\Order as BackOrder;
 use App\Models\Back\Settings\Settings;
 use App\Models\Front\AgCart;
@@ -14,17 +13,22 @@ use App\Models\Front\Checkout\Order;
 use App\Models\Front\Checkout\PaymentMethod;
 use App\Models\Front\Checkout\ShippingMethod;
 use App\Models\Front\Checkout\Payment\Wspay;
+use App\Models\Front\Checkout\Payment\PayPalStandard;
 use App\Models\Front\Checkout\Shipping\Gls;
 use App\Models\TagManager;
+use App\Services\Inventory\OrderInventoryService;
+use App\Services\Orders\OrderConfirmationService;
+use App\Services\Payments\PaymentAttemptService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use SoapClient;
 use \stdClass;
 
 class CheckoutController extends Controller
 {
+    private const LOCAL_PAYMENT_CODES = ['cod', 'bank', 'pickup'];
+    private const CONFIRMABLE_ORDER_STATUSES = [1, 2, 3, 4, 9, 10, 11];
 
     /**
      * @param Request $request
@@ -69,7 +73,7 @@ class CheckoutController extends Controller
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
-    public function view(Request $request)
+    public function view(Request $request, OrderInventoryService $inventory)
     {
         $cart = $this->shoppingCart()->get();
 
@@ -90,15 +94,76 @@ class CheckoutController extends Controller
         $data = $this->collectData($data, config('settings.order.status.unfinished'));
 
         $order = new Order();
+        $alreadyConfirmed = false;
 
-        if (CheckoutSession::hasOrder()) {
-            $data['id'] = CheckoutSession::getOrder()['id'];
+        try {
+            DB::transaction(function () use ($order, $data, $inventory, &$alreadyConfirmed) {
+                $sessionOrderId = (int) data_get(CheckoutSession::getOrder(), 'id', 0);
+                $existingOrder = $sessionOrderId
+                    ? BackOrder::query()->where('id', $sessionOrderId)->lockForUpdate()->first()
+                    : null;
+                $alreadyConfirmed = $existingOrder
+                    && in_array(
+                        (int) $existingOrder->order_status_id,
+                        self::CONFIRMABLE_ORDER_STATUSES,
+                        true
+                    )
+                    && $existingOrder->inventory_committed_at !== null
+                    && $existingOrder->inventory_released_at === null
+                    && ! $existingOrder->inventory_allocation_error
+                    && ! $existingOrder->payment_review_error;
 
-            $order->updateData($data);
-            $order->setData($data['id']);
+                if ($alreadyConfirmed) {
+                    $order->setData((string) $existingOrder->id);
 
-        } else {
-            $order->createFrom($data);
+                    return;
+                }
+
+                $startedAttemptMatches = $existingOrder
+                    && $existingOrder->payment_attempt_started_at !== null
+                    && $existingOrder->inventory_committed_at === null
+                    && $existingOrder->inventory_released_at === null
+                    && app(PaymentAttemptService::class)->matchesCheckoutData($existingOrder, $data);
+
+                if ($startedAttemptMatches) {
+                    $order->setData((string) $existingOrder->id);
+
+                    return;
+                }
+
+                $canReuseOrder = $existingOrder
+                    && (int) $existingOrder->order_status_id === (int) config('settings.order.status.unfinished')
+                    && $existingOrder->inventory_committed_at === null
+                    && $existingOrder->payment_attempt_started_at === null;
+
+                if ($canReuseOrder) {
+                    $data['id'] = $sessionOrderId;
+
+                    $order->updateData($data);
+                    $order->setData($data['id']);
+                } else {
+                    CheckoutSession::forgetOrder();
+                    $order->createFrom($data);
+                }
+
+                if (! $order->isCreated()) {
+                    throw new \RuntimeException('Narudžbu nije moguće pripremiti za plaćanje.');
+                }
+
+                $reserved = $inventory->reserve(
+                    BackOrder::query()->findOrFail($order->getData()->id),
+                    now()->addMinutes((int) config('settings.order.inventory_reservation_minutes', 30)),
+                    'checkout_preview'
+                );
+
+                $order->setData((string) $reserved->id);
+            });
+        } catch (InsufficientStockException $exception) {
+            return redirect()->route('kosarica')->with('error', $exception->getMessage());
+        }
+
+        if ($alreadyConfirmed) {
+            return redirect()->route('checkout.success');
         }
 
         if ($order->isCreated()) {
@@ -128,34 +193,82 @@ class CheckoutController extends Controller
     public function order(Request $request)
     {
         $order = new Order();
+        $isLocalCheckout = false;
+        $expectedPaymentCode = null;
 
         $this->logWspayReturn($request, 'received');
 
+        $identifiers = collect(['provjera', 'order_number', 'ShoppingCartID'])
+            ->filter(function ($key) use ($request) {
+                return $request->has($key);
+            });
+
+        if ($identifiers->count() > 1) {
+            abort(422, 'Povrat sadrži više različitih oznaka narudžbe.');
+        }
+
         if ($request->has('provjera')) {
-            $order->setData($request->input('provjera'));
+            if (! $request->isMethod('post')) {
+                abort(405, 'Lokalnu narudžbu moguće je potvrditi samo zaštićenim obrascem.');
+            }
+
+            $requestedOrderId = (int) $request->input('provjera');
+            $sessionOrderId = (int) data_get(CheckoutSession::getOrder(), 'id', 0);
+            $localOrder = $sessionOrderId
+                ? BackOrder::query()->where('id', $sessionOrderId)->first()
+                : null;
+
+            if (! $requestedOrderId
+                || $requestedOrderId !== $sessionOrderId
+                || ! $localOrder
+                || (int) $localOrder->order_status_id !== (int) config('settings.order.status.unfinished')
+                || ! in_array(strtolower((string) $localOrder->payment_code), self::LOCAL_PAYMENT_CODES, true)) {
+                abort(403, 'Ovu narudžbu nije moguće potvrditi iz trenutne sesije.');
+            }
+
+            $isLocalCheckout = true;
+            $expectedPaymentCode = strtolower((string) $localOrder->payment_code);
+            $order->setData((string) $sessionOrderId);
+        } else {
+            if ($request->has('order_number')) {
+                $expectedPaymentCode = 'corvus';
+                $order->setData($request->input('order_number'));
+            }
+
+            if ($request->has('ShoppingCartID')) {
+                $expectedPaymentCode = 'wspay';
+                $wspayOrder = Wspay::findOrderByReference($request->input('ShoppingCartID'));
+                $id = $wspayOrder ? (string) $wspayOrder->id : '';
+
+                if ($id === '') {
+                    abort(422, 'WSPay oznaka narudžbe nije valjana.');
+                }
+
+                Log::channel('wspay')->info('WSPay ShoppingCartID resolved', [
+                    'shopping_cart_id' => $request->input('ShoppingCartID'),
+                    'order_id' => $id,
+                ]);
+
+                $order->setData($id);
+            }
+
         }
 
-        if ($request->has('order_number')) {
-            $order->setData($request->input('order_number'));
+        if ($order->isCreated()
+            && in_array(strtolower((string) $order->getData()->payment_code), self::LOCAL_PAYMENT_CODES, true)
+            && ! $isLocalCheckout) {
+            abort(403, 'Lokalnu narudžbu nije moguće potvrditi preko vanjskog povrata.');
         }
 
-        if ($request->has('ShoppingCartID')) {
-            $id = $this->orderIdFromShoppingCartId($request->input('ShoppingCartID'));
+        $finished = false;
 
-            Log::channel('wspay')->info('WSPay ShoppingCartID resolved', [
-                'shopping_cart_id' => $request->input('ShoppingCartID'),
-                'order_id' => $id,
-            ]);
-
-            $order->setData($id);
+        if ($expectedPaymentCode !== null) {
+            try {
+                $finished = $order->finish($request, $expectedPaymentCode);
+            } catch (InsufficientStockException $exception) {
+                return redirect()->route('kosarica')->with('error', $exception->getMessage());
+            }
         }
-
-        // paypal standard
-        if ($request->has('PayerID')) {
-            $order->setData(isset(CheckoutSession::getOrder()['id']) ? CheckoutSession::getOrder()['id'] : 0);
-        }
-
-        $finished = $order->finish($request);
 
         $this->logWspayReturn($request, 'finish_result', [
             'finished' => (bool) $finished,
@@ -183,6 +296,18 @@ class CheckoutController extends Controller
         $result = (new Wspay(new BackOrder()))->handleCallback($request);
         $status = $result['http_status'] ?? 200;
 
+        if (! empty($result['payment_completed']) && isset($result['order_id'])) {
+            $order = BackOrder::query()->find((int) $result['order_id']);
+
+            if ($order
+                && $order->inventory_committed_at !== null
+                && $order->inventory_released_at === null
+                && ! $order->inventory_allocation_error
+                && ! $order->payment_review_error) {
+                app(OrderConfirmationService::class)->dispatchAfterResponse($order);
+            }
+        }
+
         unset($result['http_status']);
 
         return response()->json($result, $status);
@@ -202,19 +327,17 @@ class CheckoutController extends Controller
 
         $order = \App\Models\Back\Orders\Order::where('id', $data['order']['id'])->first();
 
-        if ($order) {
-            dispatch(function () use ($order) {
-                Mail::to(config('mail.admin'))->send(new OrderReceived($order));
-                Mail::to($order->payment_email)->send(new OrderSent($order));
-            })->afterResponse();
-
-            foreach ($order->products as $product) {
-                $real = $product->real;
-
-                if ($real->decrease && $real->quantity) {
-                    $real->decrement('quantity', $product->quantity);
-                }
-            }
+        if ($order
+            && in_array(
+                (int) $order->order_status_id,
+                self::CONFIRMABLE_ORDER_STATUSES,
+                true
+            )
+            && $order->inventory_committed_at !== null
+            && $order->inventory_released_at === null
+            && ! $order->inventory_allocation_error
+            && ! $order->payment_review_error) {
+            app(OrderConfirmationService::class)->dispatchAfterResponse($order);
 
             $this->forgetCheckoutCache();
 
@@ -226,7 +349,18 @@ class CheckoutController extends Controller
             return view('front.checkout.success', compact('data'));
         }
 
-        return redirect()->route('front.checkout.checkout', ['step' => '']);
+        if ($order && ($order->inventory_allocation_error || $order->payment_review_error)) {
+            return redirect()->route('checkout.error')->with(
+                'error',
+                'Plaćanje je zaprimljeno, ali dostupnost narudžbe mora provjeriti djelatnik. Nemojte ponavljati plaćanje.'
+            );
+        }
+
+        if ($order && in_array((int) $order->order_status_id, [5, 6, 7, 12, 14], true)) {
+            return redirect()->route('checkout.error');
+        }
+
+        return redirect()->route('pregled')->with('error', 'Narudžba još nije potvrđena.');
     }
 
 
@@ -241,7 +375,7 @@ class CheckoutController extends Controller
             $id    = substr($request->input('bill_id'), 16);
             $order = Order::query()->where('id', $id)->first();
 
-            $order->setData($id)->finish($request);
+            $order->setData($id)->finish($request, 'keks');
 
             $order->update([
                 'order_status_id' => config('settings.order.new_status')
@@ -256,27 +390,70 @@ class CheckoutController extends Controller
     }
 
 
-    public function successPaypal(Request $request)
+    public function paypalNotification(Request $request)
     {
-        Log::info('public function successPaypal(Request $request)');
-        Log::info($request->toArray());
+        $order = PayPalStandard::findNotificationOrder((string) $request->input('custom', ''));
 
-        $order = new Order();
+        if (! $order) {
+            Log::warning('PayPal IPN rejected before provider verification.', [
+                'custom_present' => filled($request->input('custom')),
+            ]);
 
-        // paypal standard
-        if ($request->has('PayerID') && $request->has('custom')) {
-            $order->setData($request->input('custom'));
+            return response('INVALID', 400);
         }
 
-        if ($order->finish($request)) {
-            if ($request->has('return_json') && intval($request->input('return_json'))) {
-                return response()->json(['success' => 1, 'href' => route('checkout.success')]);
-            }
+        $result = (new PayPalStandard($order))->handleNotification($order, $request);
+        $fresh = $order->fresh();
 
+        if (! empty($result['should_notify'])
+            && $fresh->inventory_committed_at !== null
+            && $fresh->inventory_released_at === null
+            && ! $fresh->inventory_allocation_error
+            && ! $fresh->payment_review_error) {
+            app(OrderConfirmationService::class)->dispatchAfterResponse($fresh);
+        }
+
+        return response($result['message'], $result['http_status']);
+    }
+
+
+    public function paypalReturn()
+    {
+        $sessionOrderId = (int) data_get(CheckoutSession::getOrder(), 'id', 0);
+        $order = $sessionOrderId ? BackOrder::query()->find($sessionOrderId) : null;
+
+        if (! $order || strtolower((string) $order->payment_code) !== 'paypal') {
+            return redirect()->route('index');
+        }
+
+        if ($order->inventory_allocation_error || $order->payment_review_error) {
+            return redirect()->route('checkout.error')->with(
+                'error',
+                'Plaćanje je zaprimljeno, ali narudžbu mora provjeriti djelatnik. Nemojte ponavljati plaćanje.'
+            );
+        }
+
+        if (in_array(
+                (int) $order->order_status_id,
+                self::CONFIRMABLE_ORDER_STATUSES,
+                true
+            )
+            && $order->inventory_committed_at !== null
+            && $order->inventory_released_at === null) {
             return redirect()->route('checkout.success');
         }
 
-        return redirect()->route('checkout.error');
+        if (in_array((int) $order->order_status_id, [
+            (int) config('settings.order.status.canceled'),
+            (int) config('settings.order.status.declined'),
+            (int) config('settings.order.status.returned'),
+            (int) config('settings.order.status.refund'),
+            (int) config('settings.order.status.blacklist'),
+        ], true)) {
+            return redirect()->route('checkout.error');
+        }
+
+        return view('front.checkout.payment_pending', compact('order'));
     }
 
 
@@ -497,9 +674,15 @@ class CheckoutController extends Controller
      *
      * @return string
      */
-    private function orderIdFromShoppingCartId(?string $shopping_cart_id): string
+    private function orderIdFromShoppingCartId($shopping_cart_id): string
     {
-        return preg_replace('/-\d{4}$/', '', (string) $shopping_cart_id);
+        if (! is_string($shopping_cart_id) && ! is_int($shopping_cart_id)) {
+            return '';
+        }
+
+        return preg_match('/^(\d+)-\d{4}$/D', (string) $shopping_cart_id, $matches)
+            ? $matches[1]
+            : '';
     }
 
 
@@ -508,9 +691,9 @@ class CheckoutController extends Controller
      *
      * @return array
      */
-    private function wspaySignatureMeta(?string $signature): array
+    private function wspaySignatureMeta($signature): array
     {
-        if ( ! $signature) {
+        if (! is_string($signature) || $signature === '') {
             return [
                 'present' => false,
                 'length' => 0,

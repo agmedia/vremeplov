@@ -78,7 +78,7 @@ class CartController extends Controller
     {
         $response = $this->cart->check($request);
 
-        $this->cart->resolveDB($response);
+        $this->cart->resolveDB($response['cart']);
 
         return response()->json($response)->header('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     }

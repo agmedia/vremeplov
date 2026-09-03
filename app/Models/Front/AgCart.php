@@ -10,6 +10,7 @@ use App\Models\Front\Catalog\ProductAction;
 use App\Models\Front\Checkout\PaymentMethod;
 use App\Models\Front\Checkout\ShippingMethod;
 use App\Models\TagManager;
+use App\Services\Inventory\OrderInventoryService;
 use Darryldecode\Cart\CartCondition;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Illuminate\Database\Eloquent\Model;
@@ -123,30 +124,60 @@ class AgCart extends Model
      *
      * @return array
      */
-    public function check($request)
+    public function check($request): array
     {
-        //$message = Helper::resolveCache('cart')->remember($this->cart_id, config('cache.cart_life'), function () use ($request) {
-        $products = Product::whereIn('id', $request['ids'])->pluck('quantity', 'id');
-        $message  = null;
+        // IDs sent by the browser can be stale or incomplete. The server-side cart
+        // is the source of truth and every item in it must be checked.
+        $items = $this->cart->getContent();
+        $products = Product::query()
+            ->whereIn('id', $items->pluck('id')->all())
+            ->get(['id', 'name', 'quantity', 'status'])
+            ->keyBy('id');
+        $availableQuantities = $this->availableQuantitiesForCurrentCheckout($products);
+        $messages = [];
 
-        foreach ($products as $id => $quantity) {
-            if ( ! $quantity) {
-                $this->remove(intval($id));
+        foreach ($items as $item) {
+            $product = $products->get($item->id);
+            $name = substr((string) ($product ? $product->name : $item->name), 0, 150);
+            $available = $product ? max(0, (int) $availableQuantities->get($item->id, 0)) : 0;
 
-                $product = Product::where('id', intval($id))->first();
+            if (! $product || ! (bool) $product->status || $available === 0) {
+                $this->cart->remove($item->id);
+                $messages[] = 'Nažalost, knjiga ' . $name . ' više nije dostupna i uklonjena je iz košarice.';
 
-                $message = 'Nažalost, knjiga ' . substr($product->name, 0, 150) . ' više nije dostupna.';
+                continue;
+            }
+
+            if ((int) $item->quantity > $available) {
+                // An absolute update is important here; a relative update would add
+                // the available amount to the already excessive cart quantity.
+                $this->cart->update($item->id, [
+                    'quantity' => [
+                        'relative' => false,
+                        'value' => $available,
+                    ],
+                ]);
+
+                $messages[] = 'Dostupna količina za knjigu ' . $name . ' smanjena je na ' . $available . '.';
             }
         }
 
-        return $message;
-
-        //});
-
         return [
             'cart'    => $this->get(),
-            'message' => $message
+            'message' => $messages ? implode(' ', $messages) : null,
         ];
+    }
+
+
+    /**
+     * Resolve stock usable by this cart in bulk. Checkout inventory reservations
+     * can override this in one place without changing the cart validation rules.
+     */
+    protected function availableQuantitiesForCurrentCheckout(Collection $products): Collection
+    {
+        return app(OrderInventoryService::class)->availableForCurrentCheckout(
+            $products->keys()->all()
+        );
     }
 
 

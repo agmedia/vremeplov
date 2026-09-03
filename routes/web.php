@@ -395,9 +395,13 @@ Route::get('/kosarica', [CheckoutController::class, 'cart'])->name('kosarica');
 Route::get('/naplata', [CheckoutController::class, 'checkout'])->name('naplata');
 Route::get('/pregled', [CheckoutController::class, 'view'])->name('pregled');
 Route::get('/narudzba', [CheckoutController::class, 'order'])->name('checkout');
+Route::post('/narudzba/potvrdi', [CheckoutController::class, 'order'])->name('checkout.local');
 Route::get('/uspjeh', [CheckoutController::class, 'success'])->name('checkout.success');
 Route::post('/keks/uspjeh', [CheckoutController::class, 'successKeks'])->name('checkout.success.keks');
-Route::post('/paypal/uspjeh', [CheckoutController::class, 'successPaypal'])->name('checkout.success.paypal');
+Route::get('/paypal/povrat', [CheckoutController::class, 'paypalReturn'])->name('checkout.return.paypal');
+Route::post('/paypal/ipn', [CheckoutController::class, 'paypalNotification'])->name('checkout.notify.paypal');
+// Keep accepting IPNs emitted by PayPal forms opened before this route changed.
+Route::post('/paypal/uspjeh', [CheckoutController::class, 'paypalNotification']);
 Route::get('/greska', [CheckoutController::class, 'error'])->name('checkout.error');
 //
 Route::get('pretrazi', [CatalogRouteController::class, 'search'])->name('pretrazi');

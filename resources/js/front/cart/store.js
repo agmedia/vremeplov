@@ -35,15 +35,9 @@ class AgService {
      * @returns {*}
      */
     checkCart(ids) {
-        // If nothing to validate, skip server call and avoid error toast
-        if (!ids || (Array.isArray(ids) && ids.length === 0)) {
-            return Promise.resolve({
-                cart: (store.state.storage.getCart() || storage_cart.cart),
-                message: null
-            });
-        }
-
-        return axios.post('cart/check', { ids })
+        // The browser list may be empty or stale; the server-side cart is the
+        // source of truth and must still be checked in that case.
+        return axios.post('cart/check', { ids: ids || [] })
         .then(response => response.data)
         .catch(() => ({
             cart: (store.state.storage.getCart() || storage_cart.cart),
@@ -408,12 +402,14 @@ let store = {
         checkCart(context, ids) {
             let state = context.state;
 
-            let response ='';
+            if (state.storage) {
+                return state.service.checkCart(ids).then(response => {
+                    if (!response || !response.cart) {
+                        return;
+                    }
 
-            if (state.storage && response) {
-
-                state.service.checkCart(ids).then(response => {
                     state.storage.setCart(response.cart);
+                    state.cart = response.cart;
 
                     if (response.message && window.location.pathname !== '/uspjeh') {
                         const p = window.location.pathname;
@@ -429,7 +425,7 @@ let store = {
                             window.setTimeout(() => { window.location.href = '/kosarica'; }, 5000);
                         }
                     }
-                })
+                });
             }
         },
 

@@ -30,6 +30,15 @@ class Order extends Model
         'shipping_tracking_updated_at' => 'datetime',
         'shipping_tracking_attempted_at' => 'datetime',
         'shipping_tracking_payload' => 'array',
+        'inventory_reserved_at' => 'datetime',
+        'inventory_committed_at' => 'datetime',
+        'inventory_released_at' => 'datetime',
+        'inventory_reservation_expires_at' => 'datetime',
+        'inventory_reservation_version' => 'integer',
+        'payment_attempt_started_at' => 'datetime',
+        'payment_expected_amount_minor' => 'integer',
+        'payment_attempt_reservation_version' => 'integer',
+        'confirmation_sent_at' => 'datetime',
     ];
 
     /**

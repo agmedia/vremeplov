@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Back;
 
 use App\Helpers\Country;
 use App\Helpers\OrderHelper;
-use App\Helpers\ProductHelper;
+use App\Exceptions\InsufficientStockException;
 use App\Http\Controllers\Controller;
 use App\Mail\OrderStatusChanged;
 use App\Models\Back\Orders\Order;
@@ -15,6 +15,7 @@ use App\Services\Shipping\BoxNowOrderPolicy;
 use App\Services\Shipping\BoxNowService;
 use App\Services\Shipping\BoxNowSettingsService;
 use App\Services\Shipping\OrderTrackingService;
+use App\Services\Inventory\OrderInventoryService;
 use Bouncer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -74,7 +75,19 @@ class OrderController extends Controller
 
         $order = new Order();
 
-        $stored = $order->validateRequest($request)->store();
+        try {
+            $stored = DB::transaction(function () use ($order, $request) {
+                $stored = $order->validateRequest($request)->store();
+
+                if ($stored) {
+                    return app(OrderInventoryService::class)->commit($stored, 'admin_order_created');
+                }
+
+                return false;
+            });
+        } catch (InsufficientStockException $exception) {
+            return redirect()->back()->withInput()->with('error', $exception->getMessage());
+        }
 
         if ($stored) {
             return redirect()->route('orders.edit', ['order' => $stored])->with(['success' => 'Narudžba je snimljena!']);
@@ -231,7 +244,48 @@ class OrderController extends Controller
                 ]);
             }
 
-            $updated = $order->validateRequest($request)->store($order->id);
+            try {
+                $updated = DB::transaction(function () use ($order, $request) {
+                    $lockedOrder = Order::query()->where('id', $order->id)->lockForUpdate()->firstOrFail();
+
+                    if ($lockedOrder->payment_attempt_started_at !== null
+                        && $lockedOrder->inventory_committed_at === null) {
+                        throw new \RuntimeException(
+                            'Narudžbu nije moguće mijenjati dok je vanjsko plaćanje u tijeku. Otkažite je i izradite novu.',
+                            409
+                        );
+                    }
+
+                    $updated = $order->validateRequest($request)->store($order->id);
+
+                    if ($updated) {
+                        $inventory = app(OrderInventoryService::class);
+
+                        if ($inventory->isActive($updated)) {
+                            return $inventory->synchronize(
+                                $updated,
+                                $updated->inventory_committed_at === null
+                                    ? $updated->inventory_reservation_expires_at
+                                    : null,
+                                $updated->inventory_committed_at !== null,
+                                'admin_order_updated'
+                            );
+                        }
+
+                        return $updated;
+                    }
+
+                    return false;
+                });
+            } catch (InsufficientStockException $exception) {
+                return redirect()->back()->withInput()->with('error', $exception->getMessage());
+            } catch (\RuntimeException $exception) {
+                if ($exception->getCode() === 409) {
+                    return redirect()->back()->withInput()->with('error', $exception->getMessage());
+                }
+
+                throw $exception;
+            }
 
             if ($updated) {
                 if ($isBoxNowOrder && ! $requestedBoxNow) {
@@ -376,13 +430,12 @@ class OrderController extends Controller
                 'order_status_id' => $status
             ]);
 
-            if (in_array($previous_status, OrderHelper::turnoverStatuses(), true) && OrderHelper::isCanceled($status)) {
-                ProductHelper::makeAvailable($order->id);
-            }
-
-            if (OrderHelper::isCanceled($previous_status) && in_array($status, OrderHelper::turnoverStatuses(), true)) {
-                ProductHelper::makeScarce($order->id);
-            }
+            app(OrderInventoryService::class)->applyStatusTransition(
+                $order,
+                $previous_status,
+                $status,
+                sprintf('admin_status:%d_to_%d', $previous_status, $status)
+            );
         } finally {
             if ($shipmentLock) {
                 $shipmentLock->release();

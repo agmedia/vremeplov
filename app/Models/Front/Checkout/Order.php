@@ -8,9 +8,11 @@ use App\Models\Back\Orders\OrderProduct;
 use App\Models\Back\Orders\OrderTotal;
 use App\Models\Back\Settings\Settings;
 use App\Models\Front\Catalog\Product;
+use App\Services\Inventory\OrderInventoryService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class Order extends Model
@@ -211,7 +213,13 @@ class Order extends Model
             $this->order = $data;
         }
 
-        $updated = \App\Models\Back\Orders\Order::where('id', $data['id'])->update([
+        $orderQuery = \App\Models\Back\Orders\Order::where('id', $data['id']);
+
+        if (! $orderQuery->exists()) {
+            return null;
+        }
+
+        $orderQuery->update([
             'payment_fname'    => $this->order['address']['fname'],
             'payment_lname'    => $this->order['address']['lname'],
             'payment_address'  => $this->order['address']['address'],
@@ -241,14 +249,13 @@ class Order extends Model
             'updated_at'       => Carbon::now()
         ]);
 
-        if ($updated) {
-            $this->updateProducts($data['id']);
-            $this->updateTotal($data['id']);
+        // MySQL may report zero changed rows when the address/payment data is
+        // identical. Cart lines and totals can still have changed, so they must
+        // always be refreshed for an existing unfinished checkout order.
+        $this->updateProducts($data['id']);
+        $this->updateTotal($data['id']);
 
-            return $this->setData($data['id']);
-        }
-
-        return null;
+        return $this->setData($data['id']);
     }
 
 
@@ -410,29 +417,95 @@ class Order extends Model
      *
      * @return mixed|null
      */
-    public function finish(Request $request)
+    public function finish(Request $request, string $expectedPaymentCode)
     {
         if ($this->isCreated()) {
-            $method = new PaymentMethod($this->oc_data['payment_code']);
+            return DB::transaction(function () use ($request, $expectedPaymentCode) {
+                $currentOrder = \App\Models\Back\Orders\Order::query()
+                    ->where('id', $this->oc_data['id'])
+                    ->lockForUpdate()
+                    ->first();
 
-            if ($this->oc_data['payment_code'] == 'wspay') {
-                Log::channel('wspay')->info('Order finish resolving WSPay provider', [
-                    'order_id' => $this->oc_data['id'],
-                    'order_status_id' => $this->oc_data['order_status_id'],
-                    'request_keys' => array_keys($request->all()),
-                ]);
-            }
+                if (! $currentOrder) {
+                    return false;
+                }
 
-            $result = $method->finish($this->oc_data, $request);
+                $paymentCode = strtolower((string) $currentOrder->payment_code);
 
-            if ($this->oc_data['payment_code'] == 'wspay') {
-                Log::channel('wspay')->info('Order finish completed for WSPay provider', [
-                    'order_id' => $this->oc_data['id'],
-                    'result' => (bool) $result,
-                ]);
-            }
+                if (! hash_equals($paymentCode, strtolower($expectedPaymentCode))) {
+                    Log::warning('Checkout payment provider mismatch rejected.', [
+                        'order_id' => $currentOrder->id,
+                        'expected_payment_code' => strtolower($expectedPaymentCode),
+                        'actual_payment_code' => $paymentCode,
+                    ]);
 
-            return $result;
+                    return false;
+                }
+
+                $method = new PaymentMethod($paymentCode);
+                $previousStatus = (int) $currentOrder->order_status_id;
+
+                if (in_array($paymentCode, ['cod', 'bank', 'pickup'], true)
+                    && $previousStatus !== (int) config('settings.order.status.unfinished')) {
+                    return false;
+                }
+
+                if ($paymentCode === 'wspay') {
+                    Log::channel('wspay')->info('Order finish resolving WSPay provider', [
+                        'order_id' => $currentOrder->id,
+                        'order_status_id' => $previousStatus,
+                        'request_keys' => array_keys($request->all()),
+                    ]);
+                }
+
+                $result = $method->finish($currentOrder, $request);
+                $currentOrder->refresh();
+
+                try {
+                    app(OrderInventoryService::class)->applyStatusTransition(
+                        $currentOrder,
+                        $previousStatus,
+                        (int) $currentOrder->order_status_id,
+                        'payment_return:' . $paymentCode
+                    );
+                } catch (\Throwable $exception) {
+                    if (! $this->isExternallyPaid($paymentCode, $currentOrder)) {
+                        throw $exception;
+                    }
+
+                    app(OrderInventoryService::class)->recordAllocationError($currentOrder, $exception);
+
+                    $manualStatus = (int) config('settings.order.status.call_when_found');
+                    $currentOrder->update(['order_status_id' => $manualStatus]);
+
+                    OrderHistory::insert([
+                        'order_id' => $currentOrder->id,
+                        'user_id' => 0,
+                        'status' => $manualStatus,
+                        'comment' => 'Plaćanje je potvrđeno, ali zalihu nije bilo moguće rezervirati: ' .
+                            mb_substr($exception->getMessage(), 0, 400),
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now(),
+                    ]);
+
+                    Log::critical('Plaćena narudžba zahtijeva ručnu provjeru zalihe.', [
+                        'order_id' => $currentOrder->id,
+                        'payment_code' => $paymentCode,
+                        'status_id' => $manualStatus,
+                    ]);
+                }
+
+                $this->oc_data = $currentOrder->fresh();
+
+                if ($paymentCode === 'wspay') {
+                    Log::channel('wspay')->info('Order finish completed for WSPay provider', [
+                        'order_id' => $currentOrder->id,
+                        'result' => (bool) $result,
+                    ]);
+                }
+
+                return $result;
+            });
         }
 
         Log::channel('wspay')->warning('Order finish skipped because order data was not loaded', [
@@ -442,6 +515,16 @@ class Order extends Model
         ]);
 
         return null;
+    }
+
+
+    private function isExternallyPaid(string $paymentCode, \App\Models\Back\Orders\Order $order): bool
+    {
+        return in_array($paymentCode, ['wspay', 'paypal', 'corvus', 'payway', 'keks'], true)
+            && in_array((int) $order->order_status_id, [
+                (int) config('settings.order.status.paid'),
+                (int) config('settings.order.status.new'),
+            ], true);
     }
 
 

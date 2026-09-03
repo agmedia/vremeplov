@@ -34,6 +34,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('sync:boxnow-tracking --limit=50 --stale-minutes=15')
             ->everyFifteenMinutes()
             ->withoutOverlapping(30);
+        $schedule->command('inventory:release-expired --limit=100')
+            ->everyMinute()
+            ->withoutOverlapping(5);
     }
 
     /**
