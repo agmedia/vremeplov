@@ -16,7 +16,7 @@
                             <div class="d-sm-flex justify-content-between mb-4 pb-3 pb-sm-2 border-bottom">
                                 <div class="d-sm-flex text-center text-sm-start">
                                     <a class="d-inline-block flex-shrink-0 mx-auto" href="{{ url($product->real->url) }}" style="width: 10rem;">
-                                        <img src="{{ $product->product->image ? asset($product->product->image) : asset('media/avatars/avatar0.jpg') }}" alt="{{ $product->name }}">
+                                        <img src="{{ $product->product ? $product->product->thumb : config('settings.images_domain') . 'media/avatars/avatar0.jpg' }}" alt="{{ $product->name }}">
                                     </a>
                                     <div class="ps-sm-4 pt-2">
                                         <h3 class="product-title fs-base mb-2"><a href="{{ url($product->real->url) }}">{{ $product->name }}</a></h3>

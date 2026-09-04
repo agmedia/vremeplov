@@ -5,7 +5,7 @@
 <section class="tns-carousel tns-controls-lg mb-0 bg-white">
     <div class="tns-carousel-inner" data-carousel-options="{&quot;mode&quot;: &quot;gallery&quot;, &quot;responsive&quot;: {&quot;0&quot;:{&quot;nav&quot;:false, &quot;controls&quot;: false},&quot;992&quot;:{&quot;nav&quot;:false, &quot;controls&quot;: false}}}">
         <!-- Item-->
-        <div class="px-lg-5" style="background-image: url({{ asset('media/img/pexels-suzy-hazelwood-3765180-1.webp') }});box-shadow: inset 0 0 0 1000px rgba(55, 63, 80,.7);
+        <div class="px-lg-5" style="background-image: url({{ config('settings.images_domain') . 'media/img/pexels-suzy-hazelwood-3765180-1.webp' }});box-shadow: inset 0 0 0 1000px rgba(55, 63, 80,.7);
             -webkit-background-size: cover;
             -moz-background-size: cover;
             -o-background-size: cover;
@@ -69,7 +69,7 @@
                         <p class=" h4 pb-2 font-bold mb-3 text-white"><small>Prije:</small> 48,71 €   <small>Sada:</small> 13,27 €</p>
                         <a class="btn mb-3 btn-primary" href="https://www.zuzi.hr/kategorija-proizvoda/beletristika/stephen-king-kula-tmine-iiiii-gospodar-prstenova-dvije-kule">Pogledajte ponudu <i class="ci-arrow-right ms-2 me-n1"></i></a>
                     </div>
-                   <a href="https://www.zuzi.hr/kategorija-proizvoda/beletristika/stephen-king-kula-tmine-iiiii-gospodar-prstenova-dvije-kule"> <img class="d-block mx-auto mx-sm-0 rounded-end rounded-xs pb-4 pb-sm-0" src="{{ asset('media/img/stephen-king-kula.webp') }}"  width="480" alt="Become a Courier"> </a>
+                   <a href="https://www.zuzi.hr/kategorija-proizvoda/beletristika/stephen-king-kula-tmine-iiiii-gospodar-prstenova-dvije-kule"> <img class="d-block mx-auto mx-sm-0 rounded-end rounded-xs pb-4 pb-sm-0" src="{{ config('settings.images_domain') . 'media/img/stephen-king-kula.webp' }}"  width="480" alt="Knjige Stephena Kinga"> </a>
                 </div>
             </div>
 

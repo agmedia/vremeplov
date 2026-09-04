@@ -36,7 +36,7 @@ class StatusCanceled extends Mailable
      */
     public function build()
     {
-        return $this->subject('Hvala vam za narudžbu' )
+        return $this->subject('Narudžba #' . $this->order->id . ' je otkazana — Vremeplov')
             ->view('emails.status-canceled');
     }
 }

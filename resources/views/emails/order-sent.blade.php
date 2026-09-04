@@ -1,68 +1,24 @@
 @extends('emails.layouts.base')
 
+@section('email_title', 'Potvrda narudžbe #' . $order->id . ' — Antikvarijat Vremeplov')
+@section('preheader', 'Zaprimili smo vašu narudžbu #' . $order->id . '.')
+
 @section('content')
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-        <tr>
-            <td class="ag-mail-tableset">{!! __('Pozdrav ' . $order->payment_fname. ', hvala vam na vašoj narudžbi.') !!}</td>
-        </tr>
-        <tr>
-            <td class="ag-mail-tableset"> <h3 style="line-height:0px">Narudžba broj: {{ $order->id }} </h3></td>
-        </tr>
-        <tr>
-            <td class="ag-mail-tableset">
-                @include('emails.layouts.partials.order-details', ['order' => $order])
-            </td>
-        </tr>
-        <tr>
-            <td class="ag-mail-tableset">
-                @include('emails.layouts.partials.order-price-table', ['order' => $order])
-            </td>
-        </tr>
-        <tr>
-            <td class="ag-mail-tableset">
-                <b> {{ __('Način plaćanja') }}:</b>
-                @if ($order->payment_code == 'bank')
-                    <b>{{ __('Općom uplatnicom / Virmanom / Internet bankarstvom') }}</b>
+    <div class="mail-eyebrow" style="margin:0 0 11px;color:#a17436;font-size:11px;font-weight:bold;letter-spacing:1.5px;line-height:16px;text-transform:uppercase;">✓ Narudžba je zaprimljena</div>
+    <h1 class="mail-title" style="margin:0 0 15px;color:#2d2224;font-family:Georgia,'Times New Roman',serif;font-size:31px;font-weight:normal;line-height:39px;">Hvala vam na narudžbi</h1>
+    <p style="margin:0 0 8px;color:#453b35;font-size:16px;line-height:25px;">Pozdrav {{ $order->payment_fname }},</p>
+    <p style="margin:0 0 24px;color:#665b52;font-size:15px;line-height:24px;">Vaša je narudžba sigurno zaprimljena. Javit ćemo vam čim prijeđe u sljedeću fazu obrade.</p>
 
-                    <p style="font-size:12px">Uredno smo zaprimili Vašu narudžbu broj {{ $order->id }} i zahvaljujemo Vam.</p><p style="font-size:12px">Molimo vas da izvršite uplatu po sljedećim uputama za plaćanje.</p>
+    @include('emails.layouts.partials.order-meta', ['order' => $order, 'statusLabel' => 'Zaprimljeno'])
+    @include('emails.layouts.partials.payment-summary', ['order' => $order, 'showBankInstructions' => true])
+    @include('emails.layouts.partials.order-price-table', ['order' => $order])
+    @include('emails.layouts.partials.order-details', ['order' => $order])
 
-                    <p style="font-size:12px"> Rok za uplatu je maksimalno 48h tijekom koga robu koju ste naručili držimo rezerviranu za vas.</p>
+    @if (! empty(trim((string) $order->comment)))
+        <div style="margin-top:24px;padding:17px 19px;background-color:#f8f4ec;border-left:4px solid #c7a361;color:#5f554d;font-size:13px;line-height:21px;">
+            <strong style="color:#2d2224;">Napomena uz narudžbu</strong><br>{{ $order->comment }}
+        </div>
+    @endif
 
-                    <p style="font-size:12px"> Ukoliko u tom roku ne zaprimimo uplatu, nažalost moramo poništiti ovu narudžbu.</p>
-
-                    <p style="font-size:12px">MOLIMO IZVRŠITE UPLATU U IZNOSU OD € {{number_format($order->total, 2)}}</p>
-
-
-                    <p style="font-size:12px"> IBAN RAČUN: HR4524020061100571694<br>
-                        MODEL: 00 POZIV NA BROJ: {{ $order->id }}-{{date('ym')}}</p>
-
-
-                    <p style="font-size:12px">ILI JEDNOSTAVNO POSKENIRAJTE 2D BARKOD</p>
-
-                    <p><img src="{{ asset('media/img/qr/'.$order->id) }}.jpg" style="max-width:80%; border:1px solid #ccc; height:auto"></p>
-
-                @elseif ($order->payment_code == 'cod')
-                    <b>{{ __('Gotovinom prilikom pouzeća') }}</b>
-                    <p style="font-size:12px">Uredno smo zaprimili Vašu narudžbu broj {{ $order->id }} i zahvaljujemo Vam.</p>
-                @elseif ($order->payment_code == 'wspay')
-                    <b>{{ __('WSPay') }}</b>
-                    <p style="font-size:12px">Uredno smo zaprimili Vašu narudžbu broj {{ $order->id }} i zahvaljujemo Vam.</p>
-
-                @elseif ($order->payment_code == 'paypal')
-                    <b>{{ __('PayPal') }}</b>
-                    <p style="font-size:12px">Uredno smo zaprimili Vašu narudžbu broj {{ $order->id }} i zahvaljujemo Vam.</p>
-                @else
-                    <b>{{ __('Plaćanje prilikom preuzimanja') }}</b>
-                    <p style="font-size:12px">Uredno smo zaprimili Vašu narudžbu broj {{ $order->id }} i zahvaljujemo Vam.</p>
-                @endif
-
-                <br>
-                {{ __('Način dostave') }}: {{ $order->shipping_method }}<br> {{ $order->comment }}
-                <br><br>
-
-                Lijep pozdrav,<br>Antikvarijat Vremeplov
-            </td>
-        </tr>
-
-    </table>
+    <p style="margin:27px 0 0;padding-top:22px;border-top:1px solid #ece5da;color:#453b35;font-size:14px;line-height:22px;">Lijep pozdrav,<br><strong style="color:#2d2224;">Antikvarijat Vremeplov</strong></p>
 @endsection

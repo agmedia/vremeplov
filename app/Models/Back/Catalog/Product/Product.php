@@ -56,7 +56,9 @@ class Product extends Model
      */
     public function getThumbAttribute()
     {
-        return $this->image ? asset(str_replace('.jpg', '-thumb.webp', $this->image)) : asset('media/avatars/avatar0.jpg');
+        $path = $this->image ? str_replace('.jpg', '-thumb.webp', $this->image) : 'media/avatars/avatar0.jpg';
+
+        return rtrim((string) config('settings.images_domain'), '/') . '/' . ltrim($path, '/');
     }
 
 

@@ -3,6 +3,8 @@
 namespace App\Models\Front\Checkout\Shipping;
 
 use App\Models\Back\Orders\Order;
+use Illuminate\Support\Facades\Log;
+use RuntimeException;
 use SoapClient;
 use \stdClass;
 
@@ -33,16 +35,12 @@ class Gls
     public function resolve()
     {
         try {
-            //These parameters are needed to be optimalise depending on the environment:
-            ini_set('memory_limit', '1024M');
-            ini_set('max_execution_time', 600);
+            $clientNumber = (int) config('services.gls.client_number');
+            $username = trim((string) config('services.gls.username'));
+            $pwd = (string) config('services.gls.password');
 
-            //Test ClientNumber:
-            $clientNumber = 380007000; //!!!NOT FOR CUSTOMER TESTING, USE YOUR OWN, USE YOUR OWN!!!
-            //Test username:
-            $username = "info@antiqueshop.hr"; //!!!NOT FOR CUSTOMER TESTING, USE YOUR OWN, USE YOUR OWN!!!
-            //Test password:
-            $pwd      = "Sasaandrej2410"; //!!!NOT FOR CUSTOMER TESTING, USE YOUR OWN, USE YOUR OWN!!!
+            $this->ensureConfigurationIsComplete($clientNumber, $username, $pwd);
+
             $password = hash('sha512', $pwd, true);
 
             $brojracuna = $this->order['id'];
@@ -72,15 +70,15 @@ class Gls
             $deliveryAddress->HouseNumberInfo = "";
             $parcel->DeliveryAddress          = $deliveryAddress;
             $pickupAddress                    = new StdClass();
-            $pickupAddress->ContactName       = "Tamara Vučić";
-            $pickupAddress->ContactPhone      = "+385917627441";
-            $pickupAddress->ContactEmail      = "info@antiqueshop.hr";
-            $pickupAddress->Name              = "Antikvarijat Vremeplov";
-            $pickupAddress->Street            = "Radoslava Lopašića";
-            $pickupAddress->HouseNumber       = "11";
-            $pickupAddress->City              = "Zagreb";
-            $pickupAddress->ZipCode           = "10000";
-            $pickupAddress->CountryIsoCode    = "HR";
+            $pickupAddress->ContactName       = (string) config('services.gls.pickup.contact_name');
+            $pickupAddress->ContactPhone      = (string) config('services.gls.pickup.contact_phone');
+            $pickupAddress->ContactEmail      = (string) config('services.gls.pickup.contact_email');
+            $pickupAddress->Name              = (string) config('services.gls.pickup.name');
+            $pickupAddress->Street            = (string) config('services.gls.pickup.street');
+            $pickupAddress->HouseNumber       = (string) config('services.gls.pickup.house_number');
+            $pickupAddress->City              = (string) config('services.gls.pickup.city');
+            $pickupAddress->ZipCode           = (string) config('services.gls.pickup.zip_code');
+            $pickupAddress->CountryIsoCode    = (string) config('services.gls.pickup.country_code');
             $pickupAddress->HouseNumberInfo   = "";
             $parcel->PickupAddress            = $pickupAddress;
             $parcel->PickupDate               = date('Y-m-d');
@@ -98,17 +96,71 @@ class Gls
             $parcels[] = $parcel;
 
             //The service URL:
-            $wsdl = "https://api.mygls.hr/SERVICE_NAME.svc?singleWsdl";
+            $wsdl = (string) config('services.gls.wsdl');
 
-            $soapOptions = array('soap_version' => SOAP_1_1, 'stream_context' => stream_context_create(array('ssl' => array('cafile' => 'cacert.pem'))));
+            $soapOptions = [
+                'soap_version' => SOAP_1_1,
+                'exceptions' => true,
+                'connection_timeout' => max(1, (int) config('services.gls.connection_timeout', 20)),
+            ];
+
+            if (file_exists(base_path('cacert.pem'))) {
+                $soapOptions['stream_context'] = stream_context_create([
+                    'ssl' => ['cafile' => base_path('cacert.pem')],
+                ]);
+            }
 
             //Parcel service:
             $serviceName = "ParcelService";
 
-            return $this->PrepareLabels($username, $password, $parcels, str_replace("SERVICE_NAME", $serviceName, $wsdl), $soapOptions, $this->order);
+            return $this->PrepareLabels(
+                $username,
+                $password,
+                $parcels,
+                str_replace('SERVICE_NAME', $serviceName, $wsdl),
+                $soapOptions,
+                $this->order
+            );
 
-        } catch (Exception $e) {
-            echo $e->getMessage();
+        } catch (\Throwable $e) {
+            Log::error('GLS shipment creation failed.', [
+                'order_id' => data_get($this->order, 'id'),
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'PrepareLabelsError' => [
+                    ['ErrorDescription' => $e->getMessage()],
+                ],
+            ];
+        }
+    }
+
+
+    private function ensureConfigurationIsComplete(int $clientNumber, string $username, string $password): void
+    {
+        $required = [
+            'GLS_CLIENT_NUMBER' => $clientNumber > 0,
+            'GLS_USERNAME' => $username !== '',
+            'GLS_PASSWORD' => $password !== '',
+            'GLS_WSDL' => filled(config('services.gls.wsdl')),
+            'GLS_PICKUP_CONTACT_NAME' => filled(config('services.gls.pickup.contact_name')),
+            'GLS_PICKUP_CONTACT_PHONE' => filled(config('services.gls.pickup.contact_phone')),
+            'GLS_PICKUP_CONTACT_EMAIL' => filled(config('services.gls.pickup.contact_email')),
+            'GLS_PICKUP_NAME' => filled(config('services.gls.pickup.name')),
+            'GLS_PICKUP_STREET' => filled(config('services.gls.pickup.street')),
+            'GLS_PICKUP_HOUSE_NUMBER' => filled(config('services.gls.pickup.house_number')),
+            'GLS_PICKUP_CITY' => filled(config('services.gls.pickup.city')),
+            'GLS_PICKUP_ZIP_CODE' => filled(config('services.gls.pickup.zip_code')),
+            'GLS_PICKUP_COUNTRY_CODE' => filled(config('services.gls.pickup.country_code')),
+        ];
+
+        $missing = array_keys(array_filter($required, function ($configured) {
+            return ! $configured;
+        }));
+
+        if ($missing !== []) {
+            throw new RuntimeException('Nedostaje GLS konfiguracija: ' . implode(', ', $missing));
         }
     }
 
@@ -188,11 +240,38 @@ class Gls
         //Service calling:
         $response = $client->PrepareLabels($request);
 
-        $parcelIdList = [];
-        if ($response != null && count((array) $response->PrepareLabelsResult->PrepareLabelsError) == 0 && count((array) $response->PrepareLabelsResult->ParcelInfoList) > 0) {
-            $parcelIdList[] = $response->PrepareLabelsResult->ParcelInfoList->ParcelInfo->ParcelId;
-            $order->update(['printed' => 1]);
+        $result = $response->PrepareLabelsResult ?? null;
+        $errors = json_decode(json_encode(
+            $result->PrepareLabelsError
+                ?? $result->PrepareLabelsErrorList
+                ?? []
+        ), true) ?: [];
+        $parcelInfoList = json_decode(json_encode($result->ParcelInfoList ?? []), true) ?: [];
+        $parcelInfo = $parcelInfoList['ParcelInfo'] ?? $parcelInfoList;
 
+        if (isset($parcelInfo['ParcelId']) || isset($parcelInfo['ParcelNumber'])) {
+            $parcelInfo = [$parcelInfo];
+        }
+
+        $parcelIdList = [];
+        $parcelNumberList = [];
+
+        foreach ($parcelInfo as $info) {
+            if (! is_array($info)) {
+                continue;
+            }
+
+            if (! empty($info['ParcelId'])) {
+                $parcelIdList[] = (string) $info['ParcelId'];
+            }
+
+            if (! empty($info['ParcelNumber'])) {
+                $parcelNumberList[] = (string) $info['ParcelNumber'];
+            }
+        }
+
+        if ($response !== null && empty($errors) && ! empty($parcelIdList)) {
+            $order->update(['printed' => 1]);
         }
 
         //Test request:
@@ -202,7 +281,13 @@ class Gls
                                          'PrintPosition'   => 1,
                                          'ShowPrintDialog' => 0);
 
-        return $getPrintedLabelsRequest;
+        return [
+            'ParcelIdList' => $parcelIdList,
+            'ParcelNumberList' => $parcelNumberList,
+            'PrepareLabelsError' => $errors,
+            'ParcelInfoList' => $parcelInfoList,
+            'GetPrintedLabelsRequest' => $getPrintedLabelsRequest,
+        ];
     }
 
 

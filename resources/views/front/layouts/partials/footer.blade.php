@@ -13,7 +13,7 @@
 
              <div class="col-lg-3 col-sm-6 col-6 mb-grid-gutter">
 
-                 <div class="d-inline-flex align-items-top-center text-start"><i class="ci-truck text-primary" style="font-size: 2.6rem;"></i> <div class="ps-3"><p class="text-dark fw-bold fs-base mb-1">Brza dostava</p> <p class="text-dark fs-ms opacity-70 mb-0">Hrvatska pošta - naš partner u dostavi</p></div></div></div>
+                 <div class="d-inline-flex align-items-top-center text-start"><i class="ci-truck text-primary" style="font-size: 2.6rem;"></i> <div class="ps-3"><p class="text-dark fw-bold fs-base mb-1">Brza dostava</p> <p class="text-dark fs-ms opacity-70 mb-0">GLS i BOX NOW dostava</p></div></div></div>
 
              <div class="col-lg-3 col-sm-6 col-6 mb-grid-gutter"><div class="d-inline-flex align-items-top-center text-start"><i class="ci-security-check text-primary" style="font-size: 2.6rem;"></i> <div class="ps-3"><p class="text-dark fw-bold fs-base mb-1">Sigurna kupovina</p> <p class="text-dark fs-ms opacity-70 mb-0">SSL certifikat i WSPay</p></div></div></div>
 
@@ -120,7 +120,7 @@
 
 
             <div class="d-md-flex justify-content-between pt-4 align-items-center">
-                <div class="pb-4 fs-sm text-white  text-center text-md-start "><p class="mb-0">© 2023. Sva prava pridržana Antikvarijat Vremeplov. Web by <a class="text-white" title="Izrada web shopa - B2C ili B2B web trgovina - AG media" href="https://www.agmedia.hr/usluge/izrada-web-shopa/" target="_blank" rel="noopener">AG media</a></p></div>
+                <div class="pb-4 fs-sm text-white  text-center text-md-start "><p class="mb-0">© {{ now()->year }}. Sva prava pridržana Antikvarijat Vremeplov. Web by <a class="text-white" title="Izrada web shopa - B2C ili B2B web trgovina - AG media" href="https://www.agmedia.hr/usluge/izrada-web-shopa/" target="_blank" rel="noopener">AG media</a></p></div>
                 <div class="widget widget-links widget-light pb-4 text-center text-md-end">
                     <img class="d-inline-block" style="width: 55px;margin-right:3px" src="{{ config('settings.images_domain') }}media/cards/visa.svg" width="55" height="35" alt="Visa"/>
                     <img class="d-inline-block" style="width: 55px;margin-right:3px" src="{{ config('settings.images_domain') }}media/cards/maestro.svg" width="55" height="35" alt="Maestro"/>

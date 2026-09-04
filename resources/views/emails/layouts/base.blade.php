@@ -1,302 +1,234 @@
-<!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<!doctype html>
+<html lang="hr" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
-    <meta charset="utf-8"> <!-- utf-8 works for most cases -->
-    <meta name="viewport" content="width=device-width"> <!-- Forcing initial-scale shouldn't be necessary -->
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"> <!-- Use the latest (edge) version of IE rendering engine -->
-    <meta name="x-apple-disable-message-reformatting">  <!-- Disable auto-scale in iOS 10 Mail entirely -->
-    <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no"> <!-- Tell iOS not to automatically link certain text strings. -->
-    <title></title> <!-- The title tag shows in email notifications, like Android 4.4. -->
-
-    <!-- Web Font / @font-face : BEGIN -->
-    <!-- NOTE: If web fonts are not required, lines 10 - 27 can be safely removed. -->
-
-    <!-- Desktop Outlook chokes on web font references and defaults to Times New Roman, so we force a safe fallback font. -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="x-apple-disable-message-reformatting">
+    <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no">
+    <title>@yield('email_title', 'Antikvarijat Vremeplov')</title>
     <!--[if mso]>
-    <style>
-        * {
-            font-family: sans-serif;
-        }
-    </style>
+    <style>body, table, td, a { font-family: Arial, sans-serif !important; }</style>
     <![endif]-->
-
-    <!-- All other clients get the webfont reference; some will render the font and others will silently fail to the fallbacks. More on that here: http://stylecampaign.com/blog/2015/02/webfont-support-in-email/ -->
-    <!--[if !mso]><!-->
-   <link href='https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap' rel='stylesheet' type='text/css'>
-    <!--<![endif]-->
-
-    <!-- Web Font / @font-face : END -->
-
-    <!-- CSS Reset : BEGIN -->
     <style>
-
-        /* What it does: Remove spaces around the email design added by some email clients. */
-        /* Beware: It can remove the padding / margin and add a background color to the compose a reply window. */
-        html,
-        body {
+        html, body {
+            width: 100% !important;
+            min-width: 100% !important;
+            height: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
-            height: 100% !important;
-            width: 100% !important;
-            font-family: "Quicksand", sans-serif!important;
+            background: #f2eee5;
         }
 
-        .ii a[href] {
-            color: #2D2224!important;
-        }
-
-        /* What it does: Stops email clients resizing small text. */
         * {
             -ms-text-size-adjust: 100%;
             -webkit-text-size-adjust: 100%;
         }
 
-        /* What it does: Centers email on Android 4.4 */
-        div[style*="margin: 16px 0"] {
-            margin: 0 !important;
-        }
-
-        /* What it does: Stops Outlook from adding extra spacing to tables. */
-        table,
-        td {
-            mso-table-lspace: 0pt !important;
-            mso-table-rspace: 0pt !important;
-        }
-
-        /* What it does: Replaces default bold style. */
-        th {
-            font-weight: normal;
-        }
-
-        /* What it does: Fixes webkit padding issue. */
-        table {
-            border-spacing: 0 !important;
+        table, td {
+            mso-table-lspace: 0 !important;
+            mso-table-rspace: 0 !important;
             border-collapse: collapse !important;
-            table-layout: fixed !important;
-            margin: 0 auto !important;
         }
 
-        /* What it does: Prevents Windows 10 Mail from underlining links despite inline CSS. Styles for underlined links should be inline. */
-        a, a:visited {
-            text-decoration: none;
-        }
-
-        .bold {
-            font-weight: bold;
-        }
-
-        .large {
-            font-size: 2rem;
-        }
-
-        /* What it does: Uses a better rendering method when resizing images in IE. */
         img {
-            -ms-interpolation-mode:bicubic;
+            border: 0;
+            outline: none;
+            text-decoration: none;
+            -ms-interpolation-mode: bicubic;
         }
 
-        /* What it does: A work-around for email clients meddling in triggered links. */
-        a[x-apple-data-detectors],  /* iOS */
-        .unstyle-auto-detected-links a,
-        .aBn {
-            border-bottom: 0 !important;
-            cursor: default !important;
-            color: inherit !important;
-            text-decoration: none !important;
-            font-size: inherit !important;
-            font-family: inherit !important;
-            font-weight: inherit !important;
-            line-height: inherit !important;
+        a {
+            color: #76542f;
         }
 
-        /* What it does: Prevents Gmail from changing the text color in conversation threads. */
-        .im {
-            color: inherit !important;
+        .mail-shell {
+            width: 100%;
+            max-width: 640px;
         }
 
-        /* What it does: Prevents Gmail from displaying a download button on large, non-linked images. */
-        .a6S {
-            display: none !important;
-            opacity: 0.01 !important;
-        }
-        /* If the above doesn't work, add a .g-img class to any image in question. */
-        img.g-img + div {
-            display: none !important;
+        .mail-gutter {
+            padding-left: 46px !important;
+            padding-right: 46px !important;
         }
 
-        /* What it does: Removes right gutter in Gmail iOS app: https://github.com/TedGoas/Cerberus/issues/89  */
-        /* Create one of these media queries for each additional viewport size you'd like to fix */
-
-        /* iPhone 4, 4S, 5, 5S, 5C, and 5SE */
-        @media only screen and (min-device-width: 320px) and (max-device-width: 374px) {
-            u ~ div .email-container {
-                min-width: 320px !important;
-            }
-        }
-        /* iPhone 6, 6S, 7, 8, and X */
-        @media only screen and (min-device-width: 375px) and (max-device-width: 413px) {
-            u ~ div .email-container {
-                min-width: 375px !important;
-            }
-        }
-        /* iPhone 6+, 7+, and 8+ */
-        @media only screen and (min-device-width: 414px) {
-            u ~ div .email-container {
-                min-width: 414px !important;
-            }
+        .mail-content {
+            color: #453b35;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 15px;
+            line-height: 24px;
         }
 
-    </style>
-
-    <!-- CSS Reset : END -->
-
-    <!-- Progressive Enhancements : BEGIN -->
-    <style>
-
-        /* What it does: Hover styles for buttons */
-        .button-td,
-        .button-a {
-            transition: all 100ms ease-in;
-        }
-        .button-td-primary:hover,
-        .button-a-primary:hover {
-            background: #373f50 !important;
-            border-color: #373f50 !important;
+        .mail-card {
+            width: 100%;
+            border: 1px solid #e1d7c8;
+            border-radius: 9px;
+            background-color: #fbf8f2;
         }
 
-        /* Media Queries */
-        @media screen and (max-width: 600px) {
-
-            .email-container {
-                width: 100% !important;
-                margin: auto !important;
-            }
-
-            /* What it does: Forces table cells into full-width rows. */
-            .stack-column,
-            .stack-column-center {
-                display: block !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                direction: ltr !important;
-            }
-            /* And center justify these ones. */
-            .stack-column-center {
-                text-align: center !important;
-            }
-
-            /* What it does: Generic utility class for centering. Useful for images, buttons, and nested tables. */
-            .center-on-narrow {
-                text-align: center !important;
-                display: block !important;
-                margin-left: auto !important;
-                margin-right: auto !important;
-                float: none !important;
-            }
-            table.center-on-narrow {
-                display: inline-block !important;
-            }
-
-            /* What it does: Adjust typography on small screens to improve readability */
-            .email-container p {
-                font-size: 17px !important;
-            }
+        .mail-title {
+            margin: 0 0 15px;
+            color: #2d2224;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 31px;
+            font-weight: normal;
+            line-height: 39px;
         }
 
-        .ag-mail-tableset {
-            padding: 20px;
-            font-family: "Quicksand", sans-serif!important;
+        .mail-section-title {
+            margin: 0 0 14px;
+            color: #2d2224;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 20px;
+            font-weight: normal;
+            line-height: 26px;
+        }
+
+        .mail-eyebrow {
+            margin: 0 0 11px;
+            color: #a17436;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            line-height: 16px;
+            text-transform: uppercase;
+        }
+
+        .mail-label {
+            color: #89796a;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: .9px;
+            line-height: 15px;
+            text-transform: uppercase;
+        }
+
+        .mail-value {
+            color: #2d2224;
+            font-family: Arial, Helvetica, sans-serif;
             font-size: 14px;
-            line-height: 20px;
-            color: #373f50;
+            font-weight: bold;
+            line-height: 21px;
         }
 
-        .ag-right {
-            text-align: right !important;
+        .mail-button {
+            display: inline-block;
+            padding: 14px 25px;
+            border: 1px solid #2d2224;
+            border-radius: 6px;
+            background-color: #2d2224;
+            color: #ffffff !important;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 20px;
+            text-align: center;
+            text-decoration: none;
         }
 
         .ag-btn {
-            display: block;
-            width: 200px;
-            min-height: 20px;
-            padding: 10px;
-            background-color: #2D2224;
-            border-radius: 3px;
-            color: #ffffff;
+            display: inline-block;
+            padding: 14px 25px;
+            border: 1px solid #2d2224;
+            border-radius: 6px;
+            background-color: #2d2224;
+            color: #ffffff !important;
+            font-family: Arial, Helvetica, sans-serif;
             font-size: 14px;
-            line-height: 25px;
+            font-weight: bold;
+            line-height: 20px;
             text-align: center;
             text-decoration: none;
-            -webkit-text-size-adjust: none;
         }
 
+        @media screen and (max-width: 520px) {
+            .mail-shell {
+                width: 100% !important;
+                border-radius: 0 !important;
+            }
+
+            .mail-gutter {
+                padding-left: 23px !important;
+                padding-right: 23px !important;
+            }
+
+            .mail-title {
+                font-size: 27px !important;
+                line-height: 34px !important;
+            }
+
+            .mobile-block {
+                display: block !important;
+                box-sizing: border-box !important;
+                width: 100% !important;
+                padding-right: 0 !important;
+                padding-bottom: 14px !important;
+                text-align: left !important;
+            }
+
+            .mobile-last {
+                padding-bottom: 0 !important;
+            }
+
+            .mail-button,
+            .ag-btn {
+                display: block !important;
+                box-sizing: border-box !important;
+                width: 100% !important;
+            }
+        }
     </style>
-
     @stack('css')
-
 </head>
-<!--
-	The email background color (#222222) is defined in three places:
-	1. body tag: for most email clients
-	2. center tag: for Gmail and Inbox mobile apps and web versions of Gmail, GSuite, Inbox, Yahoo, AOL, Libero, Comcast, freenet, Mail.ru, Orange.fr
-	3. mso conditional: For Windows 10 Mail
--->
-<body width="100%" style="margin: 0; padding: 0 !important; mso-line-height-rule: exactly; background-color: #f7f7f7;">
-<center style="width: 100%; background-color: #f7f7f7;">
-    <!--[if mso | IE]>
-    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #152c18;">
-        <tr>
-            <td>
-    <![endif]-->
+<body style="margin:0;padding:0;background-color:#f2eee5;color:#453b35;">
+<div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">
+    @yield('preheader', 'Poruka iz Antikvarijata Vremeplov')
+</div>
 
-    <!-- Visually Hidden Preheader Text : BEGIN -->
-    <div style="display: none; font-size: 1px; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all;">
-       Narudžba Antikvarijat Vremeplov
-    </div>
-    <!-- Visually Hidden Preheader Text : END -->
-
-    <!-- Create white space after the desired preview text so email clients don’t pull other distracting text into the inbox preview. Extend as necessary. -->
-    <!-- Preview Text Spacing Hack : BEGIN -->
-    <div style="display: none; font-size: 1px; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all; ">
-    </div>
-    <!-- Preview Text Spacing Hack : END -->
-
-    <!-- Email Body : BEGIN -->
-    <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: auto;" class="email-container">
-        <!-- Email Header : BEGIN -->
-        <tr>
-            <td style="padding: 20px 0 15px 0; text-align: center;background-color: #2D2224;">
-                <label class="large bold" style="color: white;">   <img src="{{ asset('media/img/vremeplov-logo.png') }}" alt="Antikvarijat Vremeplov" border="0" style="max-width:200px;height: auto;"></label>
-            </td>
-        </tr>
-        <!-- Email Header : END -->
-
-        <!-- 1 Column Text : BEGIN -->
-        <tr>
-            <td style="background-color: #ffffff;">
-                @yield('content')
-            </td>
-        </tr>
-        <!-- 1 Column Text : END -->
-
-    </table>
-    <!-- Email Body : END -->
-
-    <!-- Email Footer : BEGIN -->
-    <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: auto;" class="email-container">
-        <tr>
-            <td style="padding: 20px;  font-size: 12px; line-height: 15px; text-align: center; color: #373f50;">
-                Vremeplov razglednica d.o.o. © {{ now()->year }}. Sva prava pridržana. <br><a href="https://www.antikvarijat-vremeplov.hr/uvjeti-kupnje" style="color:#ffffff;">Uvjeti kupnje</a>
-                <br>
-            </td>
-        </tr>
-    </table>
-    <!-- Email Footer : END -->
-
-    <!--[if mso | IE]>
-    </td>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#f2eee5" style="background-color:#f2eee5;">
+    <tr>
+        <td align="center" style="padding:30px 12px 40px;">
+            <!--[if mso]><table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0"><tr><td><![endif]-->
+            <table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0" class="mail-shell" style="width:100%;max-width:640px;background-color:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 8px 30px rgba(45,34,36,.09);">
+                <tr>
+                    <td align="center" bgcolor="#2d2224" style="padding:25px 32px 21px;background-color:#2d2224;">
+                        <a href="{{ route('index') }}" target="_blank" style="display:inline-block;text-decoration:none;">
+                            <img src="{{ config('settings.images_domain') . 'media/img/vremeplov-logo.png' }}" width="205" alt="Antikvarijat Vremeplov" style="display:block;width:205px;max-width:100%;height:auto;">
+                        </a>
+                        <div style="margin-top:9px;color:#dcc695;font-family:Georgia,'Times New Roman',serif;font-size:11px;letter-spacing:1.5px;line-height:16px;text-transform:uppercase;">
+                            Knjige i predmeti s pričom
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td height="5" style="height:5px;background-color:#c7a361;font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="mail-gutter mail-content" style="padding:42px 46px 40px;background-color:#ffffff;color:#453b35;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;">
+                        @yield('content')
+                    </td>
+                </tr>
+                <tr>
+                    <td class="mail-gutter" align="center" style="padding:25px 46px 27px;background-color:#f8f4ec;border-top:1px solid #e4dacb;color:#756a60;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:19px;">
+                        <strong style="color:#2d2224;font-family:Georgia,'Times New Roman',serif;font-size:15px;font-weight:normal;">Antikvarijat Vremeplov</strong><br>
+                        Zvonimirova 24, 10000 Zagreb &nbsp;·&nbsp; 091 762 7441<br>
+                        <a href="mailto:info@antiqueshop.hr" style="color:#76542f;">info@antiqueshop.hr</a>
+                        <span style="padding:0 5px;color:#c7a361;">•</span>
+                        <a href="{{ route('index') }}" style="color:#76542f;">Posjetite webshop</a>
+                        <p style="margin:12px 0 0;color:#918579;font-size:11px;line-height:17px;">
+                            <a href="{{ url('/info/uvjeti-kupnje') }}" style="color:#766455;">Uvjeti kupnje</a>
+                            &nbsp;&nbsp;|&nbsp;&nbsp;
+                            <a href="{{ url('/info/izjava-o-privatnosti') }}" style="color:#766455;">Privatnost</a><br>
+                            © {{ now()->year }} Vremeplov razglednica d.o.o. Sva prava pridržana.
+                        </p>
+                    </td>
+                </tr>
+            </table>
+            <!--[if mso]></td></tr></table><![endif]-->
+        </td>
     </tr>
-    </table>
-    <![endif]-->
-</center>
+</table>
 </body>
 </html>

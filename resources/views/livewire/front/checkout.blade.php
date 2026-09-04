@@ -32,15 +32,15 @@
         </a>
     </div>
 
-   {{--  @if ( ! empty($gdl) && ! $gdl_shipping && ! $gdl_payment && $gdl_event)
+    @if ( ! empty($gdl) && ! $gdl_shipping && ! $gdl_payment && $gdl_event)
         @section('google_data_layer')
             <script>
                 window.dataLayer = window.dataLayer || [];
                 window.dataLayer.push({ ecommerce: null });
                 window.dataLayer.push({
-                    'event': '<?php echo $gdl_event; ?>',
+                    'event': @json($gdl_event),
                     'ecommerce': {
-                        'items': <?php echo json_encode($gdl); ?>
+                        'items': @json($gdl)
                     } });
             </script>
         @endsection
@@ -52,10 +52,10 @@
                 window.dataLayer = window.dataLayer || [];
                 window.dataLayer.push({ ecommerce: null });
                 window.dataLayer.push({
-                    'event': '<?php echo $gdl_event; ?>',
+                    'event': @json($gdl_event),
                     'ecommerce': {
-                        'shipping_tier': '<?php echo $gdl_shipping; ?>',
-                        'items': <?php echo json_encode($gdl); ?>
+                        'shipping_tier': @json($gdl_shipping),
+                        'items': @json($gdl)
                     } });
             </script>
         @endsection
@@ -67,15 +67,14 @@
                 window.dataLayer = window.dataLayer || [];
                 window.dataLayer.push({ ecommerce: null });
                 window.dataLayer.push({
-                    'event': '<?php echo $gdl_event; ?>',
+                    'event': @json($gdl_event),
                     'ecommerce': {
-                        'payment_type': '<?php echo $gdl_payment; ?>',
-                        'items': <?php echo json_encode($gdl); ?>
+                        'payment_type': @json($gdl_payment),
+                        'items': @json($gdl)
                     } });
             </script>
         @endsection
     @endif
---}}
     @if ($step == 'podaci')
         <h2 class="h6 pt-1 pb-3 mb-3 border-bottom">Adresa dostave</h2>
 

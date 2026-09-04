@@ -1,44 +1,22 @@
 @extends('emails.layouts.base')
 
+@section('email_title', 'Narudžba #' . $order->id . ' spremna je za preuzimanje — Vremeplov')
+@section('preheader', 'Vaša narudžba spremna je za osobno preuzimanje u Vremeplovu.')
+
 @section('content')
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-        <tr><td class="ag-mail-tableset"><h3>Vaša narudžba je spremna za preuzimanje</h3></td></tr>
+    <div class="mail-eyebrow" style="margin:0 0 11px;color:#4f7654;font-size:11px;font-weight:bold;letter-spacing:1.5px;line-height:16px;text-transform:uppercase;">✓ Spremno za preuzimanje</div>
+    <h1 class="mail-title" style="margin:0 0 15px;color:#2d2224;font-family:Georgia,'Times New Roman',serif;font-size:31px;font-weight:normal;line-height:39px;">Vaše knjige su spremne</h1>
+    <p style="margin:0 0 8px;color:#453b35;font-size:16px;line-height:25px;">Pozdrav {{ $order->payment_fname }},</p>
+    <p style="margin:0 0 24px;color:#665b52;font-size:15px;line-height:24px;">Narudžbu možete preuzeti u Antikvarijatu Vremeplov, Zvonimirova 24, Zagreb, tijekom radnog vremena.</p>
 
-        <tr>
-            <td class="ag-mail-tableset">
-                Broj narudžbe: <strong>{{ $order->id }}</strong><br>
-                Datum: <strong>{{ now()->format('d.m.Y') }}</strong><br>
-                Status: <strong>Narudžba je spremna za preuzimanje</strong>
-            </td>
-        </tr>
+    @include('emails.layouts.partials.order-meta', ['order' => $order, 'statusLabel' => 'Spremno'])
 
-        <tr>
-            <td class="ag-mail-tableset">
-                @include('emails.layouts.partials.order-details', ['order' => $order])
-            </td>
-        </tr>
-        <tr>
-            <td class="ag-mail-tableset">
-                @include('emails.layouts.partials.order-price-table', ['order' => $order])
-            </td>
-        </tr>
-        <tr>
-            <td class="ag-mail-tableset">
-                {{ __('Način plaćanja') }}:
-                @if ($order->payment_code == 'bank')
-                    <b>{{ __('Općom uplatnicom / Virmanom / Internet bankarstvom') }}</b>
-                @elseif ($order->payment_code == 'cod')
-                    <b>{{ __('Gotovinom prilikom pouzeća') }}</b>
-                @elseif ($order->payment_code == 'wspay')
-                    <b>{{ __('WSpay') }}</b>
-                @elseif ($order->payment_code == 'paypal')
-                    <b>{{ __('PayPal') }}</b>
-                @else
-                    <b>{{ __('Plaćanje prilikom preuzimanja') }}</b>
-                @endif
-                <br><br>Lijep pozdrav,<br>Antikvarijat Vremeplov
-            </td>
-        </tr>
-
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:24px;background-color:#f5ecd9;border:1px solid #ddc89f;border-radius:9px;">
+        <tr><td style="padding:18px 21px;color:#5f4b31;font-size:13px;line-height:21px;"><strong style="color:#2d2224;">Adresa preuzimanja</strong><br>Zvonimirova 24, 10000 Zagreb<br>Pon–pet: 09–14 i 16–19 h · Sub: 10–13 h</td></tr>
     </table>
+
+    @include('emails.layouts.partials.order-price-table', ['order' => $order])
+    @include('emails.layouts.partials.payment-summary', ['order' => $order, 'showBankInstructions' => false])
+
+    <p style="margin:27px 0 0;padding-top:22px;border-top:1px solid #ece5da;color:#453b35;font-size:14px;line-height:22px;">Vidimo se uskoro,<br><strong style="color:#2d2224;">Antikvarijat Vremeplov</strong></p>
 @endsection

@@ -248,6 +248,13 @@ class HomeController extends Controller
             ])->header('Content-Type', 'text/xml');
         }
 
+        if (! in_array($sitemap, config('settings.sitemap'), true)
+            && ! in_array($sitemap, array_map(function ($item) {
+                return $item . '.xml';
+            }, config('settings.sitemap')), true)) {
+            abort(404);
+        }
+
         $sm = new Sitemap($sitemap);
 
         return response()->view('front.layouts.partials.sitemap', [

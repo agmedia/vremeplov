@@ -6,6 +6,22 @@
     <!-- SEO Meta Tags-->
     <meta name="description" content="@yield('description')">
     <meta name="author" content="AG media">
+    <link rel="canonical" href="{{ url()->current() }}">
+    @if (request()->routeIs('kosarica', 'naplata', 'pregled', 'checkout*') || request()->is('customer/*'))
+        <meta name="robots" content="noindex,nofollow">
+    @endif
+    <script type="application/ld+json">{!! json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => 'Organization',
+        '@id' => url('/#organization'),
+        'name' => 'Antikvarijat Vremeplov',
+        'url' => url('/'),
+        'logo' => config('settings.images_domain') . 'media/img/vremeplov-logo.png',
+        'sameAs' => [
+            'https://www.facebook.com/antikavrijatvremeplov',
+            'https://www.instagram.com/antikvarijatvremeplov',
+        ],
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
     @stack('meta_tags')
     <!-- Viewport-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0" />
@@ -27,7 +43,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com">
 
     <!-- Main Theme Styles + Bootstrap-->
-    <link rel="stylesheet" media="screen" href="{{ asset(config('settings.images_domain') . 'css/theme.css?v=1.91') }}">
+    <link rel="stylesheet" media="screen" href="/css/theme.css?v=1.91">
     @if (config('app.env') == 'production')
         @yield('google_data_layer')
         <!-- Google Tag Manager -->
@@ -81,7 +97,7 @@
                 <i class="ci-instagram"></i>
             </a>
 
-            <a class="topbar-link me-0 d-inline-block" aria-label="Email us" href="mailto:info@antiqueshop.hr">
+            <a class="topbar-link me-0 d-inline-block" aria-label="Pošaljite nam e-mail" href="mailto:{{ config('mail.from.address') }}">
                 <i class="ci-mail"></i>
             </a>
 
@@ -106,21 +122,21 @@
 <!-- Back To Top Button-->
 <a class="btn-scroll-top" href="#top" aria-label="Scroll to top" data-scroll><span class="btn-scroll-top-tooltip text-muted fs-sm me-2"></span><i class="btn-scroll-top-icon ci-arrow-up"></i></a>
 <!-- Vendor Styles including: Font Icons, Plugins, etc.-->
-<link rel="stylesheet" media="screen" href="{{ asset(config('settings.images_domain') . 'css/tiny-slider.css?v=1.2') }}"/>
+<link rel="stylesheet" media="screen" href="/css/tiny-slider.css?v=1.2"/>
 <!-- Vendor scrits: js libraries and plugins-->
-<script src="{{ asset('js/jquery/jquery-2.1.1.min.js?v=1.2') }}"></script>
-<script src="{{ asset('js/bootstrap.bundle.min.js?v=1.2') }}"></script>
-<script src="{{ asset('js/tiny-slider.js?v=1.2') }}"></script>
-<script src="{{ asset('js/smooth-scroll.polyfills.min.js?v=1.2') }}"></script>
-<script src="{{ asset('js/imagesloaded/imagesloaded.pkgd.min.js') }}"></script>
-<script src="{{ asset('js/shufflejs/dist/shuffle.min.js') }}"></script>
+<script src="/js/jquery/jquery-2.1.1.min.js?v=1.2"></script>
+<script src="/js/bootstrap.bundle.min.js?v=1.2"></script>
+<script src="/js/tiny-slider.js?v=1.2"></script>
+<script src="/js/smooth-scroll.polyfills.min.js?v=1.2"></script>
+<script src="/js/imagesloaded/imagesloaded.pkgd.min.js"></script>
+<script src="/js/shufflejs/dist/shuffle.min.js"></script>
 <!-- Main theme script-->
 
 
 
-<script src="{{ asset('js/cart.js?v=2.2.2') }}"></script>
+<script src="/js/cart.js?v=2.2.2"></script>
 
-<script src="{{ asset('js/theme.min.js') }}"></script>
+<script src="/js/theme.min.js"></script>
 
 <script>
     $(() => {

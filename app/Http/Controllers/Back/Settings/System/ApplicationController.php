@@ -9,7 +9,6 @@ use App\Models\Back\Settings\Faq;
 use App\Models\Back\Settings\Settings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class ApplicationController extends Controller
@@ -36,24 +35,21 @@ class ApplicationController extends Controller
      */
     public function basicInfoStore(Request $request): JsonResponse
     {
-        Log::info($request->toArray());
-        return response()->json(['success' => 'Osnovni info aplikacije je snimljen...']);
-
         $is_valid = Validator::make($request->toArray(), [
-            'title' => 'required',
-            'address' => 'required',
-            'zip' => 'required',
-            'city' => 'required',
-            'state' => 'required',
-            'phone' => 'required',
-            'email' => 'required'
+            'title' => 'required|string|max:191',
+            'address' => 'required|string|max:191',
+            'zip' => 'required|string|max:20',
+            'city' => 'required|string|max:100',
+            'state' => 'required|string|max:100',
+            'phone' => 'required|string|max:40',
+            'email' => 'required|email:rfc|max:191'
         ]);
 
         if ($is_valid->fails()) {
-            return response()->json($is_valid->errors());
+            return response()->json(['errors' => $is_valid->errors()], 422);
         }
 
-        $set = Settings::reset('app', 'basic', $request->toArray());
+        $set = Settings::reset('app', 'basic', $is_valid->validated());
 
         if ($set) {
             return response()->json(['success' => 'Osnovni info aplikacije je snimljen...']);

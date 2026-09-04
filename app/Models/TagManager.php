@@ -27,7 +27,22 @@ class TagManager
         $tax      = 0;
 
         foreach ($order->products as $product) {
-            $products[] = static::getGoogleProductDataLayer($product->real);
+            if ($product->real) {
+                $item = static::getGoogleProductDataLayer($product->real);
+                $item['quantity'] = (int) $product->quantity;
+                $item['price'] = round((float) $product->price, 2);
+            } else {
+                $item = [
+                    'item_id' => (string) $product->product_id,
+                    'item_name' => (string) $product->name,
+                    'price' => round((float) $product->price, 2),
+                    'currency' => 'EUR',
+                    'discount' => round(abs((float) ($product->discount ?? 0)), 2),
+                    'quantity' => (int) $product->quantity,
+                ];
+            }
+
+            $products[] = $item;
         }
 
         foreach ($order->totals()->get() as $total) {
@@ -45,9 +60,9 @@ class TagManager
             'ecommerce' => [
                 'transaction_id' => (string) $order->id,
                 'affiliation'    => 'Antikvarijat Vremeplov webshop',
-                'value'          =>  (float) number_format($order->total,2),
-                'tax'            =>  (float) number_format($tax, 2),
-                'shipping'       =>  (float) number_format($shipping, 2),
+                'value'          => round((float) $order->total, 2),
+                'tax'            => round((float) $tax, 2),
+                'shipping'       => round((float) $shipping, 2),
                 'currency'       => 'EUR',
                 'items'          => $products
             ],
@@ -73,7 +88,7 @@ class TagManager
         $item = [
             'item_id'        => $product->sku,
             'item_name'      => $product->name,
-            'price'          =>  (float) number_format(str_replace(',', '.', $product->main_price), 2),
+            'price'          => round((float) str_replace(',', '.', $product->main_price), 2),
             'currency'       => 'EUR',
             'discount'       =>  (float) number_format($discount, 2),
             'item_category'  => $product->category() ? $product->category()->title : '',
@@ -96,7 +111,9 @@ class TagManager
         $items = [];
 
         foreach ($cart_collection['items'] as $item) {
-            $items[] = $item->associatedModel->dataLayer;
+            $data = $item->associatedModel->dataLayer;
+            $data['quantity'] = (int) $item->quantity;
+            $items[] = $data;
         }
 
         return $items;

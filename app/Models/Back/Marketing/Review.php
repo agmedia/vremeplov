@@ -34,7 +34,18 @@ class Review extends Model
     
     protected $casts = [
         'stars' => 'integer',
+        'is_verified_purchase' => 'boolean',
     ];
+
+    public function invitation()
+    {
+        return $this->belongsTo(\App\Models\ProductReviewInvitation::class, 'invitation_id');
+    }
+
+    public function orderProduct()
+    {
+        return $this->belongsTo(\App\Models\Back\Orders\OrderProduct::class, 'order_product_id');
+    }
 
     /**
      * @var Request

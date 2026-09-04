@@ -3,28 +3,27 @@
 @section ('description', $seo['description'])
 @push('meta_tags')
 
-    <link rel="canonical" href="{{ url($prod->url) }}" />
     <meta property="og:locale" content="hr_HR" />
     <meta property="og:type" content="product" />
     <meta property="og:title" content="{{ $seo['title'] }}" />
     <meta property="og:description" content="{{ $seo['description']  }}" />
     <meta property="og:url" content="{{ url($prod->url) }}"  />
-    <meta property="og:site_name" content="Antikvarijat Biblos" />
+    <meta property="og:site_name" content="Antikvarijat Vremeplov" />
     <meta property="og:updated_time" content="{{ $prod->updated_at  }}" />
-    <meta property="og:image" content="{{ asset($prod->image) }}" />
-    <meta property="og:image:secure_url" content="{{ asset($prod->image) }}" />
+    <meta property="og:image" content="{{ $prod->image }}" />
+    <meta property="og:image:secure_url" content="{{ $prod->image }}" />
     <meta property="og:image:width" content="640" />
     <meta property="og:image:height" content="480" />
     <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:alt" content="{{ $prod->image_alt }}" />
     <meta property="product:price:amount" content="{{ $prod->main_price }}" />
     <meta property="product:price:currency" content="EUR" />
-    <meta property="product:availability" content="instock" />
+    <meta property="product:availability" content="{{ $prod->quantity > 0 ? 'instock' : 'out of stock' }}" />
     <meta property="product:retailer_item_id" content="{{ $prod->sku }}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="{{ $seo['title'] }}" />
     <meta name="twitter:description" content="{{ $seo['description'] }}" />
-    <meta name="twitter:image" content="{{ asset($prod->image) }}" />
+    <meta name="twitter:image" content="{{ $prod->image }}" />
     <link rel="stylesheet" media="screen" href="{{ asset('vendor/lightgallery/css/lightgallery-bundle.min.css')}}"/>
 
 @endpush
@@ -472,7 +471,12 @@
                                    @forelse ($reviews as $review)
                                        <article class="border rounded-3 p-3 mb-3">
                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                               <strong>{{ $review->fname }} {{ $review->lname }}</strong>
+                                               <div>
+                                                   <strong>{{ $review->fname }} {{ $review->lname }}</strong>
+                                                   @if ($review->is_verified_purchase)
+                                                       <span class="badge bg-success ms-2">Potvrđena kupnja</span>
+                                                   @endif
+                                               </div>
                                                <small class="text-muted">{{ \Illuminate\Support\Carbon::make($review->created_at)->format('d.m.Y.') }}</small>
                                            </div>
                                            <div class="mb-2 text-warning">

@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Bouncer;
 use Illuminate\Support\Facades\Log;
+use App\Models\AbandonedCartReminder;
 
 class Order extends Model
 {
@@ -107,6 +108,24 @@ class Order extends Model
     public function totals()
     {
         return $this->hasMany(OrderTotal::class, 'order_id')->orderBy('sort_order');
+    }
+
+    public function abandonedCartReminders()
+    {
+        return $this->hasMany(AbandonedCartReminder::class, 'order_id')->orderBy('sequence');
+    }
+
+    public function productReviewInvitation()
+    {
+        return $this->hasOne(\App\Models\ProductReviewInvitation::class, 'order_id');
+    }
+
+    public static function reviewEligibleStatusIds(): array
+    {
+        return array_values(array_unique(array_map(
+            'intval',
+            (array) config('reviews.eligible_status_ids', [4, 9, 10])
+        )));
     }
 
 

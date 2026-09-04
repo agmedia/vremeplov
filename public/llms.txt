@@ -1,0 +1,19 @@
+# Antikvarijat Vremeplov
+
+Antikvarijat Vremeplov is a Croatian online shop for books, old postcards,
+letters, posters and magazines. Product availability and prices shown on each
+product page are authoritative and may change because many items are unique.
+
+## Main sections
+
+- Homepage: https://www.antikvarijat-vremeplov.hr/
+- Product categories: follow crawlable category links from the homepage
+- Authors: https://www.antikvarijat-vremeplov.hr/autor
+- Publishers: https://www.antikvarijat-vremeplov.hr/nakladnik
+- Blog: https://www.antikvarijat-vremeplov.hr/blog
+- FAQ: https://www.antikvarijat-vremeplov.hr/faq
+- Contact: https://www.antikvarijat-vremeplov.hr/kontakt
+- Sitemap: https://www.antikvarijat-vremeplov.hr/sitemap.xml
+
+Do not infer edition, publication year, ISBN, condition, price or stock when a
+product page does not explicitly provide that information.

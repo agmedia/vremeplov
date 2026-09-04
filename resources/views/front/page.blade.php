@@ -6,15 +6,14 @@
 
 @push('meta_tags')
 
-    <link rel="canonical" href="{{ url('/') }}" />
     <meta property="og:locale" content="hr_HR" />
     <meta property="og:type" content="product" />
     <meta property="og:title" content="Antikvarijat Vremeplov | Prodaja knjiga | Otkup knjiga | Webshop" />
     <meta property="og:description" content="Dobro došli na stranice antikvarijata Vremeplov. Specijalizirani smo za stare razglednice, pisma, knjige, plakate,časopise te vršimo otkup i prodaju navedenih." />
     <meta property="og:url" content="{{ url('/') }}"  />
     <meta property="og:site_name" content="Antikvarijat Vremeplov | Prodaja knjiga | Otkup knjiga | Webshop" />
-    <meta property="og:image" content="{{ asset('media/img/cover-vremeplov.jpg') }}" />
-    <meta property="og:image:secure_url" content="{{ asset('media/img/cover-vremeplov.jpg') }}" />
+    <meta property="og:image" content="{{ config('settings.images_domain') . 'media/img/cover-vremeplov.jpg' }}" />
+    <meta property="og:image:secure_url" content="{{ config('settings.images_domain') . 'media/img/cover-vremeplov.jpg' }}" />
     <meta property="og:image:width" content="1920" />
     <meta property="og:image:height" content="720" />
     <meta property="og:image:type" content="image/jpeg" />
@@ -22,7 +21,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Antikvarijat Vremeplov | Prodaja knjiga | Otkup knjiga | Webshop" />
     <meta name="twitter:description" content="Dobro došli na stranice antikvarijata Vremeplov. Specijalizirani smo za stare razglednice, pisma, knjige, plakate,časopise te vršimo otkup i prodaju navedenih." />
-    <meta name="twitter:image" content="{{ asset('media/img/cover-vremeplov.jpg') }}" />
+    <meta name="twitter:image" content="{{ config('settings.images_domain') . 'media/img/cover-vremeplov.jpg' }}" />
 
 @endpush
 
@@ -43,13 +42,13 @@
             <picture>
                 <source
                     media="(max-width: 767.98px)"
-                    srcset="{{ asset('media/img/boxnow-banner-mobile.jpg') }}"
+                    srcset="{{ config('settings.images_domain') . 'media/img/boxnow-banner-mobile.jpg' }}"
                     width="610"
                     height="610"
                 >
                 <img
                     class="img-fluid d-block w-100 rounded-3"
-                    src="{{ asset('media/img/boxnow-banner-desktop.png') }}"
+                    src="{{ config('settings.images_domain') . 'media/img/boxnow-banner-desktop.png' }}"
                     width="2098"
                     height="750"
                     alt="BOX NOW – besplatna dostava, dostupna 24/7, brzo i pristupačno"

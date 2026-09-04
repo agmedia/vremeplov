@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Helpers\RouteResolver;
 use App\Models\Front\Catalog\Category;
 use App\Models\Front\Catalog\Product;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -13,7 +13,7 @@ use Tests\TestCase;
 
 class CatalogRouteResolverTest extends TestCase
 {
-    use DatabaseTransactions;
+    use RefreshDatabase;
 
     /** @test */
     public function it_resolves_an_old_product_url_after_its_category_slug_changes()

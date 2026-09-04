@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Schema;
 class OrderController extends Controller
 {
     private const BOXNOW_SHIPMENT_LOCK_SECONDS = 180;
+    private const GLS_SHIPMENT_LOCK_SECONDS = 180;
 
     /**
      * Display a listing of the resource.
@@ -371,7 +372,9 @@ class OrderController extends Controller
             return response()->json(['message' => 'Status je uspješno promijenjen..!']);
         }
 
-        return response()->json(['error' => 'Greška..! Molimo pokušajte ponovo ili kontaktirajte administratora..']);
+        return response()->json([
+            'error' => 'Greška..! Molimo pokušajte ponovo ili kontaktirajte administratora..',
+        ], 422);
     }
 
 
@@ -461,21 +464,120 @@ class OrderController extends Controller
             return response()->json(['error' => 'Narudžba nije pronađena.'], 404);
         }
 
-        // Stari admin bookmark ili gumb ne smije Box Now narudžbu poslati GLS-u.
-        if (app(OrderTrackingService::class)->isBoxNowOrder($order)) {
+        if (! $this->isGlsOrder($order)) {
             return response()->json([
-                'error' => 'Box Now narudžba ne može se poslati kroz GLS endpoint.',
+                'error' => 'Narudžba nema odabranu GLS dostavu.',
             ], 422);
         }
 
-        $gls = new Gls($order);
-        $label = $gls->resolve();
+        $lock = Cache::lock('gls-shipment-create:' . $order->id, self::GLS_SHIPMENT_LOCK_SECONDS);
 
-        if (isset($label['ParcelIdList'])) {
-            return response()->json(['message' => 'GLS je uspješno poslan sa ID: ' . $label['ParcelIdList'][0]]);
+        if (! $lock->get()) {
+            return response()->json([
+                'error' => 'Kreiranje GLS pošiljke za ovu narudžbu već je u tijeku.',
+            ], 409);
         }
 
-        return response()->json(['error' => 'Greška..! Molimo pokušajte ponovo ili kontaktirajte administratora..']);
+        try {
+            $order->refresh();
+
+            if (! $this->isGlsOrder($order)) {
+                return response()->json(['error' => 'Narudžba više nema odabranu GLS dostavu.'], 422);
+            }
+
+            if ($this->hasExistingGlsShipment($order)) {
+                $shipmentId = trim((string) ($order->tracking_code ?: $order->shipping_parcel_id));
+
+                return response()->json([
+                    'message' => $shipmentId !== ''
+                        ? 'GLS pošiljka je već kreirana: ' . $shipmentId
+                        : 'GLS pošiljka je već kreirana za ovu narudžbu.',
+                ]);
+            }
+
+            $label = $this->resolveGlsShipment($order);
+            $parcelId = trim((string) data_get($label, 'ParcelIdList.0'));
+            $parcelNumber = trim((string) data_get($label, 'ParcelNumberList.0'));
+
+            if ($parcelId === '' && $parcelNumber === '') {
+                Log::warning('GLS shipment did not return a parcel identifier.', [
+                    'order_id' => $order->id,
+                    'errors' => data_get($label, 'PrepareLabelsError', []),
+                ]);
+
+                return response()->json([
+                    'error' => 'GLS nije kreirao pošiljku. Provjerite konfiguraciju i podatke narudžbe.',
+                ], 422);
+            }
+
+            $trackingCode = $parcelNumber !== '' ? $parcelNumber : $parcelId;
+            $trackingUrlTemplate = trim((string) config('services.gls.tracking_url'));
+            $trackingUrl = $trackingUrlTemplate !== ''
+                ? str_replace('{tracking_code}', rawurlencode($trackingCode), $trackingUrlTemplate)
+                : null;
+            $payload = $label;
+            unset($payload['GetPrintedLabelsRequest']);
+
+            $order->forceFill([
+                'shipping_carrier' => 'gls',
+                'shipping_parcel_id' => $parcelId !== '' ? $parcelId : null,
+                'tracking_code' => $trackingCode,
+                'shipping_tracking_url' => $trackingUrl,
+                'shipping_tracking_status_code' => 'created',
+                'shipping_tracking_status' => 'Pošiljka je kreirana u GLS sustavu.',
+                'shipping_tracking_updated_at' => now(),
+                'shipping_tracking_attempted_at' => now(),
+                'shipping_tracking_payload' => $payload,
+                'printed' => true,
+            ])->save();
+
+            OrderHistory::query()->create([
+                'order_id' => $order->id,
+                'user_id' => auth()->id() ?: 0,
+                'status' => 0,
+                'comment' => 'GLS pošiljka kreirana. Broj pošiljke: ' . $trackingCode . '.',
+            ]);
+
+            return response()->json(['message' => 'GLS pošiljka uspješno je kreirana: ' . $trackingCode]);
+        } catch (\Throwable $exception) {
+            Log::error('GLS shipment failed.', [
+                'order_id' => $order->id,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return response()->json(['error' => 'GLS pošiljka nije kreirana. ' . $exception->getMessage()], 422);
+        } finally {
+            $lock->release();
+        }
+    }
+
+    protected function resolveGlsShipment(Order $order): array
+    {
+        return (new Gls($order))->resolve();
+    }
+
+    private function isGlsOrder(Order $order): bool
+    {
+        if (strtolower(trim((string) $order->shipping_carrier)) === 'gls') {
+            return true;
+        }
+
+        return in_array(strtolower(trim((string) $order->shipping_code)), [
+            'gls',
+            'gls_eu',
+            'gls_world',
+            'gls_paketomat',
+        ], true);
+    }
+
+    private function hasExistingGlsShipment(Order $order): bool
+    {
+        return strtolower(trim((string) $order->shipping_carrier)) === 'gls'
+            && (
+                trim((string) $order->shipping_parcel_id) !== ''
+                || trim((string) $order->tracking_code) !== ''
+                || (bool) $order->printed
+            );
     }
 
 

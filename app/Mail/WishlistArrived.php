@@ -19,6 +19,8 @@ class WishlistArrived extends Mailable
 
     public function build()
     {
-        return $this->view('emails.wishlist-arrived')->with(['product' => $this->product]);
+        return $this->subject('Artikl s vaše liste želja ponovno je dostupan — Vremeplov')
+            ->view('emails.wishlist-arrived')
+            ->with(['product' => $this->product]);
     }
 }

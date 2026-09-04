@@ -37,6 +37,9 @@ class ContactFormMessage extends Mailable
      */
     public function build()
     {
-        return $this->view('emails.contact-form')->with(['data' => $this->data]);
+        return $this->subject('Novi upit s kontakt forme — Vremeplov')
+            ->replyTo($this->data['email'], $this->data['name'])
+            ->view('emails.contact-form')
+            ->with(['data' => $this->data]);
     }
 }

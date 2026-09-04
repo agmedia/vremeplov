@@ -74,7 +74,15 @@ class PaymentMethod
      */
     public function list(bool $only_active = true)
     {
-        return Settings::getList('payment', 'list.%', $only_active);
+        $methods = collect(Settings::getList('payment', 'list.%', $only_active));
+
+        if (! config('services.keks.enabled')) {
+            $methods = $methods->reject(function ($method) {
+                return ($method->code ?? null) === 'keks';
+            });
+        }
+
+        return $methods;
     }
 
 
@@ -174,13 +182,13 @@ class PaymentMethod
         }
 
         foreach ($this->methods as $method) {
-            if ($method->code == 'wspay' && $shipping == 'pickup' || $method->code == 'paypal' && $shipping == 'pickup' ) {
+            if ($shipping === 'pickup' && in_array($method->code, ['wspay', 'paypal'], true)) {
                 $this->response_methods->put($method->code, $method);
             }
         }
 
         foreach ($this->methods as $method) {
-            if ($shipping == 'gls_eu' && $method->code == 'cod') {
+            if (in_array($shipping, ['gls_eu', 'gls_world'], true) && $method->code === 'cod') {
                 $this->response_methods->forget($method->code);
             }
         }

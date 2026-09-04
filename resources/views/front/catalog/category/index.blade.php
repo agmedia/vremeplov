@@ -4,19 +4,18 @@
     @section ( 'title', $meta['title'] . ' - Antikvarijat Vremeplov' )
     @section ( 'description', $meta['description'] )
     @push('meta_tags')
-        <link rel="canonical" href="{{ $meta['canonical'] }}" />
         <meta property="og:locale" content="hr_HR" />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="{{ $meta['title'] }} - Antikvarijat Vremeplov" />
         <meta property="og:description" content="{{ $meta['description'] }}" />
         <meta property="og:url" content="{{ $meta['canonical'] }}" />
         <meta property="og:site_name" content="Antikvarijat Vremeplov" />
-        <meta property="og:image" content="{{ asset('media/img/cover-vremeplov.jpg') }}" />
-        <meta property="og:image:secure_url" content="{{ asset('media/img/cover-vremeplov.jpg') }}" />
+        <meta property="og:image" content="{{ config('settings.images_domain') . 'media/img/cover-vremeplov.jpg' }}" />
+        <meta property="og:image:secure_url" content="{{ config('settings.images_domain') . 'media/img/cover-vremeplov.jpg' }}" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="{{ $meta['title'] }} - Antikvarijat Vremeplov" />
         <meta name="twitter:description" content="{{ $meta['description'] }}" />
-        <meta name="twitter:image" content="{{ asset('media/img/cover-vremeplov.jpg') }}" />
+        <meta name="twitter:image" content="{{ config('settings.images_domain') . 'media/img/cover-vremeplov.jpg' }}" />
         @foreach ($meta['tags'] as $tag)
             <meta name={{ $tag['name'] }} content={{ $tag['content'] }}>
         @endforeach
@@ -36,12 +35,12 @@
         <meta property="og:description" content="{{ $searchDescription }}" />
         <meta property="og:url" content="{{ $searchCanonical }}" />
         <meta property="og:site_name" content="Antikvarijat Vremeplov" />
-        <meta property="og:image" content="{{ asset('media/img/cover-vremeplov.jpg') }}" />
-        <meta property="og:image:secure_url" content="{{ asset('media/img/cover-vremeplov.jpg') }}" />
+        <meta property="og:image" content="{{ config('settings.images_domain') . 'media/img/cover-vremeplov.jpg' }}" />
+        <meta property="og:image:secure_url" content="{{ config('settings.images_domain') . 'media/img/cover-vremeplov.jpg' }}" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="{{ $searchTitle }} - Antikvarijat Vremeplov" />
         <meta name="twitter:description" content="{{ $searchDescription }}" />
-        <meta name="twitter:image" content="{{ asset('media/img/cover-vremeplov.jpg') }}" />
+        <meta name="twitter:image" content="{{ config('settings.images_domain') . 'media/img/cover-vremeplov.jpg' }}" />
     @endpush
 @endif
 

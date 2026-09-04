@@ -97,14 +97,14 @@ class Checkout extends Component
      * @var string[]
      */
     protected $address_rules = [
-        'address.fname' => 'required',
-        'address.lname' => 'required',
-        'address.email' => 'required|email',
-        'address.phone' => 'required',
-        'address.address' => 'required',
-        'address.city' => 'required',
-        'address.zip' => 'required',
-        'address.state' => 'required',
+        'address.fname' => 'required|string|min:2|max:80',
+        'address.lname' => 'required|string|min:2|max:80',
+        'address.email' => 'required|email:rfc|max:191',
+        'address.phone' => ['required', 'string', 'min:6', 'max:40', 'regex:/^[0-9+()\s.\/-]+$/'],
+        'address.address' => 'required|string|min:3|max:191',
+        'address.city' => 'required|string|min:2|max:100',
+        'address.zip' => 'required|string|min:3|max:20',
+        'address.state' => 'required|string|max:100',
     ];
 
     /**

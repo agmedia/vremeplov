@@ -12,7 +12,7 @@
                     <h2 class="h3 text-white fw-bold">Rijetke knjige</h2>
                     <p class=" pb-2 text-white">Pogledajte našu kolekeciju popularnih i rijetkih naslova.</p><a class="btn mb-3 btn-primary" href="{{ route('catalog.route', ['group' => \App\Helpers\Helper::categoryGroupPath(true) . '/rijetke-knjige']) }}">Pogledajte ponudu <i class="ci-arrow-right ms-2 me-n1"></i></a>
                 </div>
-                <img class="d-block mx-auto mx-sm-0 rounded-end rounded-xs pb-4 pb-sm-0" src="{{ asset('media/img/rijetke.webp') }}"  width="250" alt="Become a Courier">
+                <img class="d-block mx-auto mx-sm-0 rounded-end rounded-xs pb-4 pb-sm-0" src="{{ config('settings.images_domain') . 'media/img/rijetke.webp' }}"  width="250" alt="Rijetke knjige">
             </div>
         </div>
         <div class="col-lg-6 mb-grid-gutter">
@@ -22,7 +22,7 @@
                     <p class="text-white pb-2">Za praktičnije čuvanje knjige, ručno izrađeno s puno ljubavi.
 
                         </p><a class="btn btn-primary mb-3" href="https://www.zuzi.hr/kategorija-proizvoda/svezalice-pidzame-za-knjige">Pogledajte ponudu <i class="ci-arrow-right ms-2 me-n1"></i></a>
-                </div><img class="d-block mx-auto mx-sm-0 rounded-end rounded-xs pb-sm-0 pb-4" src="{{ asset('media/img/svezalice.webp') }}" width="250"    alt="Become a Partner">
+                </div><img class="d-block mx-auto mx-sm-0 rounded-end rounded-xs pb-sm-0 pb-4" src="{{ config('settings.images_domain') . 'media/img/svezalice.webp' }}" width="250" alt="Stare knjige i uvezi">
             </div>
         </div>
     </div>

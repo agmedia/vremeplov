@@ -420,8 +420,53 @@ class BoxNowModuleTest extends TestCase
         $response = (new OrderController())->api_send_gls(new Request(['order_id' => 100]));
 
         $this->assertSame(422, $response->getStatusCode());
-        $this->assertStringContainsString('ne može se poslati kroz GLS', (string) data_get($response->getData(true), 'error'));
+        $this->assertStringContainsString('nema odabranu GLS dostavu', (string) data_get($response->getData(true), 'error'));
         Http::assertNothingSent();
+    }
+
+    public function test_gls_dispatch_persists_tracking_and_second_request_does_not_repost(): void
+    {
+        $this->insertGlsOrder();
+        $controller = new FeatureStubGlsOrderController([
+            'ParcelIdList' => ['GLS-ID-100'],
+            'ParcelNumberList' => ['GLS-NUMBER-100'],
+            'PrepareLabelsError' => [],
+            'GetPrintedLabelsRequest' => ['Password' => 'must-not-be-stored'],
+        ]);
+
+        $first = $controller->api_send_gls(new Request(['order_id' => 101]));
+        $second = $controller->api_send_gls(new Request(['order_id' => 101]));
+
+        $this->assertSame(200, $first->getStatusCode());
+        $this->assertSame(200, $second->getStatusCode());
+        $this->assertStringContainsString('GLS-NUMBER-100', (string) data_get($first->getData(true), 'message'));
+        $this->assertStringContainsString('već kreirana', (string) data_get($second->getData(true), 'message'));
+        $this->assertSame(1, $controller->calls);
+
+        $order = Order::query()->findOrFail(101);
+        $this->assertSame('gls', $order->shipping_carrier);
+        $this->assertSame('GLS-ID-100', $order->shipping_parcel_id);
+        $this->assertSame('GLS-NUMBER-100', $order->tracking_code);
+        $this->assertTrue((bool) $order->printed);
+        $this->assertStringNotContainsString('must-not-be-stored', json_encode($order->shipping_tracking_payload));
+        $this->assertSame(1, DB::table('order_history')->where('order_id', 101)->count());
+    }
+
+    public function test_parallel_gls_dispatch_is_rejected_before_remote_api_call(): void
+    {
+        $this->insertGlsOrder();
+        $controller = new FeatureStubGlsOrderController(['ParcelIdList' => ['GLS-ID-100']]);
+        $lock = Cache::lock('gls-shipment-create:101', 180);
+        $this->assertTrue($lock->get());
+
+        try {
+            $response = $controller->api_send_gls(new Request(['order_id' => 101]));
+
+            $this->assertSame(409, $response->getStatusCode());
+            $this->assertSame(0, $controller->calls);
+        } finally {
+            $lock->release();
+        }
     }
 
     public function test_admin_modal_contains_all_settings_but_never_secret_value(): void
@@ -553,6 +598,7 @@ class BoxNowModuleTest extends TestCase
             $table->text('comment')->nullable();
             $table->text('commentp')->nullable();
             $table->string('tracking_code')->nullable();
+            $table->boolean('printed')->default(false);
             $table->boolean('shipped')->default(false);
             $table->string('shipping_carrier')->nullable();
             $table->string('shipping_parcel_id')->nullable();
@@ -621,6 +667,29 @@ class BoxNowModuleTest extends TestCase
         ]);
     }
 
+    private function insertGlsOrder(): void
+    {
+        DB::table('orders')->insert([
+            'id' => 101,
+            'order_status_id' => 3,
+            'total' => 42.50,
+            'payment_code' => 'cod',
+            'payment_fname' => 'Ana',
+            'payment_lname' => 'Anić',
+            'payment_phone' => '091 111 2222',
+            'payment_email' => 'ana@example.test',
+            'shipping_fname' => 'Ana',
+            'shipping_lname' => 'Anić',
+            'shipping_phone' => '091 111 2222',
+            'shipping_email' => 'ana@example.test',
+            'shipping_method' => 'GLS dostava',
+            'shipping_code' => 'gls',
+            'tracking_code' => '',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
     private function settings(array $overrides = []): array
     {
         return array_merge([
@@ -673,5 +742,26 @@ class FlippingBoxNowOrderTrackingService extends OrderTrackingService
         $this->boxNowChecks++;
 
         return $this->boxNowChecks === 1;
+    }
+}
+
+class FeatureStubGlsOrderController extends OrderController
+{
+    /** @var array */
+    private $response;
+
+    /** @var int */
+    public $calls = 0;
+
+    public function __construct(array $response)
+    {
+        $this->response = $response;
+    }
+
+    protected function resolveGlsShipment(Order $order): array
+    {
+        $this->calls++;
+
+        return $this->response;
     }
 }

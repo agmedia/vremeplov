@@ -1,45 +1,26 @@
 @extends('emails.layouts.base')
 
+@section('email_title', 'Novi upit s kontakt forme — Vremeplov')
+@section('preheader', 'Nova poruka poslana putem kontakt forme.')
+
 @section('content')
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+    <div class="mail-eyebrow" style="margin:0 0 11px;color:#a17436;font-size:11px;font-weight:bold;letter-spacing:1.5px;line-height:16px;text-transform:uppercase;">Administracija · kontakt forma</div>
+    <h1 class="mail-title" style="margin:0 0 15px;color:#2d2224;font-family:Georgia,'Times New Roman',serif;font-size:31px;font-weight:normal;line-height:39px;">Stigao je novi upit</h1>
+    <p style="margin:0 0 24px;color:#665b52;font-size:15px;line-height:24px;">Odgovorite izravno na adresu pošiljatelja navedenu ispod.</p>
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="mail-card" style="width:100%;border:1px solid #e1d7c8;border-radius:9px;background-color:#fbf8f2;">
         <tr>
-            <td style="padding: 20px 20px 10px 20px; font-family: sans-serif; font-size: 18px; font-weight: bold; line-height: 20px; color: #555555; text-align: center;">
-                Poruka s Web kontakt forme.<br>
-            </td>
-        </tr>
-        <tr>
-            <td style="padding: 20px 20px 0 20px; font-family: sans-serif; font-size: 15px; line-height: 20px; color: #555555;">
-                Dobili ste poruku s Web kontakt forme.<br>
-                <br>
-                <table cellspacing="0" cellpadding="0" border="0" width="100%">
-                    <tr>
-                        <td style="width: 26%">Ime:</td>
-                        <td style="width: 74%"><b>{{ $data['name'] }}</b></td>
-                    </tr>
-                    <tr>
-                        <td>Email:</td>
-                        <td><b>{{ $data['email'] }}</b></td>
-                    </tr>
-                    @if ( ! empty($data['phone']))
-                        <tr>
-                            <td>Telefon:</td>
-                            <td><b>{{ $data['phone'] }}</b></td>
-                        </tr>
+            <td style="padding:20px 22px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                    <tr><td style="padding:4px 12px 4px 0;color:#89796a;font-size:11px;line-height:18px;">Ime</td><td style="padding:4px 0;color:#2d2224;font-size:13px;font-weight:bold;line-height:19px;">{{ $data['name'] }}</td></tr>
+                    <tr><td style="padding:4px 12px 4px 0;color:#89796a;font-size:11px;line-height:18px;">Email</td><td style="padding:4px 0;font-size:13px;line-height:19px;"><a href="mailto:{{ $data['email'] }}" style="color:#76542f;font-weight:bold;">{{ $data['email'] }}</a></td></tr>
+                    @if (! empty($data['phone']))
+                        <tr><td style="padding:4px 12px 4px 0;color:#89796a;font-size:11px;line-height:18px;">Telefon</td><td style="padding:4px 0;color:#2d2224;font-size:13px;font-weight:bold;line-height:19px;">{{ $data['phone'] }}</td></tr>
                     @endif
                 </table>
             </td>
         </tr>
-        <tr>
-            <td style="padding: 5px 20px 30px 20px; font-family: sans-serif; font-size: 15px; line-height: 20px; color: #555555;">
-                <pre>{!! $data['message'] !!}</pre>
-            </td>
-        </tr>
-        <tr>
-            <td style="padding: 20px; font-family: sans-serif; font-size: 15px; line-height: 20px; color: #555555; text-align: center;">
-                <a href="{{ route('index') }}" style="display: block; display: inline-block; width: 200px; min-height: 20px; padding: 10px; background-color: #a50000; border-radius: 3px; color: #ffffff; font-size: 15px; line-height: 25px; text-align: center; text-decoration: none; -webkit-text-size-adjust: none;">
-                    Idi na stranicu
-                </a>
-            </td>
-        </tr>
     </table>
+
+    <div style="margin:24px 0 0;padding:20px 22px;background-color:#ffffff;border:1px solid #e1d7c8;border-left:4px solid #c7a361;color:#453b35;font-size:14px;line-height:23px;white-space:pre-wrap;">{{ $data['message'] }}</div>
 @endsection

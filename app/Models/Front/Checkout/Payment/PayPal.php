@@ -7,7 +7,6 @@ use App\Models\Back\Orders\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 use Srmklive\PayPal\Services\PayPal as PaypalClient;
 
 /**
@@ -67,9 +66,6 @@ class PayPal
         $paypal->setApiCredentials($this->config);
         $paypal->setAccessToken($paypal->getAccessToken());
 
-        Log::info('$paypal->setApiCredentials(;:::::::::::$this->config)::');
-        Log::info($this->config);
-
         $order = $paypal->createOrder([
             "intent"         => "CAPTURE",
             "purchase_units" => [
@@ -84,9 +80,6 @@ class PayPal
         ]);
 
         $data = [];
-
-        Log::info('resolveFormView:::::::::::$order::');
-        Log::info($order);
 
         if (isset($order['status']) && $order['status'] == 'CREATED') {
             $data['order_id']    = $this->order->id;
@@ -110,9 +103,6 @@ class PayPal
      */
     public function finishOrder(Order $order, Request $request): bool
     {
-        Log::info('finishOrder:::::::::::$request::');
-        Log::info($request->toArray());
-
         $status = config('settings.order.status.paid');
 
         $order->update([

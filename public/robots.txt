@@ -1,2 +1,11 @@
 User-agent: *
-Sitemap: https://www.antikvarijat-vremeplov.hr/sitemap
+Disallow: /admin/
+Disallow: /naplata
+Disallow: /pregled
+Disallow: /narudzba
+Disallow: /uspjeh
+Disallow: /greska
+Disallow: /pretrazi
+Disallow: /customer/
+
+Sitemap: https://www.antikvarijat-vremeplov.hr/sitemap.xml

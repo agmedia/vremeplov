@@ -23,9 +23,18 @@ class Seo
      */
     public static function getProductData(Product $product): array
     {
+        $author = isset($product->author->title) ? trim((string) $product->author->title) : '';
+        $title = trim((string) ($product->meta_title ?: $product->name));
+        $description = trim(strip_tags((string) $product->meta_description));
+
+        if ($description === '') {
+            $description = trim($product->name . ($author !== '' ? ' — ' . $author : ''))
+                . '. Provjerite cijenu, stanje i dostupnost u Antikvarijatu Vremeplov.';
+        }
+
         return [
-            'title'       => rtrim($product->name) . ' - ' . (isset($product->author->title) ? $product->author->title : ''),
-            'description' => 'Knjiga ' . rtrim($product->name) . ' pisca ' . (isset($product->author->title) ? $product->author->title : '') . ' u Antikvarijat Vremeplov web shopu. Kliknite na naš web i saznajte više!'
+            'title' => $title . ($author !== '' && stripos($title, $author) === false ? ' - ' . $author : ''),
+            'description' => mb_substr($description, 0, 160),
         ];
     }
 

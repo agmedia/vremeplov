@@ -103,21 +103,40 @@ class Sitemap
 
         foreach ($products->get() as $product) {
             $this->response[$product->id] = [
-                'loc' => url($product->url)
+                'loc' => url($product->url),
+                'images' => [],
             ];
 
-            $this->response[$product->id]['images'][] = [
-                'loc' => $product->image
-            ];
+            if ($product->image) {
+                $this->response[$product->id]['images'][] = [
+                    'loc' => $this->absoluteImageUrl((string) $product->image)
+                ];
+            }
 
             foreach ($product->images as $image) {
-                $this->response[$product->id]['images'][] = [
-                    'loc' => config('settings.images_domain') . $image->image
-                ];
+                if ($image->image) {
+                    $this->response[$product->id]['images'][] = [
+                        'loc' => $this->absoluteImageUrl((string) $image->image)
+                    ];
+                }
             }
         }
 
         return $this->response;
+    }
+
+    private function absoluteImageUrl(string $path): string
+    {
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            return $path;
+        }
+
+        $imageDomain = trim((string) config('settings.images_domain'));
+        if ($imageDomain !== '') {
+            return rtrim($imageDomain, '/') . '/' . ltrim($path, '/');
+        }
+
+        return asset(ltrim($path, '/'));
     }
 
 

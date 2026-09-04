@@ -205,26 +205,46 @@ class Breadcrumb
             $averageRating = $reviewCount ? round((float) $prod->reviews()->avg('stars'), 2) : null;
 
             $schema = [
-                '@context' => 'https://schema.org/',
-                '@type' => 'Book',
-                'datePublished' => $prod->year ?: '...',
-                'description' => $prod->name . ' knjiga autora ' . (($prod->author) ? $prod->author->title : 'Autor') . ' godine izdanja ' . ($prod->year ?: '...') . '. izdavača ' . (($prod->publisher) ? $prod->publisher->title : 'Izdavačka kuća'),
+                '@context' => 'https://schema.org',
+                '@type' => ['Book', 'Product'],
+                '@id' => url($prod->url) . '#product',
+                'description' => trim((string) ($prod->meta_description ?: strip_tags((string) $prod->description)))
+                    ?: $prod->name . ' u ponudi Antikvarijata Vremeplov.',
                 'image' => asset($prod->image),
                 'name' => $prod->name,
                 'url' => url($prod->url),
+                'sku' => (string) $prod->sku,
                 'publisher' => [
                     '@type' => 'Organization',
                     'name' => ($prod->publisher) ? $prod->publisher->title : 'Izdavačka kuća',
                 ],
-                'author' => ($prod->author) ? $prod->author->title : 'Autor',
+                'author' => [
+                    '@type' => 'Person',
+                    'name' => ($prod->author) ? $prod->author->title : 'Nepoznat autor',
+                ],
                 'offers' => [
                     '@type' => 'Offer',
+                    'url' => url($prod->url),
                     'priceCurrency' => 'EUR',
-                    'price' => ($prod->special()) ? $prod->special() : number_format($prod->price, 2, '.', ''),
-                    'sku' => $prod->sku,
-                    'availability' => ($prod->quantity) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'
+                    'price' => number_format((float) (($prod->special()) ?: $prod->price), 2, '.', ''),
+                    'availability' => ($prod->quantity) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+                    'itemCondition' => 'https://schema.org/UsedCondition',
+                    'seller' => [
+                        '@type' => 'Organization',
+                        '@id' => url('/#organization'),
+                        'name' => 'Antikvarijat Vremeplov',
+                    ],
                 ],
             ];
+
+            if ($prod->year) {
+                $schema['datePublished'] = (string) $prod->year;
+            }
+
+            $isbn = preg_replace('/[^0-9Xx]/', '', (string) $prod->isbn);
+            if (in_array(strlen($isbn), [10, 13], true)) {
+                $schema['isbn'] = strtoupper($isbn);
+            }
 
             if ($reviewCount > 0 && $averageRating !== null) {
                 $schema['aggregateRating'] = [

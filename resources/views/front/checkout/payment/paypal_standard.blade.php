@@ -39,7 +39,7 @@
     <input type="hidden" name="custom" value="{{ $data['order_id'] }}" />
     <div class="buttons">
         <div class="pull-right">
-            <input type="submit" value="Potvrdi Plaćanje" class="btn btn-primary" />
+            <input type="submit" value="Naručite uz obvezu plaćanja" class="btn btn-primary" />
         </div>
     </div>
 </form>

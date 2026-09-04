@@ -44,7 +44,7 @@ class Category extends Model
      */
     public function getThumbAttribute($value)
     {
-        return url(str_replace('.jpg', '-thumb.webp', $this->image));
+        return rtrim((string) config('settings.images_domain'), '/') . '/' . ltrim(str_replace('.jpg', '-thumb.webp', $this->image), '/');
     }
 
 

@@ -32,8 +32,11 @@ use App\Http\Controllers\Back\Widget\WidgetController;
 use App\Http\Controllers\Back\Widget\WidgetGroupController;
 use App\Http\Controllers\Front\CatalogRouteController;
 use App\Http\Controllers\Front\CheckoutController;
+use App\Http\Controllers\Front\AbandonedCartRecoveryController;
 use App\Http\Controllers\Front\CustomerController;
 use App\Http\Controllers\Front\HomeController;
+use App\Http\Controllers\Front\OrderTrackingController;
+use App\Http\Controllers\Front\ProductReviewInvitationController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -266,21 +269,23 @@ Route::prefix('api/v2')->group(function () {
         Route::get('/coupon/{coupon}', [CartController::class, 'coupon']);;
     });
 
-    Route::get('/products/autocomplete', [\App\Http\Controllers\Api\v2\ProductController::class, 'autocomplete'])->name('products.autocomplete');
-    Route::post('/products/image/delete', [\App\Http\Controllers\Api\v2\ProductController::class, 'destroyImage'])->name('products.destroy.image');
-    Route::post('/products/change/status', [\App\Http\Controllers\Api\v2\ProductController::class, 'changeStatus'])->name('products.change.status');
-    Route::post('products/update-item/single', [\App\Http\Controllers\Api\v2\ProductController::class, 'updateItem'])->name('products.update.item');
-    //
-    Route::post('categories/group/store', [CategoryController::class, 'storeGroup'])->name('api.categories.groups.store');
-    Route::post('categories/group/destroy', [CategoryController::class, 'destroyGroup'])->name('api.categories.groups.destroy');
+    Route::middleware(['auth:web', 'verified', 'no.customers'])->group(function () {
+        Route::get('/products/autocomplete', [\App\Http\Controllers\Api\v2\ProductController::class, 'autocomplete'])->name('products.autocomplete');
+        Route::post('/products/image/delete', [\App\Http\Controllers\Api\v2\ProductController::class, 'destroyImage'])->name('products.destroy.image');
+        Route::post('/products/change/status', [\App\Http\Controllers\Api\v2\ProductController::class, 'changeStatus'])->name('products.change.status');
+        Route::post('products/update-item/single', [\App\Http\Controllers\Api\v2\ProductController::class, 'updateItem'])->name('products.update.item');
+        //
+        Route::post('categories/group/store', [CategoryController::class, 'storeGroup'])->name('api.categories.groups.store');
+        Route::post('categories/group/destroy', [CategoryController::class, 'destroyGroup'])->name('api.categories.groups.destroy');
 
-    Route::post('/actions/destroy/api', [ActionController::class, 'destroyApi'])->name('actions.destroy.api');
-    Route::post('/reviews/destroy/api', [ReviewController::class, 'destroyApi'])->name('reviews.destroy.api');
-    Route::post('/authors/destroy/api', [AuthorController::class, 'destroyApi'])->name('authors.destroy.api');
-    Route::post('/publishers/destroy/api', [PublisherController::class, 'destroyApi'])->name('publishers.destroy.api');
-    Route::post('/products/destroy/api', [ProductController::class, 'destroyApi'])->name('products.destroy.api');
-    Route::post('/blogs/destroy/api', [BlogController::class, 'destroyApi'])->name('blogs.destroy.api');
-    Route::post('/blogs/upload/image', [BlogController::class, 'uploadBlogImage'])->name('blogs.upload.image');
+        Route::post('/actions/destroy/api', [ActionController::class, 'destroyApi'])->name('actions.destroy.api');
+        Route::post('/reviews/destroy/api', [ReviewController::class, 'destroyApi'])->name('reviews.destroy.api');
+        Route::post('/authors/destroy/api', [AuthorController::class, 'destroyApi'])->name('authors.destroy.api');
+        Route::post('/publishers/destroy/api', [PublisherController::class, 'destroyApi'])->name('publishers.destroy.api');
+        Route::post('/products/destroy/api', [ProductController::class, 'destroyApi'])->name('products.destroy.api');
+        Route::post('/blogs/destroy/api', [BlogController::class, 'destroyApi'])->name('blogs.destroy.api');
+        Route::post('/blogs/upload/image', [BlogController::class, 'uploadBlogImage'])->name('blogs.upload.image');
+    });
 
     // FILTER
     Route::prefix('filter')->group(function () {
@@ -300,19 +305,19 @@ Route::prefix('api/v2')->group(function () {
         // FRONT SETTINGS LIST
         Route::get('/get', [SettingsController::class, 'get']);
         // WIDGET
-        Route::prefix('widget')->group(function () {
+        Route::prefix('widget')->middleware(['auth:web', 'verified', 'no.customers', 'admin.manager'])->group(function () {
             Route::post('destroy', [WidgetController::class, 'destroy'])->name('widget.destroy');
             Route::get('get-links', [WidgetController::class, 'getLinks'])->name('widget.api.get-links');
         });
         // API
-        Route::prefix('api')->group(function () {
+        Route::prefix('api')->middleware(['auth:web', 'verified', 'no.customers', 'admin.manager'])->group(function () {
             Route::post('import', [ApiController::class, 'import'])->name('api.api.import');
             Route::post('upload/excel', [ApiController::class, 'upload'])->name('api.api.upload');
         });
         // SYSTEM
         Route::prefix('system')->group(function () {
             // APPLICATION
-            Route::prefix('application')->group(function () {
+            Route::prefix('application')->middleware(['auth:web', 'verified', 'no.customers', 'admin.manager'])->group(function () {
                 Route::post('basic/store', [ApplicationController::class, 'basicInfoStore'])->name('api.application.basic.store');
                 Route::post('maps-api/store', [ApplicationController::class, 'storeGoogleMapsApiKey'])->name('api.application.google-api.store.key');
             });
@@ -327,43 +332,43 @@ Route::prefix('api/v2')->group(function () {
             });*/
             // ORDER STATUS
             Route::prefix('order-status')->group(function () {
-                Route::post('store', [OrderStatusController::class, 'store'])->name('api.order.status.store');
-                Route::post('destroy', [OrderStatusController::class, 'destroy'])->name('api.order.status.destroy');
+                Route::post('store', [OrderStatusController::class, 'store'])
+                    ->middleware(['auth:web', 'verified', 'no.customers', 'admin.manager'])
+                    ->name('api.order.status.store');
+                Route::post('destroy', [OrderStatusController::class, 'destroy'])
+                    ->middleware(['auth:web', 'verified', 'no.customers', 'admin.manager'])
+                    ->name('api.order.status.destroy');
 
                 Route::post('change', [OrderController::class, 'api_status_change'])
-                    ->middleware(['auth:sanctum', 'verified', 'no.customers'])
+                    ->middleware(['auth:web', 'verified', 'no.customers', 'admin.manager'])
                     ->name('api.order.status.change');
                 Route::post('send/gls', [OrderController::class, 'api_send_gls'])
-                    ->middleware(['auth:sanctum', 'verified', 'no.customers'])
+                    ->middleware(['auth:web', 'verified', 'no.customers', 'admin.manager'])
                     ->name('api.order.send.gls');
                 Route::post('send/boxnow', [OrderController::class, 'api_send_boxnow'])
-                    ->middleware(['auth:sanctum', 'verified', 'no.customers', 'boxnow.manager'])
+                    ->middleware(['auth:web', 'verified', 'no.customers', 'boxnow.manager'])
                     ->name('api.order.send.boxnow');
                 Route::post('tracking/boxnow/refresh', [OrderController::class, 'api_refresh_boxnow_tracking'])
-                    ->middleware(['auth:sanctum', 'verified', 'no.customers', 'boxnow.manager'])
+                    ->middleware(['auth:web', 'verified', 'no.customers', 'boxnow.manager'])
                     ->name('api.order.tracking.boxnow.refresh');
             });
             // PAYMENTS
-            Route::prefix('payment')->group(function () {
+            Route::prefix('payment')->middleware(['auth:web', 'verified', 'no.customers', 'admin.manager'])->group(function () {
                 Route::post('store', [PaymentController::class, 'store'])->name('api.payment.store');
                 Route::post('destroy', [PaymentController::class, 'destroy'])->name('api.payment.destroy');
             });
             // SHIPMENTS
-            Route::prefix('shipping')->group(function () {
-                Route::post('store', [ShippingController::class, 'store'])
-                    ->middleware(['auth:sanctum', 'verified', 'no.customers'])
-                    ->name('api.shipping.store');
-                Route::post('destroy', [ShippingController::class, 'destroy'])
-                    ->middleware(['auth:sanctum', 'verified', 'no.customers'])
-                    ->name('api.shipping.destroy');
+            Route::prefix('shipping')->middleware(['auth:web', 'verified', 'no.customers', 'admin.manager'])->group(function () {
+                Route::post('store', [ShippingController::class, 'store'])->name('api.shipping.store');
+                Route::post('destroy', [ShippingController::class, 'destroy'])->name('api.shipping.destroy');
             });
             // TAXES
-            Route::prefix('taxes')->group(function () {
+            Route::prefix('taxes')->middleware(['auth:web', 'verified', 'no.customers', 'admin.manager'])->group(function () {
                 Route::post('store', [TaxController::class, 'store'])->name('api.taxes.store');
                 Route::post('destroy', [TaxController::class, 'destroy'])->name('api.taxes.destroy');
             });
             // CURRENCIES
-            Route::prefix('currencies')->group(function () {
+            Route::prefix('currencies')->middleware(['auth:web', 'verified', 'no.customers', 'admin.manager'])->group(function () {
                 Route::post('store', [CurrencyController::class, 'store'])->name('api.currencies.store');
                 Route::post('store/main', [CurrencyController::class, 'storeMain'])->name('api.currencies.store.main');
                 Route::post('destroy', [CurrencyController::class, 'destroy'])->name('api.currencies.destroy');
@@ -389,15 +394,30 @@ Route::get('/kontakt', [HomeController::class, 'contact'])->name('kontakt');
 Route::post('/kontakt/posalji', [HomeController::class, 'sendContactMessage'])->name('poruka');
 Route::get('/faq', [HomeController::class, 'faq'])->name('faq');
 Route::post('/komentar/proizvoda/posalji', [HomeController::class, 'sendProductComment'])->name('komentar.proizvoda');
+Route::get('/zahtjev-za-recenziju/{token}', [ProductReviewInvitationController::class, 'show'])
+    ->middleware(['signed', 'throttle:30,1'])
+    ->name('product-review-invitations.show');
+Route::post('/zahtjev-za-recenziju/{token}', [ProductReviewInvitationController::class, 'store'])
+    ->middleware(['signed', 'throttle:10,10'])
+    ->name('product-review-invitations.store');
 Route::post('/dodaj-u-listu-zelja', [HomeController::class, 'wishlist'])->name('wishlist');
 //
 Route::get('/kosarica', [CheckoutController::class, 'cart'])->name('kosarica');
+Route::get('/kosarica/nastavi/{order}', AbandonedCartRecoveryController::class)
+    ->middleware('signed')
+    ->name('abandoned-cart.restore');
 Route::get('/naplata', [CheckoutController::class, 'checkout'])->name('naplata');
 Route::get('/pregled', [CheckoutController::class, 'view'])->name('pregled');
 Route::get('/narudzba', [CheckoutController::class, 'order'])->name('checkout');
 Route::post('/narudzba/potvrdi', [CheckoutController::class, 'order'])->name('checkout.local');
 Route::get('/uspjeh', [CheckoutController::class, 'success'])->name('checkout.success');
-Route::post('/keks/uspjeh', [CheckoutController::class, 'successKeks'])->name('checkout.success.keks');
+Route::get('/narudzba/{order}/pracenje', OrderTrackingController::class)
+    ->middleware('signed')
+    ->name('order.tracking.public');
+if (config('services.keks.enabled')) {
+    Route::post('/keks/uspjeh', [CheckoutController::class, 'successKeks'])
+        ->name('checkout.success.keks');
+}
 Route::get('/paypal/povrat', [CheckoutController::class, 'paypalReturn'])->name('checkout.return.paypal');
 Route::post('/paypal/ipn', [CheckoutController::class, 'paypalNotification'])->name('checkout.notify.paypal');
 // Keep accepting IPNs emitted by PayPal forms opened before this route changed.
@@ -418,7 +438,7 @@ Route::get('cache/thumb', [HomeController::class, 'thumbCache']);
  */
 Route::redirect('/sitemap.xml', '/sitemap');
 Route::get('sitemap/{sitemap?}', [HomeController::class, 'sitemapXML'])->name('sitemap');
-Route::get('image-sitemap', [HomeController::class, 'sitemapImageXML'])->name('sitemap');
+Route::get('image-sitemap', [HomeController::class, 'sitemapImageXML'])->name('sitemap.images');
 //
 Route::get('njuskalo/xml', [HomeController::class, 'njuskaloXML'])->name('njuskalo');
 /**
@@ -445,10 +465,14 @@ Route::get('akcijska-ponuda/{cat?}/{subcat?}', [CatalogRouteController::class, '
 Route::get('{group}/{cat?}/{subcat?}/{prod?}', [CatalogRouteController::class, 'resolve'])->name('catalog.route');
 
 // SPECIAL ROUTES
-Route::post('kekspay/provjera-narudzbe', [\App\Models\Front\Checkout\Payment\Keks::class, 'check'])->name('keks.provjera');
+if (config('services.keks.enabled')) {
+    Route::post('kekspay/provjera-narudzbe', [\App\Models\Front\Checkout\Payment\Keks::class, 'check'])
+        ->middleware('throttle:30,1')
+        ->name('keks.provjera');
+}
 
 
 
 Route::fallback(function () {
-    return view('front.404');
+    return response()->view('front.404', [], 404);
 });

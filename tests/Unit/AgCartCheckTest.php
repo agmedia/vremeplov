@@ -13,11 +13,25 @@ use Tests\TestCase;
 
 class AgCartCheckTest extends TestCase
 {
+    /** @var string */
+    private $originalConnection;
+
     protected function setUp(): void
     {
         parent::setUp();
 
-        Schema::dropIfExists('products');
+        $this->originalConnection = (string) config('database.default');
+        config([
+            'database.default' => 'cart_testing',
+            'database.connections.cart_testing' => [
+                'driver' => 'sqlite',
+                'database' => ':memory:',
+                'prefix' => '',
+                'foreign_key_constraints' => true,
+            ],
+        ]);
+        DB::purge('cart_testing');
+
         Schema::create('products', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary();
             $table->string('name');
@@ -47,9 +61,8 @@ class AgCartCheckTest extends TestCase
     protected function tearDown(): void
     {
         CheckoutSession::forgetOrder();
-        Schema::dropIfExists('inventory_movements');
-        Schema::dropIfExists('orders');
-        Schema::dropIfExists('products');
+        DB::purge('cart_testing');
+        config(['database.default' => $this->originalConnection]);
 
         parent::tearDown();
     }

@@ -5,4 +5,7 @@
             <loc>{{ route('sitemap', ['sitemap' => $item]) }}</loc>
         </sitemap>
     @endforeach
+    <sitemap>
+        <loc>{{ route('sitemap.images') }}</loc>
+    </sitemap>
 </sitemapindex>

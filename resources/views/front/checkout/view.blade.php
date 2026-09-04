@@ -95,6 +95,11 @@
                     </div>
                 </div>
 
+                <div class="alert alert-light border mt-3 mb-0" role="note">
+                    <strong>Ukupno za plaćanje: {{ number_format((float) data_get($data, 'cart.total', 0), 2, ',', '.') }} €</strong><br>
+                    <small>Klikom na završni gumb potvrđujete narudžbu s obvezom plaćanja i prihvaćate <a href="{{ route('catalog.route.page', ['page' => 'uvjeti-kupnje']) }}" target="_blank" rel="noopener">uvjete kupnje</a>.</small>
+                </div>
+
                 <div class="d-none d-lg-flex pt-0 mt-3">
                     {!! $data['payment_form'] !!}
                 </div>
@@ -114,3 +119,25 @@
     </div>
 
 @endsection
+
+@push('js_after')
+    <script>
+        document.addEventListener('submit', function (event) {
+            const form = event.target;
+            if (!form.closest('.container') || form.dataset.checkoutSubmitted === '1') {
+                return;
+            }
+
+            form.dataset.checkoutSubmitted = '1';
+            const button = form.querySelector('[type="submit"]');
+            if (button) {
+                button.disabled = true;
+                if (button.tagName === 'BUTTON') {
+                    button.textContent = 'Obrada u tijeku…';
+                } else {
+                    button.value = 'Obrada u tijeku…';
+                }
+            }
+        });
+    </script>
+@endpush

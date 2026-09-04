@@ -29,7 +29,7 @@ class Recaptcha
      */
     public function __construct()
     {
-        $this->remote_ip  = $_SERVER['REMOTE_ADDR'];
+        $this->remote_ip  = $_SERVER['REMOTE_ADDR'] ?? request()->ip() ?? '127.0.0.1';
         $this->verify_url = config('services.recaptcha.verify_url');
     }
 
@@ -41,19 +41,40 @@ class Recaptcha
      */
     public function check(array $data)
     {
-        if (isset($data['recaptcha'])) {
-            $_data   = $this->setContentData($data['recaptcha']);
-            $options = $this->setOptions($_data);
-
-            $context = stream_context_create($options);
-            $result  = file_get_contents($this->verify_url, false, $context);
-
-            $this->result = json_decode($result);
+        if (app()->environment(['local', 'testing']) && config('services.recaptcha.bypass_local', true)) {
+            $this->result = (object) ['success' => true, 'score' => 0.9, 'bypassed' => true];
 
             return $this;
         }
 
-        return false;
+        if (empty($data['recaptcha'])) {
+            $this->result = (object) ['success' => false, 'score' => 0.0, 'error-codes' => ['missing-token']];
+
+            return $this;
+        }
+
+        $_data   = $this->setContentData($data['recaptcha']);
+        $options = $this->setOptions($_data);
+
+        $context = stream_context_create($options);
+        $result  = @file_get_contents($this->verify_url, false, $context);
+
+        if ($result === false) {
+            Log::error('reCAPTCHA verification request failed.', [
+                'error' => error_get_last(),
+            ]);
+            $this->result = (object) ['success' => false, 'score' => 0.0, 'error-codes' => ['request-failed']];
+
+            return $this;
+        }
+
+        $this->result = json_decode($result) ?: (object) [
+            'success' => false,
+            'score' => 0.0,
+            'error-codes' => ['invalid-response'],
+        ];
+
+        return $this;
     }
 
 
@@ -62,7 +83,9 @@ class Recaptcha
      */
     public function ok()
     {
-        if ($this->result->success != true || $this->result->score < 0.3) {
+        if (! isset($this->result)
+            || ($this->result->success ?? false) !== true
+            || (float) ($this->result->score ?? 0) < 0.3) {
             return false;
         }
 

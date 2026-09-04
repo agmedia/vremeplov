@@ -21,9 +21,6 @@ class Bank
     /**
      * @var string
      */
-    private $barcode_url = 'https://hub3.bigfish.software/api/v2/barcode';
-
-
     /**
      * Cod constructor.
      *
@@ -80,10 +77,10 @@ class Bank
                         ),
                     'receiver'    =>
                         array(
-                            'name'      => 'Vremeplov razglednica',
-                            'street'    => 'Radoslava Lopašića 11',
-                            'place'     => '10000 Zagreb',
-                            'iban'      => 'HR4524020061100571694',
+                            'name'      => config('services.bank_transfer.receiver_name'),
+                            'street'    => config('services.bank_transfer.receiver_street'),
+                            'place'     => config('services.bank_transfer.receiver_place'),
+                            'iban'      => config('services.bank_transfer.iban'),
                             'model'     => '00',
                             'reference' => $pozivnabroj,
                         ),
@@ -92,7 +89,7 @@ class Bank
                 ),
         );
 
-        $ch = curl_init($this->barcode_url);
+        $ch = curl_init((string) config('services.bank_transfer.barcode_url'));
 
         # Setting our options
         curl_setopt($ch, CURLOPT_POST, 1);
@@ -103,19 +100,21 @@ class Bank
         # Get the response
 
         $response = curl_exec($ch);
+        $status = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        $error = curl_error($ch);
         curl_close($ch);
 
-        $response = base64_encode($response);
-
-        $data['uplatnica'] = $response;
-        $scimg             = 'data:image/png;base64,' . $response;
-        list($type, $scimg) = explode(';', $scimg);
-        list(, $scimg) = explode(',', $scimg);
-        $scimg = base64_decode($scimg);
-
-        $path = $this->order->id . '.jpg';
-
-        Storage::disk('qr')->put($path, $scimg);
+        $data['uplatnica_available'] = false;
+        if ($response !== false && $status >= 200 && $status < 300 && $response !== '') {
+            $path = $this->order->id . '.jpg';
+            $data['uplatnica_available'] = (bool) Storage::disk('qr')->put($path, $response);
+        } else {
+            Log::warning('HUB3 barcode could not be generated.', [
+                'order_id' => $this->order->id,
+                'http_status' => $status,
+                'error' => $error,
+            ]);
+        }
 
         return view('front.checkout.payment.bank', compact('data'));
     }

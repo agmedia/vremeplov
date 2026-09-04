@@ -37,6 +37,16 @@ class Kernel extends ConsoleKernel
         $schedule->command('inventory:release-expired --limit=100')
             ->everyMinute()
             ->withoutOverlapping(5);
+        $schedule->command('orders:send-pending-mail --limit=50')
+            ->everyMinute()
+            ->withoutOverlapping(5);
+        $schedule->command('orders:send-abandoned-cart-reminders --limit=25')
+            ->everyThirtyMinutes()
+            ->withoutOverlapping(30);
+        $schedule->command('reviews:send-requests --limit=100')
+            // Tri pokušaja tijekom istog kvalificiranog dana; poslani se automatski preskaču.
+            ->cron('15 10,14,18 * * *')
+            ->withoutOverlapping(30);
     }
 
     /**

@@ -45,7 +45,7 @@ class OrderStatusChanged extends Mailable
      */
     public function build()
     {
-        return $this->subject('Promjena statusa narudžbe #' . $this->order->id)
+        return $this->subject('Novi status narudžbe #' . $this->order->id . ': ' . $this->status->title)
             ->view('emails.order-status-changed');
     }
 }
