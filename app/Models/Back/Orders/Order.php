@@ -30,6 +30,7 @@ class Order extends Model
     protected $casts = [
         'shipping_tracking_updated_at' => 'datetime',
         'shipping_tracking_attempted_at' => 'datetime',
+        'shipping_tracking_email_sent_at' => 'datetime',
         'shipping_tracking_payload' => 'array',
         'inventory_reserved_at' => 'datetime',
         'inventory_committed_at' => 'datetime',

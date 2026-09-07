@@ -198,7 +198,16 @@
                                                 @endif
                                             @elseif($isGlsShipment)
                                                 @if($order->printed)
-                                                    <span class="text-success"><i class="fa fa-check-circle mr-1" aria-hidden="true"></i> Poslano</span>
+                                                    @if($order->tracking_code)
+                                                        <a href="{{ $order->shipping_tracking_url ?: route('orders.show', ['order' => $order]) }}" target="{{ $order->shipping_tracking_url ? '_blank' : '_self' }}" rel="noopener" class="admin-tracking-code">{{ $order->tracking_code }}</a>
+                                                    @elseif($order->shipping_parcel_id)
+                                                        <span class="admin-tracking-code" title="Tracking broj još nije dostupan">{{ $order->shipping_parcel_id }}</span>
+                                                    @else
+                                                        <span class="text-success"><i class="fa fa-check-circle mr-1" aria-hidden="true"></i> Poslano</span>
+                                                    @endif
+                                                    @if($order->tracking_code || $order->shipping_parcel_id)
+                                                        <button type="button" class="btn btn-sm btn-alt-info" onclick="refreshTracking({{ $order->id }})" title="Osvježi GLS status" aria-label="Osvježi GLS status narudžbe {{ $order->id }}"><i class="fa fa-sync-alt" aria-hidden="true"></i></button>
+                                                    @endif
                                                 @else
                                                     <button type="button" class="btn btn-sm btn-alt-warning" onclick="sendGLS({{ $order->id }})" title="Pošalji u GLS" aria-label="Pošalji narudžbu {{ $order->id }} u GLS"><i class="fa fa-shipping-fast" aria-hidden="true"></i></button>
                                                 @endif
@@ -324,6 +333,10 @@
 
         function refreshBoxNow(orderId) {
             sendShipment(orderId, "{{ route('api.order.tracking.boxnow.refresh') }}");
+        }
+
+        function refreshTracking(orderId) {
+            sendShipment(orderId, "{{ route('api.order.tracking.refresh') }}");
         }
     </script>
 @endpush

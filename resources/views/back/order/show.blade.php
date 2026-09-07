@@ -13,6 +13,8 @@
             . (string) $order->shipping_method
         );
         $isBoxNowOrder = \Illuminate\Support\Str::contains($shippingHint, ['boxnow', 'box now']);
+        $isGlsOrder = $trackingCarrier === \App\Services\Shipping\GlsTrackingService::CARRIER;
+        $hasTrackingIdentifier = filled($order->tracking_code) || filled($order->shipping_parcel_id);
         $boxNowTrackingId = $boxNowPolicy->parcelId($order);
         $boxNowCanDispatch = $boxNowPolicy->canDispatch($order);
     @endphp
@@ -164,6 +166,58 @@
                 </div>
             </div>
         </div>
+
+        @if($isGlsOrder)
+            <div class="block block-rounded mt-4">
+                <div class="block-header block-header-default admin-toolbar">
+                    <div>
+                        <h2 class="block-title mb-1"><i class="fa fa-shipping-fast mr-2" aria-hidden="true"></i>GLS praćenje</h2>
+                        <p class="text-muted mb-0 font-size-sm">Vrijedi za GLS dostavu na adresu i GLS paketomat.</p>
+                    </div>
+                    <div class="admin-toolbar-actions">
+                        @if($hasTrackingIdentifier)
+                            <button type="button" class="btn btn-sm btn-alt-info" data-tracking-btn="{{ $order->id }}" onclick="refreshTracking({{ $order->id }})"><i class="fa fa-sync-alt mr-1" aria-hidden="true"></i> Osvježi status</button>
+                        @else
+                            <button type="button" class="btn btn-sm btn-alt-warning" onclick="sendGls({{ $order->id }})"><i class="fa fa-shipping-fast mr-1" aria-hidden="true"></i> Pošalji u GLS</button>
+                        @endif
+                    </div>
+                </div>
+                <div class="block-content">
+                    <div class="admin-shipment-grid">
+                        <div class="admin-meta-list">
+                            <div class="admin-meta-row"><span>Način dostave</span><strong>{{ $order->shipping_method ?: 'GLS' }}</strong></div>
+                            <div class="admin-meta-row"><span>Parcel ID</span><strong>{{ $order->shipping_parcel_id ?: '—' }}</strong></div>
+                            <div class="admin-meta-row"><span>Tracking broj</span><strong>{{ $order->tracking_code ?: 'Još nije dostupan' }}</strong></div>
+                            <div class="admin-meta-row"><span>Paketomat</span><strong>{{ $order->commentp ?: '—' }}</strong></div>
+                        </div>
+                        <div class="admin-meta-list">
+                            <div class="admin-meta-row"><span>Status</span><strong>{{ $order->shipping_tracking_status ?: 'Pošiljka još nije kreirana.' }}</strong></div>
+                            <div class="admin-meta-row"><span>Osvježeno</span><strong>{{ $order->shipping_tracking_updated_at ? $order->shipping_tracking_updated_at->format('d.m.Y. H:i:s') : '—' }}</strong></div>
+                            <div class="admin-meta-row"><span>Praćenje</span><strong>@if($trackingUrl)<a href="{{ $trackingUrl }}" target="_blank" rel="noopener">Otvori <i class="fa fa-external-link-alt ml-1" aria-hidden="true"></i></a>@else — @endif</strong></div>
+                            <div class="admin-meta-row">
+                                <span>Email kupcu</span>
+                                <strong>
+                                    @if($trackingEmailSentAt)
+                                        <span class="badge badge-success">Poslan {{ $trackingEmailSentAt->format('d.m.Y. H:i') }}</span>
+                                    @elseif($order->tracking_code)
+                                        <button type="button" class="btn btn-sm btn-alt-secondary" data-tracking-email-btn="{{ $order->id }}" onclick="sendTrackingEmail({{ $order->id }})"><i class="fa fa-envelope mr-1" aria-hidden="true"></i> Pošalji</button>
+                                    @else
+                                        <span class="text-muted">Čeka tracking broj</span>
+                                    @endif
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if(! empty($order->shipping_tracking_payload))
+                        <details class="admin-api-details">
+                            <summary>Zadnji GLS API odgovor</summary>
+                            <pre>{{ json_encode($order->shipping_tracking_payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</pre>
+                        </details>
+                    @endif
+                </div>
+            </div>
+        @endif
 
         @if($isBoxNowOrder)
             <div class="block block-rounded mt-4">
@@ -347,6 +401,43 @@
 
         function refreshBoxNow() {
             boxNowAction("{{ route('api.order.tracking.boxnow.refresh') }}");
+        }
+
+        function shipmentAction(endpoint, orderId, fallback) {
+            axios.post(endpoint, {order_id: orderId})
+                .then((response) => {
+                    if (!response.data.message) {
+                        errorToast.fire(response.data.error || fallback);
+                        return;
+                    }
+                    successToast.fire({timer: 1800, text: response.data.message}).then(() => location.reload());
+                })
+                .catch((error) => {
+                    const message = error.response && error.response.data && error.response.data.error
+                        ? error.response.data.error
+                        : fallback;
+                    errorToast.fire(message);
+                });
+        }
+
+        function sendGls(orderId) {
+            shipmentAction("{{ route('api.order.send.gls') }}", orderId, 'GLS pošiljka nije kreirana.');
+        }
+
+        function refreshTracking(orderId) {
+            shipmentAction("{{ route('api.order.tracking.refresh') }}", orderId, 'Tracking nije osvježen.');
+        }
+
+        function sendTrackingEmail(orderId) {
+            const button = document.querySelector(`[data-tracking-email-btn="${orderId}"]`);
+            if (button) button.disabled = true;
+
+            axios.post("{{ route('api.order.send.tracking-email') }}", {order_id: orderId})
+                .then((response) => successToast.fire({timer: 1800, text: response.data.message}).then(() => location.reload()))
+                .catch((error) => errorToast.fire(error.response && error.response.data && error.response.data.error
+                    ? error.response.data.error
+                    : 'Tracking email nije poslan.'))
+                .finally(() => { if (button) button.disabled = false; });
         }
     </script>
 @endpush

@@ -14,6 +14,7 @@ use App\Models\Front\Checkout\Shipping\Gls;
 use App\Services\Shipping\BoxNowOrderPolicy;
 use App\Services\Shipping\BoxNowService;
 use App\Services\Shipping\BoxNowSettingsService;
+use App\Services\Shipping\GlsTrackingService;
 use App\Services\Shipping\OrderTrackingService;
 use App\Services\Inventory\OrderInventoryService;
 use Bouncer;
@@ -122,12 +123,27 @@ class OrderController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function show(Order $order, BoxNowOrderPolicy $boxNowPolicy)
+    public function show(
+        Order $order,
+        BoxNowOrderPolicy $boxNowPolicy,
+        OrderTrackingService $trackingService
+    )
     {
         $statuses = Settings::get('order', 'statuses');
         $canManageBoxNow = $this->canManageBoxNow();
+        $trackingCarrier = $trackingService->resolveCarrier($order);
+        $trackingUrl = $trackingService->trackingUrlForOrder($order);
+        $trackingEmailSentAt = $trackingService->trackingEmailSentAt($order);
 
-        return view('back.order.show', compact('order', 'statuses', 'boxNowPolicy', 'canManageBoxNow'));
+        return view('back.order.show', compact(
+            'order',
+            'statuses',
+            'boxNowPolicy',
+            'canManageBoxNow',
+            'trackingCarrier',
+            'trackingUrl',
+            'trackingEmailSentAt'
+        ));
     }
 
 
@@ -539,35 +555,40 @@ class OrderController extends Controller
                 ], 422);
             }
 
-            $trackingCode = $parcelNumber !== '' ? $parcelNumber : $parcelId;
-            $trackingUrlTemplate = trim((string) config('services.gls.tracking_url'));
-            $trackingUrl = $trackingUrlTemplate !== ''
-                ? str_replace('{tracking_code}', rawurlencode($trackingCode), $trackingUrlTemplate)
-                : null;
             $payload = $label;
             unset($payload['GetPrintedLabelsRequest']);
 
+            if ($parcelNumber !== '') {
+                $order->forceFill(['printed' => true])->save();
+
+                app(OrderTrackingService::class)->apply($order, [
+                    'carrier' => GlsTrackingService::CARRIER,
+                    'parcel_id' => $parcelId !== '' ? $parcelId : null,
+                    'tracking_code' => $parcelNumber,
+                    'tracking_url' => app(GlsTrackingService::class)->trackingUrl($parcelNumber),
+                    'status_code' => '51',
+                    'status' => 'Podaci o pošiljci su uneseni u GLS sustav; pošiljka još nije predana GLS-u.',
+                    'tracked_at' => now(),
+                    'payload' => $payload,
+                ]);
+
+                return response()->json(['message' => 'GLS pošiljka uspješno je kreirana: ' . $parcelNumber]);
+            }
+
             $order->forceFill([
-                'shipping_carrier' => 'gls',
-                'shipping_parcel_id' => $parcelId !== '' ? $parcelId : null,
-                'tracking_code' => $trackingCode,
-                'shipping_tracking_url' => $trackingUrl,
-                'shipping_tracking_status_code' => 'created',
-                'shipping_tracking_status' => 'Pošiljka je kreirana u GLS sustavu.',
+                'shipping_carrier' => GlsTrackingService::CARRIER,
+                'shipping_parcel_id' => $parcelId,
+                'shipping_tracking_status_code' => '51',
+                'shipping_tracking_status' => 'Podaci o pošiljci su uneseni u GLS sustav; tracking broj još nije dostupan.',
                 'shipping_tracking_updated_at' => now(),
                 'shipping_tracking_attempted_at' => now(),
                 'shipping_tracking_payload' => $payload,
                 'printed' => true,
             ])->save();
 
-            OrderHistory::query()->create([
-                'order_id' => $order->id,
-                'user_id' => auth()->id() ?: 0,
-                'status' => 0,
-                'comment' => 'GLS pošiljka kreirana. Broj pošiljke: ' . $trackingCode . '.',
+            return response()->json([
+                'message' => 'GLS pošiljka uspješno je kreirana s ID-em: ' . $parcelId . '. Tracking broj još nije dostupan.',
             ]);
-
-            return response()->json(['message' => 'GLS pošiljka uspješno je kreirana: ' . $trackingCode]);
         } catch (\Throwable $exception) {
             Log::error('GLS shipment failed.', [
                 'order_id' => $order->id,
@@ -607,6 +628,64 @@ class OrderController extends Controller
                 || trim((string) $order->tracking_code) !== ''
                 || (bool) $order->printed
             );
+    }
+
+
+    /**
+     * Ručno osvježava GLS ili Box Now status iz admina.
+     */
+    public function api_refresh_tracking(Request $request, OrderTrackingService $trackingService)
+    {
+        $request->validate(['order_id' => 'required|integer']);
+        $order = Order::query()->find($request->input('order_id'));
+
+        if (! $order) {
+            return response()->json(['error' => 'Narudžba nije pronađena.'], 404);
+        }
+
+        try {
+            $result = $trackingService->refresh($order);
+
+            return response()->json([
+                'message' => $result['message'],
+                'tracking' => $result['tracking'],
+            ]);
+        } catch (\Throwable $exception) {
+            Log::warning('Manual shipment tracking refresh failed.', [
+                'order_id' => $order->id,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return response()->json(['error' => 'Greška..! ' . $exception->getMessage()], 422);
+        }
+    }
+
+
+    public function api_send_tracking_email(Request $request, OrderTrackingService $trackingService)
+    {
+        $request->validate(['order_id' => 'required|integer']);
+        $order = Order::query()->find($request->input('order_id'));
+
+        if (! $order) {
+            return response()->json(['error' => 'Narudžba nije pronađena.'], 404);
+        }
+
+        try {
+            $result = $trackingService->sendTrackingAvailableMailManually($order);
+        } catch (\Throwable $exception) {
+            Log::warning('Manual GLS tracking email failed.', [
+                'order_id' => $order->id,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return response()->json(['error' => 'Slanje tracking emaila nije uspjelo.'], 422);
+        }
+
+        if (! empty($result['error'])) {
+            return response()->json(['error' => $result['error']], 422);
+        }
+
+        return response()->json(['message' => $result['message'] ?? 'Tracking email je obrađen.']);
     }
 
 

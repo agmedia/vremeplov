@@ -30,7 +30,7 @@ class Kernel extends ConsoleKernel
         //$schedule->command('clean:products')->everyMinute();
         //$schedule->command('clean:descriptions')->everyTwoMinutes();
         $schedule->command('clean:product_slugs')->everyThirtyMinutes();
-        $schedule->command('sync:boxnow-tracking --limit=50 --stale-minutes=15')
+        $schedule->command('sync:shipment-tracking --limit=50 --stale-minutes=15')
             ->everyFifteenMinutes()
             ->withoutOverlapping(30);
         $schedule->command('inventory:release-expired --limit=100')

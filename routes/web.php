@@ -358,6 +358,12 @@ Route::prefix('api/v2')->group(function () {
                 Route::post('tracking/boxnow/refresh', [OrderController::class, 'api_refresh_boxnow_tracking'])
                     ->middleware(['auth:web', 'verified', 'no.customers', 'boxnow.manager'])
                     ->name('api.order.tracking.boxnow.refresh');
+                Route::post('tracking/refresh', [OrderController::class, 'api_refresh_tracking'])
+                    ->middleware(['auth:web', 'verified', 'no.customers', 'admin.manager'])
+                    ->name('api.order.tracking.refresh');
+                Route::post('send/tracking-email', [OrderController::class, 'api_send_tracking_email'])
+                    ->middleware(['auth:web', 'verified', 'no.customers', 'admin.manager'])
+                    ->name('api.order.send.tracking-email');
             });
             // PAYMENTS
             Route::prefix('payment')->middleware(['auth:web', 'verified', 'no.customers', 'admin.manager'])->group(function () {

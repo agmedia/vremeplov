@@ -106,17 +106,27 @@ class PublisherSearch extends Component
      */
     public function makeNewPublisher()
     {
-        if ($this->new['title'] == '') {
+        $title = Publisher::normalizeTitle($this->new['title'] ?? '');
+
+        if ($title === '') {
             return $this->emit('error_alert', ['message' => 'Molimo vas da popunite sve podatke!']);
         }
 
-        $slug = Str::slug($this->new['title']);
+        $existing = Publisher::findByEquivalentTitle($title);
+
+        if ($existing) {
+            $this->selectPublisher($existing);
+
+            return $this->emit('success_alert', ['message' => 'Izdavač već postoji i odabran je postojeći zapis.']);
+        }
+
+        $slug = Str::slug($title);
 
         $id = Publisher::insertGetId([
-            'letter'           => Helper::resolveFirstLetter($this->new['title']),
-            'title'            => $this->new['title'],
+            'letter'           => Helper::resolveFirstLetter($title),
+            'title'            => $title,
             'description'      => '',
-            'meta_title'       => $this->new['title'],
+            'meta_title'       => $title,
             'meta_description' => '',
             'lang'             => 'hr',
             'sort_order'       => 0,
@@ -128,17 +138,22 @@ class PublisherSearch extends Component
         ]);
 
         if ($id) {
-            $publisher = Publisher::find($id);
+            $this->selectPublisher(Publisher::find($id));
 
-            $this->show_add_window = false;
-
-            $this->publisher_id = $publisher->id;
-            $this->search     = $publisher->title;
-
-            return $this->emit('success_alert', ['message' => 'Autor je uspješno dodan..!']);
+            return $this->emit('success_alert', ['message' => 'Izdavač je uspješno dodan..!']);
         }
 
         return $this->emit('error_alert');
+    }
+
+
+    private function selectPublisher(Publisher $publisher): void
+    {
+        $this->show_add_window = false;
+        $this->search_results = [];
+        $this->new['title'] = '';
+        $this->publisher_id = $publisher->id;
+        $this->search = $publisher->title;
     }
 
 

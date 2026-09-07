@@ -36,6 +36,8 @@ class AdminApiRouteSecurityTest extends TestCase
         $this->postJson(route('api.payment.store'))->assertUnauthorized();
         $this->postJson(route('api.order.status.change'))->assertUnauthorized();
         $this->postJson(route('api.order.send.gls'))->assertUnauthorized();
+        $this->postJson(route('api.order.tracking.refresh'))->assertUnauthorized();
+        $this->postJson(route('api.order.send.tracking-email'))->assertUnauthorized();
     }
 
     public function test_unreviewed_keks_endpoints_are_disabled_by_default(): void
@@ -79,6 +81,8 @@ class AdminApiRouteSecurityTest extends TestCase
             'api.order.status.destroy',
             'api.order.status.change',
             'api.order.send.gls',
+            'api.order.tracking.refresh',
+            'api.order.send.tracking-email',
             'api.payment.store',
             'api.payment.destroy',
             'api.shipping.store',

@@ -282,7 +282,8 @@ class OC_Import
                 return config('settings.unknown_author');
             }
             // Check if author exist.
-            $exist = Author::where('title', $name)->first();
+            $name = Author::normalizeTitle($name);
+            $exist = Author::findByEquivalentTitle($name);
 
             if ( ! $exist) {
                 return Author::insertGetId([
@@ -411,7 +412,8 @@ class OC_Import
     public function resolvePublisher(string $publisher = null): int
     {
         if ($publisher) {
-            $exist = Publisher::where('title', $publisher)->first();
+            $publisher = Publisher::normalizeTitle($publisher);
+            $exist = Publisher::findByEquivalentTitle($publisher);
 
             if ( ! $exist) {
                 return Publisher::insertGetId([

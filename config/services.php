@@ -59,6 +59,7 @@ return [
         'password' => env('GLS_PASSWORD'),
         'wsdl' => env('GLS_WSDL', 'https://api.mygls.hr/ParcelService.svc?singleWsdl'),
         'connection_timeout' => (int) env('GLS_CONNECTION_TIMEOUT', 20),
+        'language' => env('GLS_LANGUAGE', 'HR'),
         'tracking_url' => env('GLS_TRACKING_URL', 'https://gls-group.com/GROUP/en/parcel-tracking?match={tracking_code}'),
         'pickup' => [
             'contact_name' => env('GLS_PICKUP_CONTACT_NAME'),

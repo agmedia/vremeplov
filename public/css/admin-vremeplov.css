@@ -601,7 +601,7 @@ body.admin-vremeplov,
 .admin-products-table th:nth-child(10),
 .admin-products-table td:nth-child(10) { width: 70px; }
 .admin-products-table th:nth-child(11),
-.admin-products-table td:nth-child(11) { width: 164px; }
+.admin-products-table td:nth-child(11) { width: 126px; }
 
 .admin-products-table .img-link {
     display: inline-flex;
@@ -1430,21 +1430,35 @@ body.admin-vremeplov,
     font-size: 1.8rem;
 }
 
-.admin-sticky-actions {
+.admin-form-actions {
+    display: flex;
+    gap: .65rem;
+    align-items: center;
+    justify-content: flex-end;
+    padding: .75rem 1rem;
+    border: 1px solid var(--admin-line);
+    border-radius: var(--admin-radius);
+    background: var(--admin-surface-soft);
+}
+
+.product-editor-actions {
     position: sticky;
     z-index: 20;
-    bottom: 1rem;
-    margin-top: 1rem;
-    border: 1px solid #cfc5b7;
-    border-radius: var(--admin-radius);
-    background: rgba(255, 255, 255, .96);
-    box-shadow: 0 12px 32px rgba(49, 36, 31, .15);
+    bottom: .55rem;
+    margin: .85rem 1rem 1rem;
+    background: rgba(248, 244, 236, .97);
+    box-shadow: 0 8px 24px rgba(49, 36, 31, .12);
     backdrop-filter: blur(8px);
 }
 
-.admin-sticky-actions .block-content {
-    padding-top: .65rem;
-    padding-bottom: .65rem;
+.product-save-note {
+    margin-right: auto;
+    color: var(--admin-muted);
+    font-size: .78rem;
+}
+
+.product-delete-action {
+    margin-left: auto;
 }
 
 .admin-editor-tabs {
@@ -1772,6 +1786,27 @@ body.admin-vremeplov,
         overflow-x: auto;
         flex-wrap: nowrap;
         white-space: nowrap;
+    }
+
+    .product-editor-actions {
+        position: static;
+        align-items: stretch;
+        flex-direction: column;
+        margin: .65rem;
+    }
+
+    .product-save-note {
+        margin: 0 0 .25rem;
+        text-align: center;
+    }
+
+    .product-delete-action {
+        margin-left: 0;
+        order: 3;
+    }
+
+    .product-editor-actions .btn {
+        width: 100%;
     }
 
     .admin-footer-credit {

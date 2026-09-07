@@ -3,6 +3,7 @@
 namespace App\Models\Back\Catalog;
 
 use App\Helpers\ImageHelper;
+use App\Models\Concerns\HasNormalizedUniqueTitle;
 use App\Models\Back\Catalog\Product\Product;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,7 +14,7 @@ use Illuminate\Support\Str;
 
 class Publisher extends Model
 {
-    use HasFactory;
+    use HasFactory, HasNormalizedUniqueTitle;
 
     /**
      * @var string
@@ -49,8 +50,14 @@ class Publisher extends Model
      */
     public function validateRequest(Request $request)
     {
+        $request->merge([
+            'title' => static::normalizeTitle($request->input('title')),
+        ]);
+
         $request->validate([
-            'title' => 'required'
+            'title' => ['required', function ($attribute, $value, $fail) {
+                $this->rejectEquivalentTitle($attribute, $value, $fail);
+            }],
         ]);
 
         $this->request = $request;

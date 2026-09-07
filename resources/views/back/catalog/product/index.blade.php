@@ -205,7 +205,6 @@
                                     <a class="btn btn-sm btn-alt-warning" href="{{ route('products.duplicate', ['product' => $product]) }}" title="Dupliciraj artikl" aria-label="Dupliciraj {{ $product->name }}">
                                         <i class="fa fa-fw fa-copy"></i>
                                     </a>
-                                    <button class="btn btn-sm btn-alt-danger" type="button" onclick="deleteItem({{ $product->id }}, '{{ route('products.destroy.api') }}');" title="Obriši artikl" aria-label="Obriši {{ $product->name }}"><i class="fa fa-fw fa-trash-alt"></i></button>
                                     </span>
                                 </td>
                             </tr>

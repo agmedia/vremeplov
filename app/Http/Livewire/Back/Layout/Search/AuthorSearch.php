@@ -106,17 +106,27 @@ class AuthorSearch extends Component
      */
     public function makeNewAuthor()
     {
-        if ($this->new['title'] == '') {
+        $title = Author::normalizeTitle($this->new['title'] ?? '');
+
+        if ($title === '') {
             return $this->emit('error_alert', ['message' => 'Molimo vas da popunite sve podatke!']);
         }
 
-        $slug = Str::slug($this->new['title']);
+        $existing = Author::findByEquivalentTitle($title);
+
+        if ($existing) {
+            $this->selectAuthor($existing);
+
+            return $this->emit('success_alert', ['message' => 'Autor već postoji i odabran je postojeći zapis.']);
+        }
+
+        $slug = Str::slug($title);
 
         $id = Author::insertGetId([
-            'letter'           => Helper::resolveFirstLetter($this->new['title']),
-            'title'            => $this->new['title'],
+            'letter'           => Helper::resolveFirstLetter($title),
+            'title'            => $title,
             'description'      => '',
-            'meta_title'       => $this->new['title'],
+            'meta_title'       => $title,
             'meta_description' => '',
             'lang'             => 'hr',
             'sort_order'       => 0,
@@ -128,17 +138,22 @@ class AuthorSearch extends Component
         ]);
 
         if ($id) {
-            $author = Author::find($id);
-
-            $this->show_add_window = false;
-
-            $this->author_id = $author->id;
-            $this->search     = $author->title;
+            $this->selectAuthor(Author::find($id));
 
             return $this->emit('success_alert', ['message' => 'Autor je uspješno dodan..!']);
         }
 
         return $this->emit('error_alert');
+    }
+
+
+    private function selectAuthor(Author $author): void
+    {
+        $this->show_add_window = false;
+        $this->search_results = [];
+        $this->new['title'] = '';
+        $this->author_id = $author->id;
+        $this->search = $author->title;
     }
 
 

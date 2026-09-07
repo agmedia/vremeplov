@@ -370,29 +370,17 @@
             <!-- END Block Tabs Default Style -->
 
 
-            <div class="block admin-sticky-actions">
-            <div class="block-content bg-body-light">
-                <div class="row justify-content-center push">
-                    <div class="col-md-6 d-flex align-items-center">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save mr-1"></i> Spremi artikl
-                        </button>
-                    </div>
-                    <div class="col-md-6 text-right">
-                        @if (isset($product))
-                            <a href="{{ route('products.destroy', ['product' => $product]) }}" class="btn btn-alt-danger js-tooltip-enabled" data-toggle="tooltip" title="" data-original-title="Obriši" onclick="event.preventDefault(); document.getElementById('delete-product-form{{ $product->id }}').submit();">
-                                <i class="fa fa-trash-alt"></i> Obriši
-                            </a>
-                        @endif
-                    </div>
-                </div>
+            <div class="admin-form-actions product-editor-actions">
+                <span class="product-save-note"><i class="fa fa-info-circle mr-1" aria-hidden="true"></i> Promjene se primjenjuju tek nakon spremanja.</span>
+                @if (isset($product))
+                    <a href="{{ route('products.destroy', ['product' => $product]) }}" class="btn btn-alt-danger product-delete-action js-tooltip-enabled" data-toggle="tooltip" title="" data-original-title="Obriši artikl" onclick="event.preventDefault(); if (confirm('Sigurno želite trajno obrisati ovaj artikl?')) document.getElementById('delete-product-form{{ $product->id }}').submit();">
+                        <i class="fa fa-trash-alt mr-1" aria-hidden="true"></i> Obriši
+                    </a>
+                @endif
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save mr-1" aria-hidden="true"></i> Spremi artikl
+                </button>
             </div>
-
-            </div>
-
-
-
-
         </form>
 
         @if (isset($product))

@@ -159,9 +159,9 @@ class Import
     public function resolveAuthor(string $author = null): int
     {
         if ($author) {
-            $author = trim($author);
+            $author = Author::normalizeTitle($author);
 
-            $exist = Author::where('title', $author)->first();
+            $exist = Author::findByEquivalentTitle($author);
 
             if ( ! $exist) {
                 return Author::insertGetId([
@@ -211,10 +211,9 @@ class Import
     public function resolvePublisher(string $publisher = null): int
     {
         if ($publisher) {
+            $publisher = Publisher::normalizeTitle($publisher);
 
-            Log::info('$publisher..... ' . $publisher);
-
-            $exist = Publisher::where('title', $publisher)->first();
+            $exist = Publisher::findByEquivalentTitle($publisher);
 
             if ( ! $exist) {
                 return Publisher::insertGetId([
