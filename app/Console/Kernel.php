@@ -30,7 +30,6 @@ class Kernel extends ConsoleKernel
         //$schedule->command('clean:products')->everyMinute();
         //$schedule->command('clean:descriptions')->everyTwoMinutes();
         $schedule->command('clean:product_slugs')->everyThirtyMinutes();
-        $schedule->command('check:wishlist')->everySixHours();
         $schedule->command('sync:boxnow-tracking --limit=50 --stale-minutes=15')
             ->everyFifteenMinutes()
             ->withoutOverlapping(30);
@@ -43,7 +42,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('orders:send-abandoned-cart-reminders --limit=25')
             ->everyThirtyMinutes()
             ->withoutOverlapping(30);
-        $schedule->command('reviews:send-requests --limit=100')
+        $schedule->command('reviews:send-requests')
             // Tri pokušaja tijekom istog kvalificiranog dana; poslani se automatski preskaču.
             ->cron('15 10,14,18 * * *')
             ->withoutOverlapping(30);

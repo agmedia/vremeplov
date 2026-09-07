@@ -7,6 +7,8 @@ use App\Models\Front\Catalog\Category;
 use App\Models\Front\Page;
 use App\Models\User;
 use App\Models\Front\Catalog\Product;
+use App\Models\Back\Marketing\Review;
+use App\Models\Back\Marketing\Wishlist;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -37,6 +39,17 @@ class AppServiceProvider extends ServiceProvider
             ? collect()
             : Page::where('subgroup', 'Uvjeti kupnje')->get();
         View::share('uvjeti_kupnje', $uvjeti_kupnje);
+
+        View::composer('back.layouts.partials.topbar', function ($view) {
+            $wishlistReadyCount = Schema::hasTable('wishlist') && Schema::hasTable('products')
+                ? Wishlist::query()->readyToSend()->count()
+                : 0;
+            $pendingCommentCount = Schema::hasTable('reviews')
+                ? Review::query()->where('status', 0)->count()
+                : 0;
+
+            $view->with(compact('wishlistReadyCount', 'pendingCommentCount'));
+        });
 
         /*$nacini_placanja = Page::where('subgroup', 'Načini plaćanja')->get();
         View::share('nacini_placanja', $nacini_placanja);

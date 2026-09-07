@@ -2,13 +2,11 @@
 
 namespace App\Models\Back\Marketing;
 
-use App\Mail\WishlistArrived;
 use App\Models\Front\Catalog\Product;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class Wishlist extends Model
 {
@@ -42,6 +40,20 @@ class Wishlist extends Model
         return $query->where('sent', 0);
     }
 
+    public function scopeReadyToSend(Builder $query): Builder
+    {
+        return $query->active()->unsent()->whereHas('product', function (Builder $product) {
+            $product->where('status', 1)->where('quantity', '>', 0);
+        });
+    }
+
+    public function scopeWaitingForStock(Builder $query): Builder
+    {
+        return $query->active()->unsent()->whereDoesntHave('product', function (Builder $product) {
+            $product->where('status', 1)->where('quantity', '>', 0);
+        });
+    }
+
     public function scopeBasic(Builder $query): Builder
     {
         return $query->select('product_id', 'email');
@@ -50,6 +62,15 @@ class Wishlist extends Model
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    public function isReadyToSend(): bool
+    {
+        return (int) $this->status === 1
+            && (int) $this->sent === 0
+            && $this->product
+            && (int) $this->product->status === 1
+            && (int) $this->product->quantity > 0;
     }
 
     public function validateRequest(Request $request)
@@ -102,48 +123,10 @@ class Wishlist extends Model
 
     public static function check_CRON()
     {
-        $log_start = microtime(true);
+        $ready = static::readyToSend()->count();
 
-        $list = static::active()->unsent()->basic()->get();
-        $ids = $list->unique('product_id')->pluck('product_id');
-        $products = Product::query()->whereIn('id', $ids)->available()->basicData()->get();
+        Log::info('__Check Wishlist - manual notifications only.', ['ready' => $ready]);
 
-        foreach ($products as $product) {
-            $emails = $list->where('product_id', $product->id)->pluck('email');
-
-            foreach ($emails as $email) {
-                dispatch(function () use ($email, $product) {
-                    Mail::to($email)->send(new WishlistArrived($product));
-                })->afterResponse();
-
-                $wishlistEntry = static::query()
-                    ->where('product_id', $product->id)
-                    ->where('email', $email)
-                    ->where('sent', 0)
-                    ->first();
-
-                if ($wishlistEntry) {
-                    $sentAt = now();
-
-                    $wishlistEntry->update([
-                        'sent' => 1,
-                        'status' => 0,
-                        'sent_at' => $sentAt,
-                    ]);
-
-                    Log::info('__Wishlist Notification Sent', [
-                        'wishlist_id' => $wishlistEntry->id,
-                        'product_id' => $product->id,
-                        'email' => $email,
-                        'sent_at' => $sentAt->toDateTimeString(),
-                    ]);
-                }
-            }
-        }
-
-        $log_end = microtime(true);
-        Log::info('__Check Wishlist - Total Execution Time: ' . number_format(($log_end - $log_start), 2, ',', '.') . ' sec.');
-
-        return 1;
+        return $ready;
     }
 }

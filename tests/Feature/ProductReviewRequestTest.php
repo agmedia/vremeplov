@@ -96,6 +96,7 @@ class ProductReviewRequestTest extends TestCase
         config([
             'reviews.request_emails_enabled' => true,
             'reviews.request_delay_days' => 30,
+            'reviews.request_daily_limit' => 100,
             'reviews.request_max_attempts' => 3,
             'reviews.request_link_days' => 180,
             'reviews.eligible_status_ids' => [4, 9, 10],
@@ -163,6 +164,22 @@ class ProductReviewRequestTest extends TestCase
 
         $this->assertSame(0, DB::table('product_review_invitations')->count());
         Mail::assertNothingSent();
+    }
+
+    public function test_daily_limit_caps_review_requests_across_repeated_runs(): void
+    {
+        Carbon::setTestNow('2026-09-04 12:00:00');
+        Mail::fake();
+        config(['reviews.request_daily_limit' => 1]);
+
+        $this->insertOrder(1, 4, 'prvi@example.test', '2026-07-20 10:00:00', '2026-08-05 10:00:00');
+        $this->insertOrder(2, 4, 'drugi@example.test', '2026-07-20 11:00:00', '2026-08-05 11:00:00');
+
+        $this->artisan('reviews:send-requests')->assertExitCode(0);
+        $this->artisan('reviews:send-requests')->assertExitCode(0);
+
+        $this->assertSame(1, DB::table('product_review_invitations')->count());
+        Mail::assertSent(ProductReviewRequestMail::class, 1);
     }
 
     public function test_signed_invitation_accepts_one_pending_verified_review_per_item(): void

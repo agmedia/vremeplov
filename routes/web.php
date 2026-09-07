@@ -173,6 +173,12 @@ Route::middleware(['auth:sanctum', 'verified', 'no.customers'])->prefix('admin')
 
         // WISHLIST
         Route::get('wishlists', [WishlistController::class, 'index'])->name('wishlists');
+        Route::post('wishlists/send-selected', [WishlistController::class, 'sendSelected'])
+            ->middleware('admin.manager')
+            ->name('wishlists.send-selected');
+        Route::post('wishlists/{wishlist}/send', [WishlistController::class, 'send'])
+            ->middleware('admin.manager')
+            ->name('wishlists.send');
     });
 
     // KORISNICI

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Back\Orders\Order;
+use App\Models\ProductReviewInvitation;
 use App\Services\ProductReviewRequestService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -51,9 +52,22 @@ class SendProductReviewRequests extends Command
             $eligibleDay->copy()->endOfDay()
         );
 
-        if ($this->option('limit')) {
-            $orders->limit(max(1, min((int) $this->option('limit'), 1000)));
+        $dailyLimit = (int) config('reviews.request_daily_limit', 100);
+        $sentToday = ProductReviewInvitation::query()
+            ->whereBetween('sent_at', [$runDate->copy()->startOfDay(), $runDate->copy()->endOfDay()])
+            ->count();
+        $remainingToday = max(0, $dailyLimit - $sentToday);
+
+        if ($remainingToday === 0) {
+            $this->info("Dnevni limit od {$dailyLimit} review poziva već je dosegnut; ništa nije poslano.");
+
+            return 0;
         }
+
+        $requestedLimit = $this->option('limit')
+            ? (int) $this->option('limit')
+            : $dailyLimit;
+        $orders->limit(max(1, min($requestedLimit, $remainingToday, 1000)));
 
         $orders = $orders->get();
 

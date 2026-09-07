@@ -18,7 +18,13 @@ class ReviewController extends Controller
      */
     public function index(Request $request)
     {
-        $reviews = Review::paginate(12);
+        $reviews = Review::query()
+            ->when($request->input('status') === 'pending', function ($query) {
+                $query->where('status', 0);
+            })
+            ->latest()
+            ->paginate(12)
+            ->appends($request->query());
 
         return view('back.marketing.review.index', compact('reviews'));
     }

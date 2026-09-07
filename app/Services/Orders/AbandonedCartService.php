@@ -24,9 +24,9 @@ class AbandonedCartService
         return Schema::hasTable('abandoned_cart_reminders');
     }
 
-    public function candidates(int $sequence, int $limit): Collection
+    public function candidates(int $sequence, int $limit, bool $ignoreEnabled = false): Collection
     {
-        if (! config('abandoned_cart.enabled') || ! $this->isAvailable()) {
+        if ((! $ignoreEnabled && ! config('abandoned_cart.enabled')) || ! $this->isAvailable()) {
             return collect();
         }
 
@@ -37,7 +37,7 @@ class AbandonedCartService
 
         $query = Order::query()
             ->where('order_status_id', (int) config('settings.order.status.unfinished', 8))
-            ->where('created_at', '>=', $this->startsAt())
+            ->where('created_at', '>=', $this->candidateCutoff())
             ->where('created_at', '<=', now()->subMinutes((int) $delay))
             ->whereNotNull('payment_email')
             ->whereRaw("TRIM(payment_email) <> ''")
@@ -159,5 +159,14 @@ class AbandonedCartService
     private function startsAt(): Carbon
     {
         return Carbon::parse((string) config('abandoned_cart.starts_at'), config('app.timezone'));
+    }
+
+    private function candidateCutoff(): Carbon
+    {
+        $rollingCutoff = now()->subHours((int) config('abandoned_cart.lookback_hours', 24));
+
+        return $this->startsAt()->greaterThan($rollingCutoff)
+            ? $this->startsAt()
+            : $rollingCutoff;
     }
 }

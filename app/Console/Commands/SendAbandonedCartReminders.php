@@ -12,7 +12,9 @@ class SendAbandonedCartReminders extends Command
 
     public function handle(AbandonedCartService $service): int
     {
-        if (! config('abandoned_cart.enabled')) {
+        $dryRun = (bool) $this->option('dry-run');
+
+        if (! config('abandoned_cart.enabled') && ! $dryRun) {
             $this->warn('Podsjetnici su isključeni. Postavite ABANDONED_CART_EMAILS_ENABLED=true nakon odobrenja.');
             return self::SUCCESS;
         }
@@ -27,15 +29,15 @@ class SendAbandonedCartReminders extends Command
         $failed = 0;
 
         for ($sequence = 1; $sequence <= 2 && $processed < $limit; $sequence++) {
-            foreach ($service->candidates($sequence, $limit - $processed) as $order) {
-                if (! $this->option('dry-run') && ! $service->send($order, $sequence)) {
+            foreach ($service->candidates($sequence, $limit - $processed, $dryRun) as $order) {
+                if (! $dryRun && ! $service->send($order, $sequence)) {
                     $failed++;
                 }
                 $processed++;
             }
         }
 
-        $this->info(($this->option('dry-run') ? 'Dry-run kandidati: ' : 'Obrađeno: ') . $processed . '. Neuspjelo: ' . $failed . '.');
+        $this->info(($dryRun ? 'Dry-run kandidati: ' : 'Obrađeno: ') . $processed . '. Neuspjelo: ' . $failed . '.');
         return $failed === 0 ? self::SUCCESS : self::FAILURE;
     }
 }

@@ -32,6 +32,7 @@ class AbandonedCartServiceTest extends TestCase
             'cache.default' => 'array',
             'abandoned_cart.enabled' => true,
             'abandoned_cart.starts_at' => now()->subDay()->toDateTimeString(),
+            'abandoned_cart.lookback_hours' => 24,
             'abandoned_cart.delays_minutes' => [1 => 60, 2 => 1440],
         ]);
         DB::purge('abandoned_testing');
@@ -67,12 +68,30 @@ class AbandonedCartServiceTest extends TestCase
 
     public function test_feature_is_fail_closed_until_explicitly_enabled(): void
     {
+        Mail::fake();
         config(['abandoned_cart.enabled' => false]);
         $order = $this->order(4, 'disabled@example.test', 8, now()->subHours(2));
         $this->product($order->id);
 
         $this->assertCount(0, (new AbandonedCartService())->candidates(1, 20));
         $this->artisan('orders:send-abandoned-cart-reminders')->assertExitCode(0);
+        $this->artisan('orders:send-abandoned-cart-reminders --dry-run')
+            ->expectsOutput('Dry-run kandidati: 1. Neuspjelo: 0.')
+            ->assertExitCode(0);
+
+        Mail::assertNothingSent();
+    }
+
+    public function test_orders_older_than_the_lookback_window_are_never_backfilled(): void
+    {
+        config(['abandoned_cart.starts_at' => now()->subDays(90)->toDateTimeString()]);
+
+        $old = $this->order(5, 'old@example.test', 8, now()->subHours(25));
+        $this->product($old->id);
+        $recent = $this->order(6, 'recent@example.test', 8, now()->subHours(2));
+        $this->product($recent->id);
+
+        $this->assertSame([6], (new AbandonedCartService())->candidates(1, 20)->pluck('id')->all());
     }
 
     private function order(int $id, string $email, int $status, $createdAt): Order

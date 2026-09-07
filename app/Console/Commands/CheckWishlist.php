@@ -9,10 +9,13 @@ class CheckWishlist extends Command
 {
     protected $signature = 'check:wishlist';
 
-    protected $description = 'Check wishlist & send emails if product is available.';
+    protected $description = 'Prikazuje broj wishlist prijava spremnih za ručno slanje.';
 
     public function handle()
     {
-        return Wishlist::check_CRON();
+        $ready = Wishlist::check_CRON();
+        $this->info("Spremno za ručno slanje: {$ready}. Automatsko slanje je isključeno.");
+
+        return self::SUCCESS;
     }
 }
