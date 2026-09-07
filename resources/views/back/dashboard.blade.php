@@ -112,13 +112,13 @@
                 <div class="block block-rounded dashboard-list-block">
                     <div class="block-header block-header-default"><h2 class="block-title">Zadnje narudžbe</h2><a class="btn btn-sm btn-light" href="{{ route('orders') }}">Sve <i class="fa fa-arrow-right ml-1"></i></a></div>
                     <div class="block-content">
-                        <table class="table table-borderless table-vcenter dashboard-list-table"><tbody>
+                        <table class="table table-borderless table-vcenter dashboard-list-table dashboard-orders-list-table"><tbody>
                         @forelse($orders as $order)
                             @php($status = $order->status)
                             <tr>
                                 <td class="dashboard-list-id"><a href="{{ route('orders.show', ['order' => $order]) }}">#{{ $order->id }}</a></td>
                                 <td><a class="dashboard-list-link" href="{{ route('orders.show', ['order' => $order]) }}">{{ trim($order->payment_fname . ' ' . $order->payment_lname) ?: 'Nepoznati kupac' }}</a><small class="d-block text-muted">{{ optional($order->created_at)->format('d.m.Y. H:i') }} · {{ $order->products_count }} artikala</small></td>
-                                <td class="text-right"><strong class="d-block">{{ \App\Helpers\Currency::main($order->total, true) }}</strong><span class="badge badge-pill badge-{{ $status->color ?? 'secondary' }}">{{ $status->title ?? 'Nepoznat status' }}</span></td>
+                                <td class="text-right"><strong class="d-block">{{ \App\Helpers\Currency::main($order->total, true) }}</strong><span class="badge badge-pill badge-{{ $status->color ?? 'secondary' }} dashboard-order-status" title="{{ $status->title ?? 'Nepoznat status' }}">{{ $status->title ?? 'Nepoznat status' }}</span></td>
                             </tr>
                         @empty
                             <tr><td class="admin-empty-state"><i class="fa fa-receipt"></i>Nema narudžbi za prikaz.</td></tr>
@@ -164,30 +164,33 @@
 
 @push('css_after')
     <style>
-        .dashboard-kpi-meta { display: flex; gap: 1rem; justify-content: space-between; padding-top: .7rem; border-top: 1px solid #ece5da; }
+        .dashboard-kpi-meta { display: flex; gap: .75rem; justify-content: space-between; padding-top: .5rem; border-top: 1px solid #ece5da; }
         .dashboard-sales-header { align-items: flex-end; }
         .dashboard-sales-filters { display: flex; gap: .65rem; }
         .dashboard-sales-filters > div { min-width: 10rem; }
         .dashboard-sales-content { padding-top: 1rem; }
-        .dashboard-summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem; margin: 1rem 0; }
-        .dashboard-summary-card { padding: 1rem; border: 1px solid var(--admin-line); border-radius: var(--admin-radius-sm); background: #fff; }
+        .dashboard-summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .65rem; margin: .75rem 0; }
+        .dashboard-summary-card { padding: .8rem .9rem; border: 1px solid var(--admin-line); border-radius: var(--admin-radius-sm); background: #fff; }
         .dashboard-summary-card span { display: block; color: var(--admin-muted); font-size: .7rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
         .dashboard-summary-card strong { display: block; margin: .35rem 0 .15rem; color: var(--admin-brown-dark); font-size: 1.35rem; }
         .dashboard-summary-card small { color: var(--admin-muted); }
-        .dashboard-operational-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; margin: 1rem 0; }
-        .dashboard-operational-card { display: flex; gap: .8rem; align-items: center; padding: .9rem 1rem; border: 1px solid var(--admin-line); border-radius: var(--admin-radius); color: var(--admin-ink) !important; background: #fff; }
+        .dashboard-operational-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .65rem; margin: .75rem 0; }
+        .dashboard-operational-card { display: flex; gap: .7rem; align-items: center; padding: .75rem .9rem; border: 1px solid var(--admin-line); border-radius: var(--admin-radius); color: var(--admin-ink) !important; background: #fff; }
         .dashboard-operational-card > i { display: inline-flex; width: 2.35rem; height: 2.35rem; align-items: center; justify-content: center; border-radius: .5rem; color: var(--admin-brown); background: var(--admin-gold-soft); }
         .dashboard-operational-card strong { display: block; color: var(--admin-brown-dark); font-size: 1.15rem; }
-        .dashboard-list-row { margin-top: 1rem; }
+        .dashboard-list-row { margin-top: .75rem; }
         .dashboard-list-row > [class*="col-"] { min-width: 0; }
         .dashboard-list-block { height: calc(100% - 1rem); min-width: 0; overflow: hidden; }
         .dashboard-list-table { width: 100%; table-layout: fixed; }
-        .dashboard-list-table td { min-width: 0; }
-        .dashboard-list-table td:first-child { width: 5.2rem; }
+        .dashboard-list-table td { min-width: 0; padding: .62rem .55rem; }
+        .dashboard-list-table td:first-child { width: 5.5rem; }
         .dashboard-list-table td:nth-child(2) { overflow: hidden; }
-        .dashboard-list-table td:last-child { width: 6.3rem; white-space: nowrap; }
+        .dashboard-list-table td:last-child { width: 6.3rem; overflow: hidden; white-space: nowrap; }
+        .dashboard-orders-list-table td:last-child { width: 8.7rem; }
         .dashboard-list-link { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .dashboard-list-id a { font-weight: 800; font-variant-numeric: tabular-nums; }
+        .dashboard-orders-list-table .dashboard-list-id a { font-size: 1.08rem; }
+        .dashboard-order-status { display: inline-block; overflow: hidden; max-width: 100%; margin-top: .18rem; text-overflow: ellipsis; vertical-align: middle; white-space: nowrap; }
         @media (max-width: 991.98px) { .dashboard-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dashboard-operational-grid { grid-template-columns: 1fr; } }
         @media (max-width: 575.98px) { .dashboard-sales-header, .dashboard-sales-filters { align-items: stretch; flex-direction: column; width: 100%; } .dashboard-summary-grid { grid-template-columns: 1fr; } }
     </style>
