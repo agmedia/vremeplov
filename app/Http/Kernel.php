@@ -65,5 +65,6 @@ class Kernel extends HttpKernel
         'no.customers' => \App\Http\Middleware\RedirectCustomer::class,
         'admin.manager' => \App\Http\Middleware\RequireAdministrator::class,
         'boxnow.manager' => \App\Http\Middleware\RequireBoxNowManager::class,
+        'review.backfill.admin' => \App\Http\Middleware\RequireProductReviewBackfillAdmin::class,
     ];
 }

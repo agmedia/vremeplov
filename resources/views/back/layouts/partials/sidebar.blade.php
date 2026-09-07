@@ -104,8 +104,8 @@
                     </a>
                 </li>
 
-                <li class="nav-main-item{{ request()->is(['admin/marketing/*']) ? ' open' : '' }}">
-                    <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">
+                <li class="nav-main-item{{ request()->is(['admin/marketing/*']) || request()->routeIs('product-review-backfills.*') ? ' open' : '' }}">
+                    <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="{{ request()->is(['admin/marketing/*']) || request()->routeIs('product-review-backfills.*') ? 'true' : 'false' }}" href="#">
                         <i class="nav-main-link-icon si si-bar-chart"></i>
                         <span class="nav-main-link-name">Marketing</span>
                     </a>
@@ -120,6 +120,13 @@
                                 <span class="nav-main-link-name">{{ __('Komentari') }}</span>
                             </a>
                         </li>
+                        @if(\App\Support\ProductReviewBackfillAccess::allows(auth()->user()))
+                            <li class="nav-main-item">
+                                <a class="nav-main-link{{ request()->routeIs('product-review-backfills.*') ? ' active' : '' }}" href="{{ route('product-review-backfills.index') }}">
+                                    <span class="nav-main-link-name">Pozivi za recenzije</span>
+                                </a>
+                            </li>
+                        @endif
                         <li class="nav-main-item">
                             <a class="nav-main-link{{ request()->routeIs(['faqs', 'faqs.*']) ? ' active' : '' }}" href="{{ route('faqs') }}">
                                 <span class="nav-main-link-name">FAQ</span>

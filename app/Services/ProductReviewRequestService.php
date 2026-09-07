@@ -106,6 +106,23 @@ class ProductReviewRequestService
     }
 
     /**
+     * Load one queued order without repeating the expensive candidate query.
+     * send() performs all eligibility and duplicate checks again before mailing.
+     */
+    public function findOrderForRequest(int $orderId): ?Order
+    {
+        return Order::query()
+            ->select('orders.*')
+            ->addSelect([
+                'sent_status_at' => DB::table('order_history')
+                    ->selectRaw('MIN(created_at)')
+                    ->whereColumn('order_history.order_id', 'orders.id')
+                    ->where('order_history.status', (int) config('settings.order.status.send')),
+            ])
+            ->find($orderId);
+    }
+
+    /**
      * @return array{status:string, message:?string, attempts:int}
      */
     public function send(Order $order): array

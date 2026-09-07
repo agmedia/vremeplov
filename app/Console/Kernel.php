@@ -46,6 +46,12 @@ class Kernel extends ConsoleKernel
             // Tri pokušaja tijekom istog kvalificiranog dana; poslani se automatski preskaču.
             ->cron('15 10,14,18 * * *')
             ->withoutOverlapping(30);
+        $schedule->command(
+            'reviews:process-backfills --max-seconds=' . (int) config('reviews.backfill_run_seconds', 50)
+        )
+            ->everyMinute()
+            ->runInBackground()
+            ->withoutOverlapping(5);
     }
 
     /**

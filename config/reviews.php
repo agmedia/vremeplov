@@ -15,4 +15,9 @@ return [
     'request_max_attempts' => max(1, (int) env('REVIEW_REQUEST_MAX_ATTEMPTS', 3)),
     'request_link_days' => max(1, (int) env('REVIEW_REQUEST_LINK_DAYS', 180)),
     'eligible_status_ids' => $eligibleStatuses ?: [4, 9, 10],
+    'backfill_max_orders' => max(1, (int) env('REVIEW_BACKFILL_MAX_ORDERS', 5000)),
+    'backfill_default_interval_seconds' => max(5, (int) env('REVIEW_BACKFILL_INTERVAL_SECONDS', 5)),
+    'backfill_interval_options' => [5, 10, 15, 30, 60],
+    'backfill_run_seconds' => max(1, min((int) env('REVIEW_BACKFILL_RUN_SECONDS', 50), 58)),
+    'backfill_admin_email' => env('REVIEW_BACKFILL_ADMIN_EMAIL', 'tomislav@agmedia.hr'),
 ];

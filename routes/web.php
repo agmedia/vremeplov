@@ -8,6 +8,7 @@ use App\Http\Controllers\Back\Catalog\CategoryController;
 use App\Http\Controllers\Back\Catalog\ProductController;
 use App\Http\Controllers\Back\Catalog\PublisherController;
 use App\Http\Controllers\Back\DashboardController;
+use App\Http\Controllers\Back\ProductReviewBackfillController;
 use App\Http\Controllers\Back\Marketing\ReviewController;
 use App\Http\Controllers\Back\Marketing\WishlistController;
 use App\Http\Controllers\Back\OrderController;
@@ -145,6 +146,15 @@ Route::middleware(['auth:sanctum', 'verified', 'no.customers'])->prefix('admin')
         ->name('order.boxnow.label');
     Route::get('order/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::patch('order/{order}', [OrderController::class, 'update'])->name('orders.update');
+
+    Route::middleware('review.backfill.admin')->group(function () {
+        Route::get('product-review-requests', [ProductReviewBackfillController::class, 'index'])
+            ->name('product-review-backfills.index');
+        Route::post('product-review-requests', [ProductReviewBackfillController::class, 'store'])
+            ->name('product-review-backfills.store');
+        Route::post('product-review-requests/{backfill}/cancel', [ProductReviewBackfillController::class, 'cancel'])
+            ->name('product-review-backfills.cancel');
+    });
 
     // MARKETING
     Route::prefix('marketing')->group(function () {
