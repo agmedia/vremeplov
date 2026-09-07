@@ -25,7 +25,7 @@
                 <span class="admin-section-eyebrow">Brzi pregled</span>
                 <h2>Prodaja po razdobljima</h2>
             </div>
-            <span class="text-muted font-size-sm">Promet uključuje statuse definirane za prodajnu statistiku.</span>
+            <span class="dashboard-section-note">Promet uključuje statuse definirane za prodajnu statistiku.</span>
         </div>
 
         <div class="dashboard-kpi-grid">
@@ -164,18 +164,21 @@
 
 @push('css_after')
     <style>
-        .dashboard-kpi-meta { display: flex; gap: .75rem; justify-content: space-between; padding-top: .5rem; border-top: 1px solid #ece5da; }
+        .dashboard-kpi-meta { display: flex; gap: .65rem; justify-content: space-between; padding-top: .38rem; border-top: 1px solid #e4ddd3; line-height: 1.25; }
+        .dashboard-kpi-meta > span { min-width: 0; }
+        .dashboard-kpi-meta > span:last-child { text-align: right; }
         .dashboard-sales-header { align-items: flex-end; }
+        .dashboard-sales-header .text-muted { color: #5f5a56 !important; font-weight: 500; }
         .dashboard-sales-filters { display: flex; gap: .65rem; }
         .dashboard-sales-filters > div { min-width: 10rem; }
-        .dashboard-sales-content { padding-top: 1rem; }
-        .dashboard-summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .65rem; margin: .75rem 0; }
-        .dashboard-summary-card { padding: .8rem .9rem; border: 1px solid var(--admin-line); border-radius: var(--admin-radius-sm); background: #fff; }
-        .dashboard-summary-card span { display: block; color: var(--admin-muted); font-size: .7rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
-        .dashboard-summary-card strong { display: block; margin: .35rem 0 .15rem; color: var(--admin-brown-dark); font-size: 1.35rem; }
-        .dashboard-summary-card small { color: var(--admin-muted); }
+        .dashboard-sales-content { padding-top: .7rem; }
+        .dashboard-summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .55rem; margin: .55rem 0; }
+        .dashboard-summary-card { padding: .65rem .75rem; border: 1px solid var(--admin-line); border-radius: var(--admin-radius-sm); background: #fffdf9; }
+        .dashboard-summary-card span { display: block; color: #625d59; font-size: .7rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+        .dashboard-summary-card strong { display: block; margin: .24rem 0 .08rem; color: var(--admin-brown-dark); font-size: 1.35rem; line-height: 1.2; }
+        .dashboard-summary-card small { color: #5f5a56; font-weight: 500; }
         .dashboard-operational-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .65rem; margin: .75rem 0; }
-        .dashboard-operational-card { display: flex; gap: .7rem; align-items: center; padding: .75rem .9rem; border: 1px solid var(--admin-line); border-radius: var(--admin-radius); color: var(--admin-ink) !important; background: #fff; }
+        .dashboard-operational-card { display: flex; gap: .7rem; align-items: center; padding: .68rem .82rem; border: 1px solid var(--admin-line); border-radius: var(--admin-radius); color: #494441 !important; background: #fff; font-size: .84rem; font-weight: 600; line-height: 1.3; }
         .dashboard-operational-card > i { display: inline-flex; width: 2.35rem; height: 2.35rem; align-items: center; justify-content: center; border-radius: .5rem; color: var(--admin-brown); background: var(--admin-gold-soft); }
         .dashboard-operational-card strong { display: block; color: var(--admin-brown-dark); font-size: 1.15rem; }
         .dashboard-list-row { margin-top: .75rem; }
@@ -188,11 +191,12 @@
         .dashboard-list-table td:last-child { width: 6.3rem; overflow: hidden; white-space: nowrap; }
         .dashboard-orders-list-table td:last-child { width: 8.7rem; }
         .dashboard-list-link { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .dashboard-list-table .text-muted { color: #625d59 !important; font-weight: 500; }
         .dashboard-list-id a { font-weight: 800; font-variant-numeric: tabular-nums; }
         .dashboard-orders-list-table .dashboard-list-id a { font-size: 1.08rem; }
         .dashboard-order-status { display: inline-block; overflow: hidden; max-width: 100%; margin-top: .18rem; text-overflow: ellipsis; vertical-align: middle; white-space: nowrap; }
         @media (max-width: 991.98px) { .dashboard-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dashboard-operational-grid { grid-template-columns: 1fr; } }
-        @media (max-width: 575.98px) { .dashboard-sales-header, .dashboard-sales-filters { align-items: stretch; flex-direction: column; width: 100%; } .dashboard-summary-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 575.98px) { .dashboard-sales-header, .dashboard-sales-filters { align-items: stretch; flex-direction: column; width: 100%; } .dashboard-summary-grid { grid-template-columns: 1fr; } .dashboard-kpi-meta { flex-wrap: wrap; } }
     </style>
 @endpush
 

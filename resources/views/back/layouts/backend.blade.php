@@ -26,7 +26,7 @@
         @stack('css_before')
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
         <link rel="stylesheet" id="css-main" href="{{ asset('css/dashmix.css?v=1.1') }}">
-        <link rel="stylesheet" href="{{ asset('css/admin-vremeplov.css?v=20260907-9') }}">
+        <link rel="stylesheet" href="{{ asset('css/admin-vremeplov.css?v=20260907-10') }}">
 
         <!-- You can include a specific file from public/css/themes/ folder to alter the default color theme of the template. eg: -->
         <!-- <link rel="stylesheet" id="css-theme" href="{{ asset('css/themes/xwork.css') }}"> -->
