@@ -233,7 +233,7 @@ body.admin-vremeplov,
     overflow-wrap: anywhere;
 }
 
-.admin-page-description {
+.admin-vremeplov .admin-page-description {
     max-width: 52rem;
     margin: .3rem 0 0;
     color: var(--admin-muted);
@@ -241,7 +241,7 @@ body.admin-vremeplov,
     line-height: 1.45;
 }
 
-.admin-page-subtitle {
+.admin-vremeplov .admin-page-subtitle {
     margin: .25rem 0 0;
     color: var(--admin-muted);
     font-size: .9rem;
@@ -1554,8 +1554,8 @@ body.admin-vremeplov,
 
 /* Dashboard */
 .dashboard-hero .content {
-    padding-top: .75rem;
-    padding-bottom: .75rem;
+    padding-top: .8rem;
+    padding-bottom: .8rem;
 }
 
 .dashboard-content {
@@ -1594,12 +1594,12 @@ body.admin-vremeplov,
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: .55rem;
+    align-items: start;
     margin-bottom: .6rem;
 }
 
 .dashboard-kpi-card {
     display: block;
-    height: 100%;
     margin-bottom: 0;
     border-color: #d9d1c7;
     text-decoration: none !important;
