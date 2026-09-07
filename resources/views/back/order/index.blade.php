@@ -147,7 +147,10 @@
                                 <td>
                                     <div class="admin-order-number">
                                         <a href="{{ route('orders.show', ['order' => $order]) }}">#{{ $order->id }}</a>
-                                        <small>{{ \Illuminate\Support\Carbon::make($order->created_at)->format('d.m.Y. H:i') }}</small>
+                                        <small class="admin-order-created-at" title="{{ \Illuminate\Support\Carbon::make($order->created_at)->format('d.m.Y. H:i') }}">
+                                            <span>{{ \Illuminate\Support\Carbon::make($order->created_at)->format('d.m.Y.') }}</span>
+                                            <span>{{ \Illuminate\Support\Carbon::make($order->created_at)->format('H:i') }}</span>
+                                        </small>
                                     </div>
                                 </td>
                                 <td>

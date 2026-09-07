@@ -660,6 +660,37 @@ body.admin-vremeplov,
     flex-wrap: nowrap;
 }
 
+.admin-products-table th:last-child,
+.admin-products-table td:last-child,
+.admin-orders-table th:last-child,
+.admin-orders-table td:last-child {
+    position: sticky;
+    right: 0;
+    z-index: 2;
+    box-shadow: -8px 0 12px -12px rgba(45, 31, 27, .55);
+}
+
+.admin-products-table thead th:last-child,
+.admin-orders-table thead th:last-child {
+    z-index: 3;
+    background: var(--admin-surface-soft);
+}
+
+.admin-products-table tbody td:last-child,
+.admin-orders-table tbody td:last-child {
+    background: #fff;
+}
+
+.admin-products-table.table-striped tbody tr:nth-of-type(odd) td:last-child,
+.admin-orders-table.table-striped tbody tr:nth-of-type(odd) td:last-child {
+    background: #fbf9f5;
+}
+
+.admin-products-table tbody tr:hover td:last-child,
+.admin-orders-table tbody tr:hover td:last-child {
+    background: #fbf5e9;
+}
+
 /* Tabs */
 .admin-vremeplov .nav-tabs-block,
 .admin-vremeplov .nav-tabs {
@@ -907,6 +938,20 @@ body.admin-vremeplov,
     color: var(--admin-muted);
     font-size: .74rem;
     text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-order-number .admin-order-created-at {
+    display: flex;
+    overflow: visible;
+    gap: .28rem;
+    flex-wrap: wrap;
+    line-height: 1.25;
+    text-overflow: clip;
+    white-space: normal;
+}
+
+.admin-order-created-at span {
     white-space: nowrap;
 }
 

@@ -164,7 +164,7 @@
                                     </a>
                                 </td>
                                 <td class="font-size-sm" data-label="Naziv">
-                                    <a class="admin-product-name" href="{{ route('products.edit', ['product' => $product]) }}">{{ $product->name }}</a>
+                                    <a class="admin-product-name" href="{{ route('products.edit', ['product' => $product]) }}" title="{{ $product->name }}">{{ $product->name }}</a>
                                     <div class="admin-product-categories">
                                     @if ($product->categories)
                                         @foreach ($product->categories as $cat)
