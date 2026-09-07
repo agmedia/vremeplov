@@ -96,6 +96,7 @@ class ProductReviewRequestTest extends TestCase
         config([
             'reviews.request_emails_enabled' => true,
             'reviews.request_delay_days' => 10,
+            'reviews.request_order_lookback_days' => 60,
             'reviews.request_daily_limit' => 100,
             'reviews.request_max_attempts' => 3,
             'reviews.request_link_days' => 180,
@@ -109,7 +110,7 @@ class ProductReviewRequestTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_only_orders_sent_exactly_ten_days_ago_receive_one_request_without_backfill(): void
+    public function test_recent_orders_due_for_ten_days_are_included_but_orders_older_than_sixty_days_are_not(): void
     {
         Carbon::setTestNow('2026-09-04 12:00:00');
         Mail::fake();
@@ -119,18 +120,19 @@ class ProductReviewRequestTest extends TestCase
         $this->insertOrder(3, 4, 'staro@example.test', '2026-07-20 10:00:00', '2026-08-01 10:00:00');
         $this->insertOrder(4, 4, 'kasno@example.test', '2026-07-20 10:00:00', '2026-08-26 10:00:00');
         $this->insertOrder(5, 5, 'otkazano@example.test', '2026-07-20 10:00:00', '2026-08-25 12:00:00');
+        $this->insertOrder(6, 4, 'prestaro@example.test', '2026-06-01 10:00:00', '2026-08-25 13:00:00');
 
         $this->artisan('reviews:send-requests')->assertExitCode(0);
 
         $this->assertSame(
-            [1, 2],
+            [1, 2, 3],
             DB::table('product_review_invitations')->orderBy('order_id')->pluck('order_id')->map(fn ($id) => (int) $id)->all()
         );
-        Mail::assertSent(ProductReviewRequestMail::class, 2);
+        Mail::assertSent(ProductReviewRequestMail::class, 3);
 
         $this->artisan('reviews:send-requests')->assertExitCode(0);
-        $this->assertSame(2, DB::table('product_review_invitations')->count());
-        Mail::assertSent(ProductReviewRequestMail::class, 2);
+        $this->assertSame(3, DB::table('product_review_invitations')->count());
+        Mail::assertSent(ProductReviewRequestMail::class, 3);
     }
 
     public function test_normalized_email_receives_only_one_request(): void

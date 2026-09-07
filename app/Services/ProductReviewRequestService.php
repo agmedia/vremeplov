@@ -27,6 +27,7 @@ class ProductReviewRequestService
         $eligible = Order::query()
             ->select(['orders.id', 'orders.payment_email'])
             ->whereIn('orders.order_status_id', Order::reviewEligibleStatusIds())
+            ->where('orders.created_at', '>=', $from)
             ->whereNotNull('orders.payment_email')
             ->whereRaw("TRIM(orders.payment_email) <> ''")
             ->whereNotExists(function ($invitations) {

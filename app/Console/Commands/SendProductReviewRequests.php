@@ -46,10 +46,15 @@ class SendProductReviewRequests extends Command
             }
         }
 
-        $eligibleDay = $runDate->copy()->subDays((int) config('reviews.request_delay_days', 10));
+        $oldestOrderDay = $runDate->copy()
+            ->subDays((int) config('reviews.request_order_lookback_days', 60))
+            ->startOfDay();
+        $eligibleThrough = $runDate->copy()
+            ->subDays((int) config('reviews.request_delay_days', 10))
+            ->endOfDay();
         $orders = $service->eligibleOrders(
-            $eligibleDay->copy()->startOfDay(),
-            $eligibleDay->copy()->endOfDay()
+            $oldestOrderDay,
+            $eligibleThrough
         );
 
         $dailyLimit = (int) config('reviews.request_daily_limit', 100);
