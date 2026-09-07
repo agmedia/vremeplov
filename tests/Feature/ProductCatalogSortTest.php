@@ -58,6 +58,15 @@ class ProductCatalogSortTest extends TestCase
                 'created_at' => '2026-09-06 10:00:00',
                 'updated_at' => '2026-09-06 10:00:00',
             ],
+            [
+                'id' => 3,
+                'name' => 'Stariji artikl, upravo vraćen na zalihu',
+                'price' => 10,
+                'quantity' => 1,
+                'status' => 1,
+                'created_at' => '2026-07-01 10:00:00',
+                'updated_at' => '2026-09-07 10:00:00',
+            ],
         ]);
     }
 
@@ -68,17 +77,24 @@ class ProductCatalogSortTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_newest_sort_uses_creation_date_instead_of_last_update(): void
+    public function test_newest_sort_uses_last_update_and_a_stable_id_tiebreaker(): void
     {
         $ids = (new Product())->filter(new Request(['sort' => 'novi']))->pluck('id')->all();
 
-        $this->assertSame([2, 1], $ids);
+        $this->assertSame([3, 1, 2], $ids);
     }
 
-    public function test_default_sort_is_also_newest_by_creation_date(): void
+    public function test_default_sort_is_also_ordered_by_last_update(): void
     {
         $ids = (new Product())->filter(new Request())->pluck('id')->all();
 
-        $this->assertSame([2, 1], $ids);
+        $this->assertSame([3, 1, 2], $ids);
+    }
+
+    public function test_new_products_widget_scope_uses_last_update(): void
+    {
+        $ids = (new Product())->newQuery()->available()->last()->pluck('id')->all();
+
+        $this->assertSame([3, 1, 2], $ids);
     }
 }

@@ -431,7 +431,11 @@ class Product extends Model
      */
     public function scopeLast(Builder $query, $count = 12): Builder
     {
-        return $query->where('status', 1)->orderBy('updated_at', 'desc')->limit($count);
+        return $query
+            ->where('status', 1)
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->limit($count);
     }
 
 
@@ -589,7 +593,7 @@ class Product extends Model
                 break;
             case 'novi':
             default:
-                $query->orderByDesc('created_at')->orderByDesc('id');
+                $query->orderByDesc('updated_at')->orderByDesc('id');
                 break;
         }
 

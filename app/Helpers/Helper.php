@@ -399,7 +399,9 @@ class Helper
         if (isset($data['popular']) && $data['popular'] == 'on') {
             $prods->popular();
         } elseif (isset($data['new']) && $data['new'] == 'on') {
-            $prods->created(12);
+            // "Novo" uključuje i starije naslove koji su upravo ponovno
+            // stigli na zalihu, zato se vodi zadnjom izmjenom artikla.
+            $prods->last(12);
         } else {
             $prods->last();
         }
