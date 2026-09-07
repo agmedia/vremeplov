@@ -63,6 +63,27 @@ class Product extends Model
 
 
     /**
+     * Return the original catalog image used by the admin lightbox.
+     */
+    public function getImageUrlAttribute(): string
+    {
+        $path = trim((string) $this->image);
+
+        if ($path === '') {
+            $path = 'media/avatars/avatar0.jpg';
+        }
+
+        if (Str::startsWith($path, ['http://', 'https://', '//'])) {
+            return $path;
+        }
+
+        $domain = rtrim((string) (config('settings.images_domain') ?: config('app.url')), '/');
+
+        return $domain . '/' . ltrim($path, '/');
+    }
+
+
+    /**
      * @return Relation
      */
     public function categories()

@@ -159,7 +159,11 @@
                         @forelse ($products as $product)
                             <tr>
                                 <td class="text-center font-size-sm" data-label="Slika">
-                                    <a class="img-link img-link-zoom-in img-lightbox" href="{{ route('products.edit', ['product' => $product]) }}" aria-label="Uredi {{ $product->name }}">
+                                    <a class="img-link img-link-zoom-in img-lightbox"
+                                       href="{{ $product->image_url }}"
+                                       data-fallback-src="{{ $product->thumb }}"
+                                       title="{{ $product->name }}"
+                                       aria-label="Povećaj sliku artikla {{ $product->name }}">
                                         <img class="admin-product-thumb" src="{{ $product->thumb }}" alt="{{ $product->name }}" loading="lazy"/>
                                     </a>
                                 </td>
@@ -233,8 +237,53 @@
     <!-- Page JS Plugins -->
     <script src="{{ asset('js/plugins/magnific-popup/jquery.magnific-popup.min.js') }}"></script>
 
-    <!-- Page JS Helpers (Magnific Popup Plugin) -->
-    <script>jQuery(function(){Dashmix.helpers('magnific-popup');});</script>
+    <script>
+        jQuery(function ($) {
+            const attachImageFallback = function (popup, item) {
+                if (!item || !item.img || !item.el) {
+                    return;
+                }
+
+                const fallbackSrc = item.el.data('fallback-src');
+                const $image = item.img;
+
+                $image.off('.productImageFallback').one('error.productImageFallback', function () {
+                    if (!fallbackSrc || this.src === fallbackSrc) {
+                        return;
+                    }
+
+                    item.src = fallbackSrc;
+                    item.loadError = false;
+                    item.loaded = false;
+                    item.hasSize = false;
+                    popup.updateStatus('loading');
+
+                    $image
+                        .one('load.productImageFallback', function () {
+                            item.loadError = false;
+                            item.loaded = true;
+                            item.hasSize = true;
+                            popup._onImageHasSize(item);
+                            popup.updateStatus('ready');
+                        })
+                        .attr('src', fallbackSrc);
+                });
+            };
+
+            $('#ag-table-with-input-fields').magnificPopup({
+                delegate: 'a.img-lightbox',
+                type: 'image',
+                gallery: {
+                    enabled: true
+                },
+                callbacks: {
+                    change: function (item) {
+                        attachImageFallback(this, item);
+                    }
+                }
+            });
+        });
+    </script>
 
     <script src="{{ asset('js/plugins/select2/js/select2.full.min.js') }}"></script>
     <script>
