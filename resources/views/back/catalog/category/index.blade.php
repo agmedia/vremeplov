@@ -1,92 +1,119 @@
 @extends('back.layouts.backend')
 
 @section('content')
-    <div class="bg-body-light">
+    @php
+        $categoryCount = $categoriess->sum(function ($categories) {
+            return $categories->sum(function ($category) {
+                return 1 + $category->subcategories->count();
+            });
+        });
+    @endphp
+
+    <div class="admin-page-hero">
         <div class="content content-full">
-            <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center">
-                <h1 class="flex-sm-fill font-size-h2 font-w400 mt-2 mb-0 mb-sm-2">Kategorije</h1>
-                <a class="btn btn-hero-info my-2 mr-3" href="{{ route('categories.groups') }}">
-                    <i class="far fa-fw fa-list-alt"></i><span class="d-none d-sm-inline ml-1"> Grupe kategorija</span>
-                </a>
-                <a class="btn btn-hero-success my-2" href="{{ route('category.create') }}">
-                    <i class="far fa-fw fa-plus-square"></i><span class="d-none d-sm-inline ml-1"> Nova kategorija</span>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Page Content -->
-    <div class="row no-gutters flex-md-10-auto">
-        <div class="col-md-12 order-md-0 bg-body-dark">
-            <!-- Main Content -->
-            <div class="content content-full">
-            @include('back.layouts.partials.session')
-                <div id="accordion" role="tablist" aria-multiselectable="true">
-
-                    @forelse($categoriess as $group => $categories)
-
-                            <div class="block-header block-header-default mb-2 mt-2" role="tab" id="accordion_h{{ $group }}">
-                                <a class="font-w600" data-toggle="collapse" data-parent="#accordion" href="#accordion_q{{ $group }}" aria-expanded="true" aria-controls="accordion_{{ $group }}">         <h4 class="mb-0"><small class="font-weight-light">Grupa kategorija: </small>{{ $group }} <small class="font-weight-light">{{ $categories->count() }}</small></h4>
-
-                                </a>
-
-                                <div class="block-options">
-                                    <button type="button" data-toggle="collapse" data-parent="#accordion" href="#accordion_q{{ $group }}" aria-expanded="true" aria-controls="accordion_{{ $group }}" class="btn-block-option" data-toggle="block-option" data-action="content_toggle"><i class="si si-arrow-down"></i></button>
-
-
-                                </div>
-                            </div>
-                        <div id="accordion_q{{ $group }}" class="collapse " role="tabpanel" aria-labelledby="accordion_h{{ $group }}" data-parent="#accordion">
-                        @forelse($categories as $category)
-
-                            <div class="block block-rounded mb-1">
-                                <div class="block-header block-header-default" >
-
-                                    <a class="h3 block-title"> {{ $category->title }}</a>
-
-                                    <div class="block-options">
-                                        <div class="btn-group">
-                                            <a  class="btn btn-sm btn-secondary js-tooltip-enabled me-2" data-toggle="tooltip" title="" data-original-title="Uredi"> {{ $category->products_count }}
-                                            </a>
-
-                                            <a href="{{ route('category.edit', ['category' => $category]) }}" class="btn btn-sm btn-secondary js-tooltip-enabled" data-toggle="tooltip" title="" data-original-title="Uredi">
-                                                <i class="fa fa-pencil-alt"></i>
-                                            </a>
-
-
-                                        </div>
-                                    </div>
-                                </div>
-                               {{--  @if ($category->subcategories)
-                                    <div id="accordion_q{{ $category->id }}" class="collapse @if($loop->first)  @endif" role="tabpanel" aria-labelledby="accordion_h{{ $category->id }}" data-parent="#accordion">
-                                        <div class="block-content pb-4">
-                                            @foreach($category->subcategories()->orderBy('title')->get() as $subcategory)
-                                                <a href="{{ route('category.edit', ['category' => $subcategory]) }}" class="btn btn-sm mb-3  @if ($subcategory->products()->count() == 0) btn-warning @else btn-success @endif js-tooltip-enabled" data-toggle="tooltip" title="" data-original-title="Uredi">
-                                                    {{ $subcategory->title }} - {{ $subcategory->products()->count() }}
-                                                </a>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endif --}}
-                            </div>
-
-                        @empty
-
-                            <h3>Kategorije su prazne. Napravite <a href="{{ route('category.create') }}">novu.</a></h3>
-                        @endforelse
-                        </div>
-                    @empty
-                        <h3>Nemate niti jednu grupu kategorija. Trebali bi napraviti <a href="{{ route('category.create') }}">novu kategoriju</a> i upisati grupu.</h3>
-                    @endforelse
-
+            <div class="admin-page-heading">
+                <div>
+                    <div class="admin-page-kicker"><i class="fa fa-layer-group" aria-hidden="true"></i> Katalog</div>
+                    <h1 class="admin-page-title">Kategorije</h1>
+                    <p class="admin-page-description">Upravljajte grupama, glavnim kategorijama i pripadajućim podkategorijama.</p>
                 </div>
-
+                <div class="admin-toolbar-actions">
+                    <a class="btn btn-alt-secondary" href="{{ route('categories.groups') }}">
+                        <i class="fa fa-list-alt mr-1" aria-hidden="true"></i> Grupe kategorija
+                    </a>
+                    <a class="btn btn-primary" href="{{ route('category.create') }}">
+                        <i class="fa fa-plus-square mr-1" aria-hidden="true"></i> Nova kategorija
+                    </a>
+                </div>
             </div>
         </div>
     </div>
+
+    <div class="content">
+        @include('back.layouts.partials.session')
+
+        <div class="block block-rounded">
+            <div class="block-header block-header-default admin-toolbar">
+                <div>
+                    <h2 class="block-title mb-1">Struktura kategorija <span class="admin-count">{{ number_format($categoryCount, 0, ',', '.') }}</span></h2>
+                    <p class="text-muted mb-0 font-size-sm">Otvorite grupu kako biste pregledali i uredili njezine kategorije.</p>
+                </div>
+                <span class="text-muted font-size-sm">{{ $categoriess->count() }} {{ $categoriess->count() === 1 ? 'grupa' : 'grupa' }}</span>
+            </div>
+
+            <div class="block-content">
+                <div id="category-groups" class="admin-category-groups" role="tablist" aria-multiselectable="true">
+                    @forelse($categoriess as $group => $categories)
+                        @php
+                            $groupId = 'category-group-' . $loop->iteration;
+                            $groupProductCount = $categories->sum('products_count');
+                            $groupSetting = $categoryGroups->firstWhere('slug', $group);
+                            $groupTitle = $groupSetting->title ?? \Illuminate\Support\Str::ucfirst(str_replace('-', ' ', $group));
+                        @endphp
+                        <section class="admin-category-group">
+                            <button class="admin-category-group-toggle {{ $loop->first ? '' : 'collapsed' }}" type="button" data-toggle="collapse" data-target="#{{ $groupId }}" aria-expanded="{{ $loop->first ? 'true' : 'false' }}" aria-controls="{{ $groupId }}">
+                                <span class="admin-category-group-icon"><i class="fa fa-folder" aria-hidden="true"></i></span>
+                                <span class="admin-category-group-copy">
+                                    <small>Grupa kategorija</small>
+                                    <strong>{{ $groupTitle }}</strong>
+                                </span>
+                                <span class="admin-category-group-meta">
+                                    <span>{{ $categories->count() }} glavnih</span>
+                                    <span>{{ number_format($groupProductCount, 0, ',', '.') }} artikala</span>
+                                </span>
+                                <i class="fa fa-chevron-down admin-category-chevron" aria-hidden="true"></i>
+                            </button>
+
+                            <div id="{{ $groupId }}" class="collapse {{ $loop->first ? 'show' : '' }}" data-parent="#category-groups">
+                                <div class="admin-category-list">
+                                    @forelse($categories as $category)
+                                        <div class="admin-category-item">
+                                            <div class="admin-category-main">
+                                                <span class="admin-category-level-icon"><i class="fa fa-folder-open" aria-hidden="true"></i></span>
+                                                <div class="admin-category-title">
+                                                    <a href="{{ route('category.edit', ['category' => $category]) }}">{{ $category->title }}</a>
+                                                    <small>{{ $category->subcategories->count() }} {{ $category->subcategories->count() === 1 ? 'podkategorija' : 'podkategorija' }}</small>
+                                                </div>
+                                            </div>
+                                            <div class="admin-category-item-meta">
+                                                <span class="admin-category-product-count" title="Broj artikala u kategoriji"><i class="fa fa-book mr-1" aria-hidden="true"></i>{{ number_format($category->products_count, 0, ',', '.') }}</span>
+                                                <span class="badge badge-pill {{ $category->status ? 'badge-success' : 'badge-secondary' }}">{{ $category->status ? 'Aktivna' : 'Neaktivna' }}</span>
+                                                <a href="{{ route('category.edit', ['category' => $category]) }}" class="btn btn-sm btn-alt-secondary" title="Uredi kategoriju" aria-label="Uredi kategoriju {{ $category->title }}"><i class="fa fa-pencil-alt" aria-hidden="true"></i></a>
+                                            </div>
+                                        </div>
+
+                                        @foreach($category->subcategories as $subcategory)
+                                            <div class="admin-category-item admin-category-item-sub">
+                                                <div class="admin-category-main">
+                                                    <span class="admin-category-branch" aria-hidden="true"></span>
+                                                    <span class="admin-category-level-icon"><i class="fa fa-tag" aria-hidden="true"></i></span>
+                                                    <div class="admin-category-title">
+                                                        <a href="{{ route('category.edit', ['category' => $subcategory]) }}">{{ $subcategory->title }}</a>
+                                                        <small>Podkategorija od “{{ $category->title }}”</small>
+                                                    </div>
+                                                </div>
+                                                <div class="admin-category-item-meta">
+                                                    <span class="admin-category-product-count" title="Broj artikala u podkategoriji"><i class="fa fa-book mr-1" aria-hidden="true"></i>{{ number_format($subcategory->products_count, 0, ',', '.') }}</span>
+                                                    <span class="badge badge-pill {{ $subcategory->status ? 'badge-success' : 'badge-secondary' }}">{{ $subcategory->status ? 'Aktivna' : 'Neaktivna' }}</span>
+                                                    <a href="{{ route('category.edit', ['category' => $subcategory]) }}" class="btn btn-sm btn-alt-secondary" title="Uredi podkategoriju" aria-label="Uredi podkategoriju {{ $subcategory->title }}"><i class="fa fa-pencil-alt" aria-hidden="true"></i></a>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    @empty
+                                        <div class="admin-empty-state">Ova grupa nema kategorija.</div>
+                                    @endforelse
+                                </div>
+                            </div>
+                        </section>
+                    @empty
+                        <div class="admin-empty-state">
+                            <i class="fa fa-folder-open" aria-hidden="true"></i>
+                            <strong>Nema grupa ni kategorija.</strong>
+                            <div class="mt-2"><a href="{{ route('category.create') }}">Dodajte prvu kategoriju.</a></div>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
     </div>
 @endsection
-
-@push('js_after')
-    <script src="{{ asset('js/pages/be_pages_projects_tasks.min.js') }}"></script>
-@endpush

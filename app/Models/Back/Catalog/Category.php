@@ -126,17 +126,23 @@ class Category extends Model
 
         foreach ($groups as $group) {
             if ($full) {
-                $cats = $this->where('group', $group)->where('parent_id', 0)->orderBy('title')->with('subcategories')->withCount('products')->get();
+                $cats = $this->where('group', $group)
+                    ->where('parent_id', 0)
+                    ->orderBy('title')
+                    ->with(['subcategories' => function ($query) {
+                        $query->orderBy('title')->withCount('products');
+                    }])
+                    ->withCount('products')
+                    ->get();
             } else {
                 $cats = [];
                 $fill = $this->where('group', $group)->where('parent_id', 0)->orderBy('title')->with('subcategories')->withCount('products')->get();
 
                 foreach ($fill as $cat) {
+                    $subcats = [];
                     $cats[$cat->id] = ['title' => $cat->title];
 
-                    if ($cat->subcategories) {
-                        $subcats = [];
-
+                    if ($cat->subcategories->isNotEmpty()) {
                         foreach ($cat->subcategories as $subcategory) {
                             $subcats[$subcategory->id] = ['title' => $subcategory->title];
                         }

@@ -1,83 +1,62 @@
 @extends('back.layouts.backend')
 
 @section('content')
-
-    <div class="bg-body-light">
+    <div class="admin-page-hero">
         <div class="content content-full">
-            <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center">
-                <h1 class="flex-sm-fill font-size-h2 font-w400 mt-2 mb-0 mb-sm-2">Izdavači</h1>
-                <a class="btn btn-hero-success my-2" href="{{ route('publishers.create') }}">
-                    <i class="far fa-fw fa-plus-square"></i><span class="d-none d-sm-inline ml-1"> Novi izdavač</span>
-                </a>
+            <div class="admin-page-heading">
+                <div>
+                    <div class="admin-page-kicker"><i class="fa fa-building" aria-hidden="true"></i> Katalog</div>
+                    <h1 class="admin-page-title">Izdavači</h1>
+                    <p class="admin-page-description">Pretražujte i uređujte izdavače povezane s artiklima.</p>
+                </div>
+                <a class="btn btn-primary" href="{{ route('publishers.create') }}"><i class="fa fa-plus-square mr-1" aria-hidden="true"></i> Novi izdavač</a>
             </div>
         </div>
     </div>
 
     <div class="content">
-    @include('back.layouts.partials.session')
-    <!-- All Products -->
+        @include('back.layouts.partials.session')
+
         <div class="block block-rounded">
-            <div class="block-header block-header-default">
-                <h3 class="block-title">Svi izdavači <small class="font-weight-light">{{ $publishers->total() }}</small></h3>
-                <div class="block-options">
-                    <!-- Search Form -->
-                    <form action="{{ route('publishers') }}" method="GET">
-                        <div class="block-options-item">
-                            <input type="text" class="form-control" id="search-input" name="search" placeholder="Pretraži izdavače" value="{{ request()->query('search') }}">
-                        </div>
-                        <div class="block-options-item">
-                            <a href="{{ route('publishers') }}" class="btn btn-hero-sm btn-secondary"><i class="fa fa-search-minus"></i> Očisti</a>
-                        </div>
-                    </form>
+            <div class="block-header block-header-default admin-toolbar">
+                <div>
+                    <h2 class="block-title mb-1">Svi izdavači <span class="admin-count">{{ number_format($publishers->total(), 0, ',', '.') }}</span></h2>
+                    <p class="text-muted mb-0 font-size-sm">Naziv, status i brze akcije.</p>
                 </div>
+                <form action="{{ route('publishers') }}" method="GET" class="admin-directory-search">
+                    <div class="input-group">
+                        <input type="search" class="form-control" id="publisher-search-input" name="search" placeholder="Pretraži izdavače" value="{{ request('search') }}">
+                        <div class="input-group-append"><button class="btn btn-primary" type="submit" aria-label="Pretraži"><i class="fa fa-search" aria-hidden="true"></i></button></div>
+                    </div>
+                    @if(request()->filled('search'))
+                        <a href="{{ route('publishers') }}" class="btn btn-alt-secondary"><i class="fa fa-times mr-1" aria-hidden="true"></i> Očisti</a>
+                    @endif
+                </form>
             </div>
             <div class="block-content">
-                <!-- All Products Table -->
                 <div class="table-responsive">
-                    <table class="table table-borderless table-striped table-vcenter">
-                        <thead>
-                        <tr>
-                            <th >Naziv</th>
-                            <th style="width: 100px;" class="text-right">Status</th>
-                            <th style="width: 100px;" class="text-right">Uredi</th>
-                        </tr>
-                        </thead>
+                    <table class="table table-borderless table-striped table-vcenter admin-directory-table">
+                        <thead><tr><th>Naziv</th><th class="text-center">Status</th><th class="text-right">Radnje</th></tr></thead>
                         <tbody>
                         @forelse($publishers as $publisher)
                             <tr>
-                                <td class="font-size-sm">{{ $publisher->title }}</td>
+                                <td><a class="admin-directory-name" href="{{ route('publishers.edit', ['publisher' => $publisher]) }}">{{ $publisher->title }}</a></td>
+                                <td class="text-center"><span class="badge badge-pill {{ $publisher->status ? 'badge-success' : 'badge-secondary' }}">{{ $publisher->status ? 'Aktivan' : 'Neaktivan' }}</span></td>
                                 <td class="text-right">
-                                    @if ($publisher->status)
-                                        <span class="badge badge-success">Aktivan</span>
-                                    @else
-                                        <span class="badge badge-secondary">Neaktivan</span>
-                                    @endif
-                                </td>
-                                <td class="text-right font-size-sm">
-                                    <a href="{{ route('publishers.edit', ['publisher' => $publisher]) }}" class="btn btn-sm btn-secondary js-tooltip-enabled" data-toggle="tooltip" title="" data-original-title="Uredi">
-                                        <i class="fa fa-pencil-alt"></i>
-                                    </a>
-                                    <button class="btn btn-sm btn-alt-danger" onclick="event.preventDefault(); deleteItem({{ $publisher->id }}, '{{ route('publishers.destroy.api') }}');"><i class="fa fa-fw fa-trash-alt"></i></button>
+                                    <span class="admin-row-actions">
+                                        <a href="{{ route('publishers.edit', ['publisher' => $publisher]) }}" class="btn btn-sm btn-alt-secondary" title="Uredi" aria-label="Uredi izdavača {{ $publisher->title }}"><i class="fa fa-pencil-alt" aria-hidden="true"></i></a>
+                                        <button type="button" class="btn btn-sm btn-alt-danger" onclick="deleteItem({{ $publisher->id }}, '{{ route('publishers.destroy.api') }}');" title="Obriši" aria-label="Obriši izdavača {{ $publisher->title }}"><i class="fa fa-trash-alt" aria-hidden="true"></i></button>
+                                    </span>
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="3">
-                                    Nema izdavača.
-                                </td>
-                            </tr>
+                            <tr><td class="admin-empty-state" colspan="3"><i class="fa fa-building" aria-hidden="true"></i><strong>Nema pronađenih izdavača.</strong></td></tr>
                         @endforelse
                         </tbody>
                     </table>
                 </div>
-                <!-- Pagination -->
                 {{ $publishers->links() }}
             </div>
         </div>
-        <!-- END All Products -->
     </div>
 @endsection
-
-@push('js_after')
-
-@endpush

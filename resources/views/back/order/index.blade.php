@@ -1,314 +1,326 @@
 @extends('back.layouts.backend')
+
 @push('css_before')
-
     <link rel="stylesheet" href="{{ asset('js/plugins/select2/css/select2.min.css') }}">
-
-
 @endpush
 
 @section('content')
+    @php
+        $hasActiveFilters = request()->filled('search')
+            || request()->filled('status')
+            || request()->filled('date_from')
+            || request()->filled('date_to');
+    @endphp
 
-    <div class="bg-body-light">
+    <div class="admin-page-hero">
         <div class="content content-full">
-            <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center">
-                <h1 class="flex-sm-fill font-size-h2 font-w400 mt-2 mb-0 mb-sm-2">Narudžbe</h1>
+            <div class="admin-page-heading">
+                <div>
+                    <div class="admin-page-kicker"><i class="fa fa-shopping-cart" aria-hidden="true"></i> Prodaja</div>
+                    <h1 class="admin-page-title">Narudžbe</h1>
+                    <p class="admin-page-description">Pronađite narudžbu, provjerite plaćanje i upravljajte obradom i dostavom.</p>
+                </div>
             </div>
         </div>
     </div>
 
-
-    <!-- Page Content -->
     <div class="content">
-    @include('back.layouts.partials.session')
-    <!-- All Orders -->
+        @include('back.layouts.partials.session')
+
         <div class="block block-rounded">
-            <div class="block-header block-header-default">
-                <h3 class="block-title">Lista narudžbi <small class="font-weight-light">{{ $orders->total() }}</small></h3>
-                <div class="block-options d-none d-xl-block">
-                    <div class="form-group mb-0 mr-2">
-                        <select class="js-select2 form-control" id="status-select" name="status" style="width: 100%;" data-placeholder="Promjeni status narudžbe">
-                            <option></option><!-- Required for data-placeholder attribute to work with Select2 plugin -->
-                            @foreach ($statuses as $status)
+            <div class="block-header block-header-default admin-toolbar">
+                <div>
+                    <h2 class="block-title mb-1">Sve narudžbe <span class="admin-count">{{ number_format($orders->total(), 0, ',', '.') }}</span></h2>
+                    <p class="text-muted mb-0 font-size-sm">Označite više narudžbi za zajedničku promjenu statusa.</p>
+                </div>
+                <div class="admin-toolbar-actions">
+                    @if($hasActiveFilters)
+                        <a href="{{ route('orders') }}" class="btn btn-alt-secondary">
+                            <i class="fa fa-times mr-1" aria-hidden="true"></i> Očisti filtre
+                        </a>
+                    @endif
+                    <button type="button" class="btn btn-light" data-toggle="collapse" data-target="#order-filters" aria-expanded="{{ $hasActiveFilters ? 'true' : 'false' }}" aria-controls="order-filters">
+                        <i class="fa fa-filter mr-1" aria-hidden="true"></i> Filtri
+                        @if($hasActiveFilters)<span class="badge badge-primary ml-1">Aktivni</span>@endif
+                    </button>
+                </div>
+            </div>
+
+            <div id="order-filters" class="collapse {{ $hasActiveFilters ? 'show' : '' }} admin-filter-panel">
+                <div class="block-content">
+                    <form action="{{ route('orders') }}" method="GET">
+                        <div class="row align-items-end">
+                            <div class="col-xl-4 col-md-6 form-group">
+                                <label for="search-input">Pretraživanje</label>
+                                <div class="input-group">
+                                    <input type="search" class="form-control" name="search" id="search-input" value="{{ request('search') }}" placeholder="Broj, kupac, e-mail, plaćanje...">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="fa fa-search" aria-hidden="true"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6 form-group">
+                                <label for="filter-status">Status</label>
+                                <select class="form-control" id="filter-status" name="status">
+                                    <option value="">Svi statusi</option>
+                                    @foreach($statuses as $status)
+                                        <option value="{{ $status->id }}" {{ (string) request('status') === (string) $status->id ? 'selected' : '' }}>{{ $status->title }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-xl-2 col-md-6 form-group">
+                                <label for="date-from-input">Od datuma</label>
+                                <input type="date" class="form-control" id="date-from-input" name="date_from" value="{{ request('date_from') }}">
+                            </div>
+                            <div class="col-xl-2 col-md-6 form-group">
+                                <label for="date-to-input">Do datuma</label>
+                                <input type="date" class="form-control" id="date-to-input" name="date_to" value="{{ request('date_to') }}">
+                            </div>
+                            <div class="col-xl-1 form-group admin-filter-actions">
+                                <button type="submit" class="btn btn-primary btn-block" title="Primijeni filtre" aria-label="Primijeni filtre">
+                                    <i class="fa fa-arrow-right" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="block-content">
+                <div class="admin-bulk-bar" id="bulk-status-bar">
+                    <div class="admin-bulk-selection">
+                        <span class="admin-bulk-icon"><i class="fa fa-check-square" aria-hidden="true"></i></span>
+                        <div>
+                            <strong><span id="selected-orders-count">0</span> označeno</strong>
+                            <small>Promijenite status odabranih narudžbi.</small>
+                        </div>
+                    </div>
+                    <div class="admin-bulk-control">
+                        <label class="sr-only" for="status-select">Promijeni status označenih narudžbi</label>
+                        <select class="js-select2 form-control" id="status-select" name="bulk_status" style="width: 100%;" disabled data-placeholder="Odaberite novi status">
+                            <option></option>
+                            @foreach($statuses as $status)
                                 <option value="{{ $status->id }}">{{ $status->title }}</option>
                             @endforeach
                         </select>
                     </div>
                 </div>
-                <div class="block-options">
-                    <div class="dropdown">
-                        <button type="button" class="btn btn-light" id="dropdown-ecom-filters" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Filtriraj
-                            <i class="fa fa-angle-down ml-1"></i>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown-ecom-filters">
-                            <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:setURL('status', 0)">
-                                Sve narudžbe
-                            </a>
-                            @foreach ($statuses as $status)
-                                <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:setURL('status', {{ $status->id }})">
-                                    <span class="badge badge-pill badge-{{ $status->color }}">{{ $status->title }}</span>
-                                </a>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="block-content bg-body-dark">
-                <!-- Search Form -->
-                <form action="{{ route('orders') }}" method="GET">
-                    <div class="form-group">
-                        <div class="form-group">
-                            <div class="input-group flex-nowrap">
-                                <input type="text" class="form-control py-3 text-center" name="search" id="search-input" value="{{ request()->input('search') }}" placeholder="Pretraži po broju narudžbe, imenu, prezimenu ili emailu kupca...">
-                                <button type="submit" class="btn btn-primary fs-base" onclick="setURL('search', $('#search-input').val());"><i class="fa fa-search"></i> </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-                <!-- END Search Form -->
-            </div>
-            <div class="block-content">
-                <!-- All Orders Table -->
-                <div class="table-responsive">
-                    <table class="table table-borderless table-striped table-vcenter font-size-sm">
+
+                <div class="table-responsive admin-orders-table-wrap">
+                    <table class="table table-borderless table-striped table-vcenter admin-orders-table">
                         <thead>
                         <tr>
-                            <th class="text-center" style="width: 30px;">
-                                <div class="form-group">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="" id="checkAll" name="status">
-                                    </div>
+                            <th class="text-center">
+                                <div class="custom-control custom-checkbox d-inline-block">
+                                    <input class="custom-control-input" type="checkbox" id="checkAll">
+                                    <label class="custom-control-label" for="checkAll"><span class="sr-only">Označi sve</span></label>
                                 </div>
                             </th>
-                            <th class="text-center" style="width: 36px;">Br.</th>
-                            <th class="text-center">Datum</th>
-                            <th>Status</th>
-                            <th>Plaćanje</th>
+                            <th>Narudžba</th>
+                            <th>Status i plaćanje</th>
                             <th>Kupac</th>
-                            <th class="text-center">Artikli</th>
-                            <th class="text-right">Vrijednost</th>
-                            <th class="text-center">Dostava</th>
-                            <th class="text-right">Detalji</th>
+                            <th>Sažetak</th>
+                            <th>Dostava</th>
+                            <th class="text-right">Radnje</th>
                         </tr>
                         </thead>
                         <tbody>
-                        @forelse ($orders->sortByDesc('id') as $order)
+                        @forelse($orders as $order)
+                            @php
+                                $shipmentCarrierHint = \Illuminate\Support\Str::lower(
+                                    (string) $order->shipping_carrier . ' '
+                                    . (string) $order->shipping_code . ' '
+                                    . (string) $order->shipping_method
+                                );
+                                $isBoxNowShipment = \Illuminate\Support\Str::contains($shipmentCarrierHint, ['boxnow', 'box now']);
+                                $isGlsShipment = \Illuminate\Support\Str::contains($shipmentCarrierHint, 'gls');
+                                $boxNowTrackingId = $boxNowPolicy->parcelId($order);
+                                $boxNowCanDispatch = $boxNowPolicy->canDispatch($order);
+                            @endphp
                             <tr>
                                 <td class="text-center">
-                                    <div class="form-group">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="{{ $order->id }}" id="status[{{ $order->id }}]" name="status">
-                                        </div>
+                                    <div class="custom-control custom-checkbox d-inline-block">
+                                        <input class="custom-control-input order-checkbox" type="checkbox" value="{{ $order->id }}" id="order-{{ $order->id }}">
+                                        <label class="custom-control-label" for="order-{{ $order->id }}"><span class="sr-only">Označi narudžbu {{ $order->id }}</span></label>
                                     </div>
                                 </td>
-                                <td class="text-center">
-                                    <a class="font-w600" href="{{ route('orders.show', ['order' => $order]) }}">
-                                        <strong>{{ $order->id }}</strong>
-                                    </a>
-                                </td>
-                                <td class="text-center">{{ \Illuminate\Support\Carbon::make($order->created_at)->format('d.m.Y') }}</td>
-                                <td class="font-size-base">
-                                    <span class="badge badge-pill badge-{{ $order->status->color }}">{{ $order->status->title }}</span>
-                                </td>
-                                <td class="text-left">
-                                    {{ $order->payment_method }}
-                                    @if($order->payment_review_error)
-                                        <span class="badge badge-danger d-block mt-1" title="{{ $order->payment_review_error }}">
-                                            <i class="fa fa-exclamation-triangle mr-1"></i>Provjera plaćanja
-                                        </span>
-                                    @endif
+                                <td>
+                                    <div class="admin-order-number">
+                                        <a href="{{ route('orders.show', ['order' => $order]) }}">#{{ $order->id }}</a>
+                                        <small>{{ \Illuminate\Support\Carbon::make($order->created_at)->format('d.m.Y. H:i') }}</small>
+                                    </div>
                                 </td>
                                 <td>
-                                    <a class="font-w600" href="{{ route('orders.show', ['order' => $order]) }}">{{ $order->shipping_fname }} {{ $order->shipping_lname }}</a>
+                                    <div class="admin-order-status-payment">
+                                        <span class="badge badge-pill badge-{{ $order->status->color }}">{{ $order->status->title }}</span>
+                                        <small>{{ $order->payment_method ?: 'Način plaćanja nije zadan' }}</small>
+                                        @if($order->payment_review_error)
+                                            <span class="admin-inline-warning" title="{{ $order->payment_review_error }}">
+                                                <i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Provjera plaćanja
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
-                                <td class="text-center">{{ $order->products->count() }}</td>
-                                <td class="text-right">
-                                    <strong>€ {{ number_format($order->total, 2, ',', '.') }}</strong>
+                                <td>
+                                    <div class="admin-order-customer">
+                                        <a href="{{ route('orders.show', ['order' => $order]) }}">{{ trim($order->shipping_fname . ' ' . $order->shipping_lname) ?: 'Nepoznat kupac' }}</a>
+                                        <small title="{{ $order->shipping_email }}">{{ $order->shipping_email ?: 'E-mail nije unesen' }}</small>
+                                    </div>
                                 </td>
-
-                                @php
-                                    $shipmentCarrierHint = \Illuminate\Support\Str::lower(
-                                        (string) $order->shipping_carrier . ' '
-                                        . (string) $order->shipping_code . ' '
-                                        . (string) $order->shipping_method
-                                    );
-                                    $isBoxNowShipment = \Illuminate\Support\Str::contains($shipmentCarrierHint, ['boxnow', 'box now']);
-                                    $isGlsShipment = \Illuminate\Support\Str::contains($shipmentCarrierHint, 'gls');
-                                    $boxNowTrackingId = $boxNowPolicy->parcelId($order);
-                                    $boxNowCanDispatch = $boxNowPolicy->canDispatch($order);
-                                @endphp
-                                <td class="text-center">
-                                    @if($isBoxNowShipment)
-                                        @if($boxNowTrackingId)
-                                            <div class="mb-1">
-                                                @if($order->shipping_tracking_url)
-                                                    <a href="{{ $order->shipping_tracking_url }}" target="_blank" rel="noopener"><strong>{{ $boxNowTrackingId }}</strong></a>
+                                <td>
+                                    <div class="admin-order-summary">
+                                        <strong>€ {{ number_format((float) $order->total, 2, ',', '.') }}</strong>
+                                        <small>{{ $order->products_count }} {{ $order->products_count == 1 ? 'artikl' : 'artikala' }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="admin-order-shipping">
+                                        <small title="{{ $order->shipping_method }}">{{ $order->shipping_method ?: 'Dostava nije zadana' }}</small>
+                                        <span class="admin-shipping-actions">
+                                            @if($isBoxNowShipment)
+                                                @if($boxNowTrackingId)
+                                                    @if($order->shipping_tracking_url)
+                                                        <a href="{{ $order->shipping_tracking_url }}" target="_blank" rel="noopener" class="admin-tracking-code">{{ $boxNowTrackingId }}</a>
+                                                    @else
+                                                        <span class="admin-tracking-code">{{ $boxNowTrackingId }}</span>
+                                                    @endif
+                                                    @if($canManageBoxNow)
+                                                        <button type="button" class="btn btn-sm btn-alt-info" onclick="refreshBoxNow({{ $order->id }})" title="Osvježi Box Now status" aria-label="Osvježi Box Now status narudžbe {{ $order->id }}"><i class="fa fa-sync-alt" aria-hidden="true"></i></button>
+                                                        <a class="btn btn-sm btn-alt-success" href="{{ route('order.boxnow.label', ['order' => $order]) }}" title="Preuzmi PDF adresnicu" aria-label="Preuzmi PDF adresnicu narudžbe {{ $order->id }}"><i class="fa fa-file-pdf" aria-hidden="true"></i></a>
+                                                    @endif
+                                                @elseif($boxNowCanDispatch && $canManageBoxNow)
+                                                    <button type="button" class="btn btn-sm btn-alt-warning" onclick="sendBoxNow({{ $order->id }})" title="Pošalji u Box Now" aria-label="Pošalji narudžbu {{ $order->id }} u Box Now"><i class="fa fa-box" aria-hidden="true"></i></button>
                                                 @else
-                                                    <strong>{{ $boxNowTrackingId }}</strong>
+                                                    <span class="text-muted">Nije spremno za slanje</span>
                                                 @endif
-                                            </div>
-                                            @if($order->shipping_tracking_status)
-                                                <small class="d-block text-muted mb-1">{{ $order->shipping_tracking_status }}</small>
+                                            @elseif($isGlsShipment)
+                                                @if($order->printed)
+                                                    <span class="text-success"><i class="fa fa-check-circle mr-1" aria-hidden="true"></i> Poslano</span>
+                                                @else
+                                                    <button type="button" class="btn btn-sm btn-alt-warning" onclick="sendGLS({{ $order->id }})" title="Pošalji u GLS" aria-label="Pošalji narudžbu {{ $order->id }} u GLS"><i class="fa fa-shipping-fast" aria-hidden="true"></i></button>
+                                                @endif
+                                            @else
+                                                <span class="text-muted">—</span>
                                             @endif
-                                            @if($canManageBoxNow)
-                                                <button type="button" class="btn btn-alt-info btn-sm" onclick="refreshBoxNow({{ $order->id }})" title="Osvježi Box Now status">
-                                                    <i class="fa fa-sync-alt"></i>
-                                                </button>
-                                                <a class="btn btn-alt-success btn-sm" href="{{ route('order.boxnow.label', ['order' => $order]) }}" title="Preuzmi PDF adresnicu">
-                                                    <i class="fa fa-file-pdf"></i>
-                                                </a>
-                                            @endif
-                                        @elseif($boxNowCanDispatch && $canManageBoxNow)
-                                            <button type="button" class="btn btn-alt-warning btn-sm" onclick="sendBoxNow({{ $order->id }})" title="Pošalji u Box Now">
-                                                <i class="fa fa-box"></i>
-                                            </button>
-                                        @else
-                                            <span class="text-danger" title="Slanje nije dopušteno za ovaj status">—</span>
-                                        @endif
-                                    @elseif($isGlsShipment)
-                                        @if($order->printed)
-                                            <i class="fa fa-fw fa-check text-success"></i>
-                                        @else
-                                            <button type="button" class="btn btn-light btn-sm" onclick="sendGLS({{ $order->id }})" title="Pošalji u GLS"><i class="fa fa-shipping-fast"></i></button>
-                                        @endif
-                                    @else
-                                        <span class="text-muted">—</span>
-                                    @endif
+                                        </span>
+                                    </div>
                                 </td>
-
-                                <td class="text-right font-size-base">
-                                    <a class="btn btn-sm btn-alt-secondary" href="{{ route('orders.show', ['order' => $order]) }}">
-                                        <i class="fa fa-fw fa-eye"></i>
-                                    </a>
-                                    <a class="btn btn-sm btn-alt-info" href="{{ route('orders.edit', ['order' => $order]) }}">
-                                        <i class="fa fa-fw fa-edit"></i>
-                                    </a>
+                                <td class="text-right">
+                                    <span class="admin-row-actions">
+                                        <a class="btn btn-sm btn-alt-secondary" href="{{ route('orders.show', ['order' => $order]) }}" title="Pregledaj" aria-label="Pregledaj narudžbu {{ $order->id }}"><i class="fa fa-eye" aria-hidden="true"></i></a>
+                                        <a class="btn btn-sm btn-alt-secondary" href="{{ route('orders.edit', ['order' => $order]) }}" title="Uredi" aria-label="Uredi narudžbu {{ $order->id }}"><i class="fa fa-edit" aria-hidden="true"></i></a>
+                                    </span>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td class="text-center font-size-sm" colspan="8">
-                                    <label>Nema narudžbi...</label>
+                                <td class="admin-empty-state" colspan="7">
+                                    <i class="fa fa-receipt" aria-hidden="true"></i>
+                                    <strong>Nema narudžbi za odabrane filtre.</strong>
                                 </td>
                             </tr>
                         @endforelse
                         </tbody>
                     </table>
                 </div>
-                <!-- Pagination -->
+
                 {{ $orders->links() }}
             </div>
         </div>
-        <!-- END All Orders -->
     </div>
-
 @endsection
 
 @push('js_after')
     <script src="{{ asset('js/plugins/select2/js/select2.full.min.js') }}"></script>
     <script>
         $(() => {
-            $('#status-select').select2({
-                placeholder: 'Promjenite status'
+            const $bulkStatus = $('#status-select');
+            const $checkboxes = $('.order-checkbox');
+            const $checkAll = $('#checkAll');
+
+            $bulkStatus.select2({
+                placeholder: 'Odaberite novi status',
+                minimumResultsForSearch: Infinity
             });
 
-            $('#status-select').on('change', (e) => {
-                let selected = e.currentTarget.selectedOptions[0].value;
-                let orders = '[';
-                var checkedBoxes = document.querySelectorAll('input[name=status]:checked');
+            function selectedOrderIds() {
+                return $checkboxes.filter(':checked').map(function () {
+                    return this.value;
+                }).get();
+            }
 
-                for (let i = 0; i < checkedBoxes.length; i++) {
-                    if (checkedBoxes.length - 1 == i) {
-                        orders += checkedBoxes[i].value + ']';
-                    } else {
-                        orders += checkedBoxes[i].value + ','
-                    }
+            function updateBulkControls() {
+                const selected = selectedOrderIds();
+                $('#selected-orders-count').text(selected.length);
+                $bulkStatus.prop('disabled', selected.length === 0);
+                $checkAll.prop('checked', selected.length > 0 && selected.length === $checkboxes.length);
+                $checkAll.prop('indeterminate', selected.length > 0 && selected.length < $checkboxes.length);
+            }
+
+            $checkAll.on('change', function () {
+                $checkboxes.prop('checked', this.checked);
+                updateBulkControls();
+            });
+
+            $checkboxes.on('change', updateBulkControls);
+
+            $bulkStatus.on('change', function () {
+                const statusId = this.value;
+                const orderIds = selectedOrderIds();
+
+                if (!statusId || orderIds.length === 0) {
+                    return;
                 }
 
-                console.log('Selected ID: ' + selected);
-                console.log('Orders ID: ' + orders);
+                $bulkStatus.prop('disabled', true);
 
-                axios.post('{{ route('api.order.status.change') }}', {selected: selected, orders: orders})
-                .then((r) => {
+                axios.post('{{ route('api.order.status.change') }}', {
+                    selected: statusId,
+                    orders: '[' + orderIds.join(',') + ']'
+                }).then(() => {
                     location.reload();
-                })
-                .catch((error) => {
+                }).catch((error) => {
                     const message = error.response && error.response.data && error.response.data.error
                         ? error.response.data.error
                         : 'Statuse nije moguće promijeniti. Pokušajte ponovno.';
                     errorToast.fire(message);
+                    updateBulkControls();
+                    $bulkStatus.val(null).trigger('change.select2');
+                });
+            });
+
+            updateBulkControls();
+        });
+
+        function sendShipment(orderId, endpoint) {
+            axios.post(endpoint, {order_id: orderId})
+                .then((response) => {
+                    if (!response.data.message) {
+                        errorToast.fire(response.data.error || 'Slanje pošiljke nije uspjelo.');
+                        return;
+                    }
+
+                    successToast.fire({timer: 1500, text: response.data.message})
+                        .then(() => location.reload());
                 })
-            });
-        });
-
-        function sendShipment(order_id, endpoint) {
-            axios.post(endpoint, {order_id: order_id})
-            .then(response => {
-                if (response.data.message) {
-                    successToast.fire({
-                        timer: 1500,
-                        text: response.data.message,
-                    }).then(() => {
-                        location.reload();
-                    })
-
-                } else {
-                    return errorToast.fire(response.data.error);
-                }
-            }).catch(error => {
-                const message = error.response && error.response.data && error.response.data.error
-                    ? error.response.data.error
-                    : 'Slanje pošiljke nije uspjelo.';
-                errorToast.fire(message);
-            });
+                .catch((error) => {
+                    const message = error.response && error.response.data && error.response.data.error
+                        ? error.response.data.error
+                        : 'Slanje pošiljke nije uspjelo.';
+                    errorToast.fire(message);
+                });
         }
 
-        function sendGLS(order_id) {
-            sendShipment(order_id, "{{ route('api.order.send.gls') }}");
+        function sendGLS(orderId) {
+            sendShipment(orderId, "{{ route('api.order.send.gls') }}");
         }
 
-        function sendBoxNow(order_id) {
-            sendShipment(order_id, "{{ route('api.order.send.boxnow') }}");
+        function sendBoxNow(orderId) {
+            sendShipment(orderId, "{{ route('api.order.send.boxnow') }}");
         }
 
-        function refreshBoxNow(order_id) {
-            sendShipment(order_id, "{{ route('api.order.tracking.boxnow.refresh') }}");
-        }
-
-        /**
-         *
-         * @param type
-         * @param search
-         */
-        function setURL(type, search) {
-            let url = new URL(location.href);
-            let params = new URLSearchParams(url.search);
-            let keys = [];
-
-            for(var key of params.keys()) {
-                if (key === type) {
-                    keys.push(key);
-                }
-            }
-
-            keys.forEach((value) => {
-                if (params.has(value) || search == 0) {
-                    params.delete(value);
-                }
-            })
-
-            if (search) {
-                params.append(type, search);
-            }
-
-            url.search = params;
-            location.href = url;
+        function refreshBoxNow(orderId) {
+            sendShipment(orderId, "{{ route('api.order.tracking.boxnow.refresh') }}");
         }
     </script>
-    <script>
-        $("#checkAll").click(function () {
-            $('input:checkbox').not(this).prop('checked', this.checked);
-        });
-    </script>
-
 @endpush

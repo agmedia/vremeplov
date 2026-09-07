@@ -15,13 +15,8 @@
     <div class="bg-header-dark">
         <div class="content-header bg-white-10">
             <!-- Logo -->
-            <a class="font-w600 text-white text-center tracking-wide" href="/">
-                            <span class="smini-visible">
-                                <span class="opacity-75">x</span>
-                            </span>
-                <span class="smini-hidden ml-2">
-                                Antikvarijat <span class="opacity-75">Vremeplov</span>
-                            </span>
+            <a class="admin-brand" href="{{ route('dashboard') }}" aria-label="Antikvarijat Vremeplov – nadzorna ploča">
+                <img class="admin-brand-logo" src="{{ asset('media/img/vremeplov-logo.svg') }}" alt="Antikvarijat Vremeplov">
             </a>
             <!-- END Logo -->
 
@@ -38,7 +33,7 @@
                 <!-- Close Sidebar, Visible only on mobile screens -->
                 <!-- Layout API, functionality initialized in Template._uiApiLayout() -->
                 <a class="d-lg-none text-white ml-2" data-toggle="layout" data-action="sidebar_close" href="javascript:void(0)">
-                    <i class="fa fa-times-circle"></i>
+                    <i class="fa fa-times-circle" aria-hidden="true"></i>
                 </a>
                 <!-- END Close Sidebar -->
             </div>

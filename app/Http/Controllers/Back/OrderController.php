@@ -37,8 +37,9 @@ class OrderController extends Controller
     public function index(Request $request, Order $order, BoxNowOrderPolicy $boxNowPolicy)
     {
         $orders = $order->filter($request)
+                        ->withCount('products')
                         ->paginate(config('settings.pagination.back'))
-                        ->appends(request()->query());;
+                        ->appends(request()->query());
 
         $statuses = Settings::get('order', 'statuses');
 
@@ -55,7 +56,23 @@ class OrderController extends Controller
      */
     public function create()
     {
-        return view('back.order.edit');
+        $countries = Country::list();
+        $statuses = Settings::get('order', 'statuses');
+        $shippings = collect(Settings::getList('shipping'))->reject(function ($shipping) {
+            return strtolower(trim((string) ($shipping->code ?? ''))) === BoxNowService::CARRIER;
+        });
+        $payments = Settings::getList('payment');
+        $isBoxNowOrder = false;
+        $boxNowShipmentLocked = false;
+
+        return view('back.order.edit', compact(
+            'countries',
+            'statuses',
+            'shippings',
+            'payments',
+            'isBoxNowOrder',
+            'boxNowShipmentLocked'
+        ));
     }
 
 

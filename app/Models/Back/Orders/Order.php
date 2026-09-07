@@ -456,30 +456,36 @@ class Order extends Model
     {
         $query = $this->newQuery();
 
-        if ($request->has('status')) {
+        if ($request->filled('status')) {
             $query->where('order_status_id', '=', $request->input('status'));
         }
 
-        if ($request->has('search') && ! empty($request->input('search'))) {
-            $search = $request->input('search');
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', Carbon::parse($request->input('date_from')));
+        }
 
-            if (strpos($search, ' ') !== false) {
-                $search = explode(' ', $search);
-            }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', Carbon::parse($request->input('date_to')));
+        }
 
-            if (is_array($search)) {
-                $query->where(function ($query) use ($search) {
-                    $query->where('payment_fname', 'like', '%' . $search[0] . '%')
-                          ->orWhere('payment_lname', 'like', '%' . $search[1] . '%');
-                });
-            } else {
-                $query->where(function ($query) use ($search) {
-                    $query->where('id', 'like', '%' . $search . '%')
-                          ->orWhere('payment_email', 'like', '%' . $search)
-                          ->orWhere('payment_fname', 'like', '%' . $search)
-                          ->orWhere('payment_lname', 'like', '%' . $search);
-                });
-            }
+        if ($request->filled('search')) {
+            $search = trim((string) $request->input('search'));
+            $terms = preg_split('/\s+/', $search, -1, PREG_SPLIT_NO_EMPTY);
+
+            $query->where(function ($query) use ($search, $terms) {
+                $query->where('id', 'like', '%' . ltrim($search, '#') . '%')
+                    ->orWhere('payment_email', 'like', '%' . $search . '%')
+                    ->orWhere('shipping_email', 'like', '%' . $search . '%')
+                    ->orWhereRaw("TRIM(CONCAT(COALESCE(payment_fname, ''), ' ', COALESCE(payment_lname, ''))) LIKE ?", ['%' . $search . '%'])
+                    ->orWhereRaw("TRIM(CONCAT(COALESCE(shipping_fname, ''), ' ', COALESCE(shipping_lname, ''))) LIKE ?", ['%' . $search . '%']);
+
+                foreach ($terms as $term) {
+                    $query->orWhere('payment_fname', 'like', '%' . $term . '%')
+                        ->orWhere('payment_lname', 'like', '%' . $term . '%')
+                        ->orWhere('shipping_fname', 'like', '%' . $term . '%')
+                        ->orWhere('shipping_lname', 'like', '%' . $term . '%');
+                }
+            });
         }
 
         return $query->orderBy('created_at', 'desc');

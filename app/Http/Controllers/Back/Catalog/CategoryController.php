@@ -20,8 +20,9 @@ class CategoryController extends Controller
     {
         $category = new Category();
         $categoriess = $category->getList();
+        $categoryGroups = collect(Settings::get('category', 'list.groups'));
 
-        return view('back.catalog.category.index', compact('categoriess'));
+        return view('back.catalog.category.index', compact('categoriess', 'categoryGroups'));
     }
 
 

@@ -6,13 +6,18 @@
 
 @section('content')
 
-    <div class="bg-body-light">
+    <div class="admin-page-hero">
         <div class="content content-full">
-            <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center">
-                <h1 class="flex-sm-fill font-size-h2 font-w400 mt-2 mb-0 mb-sm-2">Grupe Kategorija</h1>
-                <button class="btn btn-hero-success my-2" onclick="event.preventDefault(); openModal();">
-                    <i class="far fa-fw fa-plus-square"></i><span class="d-none d-sm-inline ml-1"> Nova Grupa</span>
-                </button>
+            <div class="admin-page-heading">
+                <div>
+                    <div class="admin-page-kicker"><i class="fa fa-layer-group" aria-hidden="true"></i> Katalog</div>
+                    <h1 class="admin-page-title">Grupe kategorija</h1>
+                    <p class="admin-page-description">Upravljajte glavnim grupama koje organiziraju kategorije u katalogu.</p>
+                </div>
+                <div class="admin-toolbar-actions">
+                    <a class="btn btn-alt-secondary" href="{{ route('categories') }}"><i class="fa fa-arrow-left mr-1" aria-hidden="true"></i> Kategorije</a>
+                    <button type="button" class="btn btn-primary" onclick="openModal();"><i class="fa fa-plus-square mr-1" aria-hidden="true"></i> Nova grupa</button>
+                </div>
             </div>
         </div>
     </div>
@@ -20,9 +25,9 @@
     <div class="content content-full">
         @include('back.layouts.partials.session')
 
-        <div class="block">
+        <div class="block block-rounded">
             <div class="block-header block-header-default">
-                <h3 class="block-title">Lista</h3>
+                <div><h2 class="block-title mb-1">Sve grupe <span class="admin-count">{{ count($groups) }}</span></h2><p class="text-muted mb-0 font-size-sm">Naziv, URL, poredak i status prikaza.</p></div>
             </div>
             <div class="block-content">
                 <table class="table table-striped table-borderless table-vcenter">
@@ -33,7 +38,7 @@
                         <th style="width: 20%;">Url</th>
                         <th class="text-center">Poredak</th>
                         <th class="text-center">Status</th>
-                        <th class="text-right" style="width: 100px;">Uredi</th>
+                        <th class="text-right" style="width: 100px;">Radnje</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -45,12 +50,10 @@
                             <td class="text-center">{{ $group->sort_order }}</td>
                             <td class="text-center">@include('back.layouts.partials.status', ['status' => $group->status])</td>
                             <td class="text-right font-size-sm">
-                                <button class="btn btn-sm btn-alt-secondary" onclick="event.preventDefault(); openModal({{ json_encode($group) }});">
-                                    <i class="fa fa-fw fa-pencil-alt"></i>
-                                </button>
-                                <button class="btn btn-sm btn-alt-danger" onclick="event.preventDefault(); deleteGroup({{ json_encode($group) }});">
-                                    <i class="fa fa-fw fa-trash-alt"></i>
-                                </button>
+                                <span class="admin-row-actions">
+                                    <button type="button" class="btn btn-sm btn-alt-secondary" onclick="openModal({{ json_encode($group) }});" title="Uredi" aria-label="Uredi grupu {{ $group->title }}"><i class="fa fa-pencil-alt" aria-hidden="true"></i></button>
+                                    <button type="button" class="btn btn-sm btn-alt-danger" onclick="deleteGroup({{ json_encode($group) }});" title="Obriši" aria-label="Obriši grupu {{ $group->title }}"><i class="fa fa-trash-alt" aria-hidden="true"></i></button>
+                                </span>
                             </td>
                         </tr>
                     @empty
@@ -125,7 +128,7 @@
             <div class="modal-content rounded">
                 <div class="block block-themed block-transparent mb-0">
                     <div class="block-header bg-primary">
-                        <h3 class="block-title">Obriši groupu</h3>
+                        <h3 class="block-title">Obriši grupu</h3>
                         <div class="block-options">
                             <a class="text-muted font-size-h3" href="#" data-dismiss="modal" aria-label="Close">
                                 <i class="fa fa-times"></i>
@@ -135,7 +138,7 @@
                     <div class="block-content">
                         <div class="row justify-content-center mb-3">
                             <div class="col-md-10">
-                                <h4>Jeste li sigurni da želite obrisati groupu kategorija?</h4>
+                                <h4>Jeste li sigurni da želite obrisati grupu kategorija?</h4>
                                 <input type="hidden" id="delete-group-id" value="0">
                             </div>
                         </div>
@@ -167,8 +170,6 @@
          * @param type
          */
         function openModal(item = {}) {
-            //console.log(item);
-
             $('#group-modal').modal('show');
             editGroup(item);
         }
@@ -187,10 +188,9 @@
 
             axios.post("{{ route('api.categories.groups.store') }}", {data: item})
             .then(response => {
-                //console.log(response.data)
                 if (response.data.success) {
                     successToast.fire(response.data.success);
-                    setTimeout(location.reload(), 900);
+                    setTimeout(() => location.reload(), 900);
                 } else {
                     return errorToast.fire(response.data.message);
                 }
@@ -215,10 +215,9 @@
 
             axios.post("{{ route('api.categories.groups.destroy') }}", {data: item})
             .then(response => {
-                //console.log(response.data)
                 if (response.data.success) {
                     successToast.fire(response.data.success);
-                    setTimeout(location.reload(), 900);
+                    setTimeout(() => location.reload(), 900);
                 } else {
                     return errorToast.fire(response.data.message);
                 }
@@ -235,9 +234,7 @@
             $('#group-slug').val(item.slug);
             $('#group-sort-order').val(item.sort_order);
 
-            if (item.status) {
-                $('#group-status')[0].checked = !!item.status;
-            }
+            $('#group-status')[0].checked = !!item.status;
         }
     </script>
 @endpush

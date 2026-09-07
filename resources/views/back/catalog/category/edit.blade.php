@@ -6,21 +6,20 @@
 
 @section('content')
 
-    <div class="bg-body-light">
+    <div class="admin-page-hero">
         <div class="content content-full">
-            <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center">
-                <h1 class="flex-sm-fill font-size-h2 font-w400 mt-2 mb-0 mb-sm-2">Kategorija edit</h1>
-                <nav class="flex-sm-00-auto ml-sm-3" aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('categories') }}">Kategorije</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Nova kategorija</li>
-                    </ol>
-                </nav>
+            <div class="admin-page-heading">
+                <div>
+                    <div class="admin-page-kicker"><i class="fa fa-folder-open" aria-hidden="true"></i> Katalog</div>
+                    <h1 class="admin-page-title">{{ isset($category) ? 'Uredi kategoriju' : 'Nova kategorija' }}</h1>
+                    <p class="admin-page-description">{{ isset($category) ? $category->title : 'Dodajte kategoriju i odredite joj mjesto u katalogu.' }}</p>
+                </div>
+                <a class="btn btn-alt-secondary" href="{{ route('categories') }}"><i class="fa fa-arrow-left mr-1" aria-hidden="true"></i> Sve kategorije</a>
             </div>
         </div>
     </div>
 
-    <div class="content content-full content-boxed">
+    <div class="content content-full">
         <!-- END Page Content -->
     @include('back.layouts.partials.session')
         <!-- New Post -->
@@ -29,11 +28,9 @@
             @if (isset($category))
                 {{ method_field('PATCH') }}
             @endif
-            <div class="block">
+            <div class="block block-rounded admin-editor-section">
                 <div class="block-header block-header-default">
-                    <a class="btn btn-light" href="{{ back()->getTargetUrl() }}">
-                        <i class="fa fa-arrow-left mr-1"></i> Povratak
-                    </a>
+                    <div><h2 class="block-title mb-1">Osnovni podaci</h2><p class="text-muted mb-0 font-size-sm">Naziv, grupa, nadređena kategorija i opis.</p></div>
                     <div class="block-options">
                         <div class="custom-control custom-switch custom-control-success">
                             <input type="checkbox" class="custom-control-input" id="category-switch" name="status" {{ (isset($category->status) and $category->status) ? 'checked' : '' }}>
@@ -80,9 +77,9 @@
                 </div>
             </div>
 
-            <div class="block">
+            <div class="block block-rounded admin-editor-section">
                 <div class="block-header block-header-default">
-                    <h3 class="block-title">Meta Data - SEO</h3>
+                    <div><h2 class="block-title mb-1">SEO i dijeljenje</h2><p class="text-muted mb-0 font-size-sm">Meta podaci i slika za prikaz na društvenim mrežama.</p></div>
                 </div>
                 <div class="block-content">
                     <div class="row justify-content-center">
@@ -118,17 +115,17 @@
                         </div>
                     </div>
                 </div>
-                <div class="block-content bg-body-light">
+                <div class="block-content bg-body-light admin-sticky-actions">
                     <div class="row justify-content-center push">
                         <div class="col-md-5">
-                            <button type="submit" class="btn btn-hero-success my-2">
-                                <i class="fas fa-save mr-1"></i> Snimi
+                            <button type="submit" class="btn btn-primary my-2">
+                                <i class="fas fa-save mr-1"></i> Spremi kategoriju
                             </button>
                         </div>
                         <div class="col-md-5 text-right">
                         @if (isset($category))
 
-                                <a href="{{ route('category.destroy', ['category' => $category]) }}" type="submit" class="btn btn-hero-danger my-2 js-tooltip-enabled" data-toggle="tooltip" title="" data-original-title="Obriši" onclick="event.preventDefault(); document.getElementById('delete-category-form{{ $category->id }}').submit();">
+                                <a href="{{ route('category.destroy', ['category' => $category]) }}" class="btn btn-alt-danger my-2 js-tooltip-enabled" data-toggle="tooltip" title="" data-original-title="Obriši" onclick="event.preventDefault(); document.getElementById('delete-category-form{{ $category->id }}').submit();">
                                     <i class="fa fa-trash-alt"></i> Obriši
                                 </a>
 
@@ -167,9 +164,7 @@
 
             ClassicEditor
             .create( document.querySelector('#description-editor'))
-            .then( editor => {
-                console.log(editor);
-            } )
+            .then(() => {})
             .catch( error => {
                 console.error(error);
             } );

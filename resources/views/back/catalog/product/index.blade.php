@@ -9,12 +9,22 @@
 
 @section('content')
 
-    <div class="bg-body-light">
+    @php
+        $activeFilterCount = collect(['search', 'category', 'author', 'publisher', 'status', 'sort'])
+            ->filter(fn ($key) => filled(request()->input($key)))
+            ->count();
+    @endphp
+
+    <div class="bg-body-light admin-page-hero">
         <div class="content content-full">
             <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center">
-                <h1 class="flex-sm-fill font-size-h2 font-w400 mt-2 mb-0 mb-sm-2">Artikli</h1>
-                <a class="btn btn-hero-success my-2" href="{{ route('products.create') }}">
-                    <i class="far fa-fw fa-plus-square"></i><span class="d-none d-sm-inline ml-1"> Novi artikl</span>
+                <div>
+                    <span class="admin-page-kicker"><i class="fa fa-layer-group mr-1" aria-hidden="true"></i>Katalog</span>
+                    <h1>Artikli</h1>
+                    <p class="admin-page-subtitle">Pretraživanje, brze izmjene i upravljanje zalihom na jednom mjestu.</p>
+                </div>
+                <a class="btn btn-primary my-2" href="{{ route('products.create') }}">
+                    <i class="far fa-fw fa-plus-square" aria-hidden="true"></i><span class="ml-1">Novi artikl</span>
                 </a>
             </div>
         </div>
@@ -24,46 +34,56 @@
     @include('back.layouts.partials.session')
 
     <!-- All Products -->
-        <div class="block block-rounded">
-            <div class="block-header block-header-default">
-                <h3 class="block-title">Svi artikli {{ $products->total() }}</h3>
-                <div class="block-options">
-                    <div class="dropdown">
-                        <button class="btn btn-outline-primary mr-3" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
-                            <i class="fa fa-filter"></i> Filter
-                        </button>
-                        <a class="btn btn-primary btn-inline-block" href="{{route('products')}}"><i class=" ci-trash"></i> Očisti filtere</a>
-                    </div>
+        <div class="block block-rounded admin-list-block">
+            <div class="block-header block-header-default admin-toolbar">
+                <div>
+                    <h2 class="block-title mb-1">Svi artikli <span class="admin-count">{{ number_format($products->total(), 0, ',', '.') }}</span></h2>
+                    <small class="text-muted">Kliknite cijenu, godinu ili policu za brzu izmjenu.</small>
+                </div>
+                <div class="admin-toolbar-actions">
+                    <button class="btn btn-outline-primary" type="button" data-toggle="collapse" data-target="#productFilters" aria-expanded="{{ $activeFilterCount ? 'true' : 'false' }}" aria-controls="productFilters">
+                        <i class="fa fa-filter mr-1" aria-hidden="true"></i> Filtri
+                        @if($activeFilterCount)
+                            <span class="admin-count">{{ $activeFilterCount }}</span>
+                        @endif
+                    </button>
+                    @if($activeFilterCount)
+                        <a class="btn btn-light" href="{{ route('products') }}"><i class="fa fa-times mr-1" aria-hidden="true"></i>Očisti</a>
+                    @endif
                 </div>
             </div>
-            <div class="collapse show" id="collapseExample">
-                <div class="block-content bg-body-dark">
+            <div class="collapse {{ $activeFilterCount ? 'show' : '' }}" id="productFilters">
+                <div class="block-content admin-filter-panel">
                     <form action="{{ route('products') }}" method="get">
 
                         <div class="form-group row items-push mb-0">
                             <div class="col-md-9 mb-0">
                                 <div class="form-group">
+                                    <label class="admin-filter-label" for="search-input">Pretraživanje</label>
                                     <div class="input-group flex-nowrap">
-                                        <input type="text" class="form-control py-3 text-center" name="search" id="search-input" value="{{ request()->input('search') }}" placeholder="Upiši pojam pretraživanja">
-                                        <button type="submit" class="btn btn-primary fs-base" onclick="setURL('search', $('#search-input').val());"><i class="fa fa-search"></i> </button>
+                                        <input type="search" class="form-control" name="search" id="search-input" value="{{ request()->input('search') }}" placeholder="Naziv, šifra, godina ili polica">
+                                        <button type="submit" class="btn btn-primary" aria-label="Pretraži"><i class="fa fa-search" aria-hidden="true"></i><span class="d-none d-sm-inline ml-2">Traži</span></button>
                                     </div>
-                                    <div class="form-text small">Pretraži po imenu, šifri, godini izdanja ili šifri police.</div>
+                                    <div class="form-text small">Možete upisati puni pojam ili samo njegov dio.</div>
                                 </div>
                             </div>
 
                             <div class="col-md-3">
                                 <div class="form-group">
+                                    <label class="admin-filter-label" for="category-select">Kategorija</label>
                                     <select class="js-select2 form-control" id="category-select" name="category" style="width: 100%;" data-placeholder="Odaberi kategoriju">
-                                        <option></option><!-- Required for data-placeholder attribute to work with Select2 plugin -->
+                                        <option></option>
                                         @foreach ($categories as $group => $cats)
-                                            @foreach ($cats as $id => $category)
-                                                <option value="{{ $id }}" class="font-weight-bold small" {{ $id == request()->input('category') ? 'selected' : '' }}>{{ $group . ' >> ' . $category['title'] }}</option>
-                                                @if ( ! empty($category['subs']))
-                                                    @foreach ($category['subs'] as $sub_id => $subcategory)
-                                                        <option value="{{ $sub_id }}" class="pl-3 text-sm" {{ $sub_id == request()->input('category') ? 'selected' : '' }}>{{ $subcategory['title'] }}</option>
-                                                    @endforeach
-                                                @endif
-                                            @endforeach
+                                            <optgroup label="{{ $group }}">
+                                                @foreach ($cats as $id => $category)
+                                                    <option value="{{ $id }}" {{ $id == request()->input('category') ? 'selected' : '' }}>{{ $category['title'] }}</option>
+                                                    @if ( ! empty($category['subs']))
+                                                        @foreach ($category['subs'] as $sub_id => $subcategory)
+                                                            <option value="{{ $sub_id }}" {{ $sub_id == request()->input('category') ? 'selected' : '' }}>{{ $category['title'] }} › {{ $subcategory['title'] }}</option>
+                                                        @endforeach
+                                                    @endif
+                                                @endforeach
+                                            </optgroup>
                                         @endforeach
                                     </select>
                                 </div>
@@ -73,26 +93,25 @@
                         <div class="form-group row items-push mb-0">
                             <div class="col-md-3">
                                 <div class="form-group">
+                                    <label class="admin-filter-label">Autor</label>
                                     @livewire('back.layout.search.author-search', ['author_id' => request()->input('author') ?: '', 'list' => true])
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
+                                    <label class="admin-filter-label">Izdavač</label>
                                     @livewire('back.layout.search.publisher-search', ['publisher_id' => request()->input('publisher') ?: '', 'list' => true])
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <select class="js-select2 form-control" id="status-select" name="status" style="width: 100%;" data-placeholder="Odaberi Status">
-                                        <option></option><!-- Required for data-placeholder attribute to work with Select2 plugin -->
+                                    <label class="admin-filter-label" for="status-select">Status i zaliha</label>
+                                    <select class="js-select2 form-control" id="status-select" name="status" style="width: 100%;" data-placeholder="Odaberi status">
+                                        <option></option>
                                         <option value="all" {{ 'all' == request()->input('status') ? 'selected' : '' }}>Svi artikli</option>
                                         <option value="active" {{ 'active' == request()->input('status') ? 'selected' : '' }}>Aktivni</option>
                                         <option value="inactive" {{ 'inactive' == request()->input('status') ? 'selected' : '' }}>Neaktivni</option>
-
                                         <option value="kolicina" {{ 'kolicina' == request()->input('status') ? 'selected' : '' }}>Rasprodano</option>
-
-
-
                                         <option value="with_action" {{ 'with_action' == request()->input('status') ? 'selected' : '' }}>Sa akcijama</option>
                                         <option value="without_action" {{ 'without_action' == request()->input('status') ? 'selected' : '' }}>Bez akcija</option>
                                     </select>
@@ -100,14 +119,15 @@
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
+                                    <label class="admin-filter-label" for="sort-select">Sortiranje</label>
                                     <select class="js-select2 form-control" id="sort-select" name="sort" style="width: 100%;" data-placeholder="Sortiraj artikle">
-                                        <option></option><!-- Required for data-placeholder attribute to work with Select2 plugin -->
+                                        <option></option>
                                         <option value="new" {{ 'new' == request()->input('sort') ? 'selected' : '' }}>Najnovije</option>
                                         <option value="old" {{ 'old' == request()->input('sort') ? 'selected' : '' }}>Najstarije</option>
-                                        <option value="price_up" {{ 'price_up' == request()->input('sort') ? 'selected' : '' }}>Cijena od manje</option>
-                                        <option value="price_down" {{ 'price_down' == request()->input('sort') ? 'selected' : '' }}>Cijena od više</option>
-                                        <option value="az" {{ 'az' == request()->input('sort') ? 'selected' : '' }}>Od A do Ž</option>
-                                        <option value="za" {{ 'za' == request()->input('sort') ? 'selected' : '' }}>Od Ž do A</option>
+                                        <option value="price_up" {{ 'price_up' == request()->input('sort') ? 'selected' : '' }}>Cijena: niža prvo</option>
+                                        <option value="price_down" {{ 'price_down' == request()->input('sort') ? 'selected' : '' }}>Cijena: viša prvo</option>
+                                        <option value="az" {{ 'az' == request()->input('sort') ? 'selected' : '' }}>Naziv: A–Ž</option>
+                                        <option value="za" {{ 'za' == request()->input('sort') ? 'selected' : '' }}>Naziv: Ž–A</option>
                                     </select>
                                 </div>
                             </div>
@@ -117,11 +137,11 @@
                 </div>
             </div>
             <div class="block-content">
-                <div class="table-responsive">
-                    <table class="table table-borderless table-striped table-vcenter">
+                <div class="table-responsive admin-products-table-wrap">
+                    <table class="table table-borderless table-striped table-vcenter admin-products-table">
                         <thead>
                         <tr>
-                            <th class="text-center" style="width: 100px;">Slika</th>
+                            <th class="text-center">Slika</th>
                             <th>Naziv</th>
                             <th>Šifra</th>
                             <th class="text-right">Cijena</th>
@@ -132,19 +152,20 @@
                             <th>Dodano</th>
                             <th>Izmjena</th>
                             <th class="text-center">Status</th>
-                            <th class="text-right" style="width: 180px;">Uredi</th>
+                            <th class="text-right">Radnje</th>
                         </tr>
                         </thead>
                         <tbody id="ag-table-with-input-fields" class="js-gallery" >
                         @forelse ($products as $product)
                             <tr>
-                                <td class="text-center font-size-sm">
-                                    <a class="img-link img-link-zoom-in img-lightbox" href="{{ route('products.edit', ['product' => $product]) }}">
-                                        <img src="{{ $product->thumb }}" height="80px"/>
+                                <td class="text-center font-size-sm" data-label="Slika">
+                                    <a class="img-link img-link-zoom-in img-lightbox" href="{{ route('products.edit', ['product' => $product]) }}" aria-label="Uredi {{ $product->name }}">
+                                        <img class="admin-product-thumb" src="{{ $product->thumb }}" alt="{{ $product->name }}" loading="lazy"/>
                                     </a>
                                 </td>
-                                <td class="font-size-sm">
-                                    <a class="font-w600" href="{{ route('products.edit', ['product' => $product]) }}">{{ $product->name }}</a><br>
+                                <td class="font-size-sm" data-label="Naziv">
+                                    <a class="admin-product-name" href="{{ route('products.edit', ['product' => $product]) }}">{{ $product->name }}</a>
+                                    <div class="admin-product-categories">
                                     @if ($product->categories)
                                         @foreach ($product->categories as $cat)
                                             <span class="badge badge-secondary">{{ $cat->title }}</span>
@@ -153,42 +174,47 @@
                                     @if ($product->subcategory())
                                         <span class="badge badge-secondary">{{ $product->subcategory()->title }}</span>
                                     @endif
+                                    </div>
                                 </td>
-                                <td class="font-size-sm">{{ $product->sku }}</td>
-                                <td class="font-size-sm text-right">
+                                <td class="font-size-sm" data-label="Šifra"><span class="admin-mono">{{ $product->sku }}</span></td>
+                                <td class="font-size-sm text-right" data-label="Cijena">
                                     <ag-input-field item="{{ $product }}" target="price"></ag-input-field>
                                 </td>
-                                <td class="font-size-sm text-center">
+                                <td class="font-size-sm text-center" data-label="Godina">
                                     <ag-input-field item="{{ $product }}" target="year"></ag-input-field>
                                 </td>
-                               <td class="font-size-sm text-center">  <ag-input-field item="{{ $product }}" target="polica"></ag-input-field></td>
+                               <td class="font-size-sm text-center" data-label="Polica"><ag-input-field item="{{ $product }}" target="polica"></ag-input-field></td>
 {{--                                <td class="font-size-sm text-center">  <ag-input-field item="{{ $product }}" target="dimensions"></ag-input-field></td>--}}
-                                <td class="font-size-sm text-center">{{ $product->quantity }}</td>
-                                <td class="font-size-sm">{{ \Illuminate\Support\Carbon::make($product->created_at)->format('d.m.Y') }}</td>
-                                <td class="font-size-sm">{{ \Illuminate\Support\Carbon::make($product->updated_at)->format('d.m.Y') }}</td>
-                                <td class="text-center font-size-sm">
+                                <td class="font-size-sm text-center" data-label="Količina"><strong>{{ $product->quantity }}</strong></td>
+                                <td class="font-size-sm" data-label="Dodano">{{ \Illuminate\Support\Carbon::make($product->created_at)->format('d.m.Y') }}</td>
+                                <td class="font-size-sm" data-label="Izmjena">{{ \Illuminate\Support\Carbon::make($product->updated_at)->format('d.m.Y') }}</td>
+                                <td class="text-center font-size-sm" data-label="Status">
                                     <div class="custom-control custom-switch custom-control-success mb-1">
                                         <input type="checkbox" class="custom-control-input" id="status-{{ $product->id }}" onclick="setStatus({{ $product->id }})" name="status" @if ($product->status) checked="" @endif>
                                         <label class="custom-control-label" for="status-{{ $product->id }}"></label>
                                     </div>
                                 </td>
-                                <td class="text-right font-size-sm">
-                                    <a class="btn btn-sm btn-alt-secondary" target="_blank" href=" {{ url($product->url) }}">
+                                <td class="text-right font-size-sm" data-label="Radnje">
+                                    <span class="admin-row-actions">
+                                    <a class="btn btn-sm btn-alt-secondary" target="_blank" href="{{ url($product->url) }}" title="Otvori artikl" aria-label="Otvori {{ $product->name }}">
                                         <i class="fa fa-fw fa-eye"></i>
                                     </a>
-                                    <a class="btn btn-sm btn-alt-secondary" href="{{ route('products.edit', ['product' => $product]) }}">
+                                    <a class="btn btn-sm btn-alt-secondary" href="{{ route('products.edit', ['product' => $product]) }}" title="Uredi artikl" aria-label="Uredi {{ $product->name }}">
                                         <i class="fa fa-fw fa-pencil-alt"></i>
                                     </a>
-                                    <a class="btn btn-sm btn-alt-warning" href="{{ route('products.duplicate', ['product' => $product]) }}">
+                                    <a class="btn btn-sm btn-alt-warning" href="{{ route('products.duplicate', ['product' => $product]) }}" title="Dupliciraj artikl" aria-label="Dupliciraj {{ $product->name }}">
                                         <i class="fa fa-fw fa-copy"></i>
                                     </a>
-                                    <button class="btn btn-sm btn-alt-danger" onclick="event.preventDefault(); deleteItem({{ $product->id }}, '{{ route('products.destroy.api') }}');"><i class="fa fa-fw fa-trash-alt"></i></button>
+                                    <button class="btn btn-sm btn-alt-danger" type="button" onclick="deleteItem({{ $product->id }}, '{{ route('products.destroy.api') }}');" title="Obriši artikl" aria-label="Obriši {{ $product->name }}"><i class="fa fa-fw fa-trash-alt"></i></button>
+                                    </span>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td class="text-center font-size-sm" colspan="12">
-                                    <label>Nema proizvoda...</label>
+                                <td class="admin-empty-state" colspan="12">
+                                    <i class="fa fa-search" aria-hidden="true"></i>
+                                    <strong>Nema pronađenih artikala.</strong>
+                                    <div class="mt-1">Promijenite ili očistite filtre pa pokušajte ponovno.</div>
                                 </td>
                             </tr>
                         @endforelse
@@ -229,7 +255,6 @@
 
             //
             $('#category-select').on('change', (e) => {
-                console.log(e.currentTarget.selectedOptions[0])
                 setURL('category', e.currentTarget.selectedOptions[0]);
             });
             $('#status-select').on('change', (e) => {

@@ -4,7 +4,7 @@
         <div class="alert-icon">
             <i class="ci-check-circle"></i>
         </div>
-        <div>Uspjeh..! {{ session('success') }}</div>
+        <div><strong>Uspješno.</strong> {{ session('success') }}</div>
     </div>
 @endif
 @if(session('error'))
@@ -12,7 +12,7 @@
         <div class="alert-icon">
             <i class="ci-close-circle"></i>
         </div>
-        <div>Greška..! {{ session('error') }}</div>
+        <div><strong>Greška.</strong> {{ session('error') }}</div>
     </div>
 
 @endif
@@ -21,13 +21,14 @@
         <div class="alert-icon">
             <i class="ci-security-announcement"></i>
         </div>
-        <div>Upozorenje..! {{ session('warning') }}</div>
+        <div><strong>Upozorenje.</strong> {{ session('warning') }}</div>
     </div>
 @endif
 
 @if ($errors->any())
-    <div class="alert alert-danger">
-        <ul>
+    <div class="alert alert-danger" role="alert">
+        <strong>Provjerite unesene podatke:</strong>
+        <ul class="mb-0 mt-2">
             @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
             @endforeach

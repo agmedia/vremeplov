@@ -5,10 +5,20 @@
 
 @section('content')
 
-    <div class="bg-body-light">
+    <div class="admin-page-hero">
         <div class="content content-full">
-            <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center">
-                <h1 class="flex-sm-fill font-size-h2 font-w400 mt-2 mb-0 mb-sm-2">Narudžba edit <small class="font-weight-light">#_</small><strong>{{ $order->id }}</strong></h1>
+            <div class="admin-page-heading">
+                <div>
+                    <div class="admin-page-kicker"><i class="fa fa-edit" aria-hidden="true"></i> Uređivanje</div>
+                    <h1 class="admin-page-title">{{ isset($order) ? 'Narudžba #' . $order->id : 'Nova narudžba' }}</h1>
+                    <p class="admin-page-description">{{ isset($order) ? 'Uredite artikle, podatke kupca, dostavu i način plaćanja.' : 'Ručno unesite artikle, kupca, dostavu i način plaćanja.' }}</p>
+                </div>
+                <div class="admin-toolbar-actions">
+                    @if(isset($order))
+                        <a class="btn btn-alt-secondary" href="{{ route('orders.show', ['order' => $order]) }}"><i class="fa fa-eye mr-1" aria-hidden="true"></i> Pregled</a>
+                    @endif
+                    <a class="btn btn-light" href="{{ route('orders') }}"><i class="fa fa-arrow-left mr-1" aria-hidden="true"></i> Sve narudžbe</a>
+                </div>
             </div>
         </div>
     </div>
@@ -33,9 +43,9 @@
         @endif
 
         <!-- Products -->
-            <div class="block block-rounded" id="ag-order-products-app">
+            <div class="block block-rounded admin-editor-section" id="ag-order-products-app">
                 <div class="block-header block-header-default">
-                    <h3 class="block-title">Artikli</h3>
+                    <h2 class="block-title"><i class="fa fa-book mr-2" aria-hidden="true"></i>Artikli</h2>
                 </div>
                 <div class="block-content">
                     <ag-order-products
@@ -51,9 +61,9 @@
             <div class="row">
                 <div class="col-sm-7">
                     <!-- Billing Address -->
-                    <div class="block block-rounded">
+                    <div class="block block-rounded admin-editor-section">
                         <div class="block-header block-header-default">
-                            <h3 class="block-title">Kupac</h3>
+                            <h2 class="block-title"><i class="fa fa-user mr-2" aria-hidden="true"></i>Kupac i adresa dostave</h2>
                             <div class="block-options">
                                 @if (isset($order) && $order->user_id)
                                     <span class="small text-gray mr-3">Kupac je registriran</span><i class="fa fa-user text-success"></i>
@@ -110,9 +120,9 @@
                 </div>
                 <div class="col-sm-5">
                     <!-- Shipping -->
-                    <div class="block block-rounded">
+                    <div class="block block-rounded admin-editor-section">
                         <div class="block-header block-header-default">
-                            <h3 class="block-title">Način dostave</h3>
+                            <h2 class="block-title"><i class="fa fa-shipping-fast mr-2" aria-hidden="true"></i>Način dostave</h2>
                         </div>
                         <div class="block-content">
                             <div class="row mb-4">
@@ -131,15 +141,15 @@
                                 </div>
                                 <div class="col-md-4">
                                     <label for="shipping-amount-input">Iznos</label>
-                                    <input type="text" class="form-control" id="shipping-amount-input" name="shipping_amount" placeholder="Upišite iznos" value="{{ isset($order) ? $order->totals()->where('code', 'shipping')->first()->value : old('shipping_amount') }}">
+                                    <input type="text" class="form-control" id="shipping-amount-input" name="shipping_amount" placeholder="Upišite iznos" value="{{ isset($order) ? optional($order->totals()->where('code', 'shipping')->first())->value : old('shipping_amount') }}">
                                 </div>
                             </div>
                         </div>
                     </div>
                     <!-- Payments -->
-                    <div class="block block-rounded">
+                    <div class="block block-rounded admin-editor-section">
                         <div class="block-header block-header-default">
-                            <h3 class="block-title">Način plaćanja</h3>
+                            <h2 class="block-title"><i class="fa fa-credit-card mr-2" aria-hidden="true"></i>Način plaćanja</h2>
                         </div>
                         <div class="block-content">
                             <div class="row mb-4">
@@ -167,8 +177,9 @@
             </div>
             <!-- END Customer -->
 
+            @if(isset($order))
             <!-- Log Messages -->
-            <div class="block block-rounded">
+            <div class="block block-rounded admin-editor-section">
                 <div class="block-header block-header-default">
                     <h3 class="block-title">Povijest narudžbe</h3>
                     <div class="block-options">
@@ -177,7 +188,7 @@
                                 Dodaj komentar
                             </button>
                             <button type="button" class="btn btn-light" id="dropdown-ecom-filters" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Promjeni status
+                                Promijeni status
                                 <i class="fa fa-angle-down ml-1"></i>
                             </button>
                             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown-ecom-filters">
@@ -217,13 +228,14 @@
                     </table>
                 </div>
             </div>
+            @endif
 
-            <div class="block">
+            <div class="block admin-sticky-actions">
                 <div class="block-content">
                     <div class="row">
                         <div class="col-md-12">
-                            <button type="submit" class="btn btn-hero-success mb-3">
-                                <i class="fas fa-save mr-1"></i> Snimi
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save mr-1"></i> Spremi promjene
                             </button>
                         </div>
                     </div>
@@ -237,6 +249,7 @@
 @endsection
 
 @push('modals')
+    @if(isset($order))
     <div class="modal fade" id="comment-modal" tabindex="-1" role="dialog" aria-labelledby="comment--modal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-popout" role="document">
             <div class="modal-content rounded">
@@ -253,9 +266,9 @@
                         <div class="row justify-content-center mb-3">
                             <div class="col-md-10">
                                 <div class="form-group mb-4">
-                                    <label for="status-select">Promjeni status</label>
-                                    <select class="js-select2 form-control" id="status-select" name="status" style="width: 100%;" data-placeholder="Promjeni status narudžbe">
-                                        <option value="0">Bez Promjene statusa...</option>
+                                    <label for="status-select">Promijeni status</label>
+                                    <select class="js-select2 form-control" id="status-select" name="status" style="width: 100%;" data-placeholder="Promijeni status narudžbe">
+                                        <option value="0">Bez promjene statusa</option>
                                         @foreach ($statuses as $status)
                                             <option value="{{ $status->id }}">{{ $status->title }}</option>
                                         @endforeach
@@ -283,6 +296,7 @@
             </div>
         </div>
     </div>
+    @endif
 @endpush
 
 @push('js_after')
@@ -295,15 +309,18 @@
             $('#shipping-select').select2({});
             $('#payment-select').select2({});
 
-            $('#status-select').select2({});
+            @if(isset($order))
+                $('#status-select').select2({});
 
-            $('#btn-add-comment').on('click', () => {
-                $('#comment-modal').modal('show');
-                $('#status-select').val(0);
-                $('#status-select').trigger('change');
-            });
+                $('#btn-add-comment').on('click', () => {
+                    $('#comment-modal').modal('show');
+                    $('#status-select').val(0);
+                    $('#status-select').trigger('change');
+                });
+            @endif
         })
 
+        @if(isset($order))
         /**
          *
          * @param status
@@ -326,7 +343,6 @@
 
             axios.post("{{ route('api.order.status.change') }}", item)
             .then(response => {
-                console.log(response.data)
                 if (response.data.message) {
                     $('#comment-modal').modal('hide');
 
@@ -347,6 +363,7 @@
                 errorToast.fire(message);
             });
         }
+        @endif
     </script>
 
 @endpush

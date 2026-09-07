@@ -11,16 +11,20 @@
 
 @section('content')
 
-    <div class="bg-body-light">
+    <div class="admin-page-hero">
         <div class="content content-full">
-            <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center">
-                <h1 class="flex-sm-fill font-size-h2 font-w400 mt-2 mb-0 mb-sm-2">Artikl edit</h1>
-                <nav class="flex-sm-00-auto ml-sm-3" aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('products') }}">Artikli</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Novi artikl</li>
-                    </ol>
-                </nav>
+            <div class="admin-page-heading">
+                <div>
+                    <div class="admin-page-kicker"><i class="fa fa-layer-group" aria-hidden="true"></i> Katalog</div>
+                    <h1 class="admin-page-title">{{ isset($product) ? 'Uredi artikl' : 'Novi artikl' }}</h1>
+                    <p class="admin-page-description">{{ isset($product) ? $product->name : 'Unesite podatke, atribute, slike i SEO postavke novog artikla.' }}</p>
+                </div>
+                <div class="admin-toolbar-actions">
+                    <a class="btn btn-alt-secondary" href="{{ route('products') }}"><i class="fa fa-arrow-left mr-1" aria-hidden="true"></i> Svi artikli</a>
+                    @if(isset($product))
+                        <a class="btn btn-light" href="{{ url($product->url) }}" target="_blank" rel="noopener"><i class="fa fa-eye mr-1" aria-hidden="true"></i> Pregled</a>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
@@ -42,8 +46,8 @@
 
 
             <!-- Block Tabs Default Style -->
-            <div class="block block-rounded">
-                <ul class="nav nav-tabs nav-tabs-block" data-toggle="tabs" role="tablist">
+            <div class="block block-rounded admin-product-editor">
+                <ul class="nav nav-tabs nav-tabs-block admin-editor-tabs" data-toggle="tabs" role="tablist">
                     <li class="nav-item">
                         <a class="nav-link active" href="#osnovno"><i class="si si-settings"></i> Info</a>
                     </li>
@@ -63,11 +67,12 @@
                 </ul>
                 <div class="block-content tab-content">
                     <div class="tab-pane active" id="osnovno" role="tabpanel">
-                        <div class="block">
+                        <div class="block admin-editor-section">
                             <div class="block-header block-header-default">
-                                <a class="btn btn-light" href="{{ route('products') }}">
-                                    <i class="fa fa-arrow-left mr-1"></i> Povratak
-                                </a>
+                                <div>
+                                    <h2 class="block-title mb-1">Osnovni podaci</h2>
+                                    <p class="text-muted mb-0 font-size-sm">Naziv, cijena, stanje zalihe i prodajni opis.</p>
+                                </div>
                                 <div class="block-options">
                                     <div class="dropdown">
                                         <div class="d-none custom-control custom-switch custom-control-info block-options-item ml-4">
@@ -100,8 +105,8 @@
                                             </div>
 
                                             <div class="col-md-3">
-                                                <label for="polica-input">EAN </label>
-                                                <input type="text" class="form-control" id="polica-input" name="isbn" placeholder="Upišite EAN" value="{{ isset($product) ? $product->isbn : old('isbn') }}" >
+                                                <label for="isbn-input">EAN</label>
+                                                <input type="text" class="form-control" id="isbn-input" name="isbn" placeholder="Upišite EAN" value="{{ isset($product) ? $product->isbn : old('isbn') }}">
                                             </div>
                                         </div>
                                         <div class="form-group row items-push mb-3">
@@ -122,7 +127,7 @@
                                             <div class="col-md-3">
                                                 <label for="quantity-input">Količina <span class="text-danger">*</span></label>
                                                 <input type="text" class="form-control" id="quantity-input" name="quantity" placeholder="Upišite količinu artikla" value="{{ isset($product) ? $product->quantity : ( ! isset($product) ? 1 : old('quantity')) }}">
-                                                @error('quantity ')
+                                                @error('quantity')
                                                 <span class="text-danger font-italic">Količina je potrebna...</span>
                                                 @enderror
                                             </div>
@@ -164,11 +169,11 @@
                                                     <div class="input-group-prepend input-group-append">
                                                         <span class="input-group-text font-w600"><i class="fa fa-fw fa-arrow-right"></i></span>
                                                     </div>
-                                                    <input type="text" class="form-control" id="special-to-input" name="special_to" placeholder="do" value="{{ (isset($product->special_from) && $product->special_from != '0000-00-00 00:00:00') ? \Carbon\Carbon::make($product->special_to)->format('d.m.Y') : '' }}" data-week-start="1" data-autoclose="true" data-today-highlight="true">
+                                                    <input type="text" class="form-control" id="special-to-input" name="special_to" placeholder="do" value="{{ (isset($product->special_to) && $product->special_to != '0000-00-00 00:00:00') ? \Carbon\Carbon::make($product->special_to)->format('d.m.Y') : '' }}" data-week-start="1" data-autoclose="true" data-today-highlight="true">
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
-                                                <label for="price-input">Porez</label>
+                                                <label for="tax-select">Porez</label>
                                                 <select class="js-select2 form-control" id="tax-select" name="tax_id" style="width: 100%;" data-placeholder="Odaberite porez...">
                                                     <option></option>
                                                     @foreach ($data['taxes'] as $tax)
@@ -194,7 +199,7 @@
                         </div>
                     </div>
                     <div class="tab-pane" id="atributi" role="tabpanel">
-                        <div class="block">
+                        <div class="block admin-editor-section">
 
                             <div class="block-content">
                                 <div class="row justify-content-center push">
@@ -309,7 +314,7 @@
                         </div>
                     </div>
                     <div class="tab-pane" id="slike" role="tabpanel">
-                        <div class="block">
+                        <div class="block admin-editor-section">
                             <div class="block-header block-header-default">
                                 <h3 class="block-title">Slike</h3>
                             </div>
@@ -328,7 +333,7 @@
                         </div>
                     </div>
                     <div class="tab-pane" id="seo" role="tabpanel">
-                        <div class="block">
+                        <div class="block admin-editor-section">
                             <div class="block-header block-header-default">
                                 <h3 class="block-title">Meta Data - SEO</h3>
                             </div>
@@ -365,17 +370,17 @@
             <!-- END Block Tabs Default Style -->
 
 
-            <div class="block">
+            <div class="block admin-sticky-actions">
             <div class="block-content bg-body-light">
                 <div class="row justify-content-center push">
-                    <div class="col-md-6">
-                        <button type="submit" class="btn btn-hero-success my-2">
-                            <i class="fas fa-save mr-1"></i> Snimi
+                    <div class="col-md-6 d-flex align-items-center">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save mr-1"></i> Spremi artikl
                         </button>
                     </div>
                     <div class="col-md-6 text-right">
                         @if (isset($product))
-                            <a href="{{ route('products.destroy', ['product' => $product]) }}" type="submit" class="btn btn-hero-danger my-2 js-tooltip-enabled" data-toggle="tooltip" title="" data-original-title="Obriši" onclick="event.preventDefault(); document.getElementById('delete-product-form{{ $product->id }}').submit();">
+                            <a href="{{ route('products.destroy', ['product' => $product]) }}" class="btn btn-alt-danger js-tooltip-enabled" data-toggle="tooltip" title="" data-original-title="Obriši" onclick="event.preventDefault(); document.getElementById('delete-product-form{{ $product->id }}').submit();">
                                 <i class="fa fa-trash-alt"></i> Obriši
                             </a>
                         @endif
@@ -415,9 +420,7 @@
         $(() => {
             ClassicEditor
             .create(document.querySelector('#description-editor'))
-            .then(editor => {
-                console.log(editor);
-            })
+            .then(() => {})
             .catch(error => {
                 console.error(error);
             });

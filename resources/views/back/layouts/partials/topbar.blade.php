@@ -5,8 +5,8 @@
         <div>
             <!-- Toggle Sidebar -->
             <!-- Layout API, functionality initialized in Template._uiApiLayout()-->
-            <button type="button" class="btn btn-dual" data-toggle="layout" data-action="sidebar_toggle">
-                <i class="fa fa-fw fa-bars"></i>
+            <button type="button" class="btn btn-dual" data-toggle="layout" data-action="sidebar_toggle" aria-label="Otvori ili zatvori izbornik">
+                <i class="fa fa-fw fa-bars" aria-hidden="true"></i>
             </button>
             <!-- END Toggle Sidebar -->
 
@@ -34,7 +34,7 @@
             <div class="dropdown d-inline-block">
                 <button type="button" class="btn btn-dual" id="page-header-user-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <i class="fa fa-fw fa-user d-sm-none"></i>
-                    <span class="d-none d-sm-inline-block">Admin</span>
+                    <span class="d-none d-sm-inline-block">{{ auth()->user()->name ?? 'Admin' }}</span>
                     <i class="fa fa-fw fa-angle-down ml-1 d-none d-sm-inline-block"></i>
                 </button>
                 <div class="dropdown-menu dropdown-menu-right p-0" aria-labelledby="page-header-user-dropdown">

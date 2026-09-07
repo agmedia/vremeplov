@@ -2,79 +2,118 @@
 
 @push('css_before')
     <link rel="stylesheet" href="{{ asset('js/plugins/select2/css/select2.min.css') }}">
-    <!-- Page JS Plugins CSS -->
     <link rel="stylesheet" href="{{ asset('js/plugins/magnific-popup/magnific-popup.css') }}">
 @endpush
 
 @section('content')
-    <div class="bg-body-light">
-        <div class="content content-full">
-            <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center">
-                <h1 class="flex-sm-fill font-size-h2 font-w400 mt-2 mb-0 mb-sm-2">Narudžba pregled <small class="font-weight-light">#_</small><strong>{{ $order->id }}</strong></h1>
-                <nav class="flex-sm-00-auto ml-sm-3" aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('orders') }}">Sve narudžbe</a></li>
+    @php
+        $shippingHint = \Illuminate\Support\Str::lower(
+            (string) $order->shipping_carrier . ' '
+            . (string) $order->shipping_code . ' '
+            . (string) $order->shipping_method
+        );
+        $isBoxNowOrder = \Illuminate\Support\Str::contains($shippingHint, ['boxnow', 'box now']);
+        $boxNowTrackingId = $boxNowPolicy->parcelId($order);
+        $boxNowCanDispatch = $boxNowPolicy->canDispatch($order);
+    @endphp
 
-                    </ol>
-                </nav>
+    <div class="admin-page-hero">
+        <div class="content content-full">
+            <div class="admin-page-heading">
+                <div>
+                    <div class="admin-page-kicker"><i class="fa fa-receipt" aria-hidden="true"></i> Narudžba</div>
+                    <h1 class="admin-page-title">Narudžba #{{ $order->id }}</h1>
+                    <p class="admin-page-description">{{ \Illuminate\Support\Carbon::make($order->created_at)->format('d.m.Y. H:i') }} · {{ trim($order->shipping_fname . ' ' . $order->shipping_lname) }}</p>
+                </div>
+                <div class="admin-toolbar-actions">
+                    <a class="btn btn-alt-secondary" href="{{ route('orders') }}"><i class="fa fa-arrow-left mr-1" aria-hidden="true"></i> Sve narudžbe</a>
+                    <a class="btn btn-primary" href="{{ route('orders.edit', ['order' => $order]) }}"><i class="fa fa-edit mr-1" aria-hidden="true"></i> Uredi</a>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Page Content -->
     <div class="content">
-    @include('back.layouts.partials.session')
+        @include('back.layouts.partials.session')
+
         @if($order->payment_review_error)
-            <div class="alert alert-danger" role="alert">
-                <h4 class="alert-heading"><i class="fa fa-exclamation-triangle mr-2"></i>Potrebna je ručna provjera plaćanja</h4>
-                <p class="mb-1">{{ $order->payment_review_error }}</p>
-                <small>Prije promjene statusa ili zalihe provjerite izvornu transakciju kod pružatelja plaćanja.</small>
+            <div class="alert alert-danger admin-payment-warning" role="alert">
+                <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                <div>
+                    <h4>Potrebna je ručna provjera plaćanja</h4>
+                    <p>{{ $order->payment_review_error }}</p>
+                    <small>Prije promjene statusa ili zalihe provjerite izvornu transakciju kod pružatelja plaćanja.</small>
+                </div>
             </div>
         @endif
-        <!-- Products -->
+
+        <div class="admin-order-kpi-grid">
+            <div class="block block-rounded admin-order-kpi">
+                <span>Status</span>
+                <strong><span class="badge badge-pill badge-{{ $order->status->color }}">{{ $order->status->title }}</span></strong>
+            </div>
+            <div class="block block-rounded admin-order-kpi">
+                <span>Ukupno</span>
+                <strong>€ {{ number_format((float) $order->total, 2, ',', '.') }}</strong>
+            </div>
+            <div class="block block-rounded admin-order-kpi">
+                <span>Plaćanje</span>
+                <strong title="{{ $order->payment_method }}">{{ $order->payment_method ?: 'Nije zadano' }}</strong>
+            </div>
+            <div class="block block-rounded admin-order-kpi">
+                <span>Dostava</span>
+                <strong title="{{ $order->shipping_method }}">{{ $order->shipping_method ?: 'Nije zadana' }}</strong>
+            </div>
+        </div>
+
         <div class="block block-rounded">
             <div class="block-header block-header-default">
-                <h3 class="block-title">Artikli</h3>
+                <h2 class="block-title">Artikli <span class="admin-count">{{ $order->products->count() }}</span></h2>
             </div>
             <div class="block-content">
                 <div class="table-responsive">
-                    <table class="table table-borderless table-striped table-vcenter font-size-sm">
+                    <table class="table table-borderless table-striped table-vcenter admin-order-products-table">
                         <thead>
                         <tr>
-                            <th class="text-center" style="width: 100px;">Slika</th>
-                            <th>Naziv</th>
+                            <th>Slika</th>
+                            <th>Artikl</th>
                             <th>Polica</th>
-                            <th class="text-center">Kol</th>
-                            <th class="text-right" style="width: 10%;">Cijena</th>
-                            <th class="text-right" style="width: 10%;">Ukupno</th>
+                            <th class="text-center">Kol.</th>
+                            <th class="text-right">Cijena</th>
+                            <th class="text-right">Ukupno</th>
                         </tr>
                         </thead>
                         <tbody class="js-gallery">
-                        @foreach ($order->products as $product)
+                        @forelse($order->products as $line)
+                            @php
+                                $catalogProduct = $line->product;
+                                $productImage = $catalogProduct && $catalogProduct->image
+                                    ? $catalogProduct->thumb
+                                    : asset('media/avatars/avatar0.jpg');
+                            @endphp
                             <tr>
-
-
-
-
-                                <td class="text-center"> <a class="img-link img-link-zoom-in img-lightbox" href="{{ $product->product->image ? asset($product->product->image) : asset('media/avatars/avatar0.jpg') }}">
-                                        <img src="{{ $product->product->image ? asset($product->product->image) : asset('media/avatars/avatar0.jpg') }}" height="80px"/>
+                                <td>
+                                    <a class="img-link img-link-zoom-in img-lightbox" href="{{ $productImage }}">
+                                        <img class="admin-order-product-thumb" src="{{ $productImage }}" alt="" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('media/avatars/avatar0.jpg') }}';">
                                     </a>
                                 </td>
-
-
-
-                                <td><strong>{{ $product->name }} -  {{ $product->product->sku }}</strong></td>
-                                <td>{{ $product->product->polica }}</td>
-                                <td class="text-center"><strong>{{ $product->quantity }}</strong></td>
-                                <td class="text-right">{{ number_format($product->price, 2, ',', '.') }}</td>
-                                <td class="text-right">{{ number_format($product->total, 2, ',', '.') }}</td>
+                                <td>
+                                    <strong class="admin-order-product-name">{{ $line->name }}</strong>
+                                    <small class="text-muted">Šifra: {{ $catalogProduct ? ($catalogProduct->sku ?: '—') : 'artikl više nije u katalogu' }}</small>
+                                </td>
+                                <td>{{ $catalogProduct ? ($catalogProduct->polica ?: '—') : '—' }}</td>
+                                <td class="text-center"><strong>{{ $line->quantity }}</strong></td>
+                                <td class="text-right">€ {{ number_format((float) $line->price, 2, ',', '.') }}</td>
+                                <td class="text-right"><strong>€ {{ number_format((float) $line->total, 2, ',', '.') }}</strong></td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr><td class="admin-empty-state" colspan="6">Narudžba nema spremljenih artikala.</td></tr>
+                        @endforelse
 
-                        @foreach ($order->totals as $total)
-                            <tr>
+                        @foreach($order->totals as $total)
+                            <tr class="admin-order-total-row">
                                 <td colspan="5" class="text-right"><strong>{{ $total->title }}:</strong></td>
-                                <td class="text-right">{{ number_format($total->value, 2, ',', '.') }}</td>
+                                <td class="text-right"><strong>€ {{ number_format((float) $total->value, 2, ',', '.') }}</strong></td>
                             </tr>
                         @endforeach
                         </tbody>
@@ -82,226 +121,157 @@
                 </div>
             </div>
         </div>
-        <!-- END Products -->
 
-        <!-- Customer -->
         <div class="row">
-            <div class="col-sm-6">
-                <!-- Billing Address -->
-                <div class="block block-rounded">
+            <div class="col-lg-7">
+                <div class="block block-rounded h-100">
                     <div class="block-header block-header-default">
-                        <h3 class="block-title">Adresa dostave</h3>
+                        <h2 class="block-title"><i class="fa fa-map-marker-alt mr-2" aria-hidden="true"></i>Adresa dostave</h2>
                     </div>
                     <div class="block-content">
-                        <div class="font-size-h4 mb-1">{{ $order->shipping_fname }} {{ $order->shipping_lname }}</div>
-                        <address class="font-size-sm">
-                            {{ $order->shipping_address }}<br>
-                            {{ $order->shipping_zip }} {{ $order->shipping_city }}<br>
-                            {{ $order->shipping_state }}<br><br> {{ $order->company }}<br>{{ $order->oib }}<br><br>
-                            <i class="fa fa-phone"></i> {{ $order->shipping_phone }}<br>
-                            <i class="fa fa-envelope"></i> <a href="javascript:void(0)">{{ $order->shipping_email }}</a>
-                        </address>
+                        <div class="admin-customer-card">
+                            <div class="admin-customer-avatar"><i class="fa fa-user" aria-hidden="true"></i></div>
+                            <div>
+                                <h3>{{ trim($order->shipping_fname . ' ' . $order->shipping_lname) ?: 'Nepoznat kupac' }}</h3>
+                                <p>{{ $order->shipping_address ?: 'Adresa nije unesena' }}<br>{{ trim($order->shipping_zip . ' ' . $order->shipping_city) }}{{ $order->shipping_state ? ', ' . $order->shipping_state : '' }}</p>
+                                @if($order->company || $order->oib)
+                                    <p>{{ $order->company }}{{ $order->company && $order->oib ? ' · ' : '' }}{{ $order->oib ? 'OIB: ' . $order->oib : '' }}</p>
+                                @endif
+                                <div class="admin-contact-links">
+                                    @if($order->shipping_phone)<a href="tel:{{ $order->shipping_phone }}"><i class="fa fa-phone" aria-hidden="true"></i>{{ $order->shipping_phone }}</a>@endif
+                                    @if($order->shipping_email)<a href="mailto:{{ $order->shipping_email }}"><i class="fa fa-envelope" aria-hidden="true"></i>{{ $order->shipping_email }}</a>@endif
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <!-- END Billing Address -->
             </div>
-            <div class="col-sm-6">
-                <!-- Shipping Address -->
-                <div class="block block-rounded">
+            <div class="col-lg-5 mt-4 mt-lg-0">
+                <div class="block block-rounded h-100">
                     <div class="block-header block-header-default">
-                        <h3 class="block-title">Napomene</h3>
+                        <h2 class="block-title"><i class="fa fa-sticky-note mr-2" aria-hidden="true"></i>Napomene</h2>
                     </div>
                     <div class="block-content">
-                        <p>{{ $order->comment }}{{ $order->commentp }}</p>
+                        @if(trim((string) $order->comment) !== '')
+                            <p class="admin-order-note">{{ $order->comment }}</p>
+                        @else
+                            <p class="text-muted">Kupac nije ostavio napomenu.</p>
+                        @endif
+                        @if(trim((string) $order->commentp) !== '')
+                            <div class="admin-order-pickup"><span>Paketomat / preuzimanje</span><strong>{{ $order->commentp }}</strong></div>
+                        @endif
                     </div>
                 </div>
-                <!-- END Shipping Address -->
             </div>
         </div>
-        <!-- END Customer -->
-
-        @php
-            $shippingHint = \Illuminate\Support\Str::lower(
-                (string) $order->shipping_carrier . ' '
-                . (string) $order->shipping_code . ' '
-                . (string) $order->shipping_method
-            );
-            $isBoxNowOrder = \Illuminate\Support\Str::contains($shippingHint, ['boxnow', 'box now']);
-            $boxNowTrackingId = $boxNowPolicy->parcelId($order);
-            $boxNowCanDispatch = $boxNowPolicy->canDispatch($order);
-        @endphp
 
         @if($isBoxNowOrder)
-            <div class="block block-rounded">
-                <div class="block-header block-header-default">
-                    <h3 class="block-title"><i class="fa fa-box mr-2"></i>Box Now pošiljka</h3>
-                    <div class="block-options">
+            <div class="block block-rounded mt-4">
+                <div class="block-header block-header-default admin-toolbar">
+                    <h2 class="block-title"><i class="fa fa-box mr-2" aria-hidden="true"></i>Box Now pošiljka</h2>
+                    <div class="admin-toolbar-actions">
                         @if($boxNowTrackingId && $canManageBoxNow)
-                            <a class="btn btn-sm btn-alt-success" href="{{ route('order.boxnow.label', ['order' => $order]) }}">
-                                <i class="fa fa-file-pdf mr-1"></i>PDF adresnica
-                            </a>
-                            <button type="button" class="btn btn-sm btn-alt-info" onclick="refreshBoxNow({{ $order->id }})">
-                                <i class="fa fa-sync-alt mr-1"></i>Osvježi status
-                            </button>
+                            <a class="btn btn-sm btn-alt-success" href="{{ route('order.boxnow.label', ['order' => $order]) }}"><i class="fa fa-file-pdf mr-1" aria-hidden="true"></i> PDF adresnica</a>
+                            <button type="button" class="btn btn-sm btn-alt-info" onclick="refreshBoxNow()"><i class="fa fa-sync-alt mr-1" aria-hidden="true"></i> Osvježi status</button>
                         @elseif(! $boxNowTrackingId && $boxNowCanDispatch && $canManageBoxNow)
-                            <button type="button" class="btn btn-sm btn-alt-warning" onclick="sendBoxNow({{ $order->id }})">
-                                <i class="fa fa-box mr-1"></i>Pošalji u Box Now
-                            </button>
+                            <button type="button" class="btn btn-sm btn-alt-warning" onclick="sendBoxNow()"><i class="fa fa-box mr-1" aria-hidden="true"></i> Pošalji u Box Now</button>
                         @elseif(! $boxNowTrackingId && ! $boxNowCanDispatch)
                             <span class="badge badge-danger">Slanje nije dopušteno za ovaj status</span>
                         @endif
                     </div>
                 </div>
                 <div class="block-content">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <dl class="row mb-0">
-                                <dt class="col-sm-5">Način dostave</dt>
-                                <dd class="col-sm-7">{{ $order->shipping_method }}</dd>
-                                <dt class="col-sm-5">Odabrani paketomat</dt>
-                                <dd class="col-sm-7">{{ $order->commentp ?: '—' }}</dd>
-                                <dt class="col-sm-5">Carrier</dt>
-                                <dd class="col-sm-7">{{ $order->shipping_carrier ?: 'Box Now' }}</dd>
-                                <dt class="col-sm-5">Parcel ID</dt>
-                                <dd class="col-sm-7">{{ $order->shipping_parcel_id ?: '—' }}</dd>
-                                <dt class="col-sm-5">Tracking broj</dt>
-                                <dd class="col-sm-7">{{ $order->tracking_code ?: '—' }}</dd>
-                            </dl>
+                    <div class="admin-shipment-grid">
+                        <div class="admin-meta-list">
+                            <div class="admin-meta-row"><span>Carrier</span><strong>{{ $order->shipping_carrier ?: 'Box Now' }}</strong></div>
+                            <div class="admin-meta-row"><span>Parcel ID</span><strong>{{ $order->shipping_parcel_id ?: '—' }}</strong></div>
+                            <div class="admin-meta-row"><span>Tracking broj</span><strong>{{ $order->tracking_code ?: '—' }}</strong></div>
+                            <div class="admin-meta-row"><span>Paketomat</span><strong>{{ $order->commentp ?: '—' }}</strong></div>
                         </div>
-                        <div class="col-md-6">
-                            <dl class="row mb-0">
-                                <dt class="col-sm-5">Status</dt>
-                                <dd class="col-sm-7">{{ $order->shipping_tracking_status ?: 'Pošiljka još nije kreirana.' }}</dd>
-                                <dt class="col-sm-5">Kod statusa</dt>
-                                <dd class="col-sm-7">{{ $order->shipping_tracking_status_code ?: '—' }}</dd>
-                                <dt class="col-sm-5">Zadnje osvježavanje</dt>
-                                <dd class="col-sm-7">
-                                    {{ $order->shipping_tracking_updated_at ? $order->shipping_tracking_updated_at->format('d.m.Y H:i:s') : '—' }}
-                                </dd>
-                                <dt class="col-sm-5">Zadnji pokušaj provjere</dt>
-                                <dd class="col-sm-7">
-                                    {{ $order->shipping_tracking_attempted_at ? $order->shipping_tracking_attempted_at->format('d.m.Y H:i:s') : '—' }}
-                                </dd>
-                                <dt class="col-sm-5">Tracking poveznica</dt>
-                                <dd class="col-sm-7">
-                                    @if($order->shipping_tracking_url)
-                                        <a href="{{ $order->shipping_tracking_url }}" target="_blank" rel="noopener">Otvori praćenje <i class="fa fa-external-link-alt ml-1"></i></a>
-                                    @else
-                                        —
-                                    @endif
-                                </dd>
-                            </dl>
+                        <div class="admin-meta-list">
+                            <div class="admin-meta-row"><span>Status</span><strong>{{ $order->shipping_tracking_status ?: 'Pošiljka još nije kreirana.' }}</strong></div>
+                            <div class="admin-meta-row"><span>Kod statusa</span><strong>{{ $order->shipping_tracking_status_code ?: '—' }}</strong></div>
+                            <div class="admin-meta-row"><span>Osvježeno</span><strong>{{ $order->shipping_tracking_updated_at ? $order->shipping_tracking_updated_at->format('d.m.Y. H:i:s') : '—' }}</strong></div>
+                            <div class="admin-meta-row"><span>Praćenje</span><strong>@if($order->shipping_tracking_url)<a href="{{ $order->shipping_tracking_url }}" target="_blank" rel="noopener">Otvori <i class="fa fa-external-link-alt ml-1" aria-hidden="true"></i></a>@else — @endif</strong></div>
                         </div>
                     </div>
 
                     @if($canManageBoxNow && ! empty($order->shipping_tracking_payload))
-                        <details class="mt-4 mb-3">
-                            <summary class="font-w600" style="cursor: pointer;">Zadnji sirovi Box Now API odgovor</summary>
-                            <pre class="bg-body-dark p-3 mt-3 mb-0" style="max-height: 420px; overflow: auto; white-space: pre-wrap;">{{ json_encode($order->shipping_tracking_payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</pre>
+                        <details class="admin-api-details">
+                            <summary>Zadnji Box Now API odgovor</summary>
+                            <pre>{{ json_encode($order->shipping_tracking_payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</pre>
                         </details>
                     @endif
                 </div>
             </div>
         @endif
 
-        <!-- Log Messages -->
-        <div class="block block-rounded">
-            <div class="block-header block-header-default">
-                <h3 class="block-title">Povijest narudžbe</h3>
-                <div class="block-options">
+        <div class="block block-rounded mt-4">
+            <div class="block-header block-header-default admin-toolbar">
+                <div>
+                    <h2 class="block-title mb-1">Povijest narudžbe</h2>
+                    <p class="text-muted mb-0 font-size-sm">Statusi, komentari i vrijeme promjena.</p>
+                </div>
+                <div class="admin-toolbar-actions">
+                    <button type="button" class="btn btn-alt-secondary" id="btn-add-comment"><i class="fa fa-comment mr-1" aria-hidden="true"></i> Dodaj komentar</button>
                     <div class="dropdown">
-                        <button type="button" class="btn btn-alt-secondary d-none d-xl-block" id="btn-add-comment">
-                            Dodaj komentar
-                        </button>
-                        <button type="button" class="btn btn-light" id="dropdown-ecom-filters" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Promjeni status
-                            <i class="fa fa-angle-down ml-1"></i>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown-ecom-filters">
-                            @foreach ($statuses as $status)
-                                <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:setStatus({{ $status->id }});">
-                                    <span class="badge badge-pill badge-{{ $status->color }}">{{ $status->title }}</span>
-                                </a>
+                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Promijeni status</button>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            @foreach($statuses as $status)
+                                <a class="dropdown-item" href="javascript:setStatus({{ $status->id }});"><span class="badge badge-pill badge-{{ $status->color }}">{{ $status->title }}</span></a>
                             @endforeach
                         </div>
                     </div>
                 </div>
             </div>
-
             <div class="block-content">
-                <table class="table table-borderless table-striped table-vcenter font-size-sm">
-                    <tbody>
-                    @foreach ($order->history as $record)
-                        <tr>
-                            <td class="font-size-base d-none d-xl-block">
-                                @if ($record->status)
-                                    <span class="badge badge-pill badge-{{ $record->status->color }}">{{ $record->status->title }}</span>
-                                @else
-                                    <small>Komentar</small>
-                                @endif
-                            </td>
-                            <td>
-                                <span class="font-w600">{{ \Illuminate\Support\Carbon::make($record->created_at)->locale('hr_HR')->diffForHumans() }}</span> /
-                                <span class="font-weight-light">{{ \Illuminate\Support\Carbon::make($record->created_at)->format('d.m.Y - h:i') }}</span>
-                            </td>
-                            <td>
-                                <a href="javascript:void(0)">{{ $record->user ? $record->user->name : $record->order->shipping_fname . ' ' . $record->order->shipping_lname }}</a>
-                            </td>
-                            <td>{{ $record->comment }}</td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-borderless table-striped table-vcenter admin-history-table">
+                        <thead><tr><th>Status</th><th>Vrijeme</th><th>Autor</th><th>Komentar</th></tr></thead>
+                        <tbody>
+                        @forelse($order->history as $record)
+                            <tr>
+                                <td>@if($record->status)<span class="badge badge-pill badge-{{ $record->status->color }}">{{ $record->status->title }}</span>@else<span class="text-muted">Komentar</span>@endif</td>
+                                <td><strong>{{ \Illuminate\Support\Carbon::make($record->created_at)->locale('hr_HR')->diffForHumans() }}</strong><small class="d-block text-muted">{{ \Illuminate\Support\Carbon::make($record->created_at)->format('d.m.Y. H:i') }}</small></td>
+                                <td>{{ $record->user ? $record->user->name : trim($order->shipping_fname . ' ' . $order->shipping_lname) }}</td>
+                                <td>{{ $record->comment ?: '—' }}</td>
+                            </tr>
+                        @empty
+                            <tr><td class="admin-empty-state" colspan="4">Nema zabilježenih promjena.</td></tr>
+                        @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-        <!-- END Log Messages -->
     </div>
-    <!-- END Page Content -->
-
 @endsection
 
 @push('modals')
-    <div class="modal fade" id="comment-modal" tabindex="-1" role="dialog" aria-labelledby="comment--modal" aria-hidden="true">
+    <div class="modal fade" id="comment-modal" tabindex="-1" role="dialog" aria-labelledby="comment-modal-title" aria-hidden="true">
         <div class="modal-dialog modal-dialog-popout" role="document">
             <div class="modal-content rounded">
                 <div class="block block-themed block-transparent mb-0">
                     <div class="block-header bg-primary">
-                        <h3 class="block-title">Dodaj komentar</h3>
-                        <div class="block-options">
-                            <a class="text-muted font-size-h3" href="#" data-dismiss="modal" aria-label="Close">
-                                <i class="fa fa-times"></i>
-                            </a>
-                        </div>
+                        <h3 class="block-title" id="comment-modal-title">Komentar i status</h3>
+                        <div class="block-options"><button type="button" class="btn-block-option text-white" data-dismiss="modal" aria-label="Zatvori"><i class="fa fa-times" aria-hidden="true"></i></button></div>
                     </div>
                     <div class="block-content">
-                        <div class="row justify-content-center mb-3">
-                            <div class="col-md-10">
-                                <div class="form-group mb-4">
-                                    <label for="status-select">Promjeni status</label>
-                                    <select class="js-select2 form-control" id="status-select" name="status" style="width: 100%;" data-placeholder="Promjeni status narudžbe">
-                                        <option value="0">Bez Promjene statusa...</option>
-                                        @foreach ($statuses as $status)
-                                            <option value="{{ $status->id }}">{{ $status->title }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="comment-input">Komentar</label>
-                                    <textarea class="form-control" name="comment" id="comment-input" rows="7"></textarea>
-                                </div>
-
-                                <input type="hidden" name="order_id" value="{{ $order->id }}">
-                            </div>
+                        <div class="form-group">
+                            <label for="status-select">Promijeni status</label>
+                            <select class="js-select2 form-control" id="status-select" name="status" style="width: 100%;">
+                                <option value="0">Bez promjene statusa</option>
+                                @foreach($statuses as $status)<option value="{{ $status->id }}">{{ $status->title }}</option>@endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="comment-input">Komentar</label>
+                            <textarea class="form-control" name="comment" id="comment-input" rows="6" placeholder="Upišite internu napomenu..."></textarea>
                         </div>
                     </div>
                     <div class="block-content block-content-full text-right bg-light">
-                        <a class="btn btn-sm btn-light" data-dismiss="modal" aria-label="Close">
-                            Odustani <i class="fa fa-times ml-2"></i>
-                        </a>
-                        <button type="button" class="btn btn-sm btn-primary" onclick="event.preventDefault(); changeStatus();">
-                            Snimi <i class="fa fa-arrow-right ml-2"></i>
-                        </button>
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Odustani</button>
+                        <button type="button" class="btn btn-primary" id="save-status-button" onclick="changeStatus()"><i class="fa fa-save mr-1" aria-hidden="true"></i> Snimi</button>
                     </div>
                 </div>
             </div>
@@ -310,83 +280,60 @@
 @endpush
 
 @push('js_after')
-
-    <!-- Page JS Plugins -->
     <script src="{{ asset('js/plugins/magnific-popup/jquery.magnific-popup.min.js') }}"></script>
-
-    <!-- Page JS Helpers (Magnific Popup Plugin) -->
-    <script>jQuery(function(){Dashmix.helpers('magnific-popup');});</script>
-
+    <script>jQuery(function(){ Dashmix.helpers('magnific-popup'); });</script>
     <script src="{{ asset('js/plugins/select2/js/select2.full.min.js') }}"></script>
     <script>
         $(() => {
-            $('#status-select').select2({});
-
+            $('#status-select').select2({minimumResultsForSearch: Infinity});
             $('#btn-add-comment').on('click', () => {
+                $('#status-select').val(0).trigger('change');
+                $('#comment-input').val('');
                 $('#comment-modal').modal('show');
-                $('#status-select').val(0);
-                $('#status-select').trigger('change');
             });
         });
 
-        /**
-         *
-         * @param status
-         */
         function setStatus(status) {
+            $('#status-select').val(status).trigger('change');
             $('#comment-modal').modal('show');
-            $('#status-select').val(status);
-            $('#status-select').trigger('change');
         }
 
-        /**
-         *
-         */
         function changeStatus() {
-            let item = {
+            const $button = $('#save-status-button');
+            $button.prop('disabled', true);
+
+            axios.post("{{ route('api.order.status.change') }}", {
                 order_id: {{ $order->id }},
                 comment: $('#comment-input').val(),
                 status: $('#status-select').val()
-            };
-
-            axios.post("{{ route('api.order.status.change') }}", item)
-            .then(response => {
-                console.log(response.data)
-                if (response.data.message) {
-                    $('#comment-modal').modal('hide');
-
-                    successToast.fire({
-                        timer: 1500,
-                        text: response.data.message,
-                    }).then(() => {
-                        location.reload();
-                    })
-
-                } else {
-                    return errorToast.fire(response.data.error);
+            }).then((response) => {
+                if (!response.data.message) {
+                    errorToast.fire(response.data.error || 'Promjenu nije moguće spremiti.');
+                    $button.prop('disabled', false);
+                    return;
                 }
-            }).catch(error => {
+
+                $('#comment-modal').modal('hide');
+                successToast.fire({timer: 1500, text: response.data.message}).then(() => location.reload());
+            }).catch((error) => {
                 const message = error.response && error.response.data && error.response.data.error
                     ? error.response.data.error
                     : 'Status nije moguće promijeniti. Pokušajte ponovno.';
                 errorToast.fire(message);
+                $button.prop('disabled', false);
             });
         }
 
         function boxNowAction(endpoint) {
             axios.post(endpoint, {order_id: {{ $order->id }}})
-                .then(response => {
+                .then((response) => {
                     if (!response.data.message) {
                         errorToast.fire(response.data.error || 'Box Now akcija nije uspjela.');
                         return;
                     }
-
-                    successToast.fire({
-                        timer: 1800,
-                        text: response.data.message,
-                    }).then(() => location.reload());
+                    successToast.fire({timer: 1800, text: response.data.message}).then(() => location.reload());
                 })
-                .catch(error => {
+                .catch((error) => {
                     const message = error.response && error.response.data && error.response.data.error
                         ? error.response.data.error
                         : 'Box Now akcija nije uspjela.';
@@ -402,5 +349,4 @@
             boxNowAction("{{ route('api.order.tracking.boxnow.refresh') }}");
         }
     </script>
-
 @endpush
