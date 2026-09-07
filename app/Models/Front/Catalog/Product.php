@@ -572,30 +572,25 @@ class Product extends Model
             });
         }
 
-        if ($request->has('sort')) {
-            $sort = $request->input('sort');
+        $sort = $request->input('sort', 'novi');
 
-            if ($sort == 'novi') {
-                $query->orderBy('updated_at', 'desc');
-            }
-
-            if ($sort == 'price_up') {
+        switch ($sort) {
+            case 'price_up':
                 $query->orderBy('price');
-            }
-
-            if ($sort == 'price_down') {
+                break;
+            case 'price_down':
                 $query->orderBy('price', 'desc');
-            }
-
-            if ($sort == 'naziv_up') {
+                break;
+            case 'naziv_up':
                 $query->orderBy('name');
-            }
-
-            if ($sort == 'naziv_down') {
+                break;
+            case 'naziv_down':
                 $query->orderBy('name', 'desc');
-            }
-        } else {
-            $query->orderBy('updated_at', 'desc');
+                break;
+            case 'novi':
+            default:
+                $query->orderByDesc('created_at')->orderByDesc('id');
+                break;
         }
 
         return $query;
