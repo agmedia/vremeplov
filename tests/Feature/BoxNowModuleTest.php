@@ -267,6 +267,29 @@ class BoxNowModuleTest extends TestCase
         }
     }
 
+    public function test_status_can_change_to_paid_while_unrelated_boxnow_lock_exists(): void
+    {
+        $this->insertBoxNowOrder();
+        DB::table('orders')->where('id', 100)->update([
+            'order_status_id' => 1,
+            'payment_code' => 'bank',
+        ]);
+        $lock = Cache::lock('boxnow-shipment-create:100', 180);
+        $this->assertTrue($lock->get());
+
+        try {
+            $response = (new OrderController())->api_status_change(new Request([
+                'orders' => '[100]',
+                'selected' => 3,
+            ]));
+
+            $this->assertSame(200, $response->getStatusCode());
+            $this->assertSame(3, (int) DB::table('orders')->where('id', 100)->value('order_status_id'));
+        } finally {
+            $lock->release();
+        }
+    }
+
     public function test_manual_refresh_marks_delivered_order_as_shipped(): void
     {
         $this->insertBoxNowOrder();

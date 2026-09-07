@@ -232,8 +232,11 @@
                 .then((r) => {
                     location.reload();
                 })
-                .catch((e) => {
-                    console.log(e)
+                .catch((error) => {
+                    const message = error.response && error.response.data && error.response.data.error
+                        ? error.response.data.error
+                        : 'Statuse nije moguće promijeniti. Pokušajte ponovno.';
+                    errorToast.fire(message);
                 })
             });
         });

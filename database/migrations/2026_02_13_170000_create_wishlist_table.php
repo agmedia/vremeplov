@@ -8,6 +8,12 @@ class CreateWishlistTable extends Migration
 {
     public function up()
     {
+        // Older Vremeplov installations created this table through the
+        // idempotent database/006_wishlist_reviews_updates.sql script.
+        if (Schema::hasTable('wishlist')) {
+            return;
+        }
+
         Schema::create('wishlist', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->default(0);

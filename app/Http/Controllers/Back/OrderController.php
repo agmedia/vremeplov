@@ -413,8 +413,20 @@ class OrderController extends Controller
         }
 
         $shipmentLock = null;
+        $trackingService = app(OrderTrackingService::class);
+        $boxNowPolicy = app(BoxNowOrderPolicy::class);
+        $targetOrder = clone $order;
+        $targetOrder->order_status_id = $status;
 
-        if (app(OrderTrackingService::class)->isBoxNowOrder($order)) {
+        // Shipment creation only has to block a transition that would make an
+        // otherwise dispatchable order ineligible (for example Paid ->
+        // Canceled). Moving an order to Paid is safe while the shipment lock is
+        // present and must not be rejected by an unrelated/stale cache lock.
+        $transitionBlocksBoxNowDispatch = $trackingService->isBoxNowOrder($order)
+            && $boxNowPolicy->canDispatch($order)
+            && ! $boxNowPolicy->canDispatch($targetOrder);
+
+        if ($transitionBlocksBoxNowDispatch) {
             $shipmentLock = Cache::lock(
                 'boxnow-shipment-create:' . $order->id,
                 self::BOXNOW_SHIPMENT_LOCK_SECONDS

@@ -365,6 +365,11 @@
                 } else {
                     return errorToast.fire(response.data.error);
                 }
+            }).catch(error => {
+                const message = error.response && error.response.data && error.response.data.error
+                    ? error.response.data.error
+                    : 'Status nije moguće promijeniti. Pokušajte ponovno.';
+                errorToast.fire(message);
             });
         }
 
