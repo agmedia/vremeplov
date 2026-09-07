@@ -95,7 +95,7 @@ class ProductReviewRequestTest extends TestCase
 
         config([
             'reviews.request_emails_enabled' => true,
-            'reviews.request_delay_days' => 30,
+            'reviews.request_delay_days' => 10,
             'reviews.request_daily_limit' => 100,
             'reviews.request_max_attempts' => 3,
             'reviews.request_link_days' => 180,
@@ -109,16 +109,16 @@ class ProductReviewRequestTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_only_orders_sent_exactly_thirty_days_ago_receive_one_request(): void
+    public function test_only_orders_sent_exactly_ten_days_ago_receive_one_request_without_backfill(): void
     {
         Carbon::setTestNow('2026-09-04 12:00:00');
         Mail::fake();
 
-        $this->insertOrder(1, 4, 'kupac1@example.test', '2026-07-20 10:00:00', '2026-08-05 10:00:00');
-        $this->insertOrder(2, 9, 'kupac2@example.test', '2026-07-20 10:00:00', '2026-08-05 11:00:00');
-        $this->insertOrder(3, 4, 'prerano@example.test', '2026-07-20 10:00:00', '2026-08-04 10:00:00');
-        $this->insertOrder(4, 4, 'kasno@example.test', '2026-07-20 10:00:00', '2026-08-06 10:00:00');
-        $this->insertOrder(5, 5, 'otkazano@example.test', '2026-07-20 10:00:00', '2026-08-05 12:00:00');
+        $this->insertOrder(1, 4, 'kupac1@example.test', '2026-07-20 10:00:00', '2026-08-25 10:00:00');
+        $this->insertOrder(2, 9, 'kupac2@example.test', '2026-07-20 10:00:00', '2026-08-25 11:00:00');
+        $this->insertOrder(3, 4, 'staro@example.test', '2026-07-20 10:00:00', '2026-08-01 10:00:00');
+        $this->insertOrder(4, 4, 'kasno@example.test', '2026-07-20 10:00:00', '2026-08-26 10:00:00');
+        $this->insertOrder(5, 5, 'otkazano@example.test', '2026-07-20 10:00:00', '2026-08-25 12:00:00');
 
         $this->artisan('reviews:send-requests')->assertExitCode(0);
 
@@ -138,8 +138,8 @@ class ProductReviewRequestTest extends TestCase
         Carbon::setTestNow('2026-09-04 12:00:00');
         Mail::fake();
 
-        $this->insertOrder(1, 4, ' Kupac@Example.test ', '2026-07-20 10:00:00', '2026-08-05 10:00:00');
-        $this->insertOrder(2, 4, 'kupac@example.test', '2026-07-20 11:00:00', '2026-08-05 11:00:00');
+        $this->insertOrder(1, 4, ' Kupac@Example.test ', '2026-07-20 10:00:00', '2026-08-25 10:00:00');
+        $this->insertOrder(2, 4, 'kupac@example.test', '2026-07-20 11:00:00', '2026-08-25 11:00:00');
 
         $this->artisan('reviews:send-requests')->assertExitCode(0);
 
@@ -155,7 +155,7 @@ class ProductReviewRequestTest extends TestCase
     {
         Carbon::setTestNow('2026-09-04 12:00:00');
         Mail::fake();
-        $this->insertOrder(1, 4, 'kupac@example.test', '2026-07-20 10:00:00', '2026-08-05 10:00:00');
+        $this->insertOrder(1, 4, 'kupac@example.test', '2026-07-20 10:00:00', '2026-08-25 10:00:00');
 
         config(['reviews.request_emails_enabled' => false]);
 
@@ -172,8 +172,8 @@ class ProductReviewRequestTest extends TestCase
         Mail::fake();
         config(['reviews.request_daily_limit' => 1]);
 
-        $this->insertOrder(1, 4, 'prvi@example.test', '2026-07-20 10:00:00', '2026-08-05 10:00:00');
-        $this->insertOrder(2, 4, 'drugi@example.test', '2026-07-20 11:00:00', '2026-08-05 11:00:00');
+        $this->insertOrder(1, 4, 'prvi@example.test', '2026-07-20 10:00:00', '2026-08-25 10:00:00');
+        $this->insertOrder(2, 4, 'drugi@example.test', '2026-07-20 11:00:00', '2026-08-25 11:00:00');
 
         $this->artisan('reviews:send-requests')->assertExitCode(0);
         $this->artisan('reviews:send-requests')->assertExitCode(0);
@@ -185,7 +185,7 @@ class ProductReviewRequestTest extends TestCase
     public function test_signed_invitation_accepts_one_pending_verified_review_per_item(): void
     {
         Carbon::setTestNow('2026-09-04 12:00:00');
-        $this->insertOrder(1, 4, 'kupac@example.test', '2026-07-20 10:00:00', '2026-08-05 10:00:00');
+        $this->insertOrder(1, 4, 'kupac@example.test', '2026-07-20 10:00:00', '2026-08-25 10:00:00');
 
         $token = str_repeat('a', 64);
         $invitationId = DB::table('product_review_invitations')->insertGetId([
@@ -194,7 +194,7 @@ class ProductReviewRequestTest extends TestCase
             'recipient_email' => 'kupac@example.test',
             'recipient_email_normalized' => 'kupac@example.test',
             'recipient_name' => 'Ana Horvat',
-            'eligible_at' => now()->subDays(30),
+            'eligible_at' => now()->subDays(10),
             'sent_at' => now(),
             'attempts' => 1,
             'created_at' => now(),
@@ -248,7 +248,7 @@ class ProductReviewRequestTest extends TestCase
             'recipient_email' => 'kupac@example.test',
             'recipient_email_normalized' => 'kupac@example.test',
             'recipient_name' => 'Ana Horvat',
-            'eligible_at' => now()->subDays(30),
+            'eligible_at' => now()->subDays(10),
             'sent_at' => now(),
             'attempts' => 1,
             'created_at' => now(),

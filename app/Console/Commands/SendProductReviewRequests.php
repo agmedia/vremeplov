@@ -46,7 +46,7 @@ class SendProductReviewRequests extends Command
             }
         }
 
-        $eligibleDay = $runDate->copy()->subDays((int) config('reviews.request_delay_days', 30));
+        $eligibleDay = $runDate->copy()->subDays((int) config('reviews.request_delay_days', 10));
         $orders = $service->eligibleOrders(
             $eligibleDay->copy()->startOfDay(),
             $eligibleDay->copy()->endOfDay()
