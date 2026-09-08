@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Mockery;
 use Tests\TestCase;
 
 class GlsTrackingEmailTest extends TestCase
@@ -73,6 +74,43 @@ class GlsTrackingEmailTest extends TestCase
 
         Mail::assertNothingSent();
         $this->assertNull(DB::table('orders')->where('id', $orderId)->value('shipping_tracking_email_sent_at'));
+    }
+
+    public function test_scheduled_tracking_only_refreshes_shipments_created_from_admin(): void
+    {
+        $legacyOrderId = $this->createOrder();
+        $adminShipmentOrderId = $this->createOrder();
+
+        DB::table('orders')->where('id', $legacyOrderId)->update([
+            'shipping_carrier' => null,
+            'tracking_code' => 'Poslano',
+            'shipping_tracking_status_code' => null,
+            'shipping_tracking_attempted_at' => null,
+        ]);
+        DB::table('orders')->where('id', $adminShipmentOrderId)->update([
+            'tracking_code' => '222222222',
+            'shipping_tracking_status_code' => '51',
+            'shipping_tracking_attempted_at' => null,
+            'created_at' => now()->subDays(30),
+        ]);
+
+        $trackingService = Mockery::mock(OrderTrackingService::class);
+        $trackingService->shouldReceive('refresh')
+            ->once()
+            ->with(Mockery::on(function (Order $order) use ($adminShipmentOrderId) {
+                return (int) $order->id === $adminShipmentOrderId;
+            }))
+            ->andReturn([
+                'updated' => false,
+                'message' => 'Test refresh.',
+                'tracking' => [],
+            ]);
+        $this->app->instance(OrderTrackingService::class, $trackingService);
+
+        $this->artisan('sync:shipment-tracking', [
+            '--limit' => 50,
+            '--stale-minutes' => 15,
+        ])->assertExitCode(0);
     }
 
     protected function tearDown(): void

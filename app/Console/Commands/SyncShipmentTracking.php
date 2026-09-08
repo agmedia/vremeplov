@@ -30,14 +30,9 @@ class SyncShipmentTracking extends Command
         $limit = max(1, (int) $this->option('limit'));
         $staleMinutes = max(1, (int) $this->option('stale-minutes'));
         $orders = Order::query()
-            ->where(function ($query) {
-                $query->whereIn('shipping_carrier', [GlsTrackingService::CARRIER, BoxNowService::CARRIER])
-                    ->orWhere('shipping_method', 'like', '%GLS%')
-                    ->orWhere('shipping_method', 'like', '%BoxNow%')
-                    ->orWhere('shipping_method', 'like', '%Box Now%')
-                    ->orWhere('shipping_code', 'like', '%gls%')
-                    ->orWhere('shipping_code', 'like', '%boxnow%');
-            })
+            // Samo pošiljke kreirane iz admina eksplicitno dobivaju carrier.
+            // Time se stari tekstualni tracking zapisi (npr. "Poslano") ne šalju API-ju.
+            ->whereIn('shipping_carrier', [GlsTrackingService::CARRIER, BoxNowService::CARRIER])
             ->where(function ($query) {
                 $query->where(function ($trackingQuery) {
                     $trackingQuery->whereNotNull('tracking_code')
