@@ -41,19 +41,15 @@
 
     <!-- Vendor Styles including: Font Icons, Plugins, etc.-->
     <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="stylesheet" href="/vendor/fontawesome-pro/css/fontawesome.min.css?v=7.3.1">
+    <link rel="stylesheet" href="/vendor/fontawesome-pro/css/solid.min.css?v=7.3.1">
+    <link rel="stylesheet" href="/vendor/fontawesome-pro/css/regular.min.css?v=7.3.1">
+    <link rel="stylesheet" href="/vendor/fontawesome-pro/css/duotone.min.css?v=7.3.1">
+    <link rel="stylesheet" href="/vendor/fontawesome-pro/css/brands.min.css?v=7.3.1">
 
     <!-- Main Theme Styles + Bootstrap-->
     <link rel="stylesheet" media="screen" href="/css/theme.css?v=1.91">
-    @if (config('app.env') == 'production')
-        @yield('google_data_layer')
-        <!-- Google Tag Manager -->
-        <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-                    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-                'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','GTM-K4CB5GR');</script>
-        <!-- End Google Tag Manager -->
-    @endif
+    @include('front.layouts.partials.analytics')
 
     @stack('css_after')
 
@@ -68,13 +64,6 @@
 </head>
 <!-- Body-->
 <body class="bg-secondary">
-
-@if (config('app.env') == 'production')
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-K4CB5GR"
-                      height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
-@endif
 
 <!--<div role="alert" class="alert alert-primary mb-0 text-center">
    <small> Poštovani, zbog povećanog broja narudžbi povodom Interlibera, molimo vas za razumijevanje i strpljenje tijekom isporuke. Zahvaljujemo na vašem strpljenju i povjerenju.</small>
@@ -154,6 +143,8 @@
 
 
 @livewireScripts
+
+@include('front.layouts.partials.cookie-consent')
 
 
 <script>

@@ -8,6 +8,8 @@ use App\Helpers\Recaptcha;
 use App\Http\Controllers\Controller;
 use App\Imports\ProductImport;
 use App\Mail\ContactFormMessage;
+use App\Mail\ContractTerminationConfirmation;
+use App\Mail\ContractTerminationMessage;
 use App\Models\Back\Marketing\Review;
 use App\Models\Back\Marketing\Wishlist;
 use App\Models\Front\Blog;
@@ -89,6 +91,51 @@ class HomeController extends Controller
         return view('front.contact');
     }
 
+    public function contractTermination()
+    {
+        return view('front.contract-termination');
+    }
+
+    public function sendContractTermination(Request $request)
+    {
+        $validated = $request->validate([
+            'full_name' => ['required', 'string', 'max:150'],
+            'email' => ['required', 'email', 'max:190'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'address' => ['required', 'string', 'max:190'],
+            'postal_code' => ['required', 'string', 'max:20'],
+            'city' => ['required', 'string', 'max:100'],
+            'country' => ['required', 'string', 'max:80'],
+            'order_number' => ['required', 'string', 'max:80'],
+            'order_date' => ['nullable', 'date'],
+            'received_date' => ['nullable', 'date'],
+            'items' => ['required', 'string', 'max:3000'],
+            'iban' => ['nullable', 'string', 'max:50'],
+            'statement' => ['accepted'],
+            'website' => ['nullable', 'max:0'],
+        ], [
+            'statement.accepted' => 'Za slanje je potrebno potvrditi izjavu o raskidu ugovora.',
+            'website.max' => 'Obrazac nije moguće poslati.',
+        ]);
+
+        $siteKey = config('services.recaptcha.sitekey');
+        $secretKey = config('services.recaptcha.secret');
+        if ($siteKey && $secretKey) {
+            $recaptcha = (new Recaptcha())->check($request->toArray());
+            if (! $recaptcha || ! $recaptcha->ok()) {
+                return back()->withErrors(['recaptcha' => 'Sigurnosna provjera nije uspjela. Pokušajte ponovno.'])->withInput();
+            }
+        }
+
+        $validated['submitted_at'] = now();
+
+        Mail::to(config('mail.admin'))->send(new ContractTerminationMessage($validated));
+        Mail::to($validated['email'])->send(new ContractTerminationConfirmation($validated));
+
+        return redirect()->route('contract-termination')
+            ->with('success', 'Izjava o jednostranom raskidu uspješno je poslana. Potvrdu smo poslali na vaš e-mail.');
+    }
+
 
     /**
      * @param Request $request
@@ -144,7 +191,10 @@ class HomeController extends Controller
         }
 
         if ($wish->create()) {
-            return back()->with(['success' => 'Vaš Email je upisan u listu želja za ovaj artikl..!']);
+            return back()->with([
+                'success' => 'Vaš Email je upisan u listu želja za ovaj artikl..!',
+                'analytics_event' => 'add_to_wishlist',
+            ]);
         }
 
         return back()->with(['error' => 'Već ste prijavljeni za obavijest za ovaj artikl ili je došlo do greške.']);

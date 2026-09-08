@@ -77,24 +77,33 @@ class TagManager
      *
      * @return array
      */
-    public static function getGoogleProductDataLayer(Product $product): array
+    public static function getGoogleProductDataLayer(Product $product, bool $includeCategories = true): array
     {
         $discount = 0;
+        $listPrice = round((float) str_replace(',', '.', $product->main_price), 2);
+        $sellingPrice = round((float) str_replace(',', '.', $product->main_special), 2);
 
-        if ($product->main_price > $product->main_special) {
-            $discount = Helper::calculateDiscount($product->main_price, $product->main_special);
+        if ($listPrice > $sellingPrice) {
+            $discount = $listPrice - $sellingPrice;
+        } else {
+            $sellingPrice = $listPrice;
         }
 
         $item = [
             'item_id'        => $product->sku,
             'item_name'      => $product->name,
-            'price'          => round((float) str_replace(',', '.', $product->main_price), 2),
+            'price'          => $sellingPrice,
             'currency'       => 'EUR',
-            'discount'       =>  (float) number_format($discount, 2),
-            'item_category'  => $product->category() ? $product->category()->title : '',
-            'item_category2' => $product->subcategory() ? $product->subcategory()->title : '',
+            'discount'       => round($discount, 2),
             'quantity'       => 1,
         ];
+
+        if ($includeCategories) {
+            $category = $product->category();
+            $subcategory = $product->subcategory();
+            $item['item_category'] = $category ? $category->title : '';
+            $item['item_category2'] = $subcategory ? $subcategory->title : '';
+        }
 
         return $item;
     }

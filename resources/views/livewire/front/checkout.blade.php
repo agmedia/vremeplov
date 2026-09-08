@@ -35,13 +35,11 @@
     @if ( ! empty($gdl) && ! $gdl_shipping && ! $gdl_payment && $gdl_event)
         @section('google_data_layer')
             <script>
-                window.dataLayer = window.dataLayer || [];
-                window.dataLayer.push({ ecommerce: null });
-                window.dataLayer.push({
-                    'event': @json($gdl_event),
-                    'ecommerce': {
+                window.VremeplovAnalytics.track(@json($gdl_event), {
+                    ecommerce: {
                         'items': @json($gdl)
-                    } });
+                    }
+                });
             </script>
         @endsection
     @endif
@@ -49,14 +47,12 @@
     @if ( ! empty($gdl) && $gdl_shipping && $gdl_event == 'add_shipping_info')
         @section('google_data_layer')
             <script>
-                window.dataLayer = window.dataLayer || [];
-                window.dataLayer.push({ ecommerce: null });
-                window.dataLayer.push({
-                    'event': @json($gdl_event),
-                    'ecommerce': {
+                window.VremeplovAnalytics.track(@json($gdl_event), {
+                    ecommerce: {
                         'shipping_tier': @json($gdl_shipping),
                         'items': @json($gdl)
-                    } });
+                    }
+                });
             </script>
         @endsection
     @endif
@@ -64,14 +60,12 @@
     @if ( ! empty($gdl) && $gdl_payment && $gdl_event == 'add_payment_info')
         @section('google_data_layer')
             <script>
-                window.dataLayer = window.dataLayer || [];
-                window.dataLayer.push({ ecommerce: null });
-                window.dataLayer.push({
-                    'event': @json($gdl_event),
-                    'ecommerce': {
+                window.VremeplovAnalytics.track(@json($gdl_event), {
+                    ecommerce: {
                         'payment_type': @json($gdl_payment),
                         'items': @json($gdl)
-                    } });
+                    }
+                });
             </script>
         @endsection
     @endif

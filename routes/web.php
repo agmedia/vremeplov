@@ -415,6 +415,11 @@ Route::prefix('api/v2')->group(function () {
 Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::get('/kontakt', [HomeController::class, 'contact'])->name('kontakt');
 Route::post('/kontakt/posalji', [HomeController::class, 'sendContactMessage'])->name('poruka');
+Route::get('/jednostrani-raskid-ugovora', [HomeController::class, 'contractTermination'])
+    ->name('contract-termination');
+Route::post('/jednostrani-raskid-ugovora', [HomeController::class, 'sendContractTermination'])
+    ->middleware('throttle:10,1')
+    ->name('contract-termination.send');
 Route::get('/faq', [HomeController::class, 'faq'])->name('faq');
 Route::post('/komentar/proizvoda/posalji', [HomeController::class, 'sendProductComment'])->name('komentar.proizvoda');
 Route::get('/zahtjev-za-recenziju/{token}', [ProductReviewInvitationController::class, 'show'])

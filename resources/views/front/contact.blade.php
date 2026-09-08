@@ -62,7 +62,7 @@
 
             <div class="col-12 col-sm-6 mb-5 ">
                 <h2 class="h4 mb-4">Pošaljite upit</h2>
-                <form action="{{ route('poruka') }}" method="POST" class="mb-3">
+                <form action="{{ route('poruka') }}" method="POST" class="mb-3" data-analytics-form="contact">
                     @csrf
                     <div class="row g-3">
                         <div class="col-sm-12">
@@ -115,4 +115,7 @@
 
 @push('js_after')
     @include('front.layouts.partials.recaptcha-js')
+    @if (session()->has('success'))
+        <script>window.VremeplovAnalytics.track('generate_lead', {form_name: 'contact'});</script>
+    @endif
 @endpush

@@ -321,6 +321,21 @@ class Checkout extends Component
         $this->step = $step;
 
         CheckoutSession::setStep($step);
+
+        if (request()->hasHeader('X-Livewire') && $this->gdl_event && ! empty($this->gdl)) {
+            $ecommerce = ['items' => $this->gdl];
+            if ($this->gdl_event === 'add_shipping_info' && $this->gdl_shipping) {
+                $ecommerce['shipping_tier'] = $this->gdl_shipping;
+            }
+            if ($this->gdl_event === 'add_payment_info' && $this->gdl_payment) {
+                $ecommerce['payment_type'] = $this->gdl_payment;
+            }
+
+            $this->dispatchBrowserEvent('ga4-event', [
+                'event' => $this->gdl_event,
+                'ecommerce' => $ecommerce,
+            ]);
+        }
     }
 
 

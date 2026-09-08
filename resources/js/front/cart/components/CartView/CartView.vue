@@ -29,7 +29,7 @@
             </div>
             <div class="pt-2 pt-sm-0 ps-sm-3 mx-auto mx-sm-0 text-center text-sm-start" style="max-width: 9rem;">
                 <label class="form-label">Količina: {{item.quantity}}</label>
-                <input class="form-control" type="number" v-model="item.quantity" min="1" :max="item.associatedModel.quantity" @click.prevent="updateCart(item)">
+                <input class="form-control" type="number" v-model.number="item.quantity" min="1" :max="item.associatedModel.quantity" @change="updateCart(item)">
                 <button class="btn btn-link px-0 text-danger" type="button" @click.prevent="removeFromCart(item)"><i class="ci-close-circle me-2"></i><span class="fs-sm">Ukloni</span></button>
             </div>
         </div>

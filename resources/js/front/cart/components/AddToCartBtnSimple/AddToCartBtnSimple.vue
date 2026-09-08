@@ -33,15 +33,15 @@ export default {
 
     methods: {
         add() {
-            this.checkAvailability();
-
             if (this.has_in_cart) {
+                this.quantity += 1;
                 this.updateCart();
             } else {
                 this.addToCart();
+                this.has_in_cart = true;
             }
 
-            this.quantity += 1;
+            this.checkAvailability();
         },
         /**
          *
@@ -68,7 +68,7 @@ export default {
         },
 
         checkAvailability() {
-            if (this.available < this.quantity) {
+            if (this.available <= this.quantity) {
                 this.disabled = true;
                 this.quantity = this.available;
             }

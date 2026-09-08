@@ -65,6 +65,8 @@
                         @foreach ($uvjeti_kupnje as $page)
                             <li><a class="dropdown-item" href="{{ route('catalog.route.page', ['page' => $page]) }}">{{ $page->title }}</a></li>
                         @endforeach
+                        <li><a class="dropdown-item" href="{{ route('contract-termination') }}">Jednostrani raskid ugovora</a></li>
+                        <li><button class="dropdown-item" type="button" data-cookie-open>Postavke kolačića</button></li>
                     </ul>
                 </div>
             </div>
@@ -93,6 +95,8 @@
                         @foreach ($uvjeti_kupnje as $page)
                             <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.page', ['page' => $page]) }}">{{ $page->title }}</a></li>
                         @endforeach
+                        <li class="widget-list-item"><a class="widget-list-link" href="{{ route('contract-termination') }}">Jednostrani raskid ugovora</a></li>
+                        <li class="widget-list-item"><button class="widget-list-link border-0 bg-transparent p-0" type="button" data-cookie-open>Postavke kolačića</button></li>
                     </ul>
                 </div>
             </div>

@@ -1,4 +1,24 @@
 <section class="col-lg-8">
+    @php
+        $analyticsItems = $products->getCollection()->values()->map(function ($product, $index) {
+            $item = \App\Models\TagManager::getGoogleProductDataLayer($product, false);
+            $item['index'] = $index;
+            return $item;
+        })->all();
+    @endphp
+    @if (! empty($analyticsItems))
+        <script>
+            if (!window.__vremeplovInitialProductListTracked) {
+                window.__vremeplovInitialProductListTracked = true;
+                window.VremeplovAnalytics.track('view_item_list', {
+                    ecommerce: {
+                        item_list_name: @json(request()->routeIs('pretrazi') ? 'Rezultati pretrage' : 'Katalog'),
+                        items: @json($analyticsItems)
+                    }
+                });
+            }
+        </script>
+    @endif
     <!-- Toolbar-->
     <div class="d-flex justify-content-center justify-content-sm-between align-items-center pt-2 pb-4 pb-sm-5">
         <div class="d-flex flex-wrap">
@@ -76,5 +96,3 @@
 
 
 </section>
-
-

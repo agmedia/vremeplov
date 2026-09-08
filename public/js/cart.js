@@ -2093,11 +2093,12 @@ __webpack_require__.r(__webpack_exports__);
   },
   methods: {
     add: function add() {
+      var alreadyInCart = Number(this.has_in_cart) > 0;
       this.checkAvailability(true);
-      if (this.has_in_cart) {
+      if (alreadyInCart) {
         this.updateCart();
       } else {
-        this.add();
+        this.addToCart();
       }
     },
     /**
@@ -2116,7 +2117,7 @@ __webpack_require__.r(__webpack_exports__);
     updateCart: function updateCart() {
       var item = {
         id: this.id,
-        quantity: this.quantity
+        quantity: this.has_in_cart
       };
       this.$store.dispatch('updateCart', item);
     },
@@ -2176,13 +2177,14 @@ __webpack_require__.r(__webpack_exports__);
   },
   methods: {
     add: function add() {
-      this.checkAvailability();
       if (this.has_in_cart) {
+        this.quantity += 1;
         this.updateCart();
       } else {
         this.addToCart();
+        this.has_in_cart = true;
       }
-      this.quantity += 1;
+      this.checkAvailability();
     },
     /**
      *
@@ -2205,7 +2207,7 @@ __webpack_require__.r(__webpack_exports__);
       this.$store.dispatch('updateCart', item);
     },
     checkAvailability: function checkAvailability() {
-      if (this.available < this.quantity) {
+      if (this.available <= this.quantity) {
         this.disabled = true;
         this.quantity = this.available;
       }
@@ -3657,9 +3659,12 @@ var render = function render() {
     }, [_vm._v("Količina: " + _vm._s(item.quantity))]), _vm._v(" "), _c("input", {
       directives: [{
         name: "model",
-        rawName: "v-model",
+        rawName: "v-model.number",
         value: item.quantity,
-        expression: "item.quantity"
+        expression: "item.quantity",
+        modifiers: {
+          number: true
+        }
       }],
       staticClass: "form-control",
       attrs: {
@@ -3671,13 +3676,15 @@ var render = function render() {
         value: item.quantity
       },
       on: {
-        click: function click($event) {
-          $event.preventDefault();
+        change: function change($event) {
           return _vm.updateCart(item);
         },
         input: function input($event) {
           if ($event.target.composing) return;
-          _vm.$set(item, "quantity", $event.target.value);
+          _vm.$set(item, "quantity", _vm._n($event.target.value));
+        },
+        blur: function blur($event) {
+          return _vm.$forceUpdate();
         }
       }
     }), _vm._v(" "), _c("button", {
@@ -4741,13 +4748,41 @@ var AgService = /*#__PURE__*/function () {
     _classCallCheck(this, AgService);
   }
   return _createClass(AgService, [{
-    key: "getCart",
-    value:
+    key: "trackCartEvent",
+    value: function trackCartEvent(eventName, item, quantity) {
+      var product = item && item.associatedModel ? item.associatedModel : item;
+      var data = Object.assign({}, product && product.dataLayer || {});
+      var eventQuantity = Number(quantity == null ? item && item.quantity : quantity) || 1;
+      data.quantity = eventQuantity;
+      var price = Number(data.price) || 0;
+      var payload = {
+        currency: data.currency || 'EUR',
+        value: Number((price * eventQuantity).toFixed(2)),
+        items: [data]
+      };
+      if (window.VremeplovAnalytics) {
+        window.VremeplovAnalytics.track(eventName, {
+          ecommerce: payload
+        });
+      } else {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          ecommerce: null
+        });
+        window.dataLayer.push({
+          event: eventName,
+          ecommerce: payload
+        });
+      }
+    }
+
     /**
      *
      * @returns {*}
      */
-    function getCart() {
+  }, {
+    key: "getCart",
+    value: function getCart() {
       return axios.get('cart/get').then(function (response) {
         return response.data;
       })["catch"](function () {
@@ -4799,16 +4834,7 @@ var AgService = /*#__PURE__*/function () {
           return false;
         }
         var product = response.data.items[item.id].associatedModel;
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-          ecommerce: null
-        });
-        window.dataLayer.push({
-          'event': 'add_to_cart',
-          'ecommerce': {
-            'items': [product.dataLayer]
-          }
-        });
+        _this.trackCartEvent('add_to_cart', product, item.quantity);
         _this.returnSuccess(messages.cartAdd);
         return response.data;
       })["catch"](function (error) {
@@ -4825,12 +4851,25 @@ var AgService = /*#__PURE__*/function () {
     key: "updateCart",
     value: function updateCart(item) {
       var _this2 = this;
+      var storedCart = store.state.storage.getCart() || {};
+      var previous = (storedCart.items || []).find(function (cartItem) {
+        return String(cartItem.id) === String(item.id);
+      });
+      var previousQuantity = previous ? Number(previous.quantity) : Number(item.quantity);
+      var nextQuantity = Number(item.quantity);
       return axios.post('cart/update/' + item.id, {
         item: item
       }).then(function (response) {
         if (response.data.error) {
           _this2.returnError(response.data.error);
           return false;
+        }
+        var changedBy = nextQuantity - previousQuantity;
+        var returnedItem = response.data && response.data.items ? response.data.items[item.id] : item;
+        if (changedBy > 0) {
+          _this2.trackCartEvent('add_to_cart', returnedItem, changedBy);
+        } else if (changedBy < 0) {
+          _this2.trackCartEvent('remove_from_cart', previous || item, Math.abs(changedBy));
         }
         _this2.returnSuccess(messages.cartUpdate);
         return response.data;
@@ -4849,6 +4888,7 @@ var AgService = /*#__PURE__*/function () {
     value: function removeItem(item) {
       var _this3 = this;
       return axios.get('cart/remove/' + item.id).then(function (response) {
+        _this3.trackCartEvent('remove_from_cart', item, item.quantity);
         _this3.returnSuccess(messages.cartRemove);
         return response.data;
       })["catch"](function (error) {

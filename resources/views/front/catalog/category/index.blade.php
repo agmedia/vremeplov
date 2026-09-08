@@ -42,6 +42,11 @@
         <meta name="twitter:description" content="{{ $searchDescription }}" />
         <meta name="twitter:image" content="{{ config('settings.images_domain') . 'media/img/cover-vremeplov.jpg' }}" />
     @endpush
+    @if ($searchTerm !== '')
+        @section('google_data_layer')
+            <script>window.VremeplovAnalytics.track('search', {search_term: @json($searchTerm)});</script>
+        @endsection
+    @endif
 @endif
 
 @section('content')

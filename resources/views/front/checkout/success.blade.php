@@ -6,8 +6,9 @@
     @if (isset($data['google_tag_manager']))
         @section('google_data_layer')
             <script>
-                window.dataLayer = window.dataLayer || [];
-                dataLayer.push(<?php echo json_encode($data['google_tag_manager']); ?>);
+                window.VremeplovAnalytics.track('purchase', {
+                    ecommerce: @json($data['google_tag_manager']['ecommerce'])
+                });
             </script>
         @endsection
     @endif

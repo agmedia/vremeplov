@@ -39,12 +39,13 @@ export default {
 
     methods: {
         add() {
+            const alreadyInCart = Number(this.has_in_cart) > 0;
             this.checkAvailability(true);
 
-            if (this.has_in_cart) {
+            if (alreadyInCart) {
                 this.updateCart();
             } else {
-                this.add();
+                this.addToCart();
             }
         },
         /**
@@ -65,7 +66,7 @@ export default {
         updateCart() {
             let item = {
                 id: this.id,
-                quantity: this.quantity
+                quantity: this.has_in_cart
             }
 
             this.$store.dispatch('updateCart', item);

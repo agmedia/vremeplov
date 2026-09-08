@@ -15,6 +15,28 @@ let messages = {
 
 class AgService {
 
+    trackCartEvent(eventName, item, quantity) {
+        const product = item && item.associatedModel ? item.associatedModel : item;
+        const data = Object.assign({}, (product && product.dataLayer) || {});
+        const eventQuantity = Number(quantity == null ? (item && item.quantity) : quantity) || 1;
+        data.quantity = eventQuantity;
+
+        const price = Number(data.price) || 0;
+        const payload = {
+            currency: data.currency || 'EUR',
+            value: Number((price * eventQuantity).toFixed(2)),
+            items: [data]
+        };
+
+        if (window.VremeplovAnalytics) {
+            window.VremeplovAnalytics.track(eventName, { ecommerce: payload });
+        } else {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({ ecommerce: null });
+            window.dataLayer.push({ event: eventName, ecommerce: payload });
+        }
+    }
+
     /**
      *
      * @returns {*}
@@ -62,14 +84,7 @@ class AgService {
 
             let product = response.data.items[item.id].associatedModel;
 
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({ ecommerce: null });
-            window.dataLayer.push({
-                'event': 'add_to_cart',
-                'ecommerce': {
-                    'items': [ product.dataLayer ]
-                }
-            });
+            this.trackCartEvent('add_to_cart', product, item.quantity);
 
             this.returnSuccess(messages.cartAdd);
             return response.data
@@ -83,11 +98,24 @@ class AgService {
      * @returns {*}
      */
     updateCart(item) {
+        const storedCart = store.state.storage.getCart() || {};
+        const previous = (storedCart.items || []).find(cartItem => String(cartItem.id) === String(item.id));
+        const previousQuantity = previous ? Number(previous.quantity) : Number(item.quantity);
+        const nextQuantity = Number(item.quantity);
+
         return axios.post('cart/update/' + item.id, {item: item})
         .then(response => {
             if (response.data.error) {
                 this.returnError(response.data.error);
                 return false;
+            }
+
+            const changedBy = nextQuantity - previousQuantity;
+            const returnedItem = response.data && response.data.items ? response.data.items[item.id] : item;
+            if (changedBy > 0) {
+                this.trackCartEvent('add_to_cart', returnedItem, changedBy);
+            } else if (changedBy < 0) {
+                this.trackCartEvent('remove_from_cart', previous || item, Math.abs(changedBy));
             }
 
             this.returnSuccess(messages.cartUpdate);
@@ -104,6 +132,7 @@ class AgService {
     removeItem(item) {
         return axios.get('cart/remove/' + item.id)
         .then(response => {
+            this.trackCartEvent('remove_from_cart', item, item.quantity);
             this.returnSuccess(messages.cartRemove);
             return response.data
         })
