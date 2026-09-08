@@ -5,6 +5,7 @@ namespace App\Services\Orders;
 use App\Mail\AbandonedCartReminderMail;
 use App\Models\AbandonedCartReminder;
 use App\Models\Back\Orders\Order;
+use App\Models\Back\Orders\OrderHistory;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -37,7 +38,7 @@ class AbandonedCartService
 
         $query = Order::query()
             ->where('order_status_id', (int) config('settings.order.status.unfinished', 8))
-            ->where('created_at', '>=', $this->candidateCutoff())
+            ->where('created_at', '>=', $this->candidateCutoff($sequence))
             ->where('created_at', '<=', now()->subMinutes((int) $delay))
             ->whereNotNull('payment_email')
             ->whereRaw("TRIM(payment_email) <> ''")
@@ -75,14 +76,52 @@ class AbandonedCartService
             ->oldest('created_at')->limit(max(1, $limit))->get();
     }
 
-    public function send(Order $order, int $sequence): bool
+    public function adminState(Order $order): array
     {
+        if (! $this->isAvailable()) {
+            return ['available' => false, 'complete' => false, 'error' => 'Evidencija podsjetnika nije instalirana.'];
+        }
+
+        $sent = $this->sentReminders($order);
+        $nextSequence = null;
+        for ($sequence = 1; $sequence <= (int) config('abandoned_cart.max_reminders', 2); $sequence++) {
+            if (! $sent->has($sequence)) {
+                $nextSequence = $sequence;
+                break;
+            }
+        }
+
+        $error = $this->eligibilityError($order);
+
+        return [
+            'available' => $error === null && $nextSequence !== null,
+            'complete' => $nextSequence === null,
+            'next_sequence' => $nextSequence,
+            'next_scheduled_at' => $nextSequence ? $this->scheduledFor($order, $nextSequence) : null,
+            'first' => $sent->get(1),
+            'second' => $sent->get(2),
+            'error' => $error,
+        ];
+    }
+
+    public function send(
+        Order $order,
+        int $sequence,
+        string $source = AbandonedCartReminder::SOURCE_AUTOMATIC
+    ): bool
+    {
+        if (! in_array($source, [AbandonedCartReminder::SOURCE_AUTOMATIC, AbandonedCartReminder::SOURCE_MANUAL], true)) {
+            throw new RuntimeException('Nepoznat izvor podsjetnika.');
+        }
+
         if (! config('abandoned_cart.enabled')) {
             throw new RuntimeException('Podsjetnici za nedovršenu kupnju su isključeni.');
         }
 
-        if (! $this->canRecover($order)) {
-            throw new RuntimeException('Narudžbu više nije moguće obnoviti.');
+        $order->loadMissing(['products.product', 'totals', 'abandonedCartReminders']);
+
+        if ($error = $this->eligibilityError($order)) {
+            throw new RuntimeException($error);
         }
 
         if (! in_array($sequence, [1, 2], true)) {
@@ -107,6 +146,8 @@ class AbandonedCartService
                         ->addMinutes((int) config('abandoned_cart.delays_minutes.' . $sequence)),
                     'next_attempt_at' => now(),
                     'recipient_email' => $email,
+                    'source' => $source,
+                    'sent_by' => $source === AbandonedCartReminder::SOURCE_MANUAL ? auth()->id() : null,
                 ]
             );
 
@@ -114,10 +155,17 @@ class AbandonedCartService
                 return true;
             }
 
-            if ($reminder->next_attempt_at && $reminder->next_attempt_at->isFuture()) {
+            if ($source === AbandonedCartReminder::SOURCE_AUTOMATIC
+                && $reminder->next_attempt_at
+                && $reminder->next_attempt_at->isFuture()) {
                 return false;
             }
 
+            $reminder->forceFill([
+                'source' => $source,
+                'sent_by' => $source === AbandonedCartReminder::SOURCE_MANUAL ? auth()->id() : null,
+                'recipient_email' => $email,
+            ])->save();
             $reminder->increment('attempts');
             $url = URL::temporarySignedRoute(
                 'abandoned-cart.restore',
@@ -127,6 +175,19 @@ class AbandonedCartService
 
             Mail::to($email)->send(new AbandonedCartReminderMail($order, $url, $sequence));
             $reminder->forceFill(['sent_at' => now(), 'next_attempt_at' => null, 'last_error' => null])->save();
+            if (Schema::hasTable('order_history')) {
+                OrderHistory::query()->create([
+                    'order_id' => $order->id,
+                    'user_id' => auth()->id() ?: 0,
+                    'status' => (int) $order->order_status_id,
+                    'comment' => sprintf(
+                        '%d. podsjetnik za nedovršenu narudžbu poslan je %s na %s.',
+                        $sequence,
+                        $source === AbandonedCartReminder::SOURCE_MANUAL ? 'ručno' : 'automatski',
+                        $email
+                    ),
+                ]);
+            }
 
             return true;
         } catch (\Throwable $exception) {
@@ -156,14 +217,67 @@ class AbandonedCartService
             && Carbon::parse($order->created_at)->gte($this->startsAt());
     }
 
+    public function scheduledFor(Order $order, int $sequence): Carbon
+    {
+        $delay = config('abandoned_cart.delays_minutes.' . $sequence);
+        if ($delay === null) {
+            throw new RuntimeException('Nepoznat redni broj podsjetnika.');
+        }
+
+        return Carbon::parse($order->created_at)->addMinutes((int) $delay);
+    }
+
+    private function sentReminders(Order $order): Collection
+    {
+        $reminders = $order->relationLoaded('abandonedCartReminders')
+            ? $order->abandonedCartReminders
+            : $order->abandonedCartReminders()->get();
+
+        return $reminders->whereNotNull('sent_at')->keyBy('sequence');
+    }
+
+    private function eligibilityError(Order $order): ?string
+    {
+        if (! config('abandoned_cart.enabled')) {
+            return 'Podsjetnici za nedovršene narudžbe su isključeni.';
+        }
+        if (! $this->canRecover($order)) {
+            return 'Podsjetnik se može poslati samo za noviju nedovršenu narudžbu.';
+        }
+        if (! filter_var(trim((string) $order->payment_email), FILTER_VALIDATE_EMAIL)) {
+            return 'Narudžba nema valjanu e-mail adresu kupca.';
+        }
+
+        $productsCount = $order->relationLoaded('products')
+            ? $order->products->count()
+            : (int) ($order->products_count ?? $order->products()->count());
+        if ($productsCount < 1) {
+            return 'Narudžba nema artikala za podsjetnik.';
+        }
+
+        $email = mb_strtolower(trim((string) $order->payment_email));
+        $hasNewerCompleted = Order::query()
+            ->whereIn('order_status_id', self::COMPLETED_STATUSES)
+            ->whereRaw('LOWER(TRIM(payment_email)) = ?', [$email])
+            ->where('created_at', '>', $order->created_at)
+            ->exists();
+
+        return $hasNewerCompleted ? 'Kupac je u međuvremenu dovršio noviju narudžbu.' : null;
+    }
+
     private function startsAt(): Carbon
     {
         return Carbon::parse((string) config('abandoned_cart.starts_at'), config('app.timezone'));
     }
 
-    private function candidateCutoff(): Carbon
+    private function candidateCutoff(int $sequence): Carbon
     {
-        $rollingCutoff = now()->subHours((int) config('abandoned_cart.lookback_hours', 24));
+        $sequenceDelayHours = (int) ceil(((int) config('abandoned_cart.delays_minutes.' . $sequence, 0)) / 60);
+        $lookbackHours = max(
+            (int) config('abandoned_cart.lookback_hours', 24),
+            $sequenceDelayHours + 2
+        );
+        $rollingCutoff = now()->subHours($lookbackHours);
 
         return $this->startsAt()->greaterThan($rollingCutoff)
             ? $this->startsAt()

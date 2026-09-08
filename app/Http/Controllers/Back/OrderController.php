@@ -7,6 +7,7 @@ use App\Helpers\OrderHelper;
 use App\Exceptions\InsufficientStockException;
 use App\Http\Controllers\Controller;
 use App\Mail\OrderStatusChanged;
+use App\Models\AbandonedCartReminder;
 use App\Models\Back\Orders\Order;
 use App\Models\Back\Orders\OrderHistory;
 use App\Models\Back\Settings\Settings;
@@ -17,6 +18,7 @@ use App\Services\Shipping\BoxNowSettingsService;
 use App\Services\Shipping\GlsTrackingService;
 use App\Services\Shipping\OrderTrackingService;
 use App\Services\Inventory\OrderInventoryService;
+use App\Services\Orders\AbandonedCartService;
 use Bouncer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -35,18 +37,62 @@ class OrderController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request, Order $order, BoxNowOrderPolicy $boxNowPolicy)
+    public function index(
+        Request $request,
+        Order $order,
+        BoxNowOrderPolicy $boxNowPolicy,
+        AbandonedCartService $abandonedCarts
+    )
     {
-        $orders = $order->filter($request)
-                        ->withCount('products')
-                        ->paginate(config('settings.pagination.back'))
-                        ->appends(request()->query());
+        $query = $order->filter($request)->withCount('products');
+
+        if ($abandonedCarts->isAvailable()) {
+            $query->with('abandonedCartReminders');
+        }
+
+        $orders = $query->paginate(config('settings.pagination.back'))
+            ->appends(request()->query());
+
+        if ($abandonedCarts->isAvailable()) {
+            $orders->getCollection()->each(function (Order $listedOrder) use ($abandonedCarts) {
+                $listedOrder->setAttribute('abandoned_cart_state', $abandonedCarts->adminState($listedOrder));
+            });
+        }
 
         $statuses = Settings::get('order', 'statuses');
 
         $canManageBoxNow = $this->canManageBoxNow();
 
         return view('back.order.index', compact('orders', 'statuses', 'boxNowPolicy', 'canManageBoxNow'));
+    }
+
+    public function sendAbandonedCartReminder(Order $order, AbandonedCartService $abandonedCarts)
+    {
+        try {
+            $state = $abandonedCarts->adminState($order);
+            $sequence = (int) ($state['next_sequence'] ?? 0);
+
+            if (! ($state['available'] ?? false) || $sequence < 1) {
+                return back()->with('error', $state['error'] ?? 'Podsjetnik nije moguće poslati.');
+            }
+
+            if (! $abandonedCarts->send($order, $sequence, AbandonedCartReminder::SOURCE_MANUAL)) {
+                return back()->with('error', 'Podsjetnik se već šalje. Pokušajte ponovno za nekoliko trenutaka.');
+            }
+
+            return back()->with('success', sprintf(
+                '%d. podsjetnik uspješno je poslan na %s.',
+                $sequence,
+                $order->payment_email
+            ));
+        } catch (\Throwable $exception) {
+            Log::warning('Manual abandoned cart reminder failed.', [
+                'order_id' => $order->id,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return back()->with('error', 'Podsjetnik nije poslan: ' . $exception->getMessage());
+        }
     }
 
 

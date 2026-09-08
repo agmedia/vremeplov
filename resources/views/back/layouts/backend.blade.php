@@ -25,6 +25,11 @@
         <!-- Fonts and Styles -->
         @stack('css_before')
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+        <link rel="stylesheet" href="{{ asset('vendor/fontawesome-pro/css/fontawesome.min.css?v=7.3.1') }}">
+        <link rel="stylesheet" href="{{ asset('vendor/fontawesome-pro/css/solid.min.css?v=7.3.1') }}">
+        <link rel="stylesheet" href="{{ asset('vendor/fontawesome-pro/css/regular.min.css?v=7.3.1') }}">
+        <link rel="stylesheet" href="{{ asset('vendor/fontawesome-pro/css/duotone.min.css?v=7.3.1') }}">
+        <link rel="stylesheet" href="{{ asset('vendor/fontawesome-pro/css/brands.min.css?v=7.3.1') }}">
         <link rel="stylesheet" id="css-main" href="{{ asset('css/dashmix.css?v=1.1') }}">
         <link rel="stylesheet" href="{{ asset('css/admin-vremeplov.css?v=20260908-1') }}">
 

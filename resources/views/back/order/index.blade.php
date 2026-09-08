@@ -127,6 +127,8 @@
                         <tbody>
                         @forelse($orders as $order)
                             @php
+                                $abandonedCartState = $order->abandoned_cart_state ?? [];
+                                $isUnfinishedOrder = (int) $order->order_status_id === (int) config('settings.order.status.unfinished', 8);
                                 $shipmentCarrierHint = \Illuminate\Support\Str::lower(
                                     (string) $order->shipping_carrier . ' '
                                     . (string) $order->shipping_code . ' '
@@ -157,6 +159,21 @@
                                     <div class="admin-order-status-payment">
                                         <span class="badge badge-pill badge-{{ $order->status->color }}">{{ $order->status->title }}</span>
                                         <small>{{ $order->payment_method ?: 'Način plaćanja nije zadan' }}</small>
+                                        @foreach([1 => 'first', 2 => 'second'] as $sequence => $key)
+                                            @if(! empty($abandonedCartState[$key]))
+                                                <small class="text-success" title="{{ $abandonedCartState[$key]->source === 'manual' ? 'Ručno slanje' : 'Automatsko slanje' }}">
+                                                    <i class="fa-duotone fa-envelope-circle-check mr-1" aria-hidden="true"></i>
+                                                    {{ $sequence }}. podsjetnik: {{ $abandonedCartState[$key]->sent_at->format('d.m.Y. H:i') }}
+                                                    ({{ $abandonedCartState[$key]->source === 'manual' ? 'ručno' : 'automatski' }})
+                                                </small>
+                                            @endif
+                                        @endforeach
+                                        @if($isUnfinishedOrder && ! empty($abandonedCartState['available']) && ! empty($abandonedCartState['next_scheduled_at']))
+                                            <small class="text-muted">
+                                                <i class="fa-duotone fa-clock mr-1" aria-hidden="true"></i>
+                                                {{ $abandonedCartState['next_sequence'] }}. automatski: {{ $abandonedCartState['next_scheduled_at']->format('d.m.Y. H:i') }}
+                                            </small>
+                                        @endif
                                         @if($order->payment_review_error)
                                             <span class="admin-inline-warning" title="{{ $order->payment_review_error }}">
                                                 <i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Provjera plaćanja
@@ -221,6 +238,16 @@
                                     <span class="admin-row-actions">
                                         <a class="btn btn-sm btn-alt-secondary" href="{{ route('orders.show', ['order' => $order]) }}" title="Pregledaj" aria-label="Pregledaj narudžbu {{ $order->id }}"><i class="fa fa-eye" aria-hidden="true"></i></a>
                                         <a class="btn btn-sm btn-alt-secondary" href="{{ route('orders.edit', ['order' => $order]) }}" title="Uredi" aria-label="Uredi narudžbu {{ $order->id }}"><i class="fa fa-edit" aria-hidden="true"></i></a>
+                                        @if($isUnfinishedOrder && ! empty($abandonedCartState['available']))
+                                            <form class="d-inline-block" method="POST" action="{{ route('orders.abandoned-cart-reminder.send', $order) }}" onsubmit="return confirm('Poslati {{ $abandonedCartState['next_sequence'] }}. podsjetnik kupcu sada?');">
+                                                @csrf
+                                                <button class="btn btn-sm btn-alt-primary" type="submit" title="Pošalji {{ $abandonedCartState['next_sequence'] }}. podsjetnik sada" aria-label="Pošalji podsjetnik za narudžbu {{ $order->id }}">
+                                                    <i class="fa-duotone fa-envelope-open-text" aria-hidden="true"></i>
+                                                </button>
+                                            </form>
+                                        @elseif($isUnfinishedOrder && ! empty($abandonedCartState['complete']))
+                                            <button class="btn btn-sm btn-light" type="button" disabled title="Poslana su oba podsjetnika"><i class="fa-duotone fa-envelope-circle-check text-success"></i></button>
+                                        @endif
                                     </span>
                                 </td>
                             </tr>

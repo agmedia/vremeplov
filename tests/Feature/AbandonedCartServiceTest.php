@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Mail\AbandonedCartReminderMail;
+use App\Models\AbandonedCartReminder;
 use App\Models\Back\Orders\Order;
 use App\Services\Orders\AbandonedCartService;
 use Illuminate\Database\Schema\Blueprint;
@@ -92,6 +93,46 @@ class AbandonedCartServiceTest extends TestCase
         $this->product($recent->id);
 
         $this->assertSame([6], (new AbandonedCartService())->candidates(1, 20)->pluck('id')->all());
+    }
+
+    public function test_manual_reminder_can_be_sent_before_automatic_due_time_and_is_recorded(): void
+    {
+        Mail::fake();
+        $order = $this->order(7, 'manual@example.test', 8, now()->subMinutes(10));
+        $this->product($order->id);
+        $service = new AbandonedCartService();
+
+        $this->assertTrue($service->adminState($order)['available']);
+        $this->assertTrue($service->send($order, 1, AbandonedCartReminder::SOURCE_MANUAL));
+
+        $this->assertDatabaseHas('abandoned_cart_reminders', [
+            'order_id' => 7,
+            'sequence' => 1,
+            'source' => AbandonedCartReminder::SOURCE_MANUAL,
+            'recipient_email' => 'manual@example.test',
+        ]);
+        $this->assertNotNull($service->adminState($order->fresh())['first']->sent_at);
+        Mail::assertSent(AbandonedCartReminderMail::class, 1);
+    }
+
+    public function test_second_reminder_remains_eligible_after_twenty_four_hours(): void
+    {
+        config(['abandoned_cart.starts_at' => now()->subDays(2)->toDateTimeString()]);
+        $order = $this->order(8, 'second@example.test', 8, now()->subHours(25));
+        $this->product($order->id);
+        DB::table('abandoned_cart_reminders')->insert([
+            'order_id' => $order->id,
+            'sequence' => 1,
+            'source' => AbandonedCartReminder::SOURCE_AUTOMATIC,
+            'scheduled_for' => now()->subDay(),
+            'sent_at' => now()->subDay(),
+            'attempts' => 1,
+            'recipient_email' => 'second@example.test',
+            'created_at' => now()->subDay(),
+            'updated_at' => now()->subDay(),
+        ]);
+
+        $this->assertSame([8], (new AbandonedCartService())->candidates(2, 20)->pluck('id')->all());
     }
 
     private function order(int $id, string $email, int $status, $createdAt): Order

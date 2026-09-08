@@ -8,18 +8,20 @@ use App\Helpers\Recaptcha;
 use App\Http\Controllers\Controller;
 use App\Imports\ProductImport;
 use App\Mail\ContactFormMessage;
-use App\Mail\ContractTerminationConfirmation;
-use App\Mail\ContractTerminationMessage;
 use App\Models\Back\Marketing\Review;
 use App\Models\Back\Marketing\Wishlist;
+use App\Models\Back\Orders\Order;
+use App\Models\ContractTermination;
 use App\Models\Front\Blog;
 use App\Models\Front\Faq;
 use App\Models\Front\Page;
 use App\Models\Sitemap;
+use App\Services\ContractTerminationNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
 
 class HomeController extends Controller
@@ -96,7 +98,10 @@ class HomeController extends Controller
         return view('front.contract-termination');
     }
 
-    public function sendContractTermination(Request $request)
+    public function sendContractTermination(
+        Request $request,
+        ContractTerminationNotificationService $notifications
+    )
     {
         $validated = $request->validate([
             'full_name' => ['required', 'string', 'max:150'],
@@ -127,13 +132,56 @@ class HomeController extends Controller
             }
         }
 
-        $validated['submitted_at'] = now();
+        $submittedAt = now();
+        $orderNumber = ltrim(trim((string) $validated['order_number']), '#');
+        $order = ctype_digit($orderNumber)
+            ? Order::query()->whereKey((int) $orderNumber)
+                ->where(function ($query) use ($validated) {
+                    $query->where('payment_email', $validated['email'])
+                        ->orWhere('shipping_email', $validated['email']);
+                })->first()
+            : null;
 
-        Mail::to(config('mail.admin'))->send(new ContractTerminationMessage($validated));
-        Mail::to($validated['email'])->send(new ContractTerminationConfirmation($validated));
+        do {
+            $reference = 'JR-' . $submittedAt->format('Ymd') . '-' . Str::upper(Str::random(6));
+        } while (ContractTermination::query()->where('reference', $reference)->exists());
 
-        return redirect()->route('contract-termination')
-            ->with('success', 'Izjava o jednostranom raskidu uspješno je poslana. Potvrdu smo poslali na vaš e-mail.');
+        $termination = ContractTermination::query()->create([
+            'reference' => $reference,
+            'user_id' => optional($request->user())->id,
+            'order_id' => optional($order)->id,
+            'order_number' => trim((string) $validated['order_number']),
+            'full_name' => trim((string) $validated['full_name']),
+            'email' => strtolower(trim((string) $validated['email'])),
+            'phone' => trim((string) ($validated['phone'] ?? '')) ?: null,
+            'address' => trim((string) $validated['address']),
+            'postal_code' => trim((string) $validated['postal_code']),
+            'city' => trim((string) $validated['city']),
+            'country' => strtoupper(trim((string) $validated['country'])),
+            'order_date' => $validated['order_date'] ?? null,
+            'received_date' => $validated['received_date'] ?? null,
+            'items' => trim((string) $validated['items']),
+            'iban' => trim((string) ($validated['iban'] ?? '')) ?: null,
+            'statement' => true,
+            'status' => ContractTermination::STATUS_RECEIVED,
+            'submitted_at' => $submittedAt,
+            'ip_address' => $request->ip(),
+            'user_agent' => Str::limit((string) $request->userAgent(), 512, ''),
+        ]);
+
+        $notifications->send($termination);
+        $termination->refresh();
+
+        $redirect = redirect()->route('contract-termination')->with(
+            'success',
+            'Izjava o jednostranom raskidu je zaprimljena pod oznakom ' . $reference . '.'
+        );
+
+        if (! $termination->consumer_notified_at) {
+            $redirect->with('warning', 'Izjava je spremljena, ali potvrdu trenutačno nije bilo moguće poslati e-mailom.');
+        }
+
+        return $redirect;
     }
 
 

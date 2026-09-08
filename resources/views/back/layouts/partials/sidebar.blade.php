@@ -104,6 +104,13 @@
                     </a>
                 </li>
 
+                <li class="nav-main-item">
+                    <a class="nav-main-link{{ request()->routeIs('contract-terminations.*') ? ' active' : '' }}" href="{{ route('contract-terminations.index') }}">
+                        <i class="nav-main-link-icon fa-duotone fa-file-signature"></i>
+                        <span class="nav-main-link-name">Jednostrani raskidi</span>
+                    </a>
+                </li>
+
                 <li class="nav-main-item{{ request()->is(['admin/marketing/*']) || request()->routeIs('product-review-backfills.*') ? ' open' : '' }}">
                     <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="{{ request()->is(['admin/marketing/*']) || request()->routeIs('product-review-backfills.*') ? 'true' : 'false' }}" href="#">
                         <i class="nav-main-link-icon si si-bar-chart"></i>

@@ -7,6 +7,7 @@ use App\Http\Controllers\Back\Catalog\AuthorController;
 use App\Http\Controllers\Back\Catalog\CategoryController;
 use App\Http\Controllers\Back\Catalog\ProductController;
 use App\Http\Controllers\Back\Catalog\PublisherController;
+use App\Http\Controllers\Back\ContractTerminationController as AdminContractTerminationController;
 use App\Http\Controllers\Back\DashboardController;
 use App\Http\Controllers\Back\ProductReviewBackfillController;
 use App\Http\Controllers\Back\Marketing\ReviewController;
@@ -146,6 +147,17 @@ Route::middleware(['auth:sanctum', 'verified', 'no.customers'])->prefix('admin')
         ->name('order.boxnow.label');
     Route::get('order/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::patch('order/{order}', [OrderController::class, 'update'])->name('orders.update');
+    Route::post('order/{order}/abandoned-cart-reminder', [OrderController::class, 'sendAbandonedCartReminder'])
+        ->name('orders.abandoned-cart-reminder.send');
+
+    Route::get('contract-terminations', [AdminContractTerminationController::class, 'index'])
+        ->name('contract-terminations.index');
+    Route::get('contract-terminations/{termination}', [AdminContractTerminationController::class, 'show'])
+        ->name('contract-terminations.show');
+    Route::patch('contract-terminations/{termination}', [AdminContractTerminationController::class, 'update'])
+        ->name('contract-terminations.update');
+    Route::post('contract-terminations/{termination}/resend', [AdminContractTerminationController::class, 'resend'])
+        ->name('contract-terminations.resend');
 
     Route::middleware('review.backfill.admin')->group(function () {
         Route::get('product-review-requests', [ProductReviewBackfillController::class, 'index'])

@@ -7,6 +7,7 @@
     <div style="margin:0 0 10px;color:#a17436;font-size:11px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;">Administracija · raskid ugovora</div>
     <h1 style="margin:0 0 18px;color:#2d2224;font-family:Georgia,'Times New Roman',serif;font-size:29px;font-weight:normal;">Nova izjava o raskidu</h1>
     <table role="presentation" width="100%" cellspacing="0" cellpadding="8" style="border:1px solid #e1d7c8;background:#fbf8f2;">
+        @if(! empty($data['reference']))<tr><td><strong>Referenca</strong></td><td>{{ $data['reference'] }}</td></tr>@endif
         <tr><td><strong>Potrošač</strong></td><td>{{ $data['full_name'] }}</td></tr>
         <tr><td><strong>E-mail</strong></td><td><a href="mailto:{{ $data['email'] }}">{{ $data['email'] }}</a></td></tr>
         <tr><td><strong>Telefon</strong></td><td>{{ $data['phone'] ?: '—' }}</td></tr>

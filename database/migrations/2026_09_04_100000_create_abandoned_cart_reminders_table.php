@@ -16,11 +16,13 @@ class CreateAbandonedCartRemindersTable extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('order_id');
             $table->unsignedTinyInteger('sequence');
+            $table->string('source', 16)->default('automatic');
             $table->timestamp('scheduled_for');
             $table->timestamp('sent_at')->nullable();
             $table->unsignedInteger('attempts')->default(0);
             $table->timestamp('next_attempt_at')->nullable();
             $table->string('recipient_email', 191);
+            $table->unsignedBigInteger('sent_by')->nullable()->index();
             $table->text('last_error')->nullable();
             $table->timestamps();
 
