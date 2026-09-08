@@ -340,7 +340,7 @@ class Product extends Model
     /**
      * @return string
      */
-    public function priceString(string $price = null)
+    public function priceString(?string $price = null)
     {
         if ($price) {
             $set = explode('.', $price);
@@ -504,7 +504,7 @@ class Product extends Model
      *
      * @return Builder
      */
-    public function filter(Request $request, Collection $ids = null): Builder
+    public function filter(Request $request, ?Collection $ids = null): Builder
     {
         $query = $this->newQuery();
 

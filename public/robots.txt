@@ -5,7 +5,8 @@ Disallow: /pregled
 Disallow: /narudzba
 Disallow: /uspjeh
 Disallow: /greska
-Disallow: /pretrazi
-Disallow: /customer/
+Disallow: /moj-racun/
+Disallow: /assets/artikli.csv
+Disallow: /assets/proizvodi.xml
 
 Sitemap: https://www.antikvarijat-vremeplov.hr/sitemap.xml

@@ -2,12 +2,13 @@
 @if (request()->routeIs(['index']))
     @section ( 'title', 'Antikvarijat Vremeplov | Prodaja knjiga | Otkup knjiga | Webshop' )
 @section ( 'description', 'Dobro došli na stranice antikvarijata Vremeplov. Specijalizirani smo za stare razglednice, pisma, knjige, plakate,časopise te vršimo otkup i prodaju navedenih.' )
+@section('canonical', url('/'))
 
 
 @push('meta_tags')
 
     <meta property="og:locale" content="hr_HR" />
-    <meta property="og:type" content="product" />
+    <meta property="og:type" content="website" />
     <meta property="og:title" content="Antikvarijat Vremeplov | Prodaja knjiga | Otkup knjiga | Webshop" />
     <meta property="og:description" content="Dobro došli na stranice antikvarijata Vremeplov. Specijalizirani smo za stare razglednice, pisma, knjige, plakate,časopise te vršimo otkup i prodaju navedenih." />
     <meta property="og:url" content="{{ url('/') }}"  />
@@ -26,8 +27,27 @@
 @endpush
 
 @else
-    @section ( 'title', $page->title. ' - Antikvarijat Vremeplov' )
-@section ( 'description', $page->meta_description )
+    @php
+        $pageTitle = trim((string) ($page->meta_title ?: $page->title));
+        $pageDescription = trim(strip_tags((string) $page->meta_description)) ?: 'Informacije za kupce Antikvarijata Vremeplov.';
+        $pageCanonical = route('catalog.route.page', ['page' => $page]);
+    @endphp
+    @section('title', $pageTitle . ' - Antikvarijat Vremeplov')
+    @section('description', $pageDescription)
+    @section('canonical', $pageCanonical)
+    @push('meta_tags')
+        <meta property="og:locale" content="hr_HR" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="{{ $pageTitle }} - Antikvarijat Vremeplov" />
+        <meta property="og:description" content="{{ $pageDescription }}" />
+        <meta property="og:url" content="{{ $pageCanonical }}" />
+        <meta property="og:site_name" content="Antikvarijat Vremeplov" />
+        <meta property="og:image" content="{{ config('settings.images_domain') . 'media/img/cover-vremeplov.jpg' }}" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="{{ $pageTitle }} - Antikvarijat Vremeplov" />
+        <meta name="twitter:description" content="{{ $pageDescription }}" />
+        <meta name="twitter:image" content="{{ config('settings.images_domain') . 'media/img/cover-vremeplov.jpg' }}" />
+    @endpush
 
 @endif
 
@@ -35,8 +55,10 @@
 
     @if (request()->routeIs(['index']))
 
-
-
+        <header class="container pt-4 text-center">
+            <h1 class="h2 mb-2">Antikvarijat Vremeplov</h1>
+            <p class="text-muted mb-0">Antikvarne i rabljene knjige, stare razglednice, plakati, časopisi i kolekcionarski predmeti.</p>
+        </header>
 
         <section class="container pt-4" aria-label="BOX NOW dostava">
             <picture>

@@ -10,7 +10,7 @@ class Metatags
     {
         return [
             'name' => 'robots',
-            'content' => 'noindex,nofollow'
+            'content' => 'noindex,follow'
         ];
     }
 }

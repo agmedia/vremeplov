@@ -46,26 +46,35 @@ class Seo
      *
      * @return array
      */
-    public static function getAuthorData(Author $author, Category $cat = null, Category $subcat = null): array
+    public static function getAuthorData(Author $author, ?Category $cat = null, ?Category $subcat = null): array
     {
-        $title = $author->title;
-        $description = 'Knjige autora ' . $author->title . ' danas su jako popularne u svijetu. Bogati izbor knjiga autora ' . $author->title . ' uz brzu dostavu i sigurnu kupovinu.';
+        $title = trim((string) ($author->meta_title ?: $author->title));
+        $description = trim(strip_tags((string) ($author->meta_description ?: $author->description)));
 
-        // Check if there is meta title or description and set vars.
+        if ($description === '') {
+            $description = 'Dostupni naslovi autora ' . $author->title . ' u ponudi Antikvarijata Vremeplov.';
+        }
+
         if ($cat) {
-            if ($cat->meta_title) { $title = $cat->meta_title; }
-            //if ($cat->meta_description) { $description = $cat->meta_description; }
+            $title .= ' – ' . ($cat->meta_title ?: $cat->title);
+            $description = 'Naslovi autora ' . $author->title . ' u kategoriji ' . $cat->title . '.';
         }
 
         if ($subcat) {
-            if ($subcat->meta_title) { $title = $subcat->meta_title; }
-            //if ($subcat->meta_description) { $description = $subcat->meta_description; }
+            $title = trim((string) ($author->meta_title ?: $author->title)) . ' – ' . ($subcat->meta_title ?: $subcat->title);
+            $description = 'Naslovi autora ' . $author->title . ' u kategoriji ' . $subcat->title . '.';
         }
+
+        $canonical = route('catalog.route.author', [
+            'author' => $author,
+            'cat' => $cat,
+            'subcat' => $subcat,
+        ]);
 
         return [
             'title'       => $title,
-            'description' => $description,
-            'canonical'   => url($author->url),
+            'description' => mb_substr($description, 0, 160),
+            'canonical'   => $canonical,
             'tags'        => []
         ];
     }
@@ -78,26 +87,35 @@ class Seo
      *
      * @return array
      */
-    public static function getPublisherData(Publisher $publisher, Category $cat = null, Category $subcat = null): array
+    public static function getPublisherData(Publisher $publisher, ?Category $cat = null, ?Category $subcat = null): array
     {
-        $title = $publisher->title;
-        $description = 'Ponuda knjiga nakladnika ' . $publisher->title . ' u Antikvarijat Vremeplov Online shopu. Naručite knjige  iz naklade ' . $publisher->title . '.';
+        $title = trim((string) ($publisher->meta_title ?: $publisher->title));
+        $description = trim(strip_tags((string) ($publisher->meta_description ?: $publisher->description)));
 
-        // Check if there is meta title or description and set vars.
+        if ($description === '') {
+            $description = 'Dostupna izdanja nakladnika ' . $publisher->title . ' u ponudi Antikvarijata Vremeplov.';
+        }
+
         if ($cat) {
-            if ($cat->meta_title) { $title = $cat->meta_title; }
-            //if ($cat->meta_description) { $description = $cat->meta_description; }
+            $title .= ' – ' . ($cat->meta_title ?: $cat->title);
+            $description = 'Izdanja nakladnika ' . $publisher->title . ' u kategoriji ' . $cat->title . '.';
         }
 
         if ($subcat) {
-            if ($subcat->meta_title) { $title = $subcat->meta_title; }
-            //if ($subcat->meta_description) { $description = $subcat->meta_description; }
+            $title = trim((string) ($publisher->meta_title ?: $publisher->title)) . ' – ' . ($subcat->meta_title ?: $subcat->title);
+            $description = 'Izdanja nakladnika ' . $publisher->title . ' u kategoriji ' . $subcat->title . '.';
         }
+
+        $canonical = route('catalog.route.publisher', [
+            'publisher' => $publisher,
+            'cat' => $cat,
+            'subcat' => $subcat,
+        ]);
 
         return [
             'title'       => $title,
-            'description' => $description,
-            'canonical'   => url($publisher->url),
+            'description' => mb_substr($description, 0, 160),
+            'canonical'   => $canonical,
             'tags'        => []
         ];
     }
@@ -115,7 +133,7 @@ class Seo
         $data = $request->toArray();
 
         if ($target == 'filter') {
-            if (array_key_exists('start', $data) || array_key_exists('end', $data) || array_key_exists('autor', $data) || array_key_exists('nakladnik', $data)) {
+            if (array_key_exists('start', $data) || array_key_exists('end', $data) || array_key_exists('autor', $data) || array_key_exists('nakladnik', $data) || array_key_exists('sort', $data)) {
                 array_push($response, Metatags::noFollow());
             }
         }

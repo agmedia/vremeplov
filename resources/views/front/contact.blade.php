@@ -1,5 +1,17 @@
 @extends('front.layouts.app')
 
+@section('title', 'Kontakt - Antikvarijat Vremeplov Zagreb')
+@section('description', 'Kontaktirajte Antikvarijat Vremeplov u Zagrebu. Adresa: Zvonimirova 24, telefon 091 762 7441.')
+@section('canonical', route('kontakt'))
+
+@push('meta_tags')
+    <meta property="og:locale" content="hr_HR" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Kontakt - Antikvarijat Vremeplov Zagreb" />
+    <meta property="og:description" content="Kontaktirajte Antikvarijat Vremeplov u Zagrebu. Adresa: Zvonimirova 24, telefon 091 762 7441." />
+    <meta property="og:url" content="{{ route('kontakt') }}" />
+@endpush
+
 @section('content')
 
     <!-- Page Title (Light)-->
@@ -49,8 +61,7 @@
 
                 </p>
                 <p>
-                    Ljetno radno vrijeme<br>
-                    (01.07 - 01.09.2024)<br><br>
+                    Radno vrijeme<br><br>
                     Ponedjeljak - petak<br>
                     09 -14h i 16 - 19h<br>
 
@@ -103,7 +114,7 @@
         <div class="row g-0">
             <div class="col-lg-12 iframe-full-height-wrap">
 
-                <iframe class="iframe-full-height" src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d11124.005570722158!2d15.988982!3d45.8112305!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4765d6549337de2d%3A0xeb2609abc24978d!2sAntikvarijat%20Vremeplov!5e0!3m2!1shr!2shr!4v1701073620720!5m2!1shr!2shr" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                <iframe class="iframe-full-height" title="Lokacija Antikvarijata Vremeplov na karti" src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d11124.005570722158!2d15.988982!3d45.8112305!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4765d6549337de2d%3A0xeb2609abc24978d!2sAntikvarijat%20Vremeplov!5e0!3m2!1shr!2shr!4v1701073620720!5m2!1shr!2shr" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
 
 
             </div>

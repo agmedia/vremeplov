@@ -27,7 +27,7 @@ class RouteResolver
     /**
      * RouteResolver constructor.
      */
-    public function __construct(Request $request, $group, $cat = null, $subcat = null, Product $prod = null)
+    public function __construct(Request $request, $group, $cat = null, $subcat = null, ?Product $prod = null)
     {
         $this->request = $request;
         $this->group = $group;
@@ -60,7 +60,7 @@ class RouteResolver
             foreach ($groups as $item) {
                 if ($item->slug == $this->group) {
                     $this->title = $item->title;
-                    $this->description = $item->title . ' - Antikvarijat Vremeplov';
+                    $this->description = 'Pregledajte dostupne artikle iz kategorije ' . $item->title . ' u ponudi Antikvarijata Vremeplov.';
                     $this->canonical = url($item->slug);
                     $group_exist = true;
                 }
@@ -109,8 +109,8 @@ class RouteResolver
                 }
 
             } else {
-                $this->title = $category->title;
-                $this->description = $category->meta_description;
+                $this->title = $category->meta_title ?: $category->title;
+                $this->description = $this->categoryDescription($category);
                 $this->canonical = url($this->group . '/' . $category->slug);
             }
 
@@ -145,8 +145,8 @@ class RouteResolver
                 }
 
             } else {
-                $this->title = $subcategory->title;
-                $this->description = $subcategory->meta_description;
+                $this->title = $subcategory->meta_title ?: $subcategory->title;
+                $this->description = $this->categoryDescription($subcategory);
                 $this->canonical = url($this->group . '/' . $category->slug . '/' . $subcategory->slug);
             }
 
@@ -239,5 +239,17 @@ class RouteResolver
         $data['tags'] = Seo::getMetaTags($this->request, 'filter');
 
         return $data;
+    }
+
+
+    private function categoryDescription(Category $category): string
+    {
+        $description = trim(strip_tags((string) ($category->meta_description ?: $category->description)));
+
+        if ($description === '' || mb_strtolower($description) === mb_strtolower(trim((string) $category->title))) {
+            $description = 'Pregledajte dostupne artikle iz kategorije ' . $category->title . ' u Antikvarijatu Vremeplov.';
+        }
+
+        return mb_substr($description, 0, 160);
     }
 }

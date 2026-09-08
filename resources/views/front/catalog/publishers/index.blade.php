@@ -1,9 +1,19 @@
 @extends('front.layouts.app')
 
+@php
+    $publishersCanonical = route('catalog.route.publisher');
+    if (! $letter && (int) request()->input('page', 1) > 1) {
+        $publishersCanonical .= '?page=' . (int) request()->input('page');
+    }
+@endphp
+@section('title', 'Nakladnici - Antikvarijat Vremeplov')
+@section('description', 'Popis nakladnika čija su izdanja dostupna u Antikvarijatu Vremeplov. Pretražite nakladnike abecednim redom.')
+@section('canonical', $publishersCanonical)
+
 @if (isset($meta_tags))
     @push('meta_tags')
         @foreach ($meta_tags as $tag)
-            <meta name={{ $tag['name'] }} content={{ $tag['content'] }}>
+            <meta name="{{ $tag['name'] }}" content="{{ $tag['content'] }}">
         @endforeach
     @endpush
 @endif
@@ -28,10 +38,14 @@
                 <div class="scrolling-wrapper">
 
                 @foreach ($letters as $item)
-                    <a href="{{ route('catalog.route.publisher', ['publisher' => null, 'letter' => $item['value']]) }}"
-                       class="btn btn-secondary btn-icon cardd mb-2 @if( ! $item['active']) disabled @endif @if($item['value'] == $letter) bg-fourth disabled @endif">
-                        <h3 class="h4 @if($item['value'] == $letter) text-white @else text-dark @endif  py-0 mb-0 px-1">{{ $item['value'] }}</h3>
-                    </a>
+                    @if ($item['active'])
+                        <a href="{{ route('catalog.route.publisher', ['publisher' => null, 'letter' => $item['value']]) }}"
+                           class="btn btn-secondary btn-icon cardd mb-2 @if($item['value'] == $letter) bg-fourth text-white @endif">
+                            <span class="h4 @if($item['value'] == $letter) text-white @else text-dark @endif py-0 mb-0 px-1">{{ $item['value'] }}</span>
+                        </a>
+                    @else
+                        <span class="btn btn-secondary btn-icon cardd mb-2 disabled" aria-disabled="true"><span class="h4 text-dark py-0 mb-0 px-1">{{ $item['value'] }}</span></span>
+                    @endif
                 @endforeach
                 </div>
             </div>
@@ -39,7 +53,7 @@
 
         <div class="row py-md-3">
             <div class="col-lg-12 text-center mb-5">
-                <h1>{{ $letter }}</h1>
+                <h2>{{ $letter ? 'Nakladnici – ' . $letter : 'Svi nakladnici' }}</h2>
                 <hr>
             </div>
 

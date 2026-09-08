@@ -1,7 +1,18 @@
 @extends('front.layouts.app')
-@section ('title', $seo['title'])
+@php
+    $productPageTitle = mb_strlen($seo['title']) <= 42
+        ? $seo['title'] . ' - Antikvarijat Vremeplov'
+        : $seo['title'];
+@endphp
+@section ('title', $productPageTitle)
 @section ('description', $seo['description'])
+@section ('canonical', url($prod->url))
 @push('meta_tags')
+
+    @php
+        $productImagePath = strtolower((string) parse_url($prod->image, PHP_URL_PATH));
+        $productImageType = str_ends_with($productImagePath, '.webp') ? 'image/webp' : (str_ends_with($productImagePath, '.png') ? 'image/png' : 'image/jpeg');
+    @endphp
 
     <meta property="og:locale" content="hr_HR" />
     <meta property="og:type" content="product" />
@@ -14,8 +25,8 @@
     <meta property="og:image:secure_url" content="{{ $prod->image }}" />
     <meta property="og:image:width" content="640" />
     <meta property="og:image:height" content="480" />
-    <meta property="og:image:type" content="image/jpeg" />
-    <meta property="og:image:alt" content="{{ $prod->image_alt }}" />
+    <meta property="og:image:type" content="{{ $productImageType }}" />
+    <meta property="og:image:alt" content="{{ $prod->image_alt ?: $prod->name }}" />
     <meta property="product:price:amount" content="{{ $prod->main_price }}" />
     <meta property="product:price:currency" content="EUR" />
     <meta property="product:availability" content="{{ $prod->quantity > 0 ? 'instock' : 'out of stock' }}" />

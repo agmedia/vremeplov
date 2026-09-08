@@ -36,7 +36,7 @@ class CatalogRouteController extends Controller
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function resolve(Request $request, $group, $cat = null, $subcat = null, Product $prod = null)
+    public function resolve(Request $request, $group, $cat = null, $subcat = null, ?Product $prod = null)
     {
         $resolver = new RouteResolver($request, $group, $cat, $subcat, $prod);
 
@@ -119,8 +119,9 @@ class CatalogRouteController extends Controller
 
         $meta = $resolver->setMeta();
         $crumbs = (new Breadcrumb())->category($group, $cat, $subcat)->resolve();
+        $products = $this->catalogProducts($request, $group, $cat, $subcat);
 
-        return view('front.catalog.category.index', compact('group', 'cat', 'subcat', 'prod', 'meta', 'crumbs'));
+        return view('front.catalog.category.index', compact('group', 'cat', 'subcat', 'prod', 'meta', 'crumbs', 'products'));
     }
 
 
@@ -131,7 +132,7 @@ class CatalogRouteController extends Controller
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
-    public function author(Request $request, Author $author = null, Category $cat = null, Category $subcat = null)
+    public function author(Request $request, ?Author $author = null, ?Category $cat = null, ?Category $subcat = null)
     {
         if ( ! $author) {
             $letters = Author::getLetters();
@@ -144,8 +145,9 @@ class CatalogRouteController extends Controller
 
         $meta = Seo::getAuthorData($author, $cat, $subcat);
         $crumbs = (new Breadcrumb())->author($author, $cat, $subcat)->resolve();
+        $products = $this->catalogProducts($request, null, $cat, $subcat, null, $author);
 
-        return view('front.catalog.category.index', compact('author', 'cat', 'subcat', 'meta', 'crumbs'));
+        return view('front.catalog.category.index', compact('author', 'cat', 'subcat', 'meta', 'crumbs', 'products'));
     }
 
 
@@ -156,7 +158,7 @@ class CatalogRouteController extends Controller
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
-    public function publisher(Request $request, Publisher $publisher = null, Category $cat = null, Category $subcat = null)
+    public function publisher(Request $request, ?Publisher $publisher = null, ?Category $cat = null, ?Category $subcat = null)
     {
         if ( ! $publisher) {
             $letters = Publisher::getLetters();
@@ -169,8 +171,9 @@ class CatalogRouteController extends Controller
 
         $meta = Seo::getPublisherData($publisher, $cat, $subcat);
         $crumbs = (new Breadcrumb())->publisher($publisher, $cat, $subcat)->resolve();
+        $products = $this->catalogProducts($request, null, $cat, $subcat, null, null, $publisher);
 
-        return view('front.catalog.category.index', compact('publisher', 'cat', 'subcat', 'meta', 'crumbs'));
+        return view('front.catalog.category.index', compact('publisher', 'cat', 'subcat', 'meta', 'crumbs', 'products'));
     }
 
 
@@ -188,11 +191,21 @@ class CatalogRouteController extends Controller
                 return redirect()->back()->with(['error' => 'Oops..! Zaboravili ste upisati pojam za pretraživanje..!']);
             }
 
-            $ids = Helper::search(
-                $request->input(config('settings.search_keyword'))
-            );
+            $searchTerm = trim((string) $request->input(config('settings.search_keyword')));
+            $ids = collect(json_decode((string) Helper::search($searchTerm), true) ?: []);
+            $group = null;
+            $cat = null;
+            $subcat = null;
+            $crumbs = null;
+            $meta = [
+                'title' => 'Pretraga: ' . $searchTerm,
+                'description' => 'Rezultati pretrage artikala za pojam „' . $searchTerm . '”.',
+                'canonical' => route('pretrazi', [config('settings.search_keyword') => $searchTerm]),
+                'tags' => [['name' => 'robots', 'content' => 'noindex,follow']],
+            ];
+            $products = $this->catalogProducts($request, null, null, null, $ids);
 
-            return view('front.catalog.category.index', compact('ids'));
+            return view('front.catalog.category.index', compact('ids', 'group', 'cat', 'subcat', 'crumbs', 'meta', 'products'));
         }
 
         if ($request->has(config('settings.search_keyword') . '_api')) {
@@ -331,8 +344,15 @@ class CatalogRouteController extends Controller
         $cat = null;
         $subcat = null;
         $crumbs = null;
+        $meta = [
+            'title' => 'Rezultati za: ' . $query,
+            'description' => 'Artikli povezani s pojmom „' . $query . '” u ponudi Antikvarijata Vremeplov.',
+            'canonical' => route('tag', [$key => $query]),
+            'tags' => [['name' => 'robots', 'content' => 'noindex,follow']],
+        ];
+        $products = $this->catalogProducts($request, null, null, null, $ids);
 
-        return view('front.catalog.category.index', compact('group', 'cat', 'subcat', 'ids', 'crumbs'));
+        return view('front.catalog.category.index', compact('group', 'cat', 'subcat', 'ids', 'crumbs', 'meta', 'products'));
     }
 
 
@@ -341,12 +361,82 @@ class CatalogRouteController extends Controller
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
-    public function actions(Request $request, Category $cat = null, $subcat = null)
+    public function actions(Request $request, ?Category $cat = null, ?Category $subcat = null)
     {
-        $group = 'snizenja';
-        $ids = Product::query()->whereNotNull('special')->pluck('id');
+        $group = null;
+        $ids = Product::query()->active()->hasStock()->whereNotNull('special')->pluck('id');
+        $crumbs = null;
+        $meta = [
+            'title' => 'Akcijska ponuda',
+            'description' => 'Sniženi artikli i posebne ponude Antikvarijata Vremeplov.',
+            'canonical' => route('catalog.route.actions'),
+            'tags' => [],
+        ];
+        $products = $this->catalogProducts($request, null, $cat, $subcat, $ids);
 
-        return view('front.catalog.category.index', compact('group', 'cat', 'subcat', 'ids'));
+        return view('front.catalog.category.index', compact('group', 'cat', 'subcat', 'ids', 'crumbs', 'meta', 'products'));
+    }
+
+
+    /**
+     * Render the initial catalog page on the server so products and pagination
+     * remain discoverable when JavaScript is unavailable.
+     */
+    private function catalogProducts(
+        Request $request,
+        ?string $group = null,
+        ?Category $cat = null,
+        ?Category $subcat = null,
+        $ids = null,
+        ?Author $author = null,
+        ?Publisher $publisher = null
+    ) {
+        $data = $request->only(['start', 'end', 'sort']);
+
+        if ($group) {
+            $data['group'] = $group;
+        }
+
+        if ($cat) {
+            $data['cat'] = $cat->id;
+        }
+
+        if ($subcat) {
+            $data['subcat'] = $subcat->id;
+        }
+
+        if ($author) {
+            $data['autor'] = [$author];
+        } elseif ($request->filled('autor')) {
+            $data['autor'] = Author::query()
+                ->whereIn('slug', explode('+', (string) $request->input('autor')))
+                ->get();
+        }
+
+        if ($publisher) {
+            $data['nakladnik'] = [$publisher];
+        } elseif ($request->filled('nakladnik')) {
+            $data['nakladnik'] = Publisher::query()
+                ->whereIn('slug', explode('+', (string) $request->input('nakladnik')))
+                ->get();
+        }
+
+        if ($ids !== null) {
+            $ids = collect(is_string($ids) ? (json_decode($ids, true) ?: []) : $ids)
+                ->filter(fn ($id) => is_numeric($id))
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values();
+
+            $data['ids'] = '[' . ($ids->isEmpty() ? '0' : $ids->implode(',')) . ']';
+        }
+
+        $filterRequest = new Request($data);
+
+        return (new Product())->filter($filterRequest)
+            ->with(['author', 'action'])
+            ->paginate(config('settings.pagination.front'))
+            ->appends($request->query());
     }
 
 }

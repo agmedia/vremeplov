@@ -2,24 +2,66 @@
 <html lang="{{ config('app.locale') }}">
 <head>
     <meta charset="utf-8">
-    <title> @yield('title') </title>
+    <title>@hasSection('title')@yield('title')@else Antikvarijat Vremeplov | Prodaja i otkup knjiga @endif</title>
     <!-- SEO Meta Tags-->
-    <meta name="description" content="@yield('description')">
+    <meta name="description" content="@hasSection('description')@yield('description')@else Antikvarijat Vremeplov u Zagrebu: antikvarne i rabljene knjige, stare razglednice, plakati, časopisi i kolekcionarski predmeti. @endif">
     <meta name="author" content="AG media">
-    <link rel="canonical" href="{{ url()->current() }}">
-    @if (request()->routeIs('kosarica', 'naplata', 'pregled', 'checkout*') || request()->is('customer/*'))
+    <link rel="canonical" href="@hasSection('canonical')@yield('canonical')@else{{ url()->current() }}@endif">
+    @if (request()->routeIs('kosarica', 'naplata', 'pregled', 'checkout*') || request()->is('moj-racun*'))
         <meta name="robots" content="noindex,nofollow">
     @endif
     <script type="application/ld+json">{!! json_encode([
         '@context' => 'https://schema.org',
-        '@type' => 'Organization',
-        '@id' => url('/#organization'),
-        'name' => 'Antikvarijat Vremeplov',
-        'url' => url('/'),
-        'logo' => config('settings.images_domain') . 'media/img/vremeplov-logo.png',
-        'sameAs' => [
-            'https://www.facebook.com/antikavrijatvremeplov',
-            'https://www.instagram.com/antikvarijatvremeplov',
+        '@graph' => [
+            [
+                '@type' => ['BookStore', 'Organization'],
+                '@id' => url('/#organization'),
+                'name' => 'Antikvarijat Vremeplov',
+                'legalName' => 'Vremeplov razglednica d.o.o.',
+                'url' => url('/'),
+                'logo' => config('settings.images_domain') . 'media/img/vremeplov-logo.png',
+                'telephone' => '+385 91 762 7441',
+                'email' => config('mail.from.address'),
+                'address' => [
+                    '@type' => 'PostalAddress',
+                    'streetAddress' => 'Zvonimirova 24',
+                    'postalCode' => '10000',
+                    'addressLocality' => 'Zagreb',
+                    'addressCountry' => 'HR',
+                ],
+                'openingHoursSpecification' => [
+                    [
+                        '@type' => 'OpeningHoursSpecification',
+                        'dayOfWeek' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+                        'opens' => '09:00',
+                        'closes' => '14:00',
+                    ],
+                    [
+                        '@type' => 'OpeningHoursSpecification',
+                        'dayOfWeek' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+                        'opens' => '16:00',
+                        'closes' => '19:00',
+                    ],
+                    [
+                        '@type' => 'OpeningHoursSpecification',
+                        'dayOfWeek' => 'Saturday',
+                        'opens' => '10:00',
+                        'closes' => '13:00',
+                    ],
+                ],
+                'sameAs' => [
+                    'https://www.facebook.com/antikavrijatvremeplov',
+                    'https://www.instagram.com/antikvarijatvremeplov',
+                ],
+            ],
+            [
+                '@type' => 'WebSite',
+                '@id' => url('/#website'),
+                'url' => url('/'),
+                'name' => 'Antikvarijat Vremeplov',
+                'inLanguage' => 'hr-HR',
+                'publisher' => ['@id' => url('/#organization')],
+            ],
         ],
     ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
     @stack('meta_tags')
@@ -63,7 +105,9 @@
 
 </head>
 <!-- Body-->
-<body class="bg-secondary">
+<body class="bg-secondary" id="top">
+
+<a class="visually-hidden-focusable position-absolute top-0 start-0 m-2 btn btn-light" href="#main-content">Preskoči na glavni sadržaj</a>
 
 <!--<div role="alert" class="alert alert-primary mb-0 text-center">
    <small> Poštovani, zbog povećanog broja narudžbi povodom Interlibera, molimo vas za razumijevanje i strpljenje tijekom isporuke. Zahvaljujemo na vašem strpljenju i povjerenju.</small>
@@ -78,11 +122,11 @@
         </div>
         <div class="topbar-text  d-none  d-md-inline-block">Besplatna dostava U RH za narudžbe iznad 70 €</div>
         <div class="ms-3 text-nowrap ">
-            <a class="topbar-link me-2 d-inline-block" aria-label="Follow us on facebook" href="https://www.facebook.com/antikavrijatvremeplov">
+            <a class="topbar-link me-2 d-inline-block" aria-label="Pratite nas na Facebooku" href="https://www.facebook.com/antikavrijatvremeplov">
                 <i class="ci-facebook"></i>
             </a>
 
-            <a class="topbar-link me-2 d-inline-block" aria-label="Follow us on instagram" href="https://www.instagram.com/antikvarijatvremeplov">
+            <a class="topbar-link me-2 d-inline-block" aria-label="Pratite nas na Instagramu" href="https://www.instagram.com/antikvarijatvremeplov">
                 <i class="ci-instagram"></i>
             </a>
 
@@ -101,7 +145,9 @@
 <div id="agapp">
     @include('front.layouts.partials.header')
 
-    @yield('content')
+    <main id="main-content">
+        @yield('content')
+    </main>
 
     @include('front.layouts.partials.footer')
 
@@ -109,7 +155,7 @@
 </div>
 
 <!-- Back To Top Button-->
-<a class="btn-scroll-top" href="#top" aria-label="Scroll to top" data-scroll><span class="btn-scroll-top-tooltip text-muted fs-sm me-2"></span><i class="btn-scroll-top-icon ci-arrow-up"></i></a>
+<a class="btn-scroll-top" href="#top" aria-label="Povratak na vrh stranice" data-scroll><span class="btn-scroll-top-tooltip text-muted fs-sm me-2"></span><i class="btn-scroll-top-icon ci-arrow-up"></i></a>
 <!-- Vendor Styles including: Font Icons, Plugins, etc.-->
 <link rel="stylesheet" media="screen" href="/css/tiny-slider.css?v=1.2"/>
 <!-- Vendor scrits: js libraries and plugins-->
@@ -123,7 +169,7 @@
 
 
 
-<script src="/js/cart.js?v=2.2.2"></script>
+<script src="/js/cart.js?v=2.2.3"></script>
 
 <script src="/js/theme.min.js"></script>
 

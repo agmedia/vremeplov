@@ -343,7 +343,9 @@ class HomeController extends Controller
 
             return response()->view('front.layouts.partials.sitemap-index', [
                 'items' => $items
-            ])->header('Content-Type', 'text/xml');
+            ])->header('Content-Type', 'application/xml; charset=UTF-8')
+                ->setPublic()
+                ->setMaxAge(3600);
         }
 
         if (! in_array($sitemap, config('settings.sitemap'), true)
@@ -357,7 +359,9 @@ class HomeController extends Controller
 
         return response()->view('front.layouts.partials.sitemap', [
             'items' => $sm->getSitemap()
-        ])->header('Content-Type', 'text/xml');
+        ])->header('Content-Type', 'application/xml; charset=UTF-8')
+            ->setPublic()
+            ->setMaxAge(3600);
     }
 
 
@@ -370,7 +374,9 @@ class HomeController extends Controller
 
         return response()->view('front.layouts.partials.sitemap-image', [
             'items' => $sm->getResponse()
-        ])->header('Content-Type', 'text/xml');
+        ])->header('Content-Type', 'application/xml; charset=UTF-8')
+            ->setPublic()
+            ->setMaxAge(3600);
     }
 
 

@@ -1,5 +1,17 @@
 @extends('front.layouts.app')
 
+@section('title', 'Česta pitanja - Antikvarijat Vremeplov')
+@section('description', 'Odgovori na česta pitanja o naručivanju, plaćanju, dostavi i kupnji u Antikvarijatu Vremeplov.')
+@section('canonical', route('faq'))
+
+@push('meta_tags')
+    <meta property="og:locale" content="hr_HR" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Česta pitanja - Antikvarijat Vremeplov" />
+    <meta property="og:description" content="Odgovori na česta pitanja o naručivanju, plaćanju, dostavi i kupnji u Antikvarijatu Vremeplov." />
+    <meta property="og:url" content="{{ route('faq') }}" />
+@endpush
+
 @section('content')
 
     <!-- Page Title-->
@@ -65,3 +77,22 @@
 
 
 @endsection
+
+@push('js_after')
+    <script type="application/ld+json">
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'FAQPage',
+            'mainEntity' => $faq->map(function ($item) {
+                return [
+                    '@type' => 'Question',
+                    'name' => trim(strip_tags((string) $item->title)),
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => trim(strip_tags((string) $item->description)),
+                    ],
+                ];
+            })->values()->toArray(),
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+@endpush

@@ -39,7 +39,7 @@ class Breadcrumb
      *
      * @return $this
      */
-    public function category($group, Category $cat = null, $subcat = null)
+    public function category($group, ?Category $cat = null, $subcat = null)
     {
         if (isset($group) && $group) {
             $this->addGroup($group);
@@ -79,7 +79,7 @@ class Breadcrumb
      *
      * @return $this
      */
-    public function product($group, Category $cat = null, $subcat = null, Product $prod = null)
+    public function product($group, ?Category $cat = null, $subcat = null, ?Product $prod = null)
     {
         $this->category($group, $cat, $subcat);
 
@@ -105,7 +105,7 @@ class Breadcrumb
      *
      * @return $this
      */
-    public function author(Author $author = null, Category $cat = null, $subcat = null)
+    public function author(?Author $author = null, ?Category $cat = null, $subcat = null)
     {
         array_push($this->breadcrumbs, [
             '@type' => 'ListItem',
@@ -152,7 +152,7 @@ class Breadcrumb
      *
      * @return $this
      */
-    public function publisher(Publisher $publisher = null, Category $cat = null, $subcat = null)
+    public function publisher(?Publisher $publisher = null, ?Category $cat = null, $subcat = null)
     {
         array_push($this->breadcrumbs, [
             '@type' => 'ListItem',
@@ -197,31 +197,25 @@ class Breadcrumb
      *
      * @return array
      */
-    public function productBookSchema(Product $prod = null)
+    public function productBookSchema(?Product $prod = null)
     {
         if ($prod) {
             $approvedReviews = $prod->reviews()->take(5)->get();
             $reviewCount = $prod->reviews()->count();
             $averageRating = $reviewCount ? round((float) $prod->reviews()->avg('stars'), 2) : null;
+            $isBook = $prod->group === 'knjige';
+            $description = trim(strip_tags((string) ($prod->meta_description ?: $prod->description)))
+                ?: $prod->name . ' u ponudi Antikvarijata Vremeplov.';
 
             $schema = [
                 '@context' => 'https://schema.org',
-                '@type' => ['Book', 'Product'],
+                '@type' => $isBook ? ['Book', 'Product'] : 'Product',
                 '@id' => url($prod->url) . '#product',
-                'description' => trim((string) ($prod->meta_description ?: strip_tags((string) $prod->description)))
-                    ?: $prod->name . ' u ponudi Antikvarijata Vremeplov.',
-                'image' => asset($prod->image),
+                'description' => $description,
+                'image' => $prod->image,
                 'name' => $prod->name,
                 'url' => url($prod->url),
-                'sku' => (string) $prod->sku,
-                'publisher' => [
-                    '@type' => 'Organization',
-                    'name' => ($prod->publisher) ? $prod->publisher->title : 'Izdavačka kuća',
-                ],
-                'author' => [
-                    '@type' => 'Person',
-                    'name' => ($prod->author) ? $prod->author->title : 'Nepoznat autor',
-                ],
+                'category' => ucfirst(str_replace('-', ' ', (string) $prod->group)),
                 'offers' => [
                     '@type' => 'Offer',
                     'url' => url($prod->url),
@@ -237,13 +231,87 @@ class Breadcrumb
                 ],
             ];
 
-            if ($prod->year) {
+            $sku = trim((string) $prod->sku);
+            if ($sku !== '' && $sku !== '-') {
+                $schema['sku'] = $sku;
+            }
+
+            if ($isBook && $prod->publisher && (int) $prod->publisher_id !== (int) config('settings.unknown_publisher')) {
+                $schema['publisher'] = [
+                    '@type' => 'Organization',
+                    'name' => $prod->publisher->title,
+                    'url' => url($prod->publisher->url),
+                ];
+            }
+
+            if ($isBook && $prod->author && (int) $prod->author_id !== (int) config('settings.unknown_author')) {
+                $schema['author'] = [
+                    '@type' => 'Person',
+                    'name' => $prod->author->title,
+                    'url' => url($prod->author->url),
+                ];
+            }
+
+            if ($isBook && $prod->year) {
                 $schema['datePublished'] = (string) $prod->year;
             }
 
             $isbn = preg_replace('/[^0-9Xx]/', '', (string) $prod->isbn);
-            if (in_array(strlen($isbn), [10, 13], true)) {
+            if ($isBook && in_array(strlen($isbn), [10, 13], true)) {
                 $schema['isbn'] = strtoupper($isbn);
+            }
+
+            if ($isBook && ctype_digit(trim((string) $prod->pages))) {
+                $schema['numberOfPages'] = (int) $prod->pages;
+            }
+
+            if ($isBook && $prod->origin) {
+                $languages = [
+                    'hrvatski' => 'hr',
+                    'engleski' => 'en',
+                    'njemački' => 'de',
+                    'nemački' => 'de',
+                    'talijanski' => 'it',
+                    'italijanski' => 'it',
+                    'francuski' => 'fr',
+                    'srpski' => 'sr',
+                    'slovenski' => 'sl',
+                ];
+                $language = mb_strtolower(trim((string) $prod->origin));
+
+                if (isset($languages[$language])) {
+                    $schema['inLanguage'] = $languages[$language];
+                }
+            }
+
+            if ($isBook && $prod->binding) {
+                $binding = mb_strtolower((string) $prod->binding);
+
+                if (str_contains($binding, 'tvrdi')) {
+                    $schema['bookFormat'] = 'https://schema.org/Hardcover';
+                } elseif (str_contains($binding, 'meki')) {
+                    $schema['bookFormat'] = 'https://schema.org/Paperback';
+                }
+            }
+
+            $additionalProperties = collect([
+                'Godina izdanja' => ! $isBook ? $prod->year : null,
+                'Jezik' => $prod->origin,
+                'Broj stranica' => $prod->pages,
+                'Dimenzije' => $prod->dimensions ? $prod->dimensions . ' cm' : null,
+                'Stanje' => $prod->condition,
+                'Uvez' => $prod->binding,
+            ])->filter(fn ($value) => trim((string) $value) !== '')
+                ->map(function ($value, $name) {
+                    return [
+                        '@type' => 'PropertyValue',
+                        'name' => $name,
+                        'value' => (string) $value,
+                    ];
+                })->values()->toArray();
+
+            if ($additionalProperties) {
+                $schema['additionalProperty'] = $additionalProperties;
             }
 
             if ($reviewCount > 0 && $averageRating !== null) {

@@ -1,12 +1,54 @@
 @extends('front.layouts.app')
 @if(isset($blogs))
-        @section ( 'title', 'Blog - Antikvarijat Vremeplov' )
-        @section ( 'description', 'Medijske objave, članci i obavijesti -  Antikvarijat Vremeplov' )
+    @php
+        $blogTitle = 'Blog - Antikvarijat Vremeplov';
+        $blogDescription = 'Medijske objave, članci i obavijesti Antikvarijata Vremeplov.';
+        $blogCanonical = route('catalog.route.blog');
+    @endphp
 @else
-    @section ( 'title', $blog->title. ' - Antikvarijat Vremeplov' )
-@section ( 'description', $blog->meta_description )
-
+    @php
+        $blogTitleBase = trim((string) ($blog->meta_title ?: $blog->title));
+        $blogTitle = mb_strlen($blogTitleBase) <= 42 ? $blogTitleBase . ' - Antikvarijat Vremeplov' : $blogTitleBase;
+        $blogDescription = trim(strip_tags((string) ($blog->meta_description ?: $blog->short_description ?: $blog->description)));
+        $blogDescription = mb_substr($blogDescription ?: 'Članak Antikvarijata Vremeplov.', 0, 160);
+        $blogCanonical = route('catalog.route.blog', ['blog' => $blog]);
+    @endphp
 @endif
+
+@section('title', $blogTitle)
+@section('description', $blogDescription)
+@section('canonical', $blogCanonical)
+
+@push('meta_tags')
+    <meta property="og:locale" content="hr_HR" />
+    <meta property="og:type" content="{{ isset($blogs) ? 'website' : 'article' }}" />
+    <meta property="og:title" content="{{ $blogTitle }}" />
+    <meta property="og:description" content="{{ $blogDescription }}" />
+    <meta property="og:url" content="{{ $blogCanonical }}" />
+    <meta property="og:site_name" content="Antikvarijat Vremeplov" />
+    <meta property="og:image" content="{{ isset($blogs) ? config('settings.images_domain') . 'media/img/cover-vremeplov.jpg' : $blog->image }}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="{{ $blogTitle }}" />
+    <meta name="twitter:description" content="{{ $blogDescription }}" />
+    <meta name="twitter:image" content="{{ isset($blogs) ? config('settings.images_domain') . 'media/img/cover-vremeplov.jpg' : $blog->image }}" />
+    @if(!isset($blogs))
+        <meta property="article:published_time" content="{{ optional($blog->created_at)->toAtomString() }}" />
+        <meta property="article:modified_time" content="{{ optional($blog->updated_at)->toAtomString() }}" />
+        <script type="application/ld+json">{!! json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'BlogPosting',
+            '@id' => $blogCanonical . '#article',
+            'mainEntityOfPage' => $blogCanonical,
+            'headline' => $blog->title,
+            'description' => $blogDescription,
+            'image' => [$blog->image],
+            'datePublished' => optional($blog->created_at)->toAtomString(),
+            'dateModified' => optional($blog->updated_at)->toAtomString(),
+            'inLanguage' => 'hr-HR',
+            'publisher' => ['@id' => url('/#organization')],
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+    @endif
+@endpush
 
 @section('content')
 
@@ -19,7 +61,7 @@
                                 <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="ci-home"></i>Naslovnica</a></li>
                                 <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('catalog.route.blog') }}"><i class="ci-home"></i>Blog</a></li>
 
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page">Iz medija</li>
+                                <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ isset($blogs) ? 'Objave' : $blog->title }}</li>
                             </ol>
                         </nav>
 
@@ -45,7 +87,7 @@
 
                 <article class="masonry-grid-item">
                     <div class="card">
-                        <a class="blog-entry-thumb" href="{{ route('catalog.route.blog', ['blog' => $blog]) }}"><img class="card-img-top" src="{{ $blog->image }}" alt="Post"></a>
+                        <a class="blog-entry-thumb" href="{{ route('catalog.route.blog', ['blog' => $blog]) }}"><img class="card-img-top" src="{{ $blog->image }}" loading="lazy" alt="{{ $blog->title }}"></a>
                         <div class="card-body">
                             <h2 class="h6 blog-entry-title"><a href="{{ route('catalog.route.blog', ['blog' => $blog]) }}">{{ $blog->title }}</a></h2>
                             <p class="fs-sm">{{ $blog->short_description }}</p>

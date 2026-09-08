@@ -6,10 +6,10 @@
             <!-- Toolbar -->
             <div class="navbar-toolbar d-flex align-items-center order-lg-3">
                 @if (isset($group) && $group && ! isset($prod))
-                    <button class="navbar-toggler" type="button" data-bs-target="#shop-sidebar" aria-label="Filter" data-bs-toggle="collapse" aria-expanded="false"><i class="ci-filter-alt"></i></button>
+                    <button class="navbar-toggler" type="button" data-bs-target="#shop-sidebar" aria-label="Otvori filtre" data-bs-toggle="collapse" aria-expanded="false"><i class="ci-filter-alt"></i></button>
                 @endif
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" aria-label="Navbar" data-bs-target="#navbarCollapse"><span class="navbar-toggler-icon"></span></button>
-                <a class="navbar-tool ms-2 me-1" aria-label="Login ir Register" href="{{ route('login') }}" >
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" aria-label="Otvori glavni izbornik" data-bs-target="#navbarCollapse"><span class="navbar-toggler-icon"></span></button>
+                <a class="navbar-tool ms-2 me-1" aria-label="Prijava ili registracija" href="{{ route('login') }}" >
                     <div class="navbar-tool-icon-box"><i class="navbar-tool-icon ci-user-circle"></i></div>
                 </a>
                 <div>

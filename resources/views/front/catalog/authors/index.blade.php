@@ -1,9 +1,19 @@
 @extends('front.layouts.app')
 
+@php
+    $authorsCanonical = route('catalog.route.author');
+    if (! $letter && (int) request()->input('page', 1) > 1) {
+        $authorsCanonical .= '?page=' . (int) request()->input('page');
+    }
+@endphp
+@section('title', 'Autori - Antikvarijat Vremeplov')
+@section('description', 'Popis autora čija su djela dostupna u Antikvarijatu Vremeplov. Pretražite autore abecednim redom.')
+@section('canonical', $authorsCanonical)
+
 @if (isset($meta_tags))
     @push('meta_tags')
         @foreach ($meta_tags as $tag)
-            <meta name={{ $tag['name'] }} content={{ $tag['content'] }}>
+            <meta name="{{ $tag['name'] }}" content="{{ $tag['content'] }}">
         @endforeach
     @endpush
 @endif
@@ -40,9 +50,14 @@
             <div class="col-lg-12   py-2 text-center">
                 <div class="scrolling-wrapper">
                 @foreach ($letters as $item)
-                    <a href="{{ route('catalog.route.author', ['author' => null, 'letter' => $item['value']]) }}"
-                       class="btn btn-outline-primary btn-sm  mb-2 @if( ! $item['active']) disabled @endif @if($item['value'] == $letter) bg-primary  @endif">
-                        <h3 class="h6  @if($item['value'] == $letter) text-white @else  @endif  py-0 mb-0 px-1">{{ $item['value'] }}</h3></a>
+                    @if ($item['active'])
+                        <a href="{{ route('catalog.route.author', ['author' => null, 'letter' => $item['value']]) }}"
+                           class="btn btn-outline-primary btn-sm mb-2 @if($item['value'] == $letter) bg-primary text-white @endif">
+                            <span class="h6 py-0 mb-0 px-1 @if($item['value'] == $letter) text-white @endif">{{ $item['value'] }}</span>
+                        </a>
+                    @else
+                        <span class="btn btn-outline-primary btn-sm mb-2 disabled" aria-disabled="true"><span class="h6 py-0 mb-0 px-1">{{ $item['value'] }}</span></span>
+                    @endif
                 @endforeach
                 </div>
             </div>
@@ -52,9 +67,9 @@
             <div class="col-lg-12 text-center mb-5">
 
                 @if($letter == 0)
-                <h1>Svi autori</h1>
+                    <h2>Svi autori</h2>
                 @else
-                    {{$letter}}
+                    <h2>Autori – {{ $letter }}</h2>
                 @endif
 
             </div>

@@ -6,6 +6,7 @@ use App\Models\Front\Catalog\Author;
 use App\Models\Front\Catalog\Category;
 use App\Models\Front\Catalog\Product;
 use App\Models\Front\Catalog\Publisher;
+use App\Models\Front\Faq;
 use App\Models\Front\Page;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -33,7 +34,7 @@ class Sitemap
      *
      * @param string|null $sitemap
      */
-    public function __construct(string $sitemap = null)
+    public function __construct(?string $sitemap = null)
     {
         $this->sitemap = $this->setSitemap($sitemap);
     }
@@ -62,7 +63,7 @@ class Sitemap
      *
      * @return array
      */
-    private function setSitemap(string $sitemap)
+    private function setSitemap(?string $sitemap)
     {
         if ( ! $sitemap) {
             return $sitemap;
@@ -147,20 +148,34 @@ class Sitemap
     {
         $pages = Page::query()->where('group', 'page')->where('slug', '!=', 'homepage')->where('status', '=', 1)->select('slug', 'status', 'updated_at')->get();
         $blogs = Page::query()->where('group', 'blog')->where('status', '=', 1)->select('slug', 'status', 'updated_at')->get();
+        $homepage = Page::query()->where('slug', 'homepage')->where('status', 1)->first();
+        $faqLastmod = Faq::query()->where('status', 1)->max('updated_at');
+        $blogLastmod = $blogs->max('updated_at');
+        $actionsLastmod = Product::query()->active()->hasStock()->whereNotNull('special')->max('updated_at');
 
         $this->response[] = [
             'url' => route('index'),
-            'lastmod' => Carbon::now()->startOfMonth()->tz('UTC')->toAtomString()
+            'lastmod' => $homepage ? $homepage->updated_at->tz('UTC')->toAtomString() : null,
         ];
 
         $this->response[] = [
             'url' => route('kontakt'),
-            'lastmod' => Carbon::now()->startOfYear()->tz('UTC')->toAtomString()
+            'lastmod' => null,
         ];
 
         $this->response[] = [
             'url' => route('faq'),
-            'lastmod' => Carbon::now()->startOfYear()->tz('UTC')->toAtomString()
+            'lastmod' => $faqLastmod ? Carbon::parse($faqLastmod)->tz('UTC')->toAtomString() : null,
+        ];
+
+        $this->response[] = [
+            'url' => route('catalog.route.blog'),
+            'lastmod' => $blogLastmod ? Carbon::parse($blogLastmod)->tz('UTC')->toAtomString() : null,
+        ];
+
+        $this->response[] = [
+            'url' => route('catalog.route.actions'),
+            'lastmod' => $actionsLastmod ? Carbon::parse($actionsLastmod)->tz('UTC')->toAtomString() : null,
         ];
 
         foreach ($pages as $page) {
@@ -189,6 +204,14 @@ class Sitemap
     private function getCategories()
     {
         $categories = Category::query()->active()->topList()->with('subcategories')->get();
+
+        foreach (Category::getGroups() as $group) {
+            $lastmod = Category::query()->active()->where('group', $group->slug)->max('updated_at');
+            $this->response[] = [
+                'url' => route('catalog.route', ['group' => $group->slug]),
+                'lastmod' => $lastmod ? Carbon::parse($lastmod)->tz('UTC')->toAtomString() : null,
+            ];
+        }
 
         foreach ($categories as $category) {
             $this->response[] = [
@@ -231,17 +254,24 @@ class Sitemap
      */
     private function getAuthors()
     {
-        $authors = Author::query()->active()->select('url', 'updated_at')->get();
+        $authors = Author::query()
+            ->active()
+            ->whereHas('products')
+            ->select('id', 'url', 'updated_at')
+            ->withMax('products', 'updated_at')
+            ->get();
+        $listLastmod = Product::query()->active()->hasStock()->whereNotNull('author_id')->max('updated_at');
 
         $this->response[] = [
             'url' => route('catalog.route.author'),
-            'lastmod' => Carbon::now()->startOfMonth()->tz('UTC')->toAtomString()
+            'lastmod' => $listLastmod ? Carbon::parse($listLastmod)->tz('UTC')->toAtomString() : null,
         ];
 
         foreach ($authors as $author) {
+            $lastmod = collect([$author->updated_at, $author->products_max_updated_at])->filter()->max();
             $this->response[] = [
                 'url' => url($author->url),
-                'lastmod' => $author->updated_at->tz('UTC')->toAtomString()
+                'lastmod' => $lastmod ? Carbon::parse($lastmod)->tz('UTC')->toAtomString() : null,
             ];
 
             /*$cats = Category::query()->topList()->whereHas('products', function ($query) use ($author) {
@@ -274,17 +304,24 @@ class Sitemap
      */
     private function getPublishers()
     {
-        $publishers = Publisher::query()->active()->select('url', 'updated_at')->get();
+        $publishers = Publisher::query()
+            ->active()
+            ->whereHas('products')
+            ->select('id', 'url', 'updated_at')
+            ->withMax('products', 'updated_at')
+            ->get();
+        $listLastmod = Product::query()->active()->hasStock()->whereNotNull('publisher_id')->max('updated_at');
 
         $this->response[] = [
             'url' => route('catalog.route.publisher'),
-            'lastmod' => Carbon::now()->startOfMonth()->tz('UTC')->toAtomString()
+            'lastmod' => $listLastmod ? Carbon::parse($listLastmod)->tz('UTC')->toAtomString() : null,
         ];
 
         foreach ($publishers as $publisher) {
+            $lastmod = collect([$publisher->updated_at, $publisher->products_max_updated_at])->filter()->max();
             $this->response[] = [
                 'url' => url($publisher->url),
-                'lastmod' => $publisher->updated_at->tz('UTC')->toAtomString()
+                'lastmod' => $lastmod ? Carbon::parse($lastmod)->tz('UTC')->toAtomString() : null,
             ];
         }
 

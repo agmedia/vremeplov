@@ -142,9 +142,9 @@ class Publisher extends Model
      */
     public static function getLetters()
     {
-        return Helper::resolveCache('publishers')->remember('pub_' . 'letters', config('cache.life'), function () {
+        return Helper::resolveCache('publishers')->remember('pub_v2_letters', config('cache.life'), function () {
             $letters = collect();
-            $publishers = Publisher::active()->pluck('letter')->unique();
+            $publishers = Publisher::active()->whereHas('products')->pluck('letter')->unique();
 
             foreach (Helper::abc() as $item) {
                 if ($item == $publishers->contains($item)) {
@@ -174,8 +174,8 @@ class Publisher extends Model
     {
         $currentPage = request()->get('page', 1);
 
-        return Helper::resolveCache('publishers')->remember('pub_' . $letter . '.' . $currentPage, config('cache.life'), function () use ($letter) {
-            $pubs = Publisher::query()->select('id', 'title', 'url')->where('status',  1);
+        return Helper::resolveCache('publishers')->remember('pub_v2_' . $letter . '.' . $currentPage, config('cache.life'), function () use ($letter) {
+            $pubs = Publisher::query()->select('id', 'title', 'url')->where('status',  1)->whereHas('products');
 
             if ($letter) {
                 $pubs->where('letter', $letter);

@@ -40,6 +40,10 @@ use App\Http\Controllers\Front\HomeController;
 use App\Http\Controllers\Front\OrderTrackingController;
 use App\Http\Controllers\Front\ProductReviewInvitationController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Laravel\Jetstream\Http\Middleware\AuthenticateSession;
 
 
 /*Route::domain('https://images.antikvarijatbibl.lin73.host25.com/')->group(function () {
@@ -476,9 +480,15 @@ Route::get('cache/thumb', [HomeController::class, 'thumbCache']);
 /**
  * Sitemap routes
  */
-Route::redirect('/sitemap.xml', '/sitemap');
-Route::get('sitemap/{sitemap?}', [HomeController::class, 'sitemapXML'])->name('sitemap');
-Route::get('image-sitemap', [HomeController::class, 'sitemapImageXML'])->name('sitemap.images');
+Route::get('/sitemap.xml', [HomeController::class, 'sitemapXML'])
+    ->withoutMiddleware([AddQueuedCookiesToResponse::class, StartSession::class, AuthenticateSession::class, ShareErrorsFromSession::class, \App\Http\Middleware\VerifyCsrfToken::class])
+    ->name('sitemap.index');
+Route::get('sitemap/{sitemap?}', [HomeController::class, 'sitemapXML'])
+    ->withoutMiddleware([AddQueuedCookiesToResponse::class, StartSession::class, AuthenticateSession::class, ShareErrorsFromSession::class, \App\Http\Middleware\VerifyCsrfToken::class])
+    ->name('sitemap');
+Route::get('image-sitemap', [HomeController::class, 'sitemapImageXML'])
+    ->withoutMiddleware([AddQueuedCookiesToResponse::class, StartSession::class, AuthenticateSession::class, ShareErrorsFromSession::class, \App\Http\Middleware\VerifyCsrfToken::class])
+    ->name('sitemap.images');
 //
 Route::get('njuskalo/xml', [HomeController::class, 'njuskaloXML'])->name('njuskalo');
 /**

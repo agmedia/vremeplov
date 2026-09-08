@@ -146,9 +146,9 @@ class Author extends Model
      */
     public static function getLetters()
     {
-        return Helper::resolveCache('authors')->remember('aut_' . 'letters', config('cache.life'), function () {
+        return Helper::resolveCache('authors')->remember('aut_v2_letters', config('cache.life'), function () {
             $letters = collect();
-            $authors = Author::active()->pluck('letter')->unique();
+            $authors = Author::active()->whereHas('products')->pluck('letter')->unique();
 
             foreach (Helper::abc() as $item) {
                 if ($item == $authors->contains($item)) {
@@ -178,8 +178,8 @@ class Author extends Model
     {
         $currentPage = request()->get('page', 1);
 
-        return Helper::resolveCache('authors')->remember('aut_' . $letter . '.' . $currentPage, config('cache.life'), function () use ($letter) {
-            $auts = Author::query()->select('id', 'title', 'url')->where('status',  1);
+        return Helper::resolveCache('authors')->remember('aut_v2_' . $letter . '.' . $currentPage, config('cache.life'), function () use ($letter) {
+            $auts = Author::query()->select('id', 'title', 'url')->where('status',  1)->whereHas('products');
 
             if ($letter) {
                 $auts->where('letter', $letter);

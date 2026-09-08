@@ -132,7 +132,7 @@ class Category extends Model
      *
      * @return string
      */
-    public function url(Category $subcategory = null)
+    public function url(?Category $subcategory = null)
     {
         if ($subcategory) {
             return route('catalog.route', [
