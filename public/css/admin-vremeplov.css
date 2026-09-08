@@ -907,7 +907,7 @@ body.admin-vremeplov,
 .admin-orders-table th:nth-child(6),
 .admin-orders-table td:nth-child(6) { width: 235px; }
 .admin-orders-table th:nth-child(7),
-.admin-orders-table td:nth-child(7) { width: 108px; }
+.admin-orders-table td:nth-child(7) { width: 150px; }
 
 .admin-orders-table td {
     overflow: hidden;
