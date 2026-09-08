@@ -185,15 +185,17 @@
         .dashboard-list-row > [class*="col-"] { min-width: 0; }
         .dashboard-list-block { height: calc(100% - 1rem); min-width: 0; overflow: hidden; }
         .dashboard-list-table { width: 100%; table-layout: fixed; }
-        .dashboard-list-table td { min-width: 0; padding: .62rem .55rem; }
+        .dashboard-list-table { font-size: .86rem; }
+        .dashboard-list-table td { min-width: 0; padding: .58rem .55rem; }
         .dashboard-list-table td:first-child { width: 5.5rem; }
         .dashboard-list-table td:nth-child(2) { overflow: hidden; }
         .dashboard-list-table td:last-child { width: 6.3rem; overflow: hidden; white-space: nowrap; }
         .dashboard-orders-list-table td:last-child { width: 8.7rem; }
-        .dashboard-list-link { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .dashboard-list-table .text-muted { color: #625d59 !important; font-weight: 500; }
+        .dashboard-list-link { display: block; max-width: 100%; overflow: hidden; font-size: .86rem; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
+        .dashboard-list-table .text-muted { color: #625d59 !important; font-size: .7rem; font-weight: 500; line-height: 1.35; }
         .dashboard-list-id a { font-weight: 800; font-variant-numeric: tabular-nums; }
-        .dashboard-orders-list-table .dashboard-list-id a { font-size: 1.08rem; }
+        .dashboard-list-table .dashboard-list-id a { font-size: .88rem; }
+        .dashboard-list-table td:last-child > strong { font-size: .86rem; }
         .dashboard-order-status { display: inline-block; overflow: hidden; max-width: 100%; margin-top: .18rem; text-overflow: ellipsis; vertical-align: middle; white-space: nowrap; }
         @media (max-width: 991.98px) { .dashboard-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dashboard-operational-grid { grid-template-columns: 1fr; } }
         @media (max-width: 575.98px) { .dashboard-sales-header, .dashboard-sales-filters { align-items: stretch; flex-direction: column; width: 100%; } .dashboard-summary-grid { grid-template-columns: 1fr; } .dashboard-kpi-meta { flex-wrap: wrap; } }

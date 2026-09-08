@@ -14,10 +14,13 @@
                     <p class="admin-page-description">{{ isset($order) ? 'Uredite artikle, podatke kupca, dostavu i način plaćanja.' : 'Ručno unesite artikle, kupca, dostavu i način plaćanja.' }}</p>
                 </div>
                 <div class="admin-toolbar-actions">
+                    <a class="btn btn-light" href="{{ route('orders') }}"><i class="fa fa-arrow-left mr-1" aria-hidden="true"></i> Sve narudžbe</a>
                     @if(isset($order))
                         <a class="btn btn-alt-secondary" href="{{ route('orders.show', ['order' => $order]) }}"><i class="fa fa-eye mr-1" aria-hidden="true"></i> Pregled</a>
                     @endif
-                    <a class="btn btn-light" href="{{ route('orders') }}"><i class="fa fa-arrow-left mr-1" aria-hidden="true"></i> Sve narudžbe</a>
+                    <button type="submit" class="btn btn-primary" form="order-edit-form">
+                        <i class="fas fa-save mr-1" aria-hidden="true"></i> {{ isset($order) ? 'Spremi promjene' : 'Spremi narudžbu' }}
+                    </button>
                 </div>
             </div>
         </div>
@@ -25,7 +28,7 @@
 
 
     <!-- Page Content -->
-    <div class="content">
+    <div class="content admin-order-edit-page">
         @include('back.layouts.partials.session')
 
         @if(isset($order) && $order->payment_review_error)
@@ -36,7 +39,7 @@
             </div>
         @endif
 
-        <form action="{{ isset($order) ? route('orders.update', ['order' => $order]) : route('orders.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="order-edit-form" action="{{ isset($order) ? route('orders.update', ['order' => $order]) : route('orders.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         @if (isset($order))
             {{ method_field('PATCH') }}
@@ -180,14 +183,17 @@
             @if(isset($order))
             <!-- Log Messages -->
             <div class="block block-rounded admin-editor-section">
-                <div class="block-header block-header-default">
-                    <h3 class="block-title">Povijest narudžbe</h3>
-                    <div class="block-options">
+                <div class="block-header block-header-default admin-toolbar">
+                    <div>
+                        <h3 class="block-title mb-1">Povijest narudžbe</h3>
+                        <p class="text-muted mb-0 font-size-sm">Statusi, komentari i vrijeme promjena.</p>
+                    </div>
+                    <div class="admin-toolbar-actions">
                         <div class="dropdown">
                             <button type="button" class="btn btn-alt-secondary" id="btn-add-comment">
-                                Dodaj komentar
+                                <i class="fa fa-comment mr-1" aria-hidden="true"></i> Dodaj komentar
                             </button>
-                            <button type="button" class="btn btn-light" id="dropdown-ecom-filters" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <button type="button" class="btn btn-primary" id="dropdown-ecom-filters" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 Promijeni status
                                 <i class="fa fa-angle-down ml-1"></i>
                             </button>
@@ -203,44 +209,40 @@
                 </div>
 
                 <div class="block-content">
-                    <table class="table table-borderless table-striped table-vcenter font-size-sm">
+                    <div class="table-responsive admin-table-frame">
+                    <table class="table table-borderless table-striped table-vcenter font-size-sm mb-0 admin-history-table">
+                        <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Vrijeme</th>
+                            <th>Autor</th>
+                            <th>Komentar</th>
+                        </tr>
+                        </thead>
                         <tbody>
                         @foreach ($order->history as $record)
                             <tr>
-                                <td class="font-size-base">
+                                <td>
                                     @if ($record->status)
                                         <span class="badge badge-pill badge-{{ $record->status->color }}">{{ $record->status->title }}</span>
                                     @else
-                                        <small>Komentar</small>
+                                        <span class="text-muted">Komentar</span>
                                     @endif
                                 </td>
                                 <td>
-                                    <span class="font-w600">{{ \Illuminate\Support\Carbon::make($record->created_at)->locale('hr_HR')->diffForHumans() }}</span> /
-                                    <span class="font-weight-light">{{ \Illuminate\Support\Carbon::make($record->created_at)->format('d.m.Y - h:i') }}</span>
+                                    <strong>{{ \Illuminate\Support\Carbon::make($record->created_at)->locale('hr_HR')->diffForHumans() }}</strong>
+                                    <small class="d-block text-muted">{{ \Illuminate\Support\Carbon::make($record->created_at)->format('d.m.Y. H:i') }}</small>
                                 </td>
-                                <td>
-                                    <a href="javascript:void(0)">{{ $record->user ? $record->user->name : $record->order->shipping_fname . ' ' . $record->order->shipping_lname }}</a>
-                                </td>
-                                <td>{{ $record->comment }}</td>
+                                <td>{{ $record->user ? $record->user->name : trim($record->order->shipping_fname . ' ' . $record->order->shipping_lname) }}</td>
+                                <td>{{ $record->comment ?: '—' }}</td>
                             </tr>
                         @endforeach
                         </tbody>
                     </table>
-                </div>
-            </div>
-            @endif
-
-            <div class="block admin-sticky-actions">
-                <div class="block-content">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save mr-1"></i> Spremi promjene
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
+            @endif
 
         </form>
     </div>

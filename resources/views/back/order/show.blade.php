@@ -35,7 +35,7 @@
         </div>
     </div>
 
-    <div class="content">
+    <div class="content admin-order-view-page">
         @include('back.layouts.partials.session')
 
         @if($order->payment_review_error)
@@ -73,8 +73,8 @@
                 <h2 class="block-title">Artikli <span class="admin-count">{{ $order->products->count() }}</span></h2>
             </div>
             <div class="block-content">
-                <div class="table-responsive">
-                    <table class="table table-borderless table-striped table-vcenter admin-order-products-table">
+                <div class="table-responsive admin-table-frame">
+                    <table class="table table-borderless table-striped table-vcenter admin-order-products-table mb-0">
                         <thead>
                         <tr>
                             <th>Slika</th>
@@ -279,8 +279,8 @@
                 </div>
             </div>
             <div class="block-content">
-                <div class="table-responsive">
-                    <table class="table table-borderless table-striped table-vcenter admin-history-table">
+                <div class="table-responsive admin-table-frame">
+                    <table class="table table-borderless table-striped table-vcenter admin-history-table mb-0">
                         <thead><tr><th>Status</th><th>Vrijeme</th><th>Autor</th><th>Komentar</th></tr></thead>
                         <tbody>
                         @forelse($order->history as $record)

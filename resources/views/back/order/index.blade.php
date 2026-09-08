@@ -106,7 +106,7 @@
                     </div>
                 </div>
 
-                <div class="table-responsive admin-orders-table-wrap">
+                <div class="table-responsive admin-orders-table-wrap admin-table-frame">
                     <table class="table table-borderless table-striped table-vcenter admin-orders-table">
                         <thead>
                         <tr>

@@ -884,6 +884,10 @@ body.admin-vremeplov,
     overflow-x: auto;
 }
 
+.admin-orders-table-wrap .table {
+    margin-bottom: 0;
+}
+
 .admin-orders-table {
     width: 100%;
     min-width: 1030px;
@@ -907,6 +911,39 @@ body.admin-vremeplov,
 
 .admin-orders-table td {
     overflow: hidden;
+}
+
+.admin-orders-table .custom-checkbox {
+    min-height: 1.2rem;
+    padding-left: 1.2rem;
+}
+
+.admin-orders-table .custom-control-label::before {
+    top: .05rem;
+    left: -1.2rem;
+    width: 1.05rem;
+    height: 1.05rem;
+    border: 1px solid #cfc7bc;
+    background-color: #fff;
+    box-shadow: 0 1px 2px rgba(48, 36, 31, .08);
+}
+
+.admin-orders-table .custom-control-label::after {
+    top: .05rem;
+    left: -1.2rem;
+    width: 1.05rem;
+    height: 1.05rem;
+}
+
+.admin-orders-table .custom-control-input:checked ~ .custom-control-label::before,
+.admin-orders-table .custom-control-input:indeterminate ~ .custom-control-label::before {
+    border-color: var(--admin-brown);
+    background-color: var(--admin-brown);
+}
+
+.admin-orders-table .custom-control-input:focus ~ .custom-control-label::before {
+    border-color: var(--admin-gold-dark);
+    box-shadow: 0 0 0 .18rem rgba(220, 168, 79, .2);
 }
 
 .admin-order-number,
@@ -1064,6 +1101,60 @@ body.admin-vremeplov,
 
 .admin-order-products-table {
     min-width: 760px;
+}
+
+.admin-order-edit-page .admin-editor-section,
+.admin-order-view-page > .block,
+.admin-order-view-page > .row {
+    margin-bottom: 1rem;
+}
+
+.admin-order-edit-page .admin-editor-section .block-content,
+.admin-order-view-page .block > .block-content {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.admin-table-frame,
+.admin-order-edit-page .OrderProducts > .block {
+    overflow: hidden;
+    border: 1px solid var(--admin-line);
+    border-radius: var(--admin-radius-sm);
+    background: #fff;
+    box-shadow: none;
+}
+
+.admin-table-frame .table,
+.admin-order-edit-page .OrderProducts > .block .table {
+    margin-bottom: 0;
+}
+
+.admin-order-edit-page .OrderProducts > .block {
+    margin: 0;
+}
+
+.admin-order-edit-page .OrderProducts > .block .block-content-full {
+    padding: 0;
+}
+
+.admin-order-edit-page .OrderProducts > .block .table th:first-child,
+.admin-order-edit-page .OrderProducts > .block .table td:first-child {
+    padding-left: .8rem !important;
+}
+
+.admin-order-edit-page .OrderProducts > .block .table th:last-child,
+.admin-order-edit-page .OrderProducts > .block .table td:last-child {
+    padding-right: .8rem;
+}
+
+.admin-order-edit-page .OrderProducts > .row:first-child {
+    margin-bottom: 1rem !important;
+}
+
+.admin-order-edit-page .OrderProducts > .row:first-child label {
+    color: #504843;
+    font-size: .78rem;
+    font-weight: 750;
 }
 
 .admin-order-products-table th:first-child,
