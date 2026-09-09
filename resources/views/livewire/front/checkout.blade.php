@@ -28,7 +28,11 @@
         </a>
         <a class="step-item" @if($checkoutCanBeReviewed) href="{{ route('pregled') }}" @else wire:click="changeStep('placanje')" href="javascript:void(0);" @endif>
             <div class="step-progress"><span class="step-count">5</span></div>
-            <div class="step-label"><i class="fa-regular fa-circle-check"></i>Pregledaj</div>
+            <div class="step-label"><i class="fa-regular fa-eye"></i>Pregledaj</div>
+        </a>
+        <a class="step-item" href="javascript:void(0);" aria-disabled="true">
+            <div class="step-progress"><span class="step-count">6</span></div>
+            <div class="step-label"><i class="fa-regular fa-circle-check"></i>Uspješno</div>
         </a>
     </div>
 
@@ -175,7 +179,7 @@
             <div class="col-sm-6">
                 <div class="mb-3">
                     <label class="form-label" for="checkout-city">Grad <span class="text-danger">*</span></label>
-                    <input class="form-control @error('address.city') is-invalid @enderror" type="text" wire:model.defer="address.city">
+                    <input class="form-control @error('address.city') is-invalid @enderror" id="checkout-city" type="text" autocomplete="address-level2" wire:model.debounce.300ms="address.city">
                     @error('address.city') <div class="invalid-feedback animated fadeIn">Grad je obvezan</div> @enderror
                 </div>
             </div>
@@ -184,7 +188,7 @@
             <div class="col-sm-6">
                 <div class="mb-3">
                     <label class="form-label" for="checkout-zip">Poštanski broj <span class="text-danger">*</span></label>
-                    <input class="form-control @error('address.zip') is-invalid @enderror" type="text" wire:model.defer="address.zip">
+                    <input class="form-control @error('address.zip') is-invalid @enderror" id="checkout-zip" type="text" inputmode="numeric" autocomplete="postal-code" wire:model.debounce.300ms="address.zip">
                     @error('address.zip') <div class="invalid-feedback animated fadeIn">Poštanski broj je obvezan</div> @enderror
                 </div>
             </div>
@@ -201,7 +205,6 @@
                 </div>
             </div>
         </div>
-
         <h2 class="h6 pt-3 pb-3 mb-2"><a data-bs-toggle="collapse" href="#collapseOib" role="button" wire:click="viewR1()" aria-expanded="false" aria-controls="collapseLogin" class="alert-link">Trebate R1 račun?</a></h2>
 
         <div id="collapseOib" aria-expanded="false" class="collapse {{ $view_r1 }}">

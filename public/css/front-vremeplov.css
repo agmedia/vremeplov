@@ -482,6 +482,36 @@
     }
 }
 
+/* Checkout additions */
+.steps-dark .step-item[aria-disabled="true"] {
+    cursor: default;
+}
+
+.checkout-best-sellers {
+    border-top: 1px solid #e4dccf;
+    background: #fbf9f5;
+}
+
+.checkout-best-sellers .font-title {
+    color: #2d2224;
+}
+
+@media (max-width: 767.98px) {
+    .steps-dark .step-label {
+        font-size: .72rem;
+    }
+
+    .steps-dark .step-label > i {
+        display: none;
+    }
+}
+
+@media (max-width: 419.98px) {
+    .steps-dark .step-label {
+        font-size: .63rem;
+    }
+}
+
 .widget-touch-carousel .tns-inner {
     touch-action: pan-y;
 }

@@ -15,6 +15,32 @@
 
     <div class="container pb-5 mb-sm-4">
         <div class="pt-5">
+            <div class="steps steps-dark checkout-steps-six pt-2 pb-3 mb-4" aria-label="Napredak kupnje">
+                <a class="step-item active" href="{{ route('kosarica') }}">
+                    <div class="step-progress"><span class="step-count">1</span></div>
+                    <div class="step-label"><i class="fa-regular fa-cart-shopping"></i>Košarica</div>
+                </a>
+                <span class="step-item active">
+                    <span class="step-progress"><span class="step-count">2</span></span>
+                    <span class="step-label"><i class="fa-regular fa-circle-user"></i>Podaci</span>
+                </span>
+                <span class="step-item active">
+                    <span class="step-progress"><span class="step-count">3</span></span>
+                    <span class="step-label"><i class="fa-regular fa-box"></i>Dostava</span>
+                </span>
+                <span class="step-item active">
+                    <span class="step-progress"><span class="step-count">4</span></span>
+                    <span class="step-label"><i class="fa-regular fa-credit-card"></i>Plaćanje</span>
+                </span>
+                <span class="step-item active">
+                    <span class="step-progress"><span class="step-count">5</span></span>
+                    <span class="step-label"><i class="fa-regular fa-eye"></i>Pregledaj</span>
+                </span>
+                <span class="step-item current active" aria-current="step">
+                    <span class="step-progress"><span class="step-count">6</span></span>
+                    <span class="step-label"><i class="fa-regular fa-circle-check"></i>Uspješno</span>
+                </span>
+            </div>
             <div class="card py-3 mt-sm-3">
                 <div class="card-body text-center">
                     <h2 class="h4 pb-3">Vaša narudžba je uspješno dovršena!</h2>

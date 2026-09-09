@@ -12,6 +12,7 @@ use App\Models\Front\Checkout\GeoZone;
 use App\Models\Front\Checkout\PaymentMethod;
 use App\Models\Front\Checkout\ShippingMethod;
 use App\Models\TagManager;
+use App\Services\AddressDirectoryService;
 use App\Services\Shipping\BoxNowSettingsService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -229,7 +230,19 @@ class Checkout extends Component
 
     }
 
-        /**
+
+    public function updatedAddress($value, $key)
+    {
+        if (! in_array($key, ['zip', 'city'], true)) {
+            CheckoutSession::setAddress($this->address);
+
+            return;
+        }
+
+        $this->autofillAddressField($key, (string) $value);
+    }
+
+    /**
      * @throws \Illuminate\Validation\ValidationException
      */
     public function authUser()
@@ -359,6 +372,14 @@ class Checkout extends Component
     {
         $this->setAddress(['state' => $state], true);
 
+        if ($this->isCroatia((string) $this->address['state'])) {
+            if (! empty($this->address['zip'])) {
+                $this->autofillAddressField('zip', (string) $this->address['zip']);
+            } elseif (! empty($this->address['city'])) {
+                $this->autofillAddressField('city', (string) $this->address['city']);
+            }
+        }
+
         CheckoutSession::forgetShipping();
         $this->shipping = '';
         $this->comment = '';
@@ -486,6 +507,31 @@ class Checkout extends Component
         CheckoutSession::setAddress($this->address);
 
         return $this->address;
+    }
+
+
+    private function autofillAddressField(string $field, string $value): void
+    {
+        $directory = app(AddressDirectoryService::class);
+        $country = (string) ($this->address['state'] ?? 'Croatia');
+
+        $place = $field === 'zip'
+            ? $directory->findByPostal($value, $country)
+            : $directory->findByCity($value, $country);
+
+        if ($place) {
+            $this->address['zip'] = $place['postal_code'];
+            $this->address['city'] = $place['city'];
+            $this->address['state'] = 'Croatia';
+        }
+
+        CheckoutSession::setAddress($this->address);
+    }
+
+
+    private function isCroatia(string $country): bool
+    {
+        return in_array(strtolower(trim($country)), ['croatia', 'hr', 'hrvatska'], true);
     }
 
 

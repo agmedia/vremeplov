@@ -52,7 +52,11 @@
                 </a>
                 <a class="step-item" href="{{ route('pregled') }}">
                     <div class="step-progress"><span class="step-count">5</span></div>
-                    <div class="step-label"><i class="fa-regular fa-circle-check"></i>Pregledaj</div>
+                    <div class="step-label"><i class="fa-regular fa-eye"></i>Pregledaj</div>
+                </a>
+                <a class="step-item" href="javascript:void(0);" aria-disabled="true">
+                    <div class="step-progress"><span class="step-count">6</span></div>
+                    <div class="step-label"><i class="fa-regular fa-circle-check"></i>Uspješno</div>
                 </a>
             </div>
             <cart-view continueurl="{{ \Illuminate\Support\Facades\URL::previous() }}" checkouturl="{{ route('naplata') }}" freeship="{{ config('settings.free_shipping') }}"></cart-view>
@@ -65,5 +69,7 @@
     </div>
 
 </div>
+
+@include('front.checkout.partials.cart-best-sellers', ['products' => $bestSellers])
 
 @endsection

@@ -91,7 +91,7 @@
 
     <!-- Main Theme Styles + Bootstrap-->
     <link rel="stylesheet" media="screen" href="/css/theme.css?v=1.91">
-    <link rel="stylesheet" media="screen" href="/css/front-vremeplov.css?v=1.0.9">
+    <link rel="stylesheet" media="screen" href="/css/front-vremeplov.css?v=1.0.10">
     @include('front.layouts.partials.analytics')
 
     @stack('css_after')
@@ -174,7 +174,7 @@
 
 
 
-<script src="/js/cart.js?v=2.2.6"></script>
+<script src="/js/cart.js?v=2.2.8"></script>
 
 <script src="/js/theme.min.js?v=1.2"></script>
 

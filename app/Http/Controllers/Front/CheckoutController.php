@@ -19,6 +19,7 @@ use App\Models\TagManager;
 use App\Services\Inventory\OrderInventoryService;
 use App\Services\Orders\OrderConfirmationService;
 use App\Services\Payments\PaymentAttemptService;
+use App\Services\ProductRecommendationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -35,11 +36,14 @@ class CheckoutController extends Controller
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
-    public function cart(Request $request)
+    public function cart(Request $request, ProductRecommendationService $recommendations)
     {
-        $gdl = TagManager::getGoogleCartDataLayer($this->shoppingCart()->get());
+        $cart = $this->shoppingCart()->get();
+        $gdl = TagManager::getGoogleCartDataLayer($cart);
+        $cartProductIds = collect($cart['items'] ?? [])->pluck('id')->all();
+        $bestSellers = $recommendations->recentBestSellers(30, 10, $cartProductIds);
 
-        return view('front.checkout.cart', compact('gdl'));
+        return view('front.checkout.cart', compact('gdl', 'bestSellers'));
     }
 
 

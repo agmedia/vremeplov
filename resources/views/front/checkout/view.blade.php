@@ -44,7 +44,11 @@
                     </a>
                     <a class="step-item current active" href="{{ route('pregled') }}">
                         <div class="step-progress"><span class="step-count">5</span></div>
-                        <div class="step-label"><i class="fa-regular fa-circle-check"></i>Pregledaj</div>
+                        <div class="step-label"><i class="fa-regular fa-eye"></i>Pregledaj</div>
+                    </a>
+                    <a class="step-item" href="javascript:void(0);" aria-disabled="true">
+                        <div class="step-progress"><span class="step-count">6</span></div>
+                        <div class="step-label"><i class="fa-regular fa-circle-check"></i>Uspješno</div>
                     </a>
                 </div>
                 <h2 class="h6 pt-1 pb-3 mb-3">Pregled košarice</h2>

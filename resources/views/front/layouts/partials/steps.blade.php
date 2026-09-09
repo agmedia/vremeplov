@@ -16,6 +16,10 @@
     </a>
     <a class="step-item  {{ request()->routeIs(['pregled']) ? 'current' : '' }} {{ request()->routeIs([ 'pregled']) ? 'active' : '' }}" href="{{ route('pregled') }}">
         <div class="step-progress"><span class="step-count">5</span></div>
-        <div class="step-label"><i class="fa-regular fa-circle-check"></i>Pregledaj</div>
+        <div class="step-label"><i class="fa-regular fa-eye"></i>Pregledaj</div>
     </a>
+    <span class="step-item {{ request()->routeIs('checkout.success') ? 'current active' : '' }}">
+        <span class="step-progress"><span class="step-count">6</span></span>
+        <span class="step-label"><i class="fa-regular fa-circle-check"></i>Uspješno</span>
+    </span>
 </div>

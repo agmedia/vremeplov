@@ -86,7 +86,7 @@ class AgService {
 
             this.trackCartEvent('add_to_cart', product, item.quantity);
 
-            this.returnSuccess(messages.cartAdd);
+            this.showCartAddSuccess(response.data, item);
             return response.data
         })
         .catch(error => { return this.returnError(messages.error) })
@@ -99,7 +99,8 @@ class AgService {
      */
     updateCart(item) {
         const storedCart = store.state.storage.getCart() || {};
-        const previous = (storedCart.items || []).find(cartItem => String(cartItem.id) === String(item.id));
+        const previous = Object.values(storedCart.items || {})
+            .find(cartItem => String(cartItem.id) === String(item.id));
         const previousQuantity = previous ? Number(previous.quantity) : Number(item.quantity);
         const nextQuantity = Number(item.quantity);
 
@@ -118,7 +119,14 @@ class AgService {
                 this.trackCartEvent('remove_from_cart', previous || item, Math.abs(changedBy));
             }
 
-            this.returnSuccess(messages.cartUpdate);
+            if (item.show_add_modal) {
+                this.showCartAddSuccess(response.data, {
+                    id: item.id,
+                    quantity: item.added_quantity || 1
+                });
+            } else {
+                this.returnSuccess(messages.cartUpdate);
+            }
             return response.data
         })
         .catch(error => { return this.returnError(messages.error) })
@@ -204,6 +212,22 @@ class AgService {
      */
     returnSuccess(msg) {
         window.ToastSuccess.fire(msg);
+    }
+
+    showCartAddSuccess(cart, item) {
+        try {
+            if (typeof window.CartAddSuccess === 'function') {
+                const result = window.CartAddSuccess({cart, item});
+
+                if (result !== null) {
+                    return;
+                }
+            }
+        } catch (error) {
+            console.error(error);
+        }
+
+        this.returnSuccess(messages.cartAdd);
     }
 
     /**

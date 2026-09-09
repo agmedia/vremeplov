@@ -66,7 +66,9 @@ export default {
         updateCart() {
             let item = {
                 id: this.id,
-                quantity: this.has_in_cart
+                quantity: this.has_in_cart,
+                show_add_modal: true,
+                added_quantity: this.quantity
             }
 
             this.$store.dispatch('updateCart', item);
