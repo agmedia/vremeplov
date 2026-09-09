@@ -1115,9 +1115,18 @@ body.admin-vremeplov,
     padding-bottom: 1rem;
 }
 
-.admin-table-frame,
+.admin-table-frame {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
 .admin-order-edit-page .OrderProducts > .block {
     overflow: hidden;
+}
+
+.admin-table-frame,
+.admin-order-edit-page .OrderProducts > .block {
     border: 1px solid var(--admin-line);
     border-radius: var(--admin-radius-sm);
     background: #fff;
