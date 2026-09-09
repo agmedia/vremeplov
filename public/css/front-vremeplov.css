@@ -1753,7 +1753,9 @@
 
 .blog-article__hero {
     display: block;
-    margin: 0;
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
 }
 
 .blog-article__hero img {
