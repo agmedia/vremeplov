@@ -140,6 +140,7 @@
 
 @push('js_after')
     <script src="{{ asset('js/plugins/ckeditor5-classic/build/ckeditor.js') }}"></script>
+    <script src="{{ asset('js/admin-rich-text-editor.js?v=20260909') }}"></script>
     <script src="{{ asset('js/plugins/flatpickr/flatpickr.min.js') }}"></script>
     <script src="{{ asset('js/plugins/select2/js/select2.full.min.js') }}"></script>
 
@@ -154,29 +155,11 @@
                 tags: true
             });
 
-            const pageHeader = document.getElementById('page-header');
-            const editorToolbarOffset = pageHeader ? Math.ceil(pageHeader.getBoundingClientRect().height) : 0;
-
-            ClassicEditor
-            .create(document.querySelector('#description-editor'), {
-                toolbar: {
-                    viewportTopOffset: editorToolbarOffset,
-                },
-                ckfinder: {
-                    uploadUrl: '{{ route('pages.upload.image') }}?_token=' + document.querySelector('meta[name="csrf-token"]').getAttribute('content') + '&page_id={{ (isset($page->id) && $page->id) ?: 0 }}',
-                }
-            })
-            .then( editor => {
-                const stickyPanel = editor.ui.view.stickyPanel;
-
-                if (stickyPanel) {
-                    stickyPanel.unbind('isActive');
-                    stickyPanel.isActive = true;
-                }
-            } )
-            .catch( error => {
+            VremeplovRichTextEditor.create('#description-editor', {
+                uploadUrl: '{{ route('pages.upload.image') }}?_token=' + document.querySelector('meta[name="csrf-token"]').getAttribute('content') + '&page_id={{ (isset($page->id) && $page->id) ?: 0 }}',
+            }).catch( error => {
                 console.error(error);
-            } );
+            });
         })
     </script>
 

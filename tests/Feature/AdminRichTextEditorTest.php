@@ -18,10 +18,26 @@ class AdminRichTextEditorTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('js/plugins/ckeditor5-classic/build/ckeditor.js', false);
-        $response->assertSee('ClassicEditor', false);
+        $response->assertSee('js/admin-rich-text-editor.js', false);
+        $response->assertSee('VremeplovRichTextEditor.create', false);
         $response->assertSee(route('pages.upload.image'), false);
-        $response->assertSee("stickyPanel.isActive = true", false);
         $response->assertDontSee("CKEDITOR.replace", false);
+    }
+
+    public function test_blog_and_info_page_editors_expose_html_source_mode(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->get(route('blogs.create'))
+            ->assertOk()
+            ->assertSee('js/admin-rich-text-editor.js', false)
+            ->assertSee('VremeplovRichTextEditor.create', false);
+
+        $sourceEditor = file_get_contents(public_path('js/admin-rich-text-editor.js'));
+
+        $this->assertStringContainsString("sourceButton.title = 'HTML izvor'", $sourceEditor);
+        $this->assertStringContainsString("form.addEventListener('submit'", $sourceEditor);
+        $this->assertStringContainsString('sourceElement.value = editor.getData()', $sourceEditor);
     }
 
     public function test_info_page_editor_can_upload_an_image(): void

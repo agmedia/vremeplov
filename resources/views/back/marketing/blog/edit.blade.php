@@ -214,6 +214,7 @@
 
 @push('js_after')
     <script src="{{ asset('js/plugins/ckeditor5-classic/build/ckeditor.js') }}"></script>
+    <script src="{{ asset('js/admin-rich-text-editor.js?v=20260909') }}"></script>
     <script src="{{ asset('js/plugins/flatpickr/flatpickr.min.js') }}"></script>
 
     <!-- Page JS Helpers (CKEditor 5 plugins) -->
@@ -224,8 +225,6 @@
             const relatedSliderMode = document.getElementById('related-slider-mode');
             const relatedSliderAuthor = document.getElementById('related-slider-author');
             const relatedSliderBooks = document.getElementById('related-slider-books');
-            const pageHeader = document.getElementById('page-header');
-            const editorToolbarOffset = pageHeader ? Math.ceil(pageHeader.getBoundingClientRect().height) : 0;
 
             function updateRelatedSliderPanels() {
                 const mode = relatedSliderMode ? relatedSliderMode.value : 'none';
@@ -243,26 +242,11 @@
                 updateRelatedSliderPanels();
             }
 
-            ClassicEditor
-            .create(document.querySelector('#description-editor'), {
-                toolbar: {
-                    viewportTopOffset: editorToolbarOffset,
-                },
-                ckfinder: {
-                    uploadUrl: '{{ route('blogs.upload.image') }}?_token=' + document.querySelector('meta[name="csrf-token"]').getAttribute('content') + '&blog_id={{ (isset($blog->id) && $blog->id) ?: 0 }}',
-                }
-            })
-            .then( editor => {
-                const stickyPanel = editor.ui.view.stickyPanel;
-
-                if (stickyPanel) {
-                    stickyPanel.unbind('isActive');
-                    stickyPanel.isActive = true;
-                }
-            } )
-            .catch( error => {
+            VremeplovRichTextEditor.create('#description-editor', {
+                uploadUrl: '{{ route('blogs.upload.image') }}?_token=' + document.querySelector('meta[name="csrf-token"]').getAttribute('content') + '&blog_id={{ (isset($blog->id) && $blog->id) ?: 0 }}',
+            }).catch( error => {
                 console.error(error);
-            } );
+            });
         })
     </script>
 

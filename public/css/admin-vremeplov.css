@@ -1555,6 +1555,52 @@ body.admin-vremeplov,
     z-index: 900;
 }
 
+.admin-source-toggle__icon {
+    display: inline-flex;
+    min-width: 1.8rem;
+    align-items: center;
+    justify-content: center;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size: .9rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.admin-source-editor {
+    display: none;
+    width: 100%;
+    min-height: 22rem;
+    padding: 1rem;
+    border: 1px solid var(--ck-color-base-border, #c4c4c4);
+    border-top: 0;
+    border-radius: 0 0 .25rem .25rem;
+    outline: 0;
+    background: #201b1c;
+    color: #f7efe2;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size: .9rem;
+    line-height: 1.6;
+    resize: vertical;
+}
+
+.admin-source-editor:focus {
+    border-color: var(--admin-gold);
+    box-shadow: 0 0 0 3px rgba(181, 133, 52, .16);
+}
+
+.admin-source-mode .ck-editor__main {
+    display: none;
+}
+
+.admin-source-mode .admin-source-editor {
+    display: block;
+}
+
+.admin-source-mode .ck-toolbar__items > *:not(.admin-source-toggle):not(.admin-source-toolbar-separator) {
+    opacity: .45;
+    pointer-events: none;
+}
+
 .product-editor-actions {
     position: sticky;
     z-index: 20;
