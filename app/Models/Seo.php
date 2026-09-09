@@ -48,21 +48,22 @@ class Seo
      */
     public static function getAuthorData(Author $author, ?Category $cat = null, ?Category $subcat = null): array
     {
-        $title = trim((string) ($author->meta_title ?: $author->title));
+        $authorTitle = trim((string) $author->title);
+        $title = preg_replace('/^[\s,;:]+/u', '', trim((string) ($author->meta_title ?: $authorTitle))) ?? $authorTitle;
         $description = trim(strip_tags((string) ($author->meta_description ?: $author->description)));
 
         if ($description === '') {
-            $description = 'Dostupni naslovi autora ' . $author->title . ' u ponudi Antikvarijata Vremeplov.';
+            $description = 'Dostupni naslovi autora ' . $authorTitle . ' u ponudi Antikvarijata Vremeplov.';
         }
 
         if ($cat) {
             $title .= ' – ' . ($cat->meta_title ?: $cat->title);
-            $description = 'Naslovi autora ' . $author->title . ' u kategoriji ' . $cat->title . '.';
+            $description = 'Naslovi autora ' . $authorTitle . ' u kategoriji ' . $cat->title . '.';
         }
 
         if ($subcat) {
-            $title = trim((string) ($author->meta_title ?: $author->title)) . ' – ' . ($subcat->meta_title ?: $subcat->title);
-            $description = 'Naslovi autora ' . $author->title . ' u kategoriji ' . $subcat->title . '.';
+            $title = preg_replace('/^[\s,;:]+/u', '', trim((string) ($author->meta_title ?: $authorTitle))) . ' – ' . ($subcat->meta_title ?: $subcat->title);
+            $description = 'Naslovi autora ' . $authorTitle . ' u kategoriji ' . $subcat->title . '.';
         }
 
         $canonical = route('catalog.route.author', [

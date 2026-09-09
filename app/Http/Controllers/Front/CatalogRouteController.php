@@ -21,6 +21,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class CatalogRouteController extends Controller
 {
@@ -232,26 +233,53 @@ class CatalogRouteController extends Controller
         }
 
         $authorBasePath = trim((string) config('settings.author_path'), '/');
+        $carlJungUrl = DB::table('authors')
+            ->where('status', 1)
+            ->where('slug', 'carl-gustav-jung')
+            ->value('url') ?: ($authorBasePath . '/carl-gustav-jung');
 
         $authors = DB::table('authors')
             ->where('status', 1)
             ->where('title', 'like', '%' . $query . '%')
-            ->orderByRaw('CASE WHEN title LIKE ? THEN 0 ELSE 1 END', [$query . '%'])
+            ->orderByRaw(
+                'CASE
+                    WHEN TRIM(title) = ? THEN 0
+                    WHEN title LIKE ? OR title LIKE ? OR title LIKE ? THEN 1
+                    ELSE 2
+                END',
+                [$query, $query . ' %', '% ' . $query . ' %', '% ' . $query]
+            )
             ->orderBy('title')
-            ->limit(8)
+            ->limit(30)
             ->get(['title', 'slug', 'url'])
-            ->map(function ($author) use ($authorBasePath) {
+            ->map(function ($author) use ($authorBasePath, $carlJungUrl) {
+                $title = trim((string) $author->title);
+                $key = Str::lower(Str::ascii(preg_replace('/[^\pL\pN]+/u', '', $title) ?? $title));
+                $isCarlJung = in_array($key, [
+                    'cgjung',
+                    'jung',
+                    'gjungc',
+                    'gustavjungcarl',
+                    'gustavjungkarl',
+                    'carlgustavjung',
+                ], true);
                 $url = $author->url ?: ($authorBasePath . '/' . $author->slug);
 
                 return [
-                    'title' => $author->title,
-                    'url' => $url
+                    'title' => $isCarlJung ? 'Carl Gustav Jung' : $title,
+                    'url' => $isCarlJung ? $carlJungUrl : $url,
+                    'key' => $isCarlJung ? 'carl-gustav-jung' : $key,
                 ];
             })
             ->unique(function ($author) {
-                return mb_strtolower(trim((string) $author['title']));
+                return $author['key'];
             })
             ->take(4)
+            ->map(function ($author) {
+                unset($author['key']);
+
+                return $author;
+            })
             ->values();
 
         $products = DB::table('products as p')
