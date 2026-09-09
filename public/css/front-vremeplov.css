@@ -27,6 +27,7 @@
     border-right: 0;
     border-left: 0;
     border-radius: 0 !important;
+    font-size: 16px;
 }
 
 .mobile-header-search .btn {
@@ -44,15 +45,51 @@
 .mobile-search-suggest {
     position: absolute;
     z-index: 1042;
-    top: calc(100% + .4rem);
+    top: 100%;
     right: 0;
     left: 0;
-    max-height: min(60vh, 420px);
+    height: var(--mobile-search-suggest-height, calc(100dvh - 54px));
+    max-height: none;
     overflow-y: auto;
-    border: 1px solid #e3dfd5;
-    border-radius: .4rem;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    border: 0;
+    border-top: 1px solid #e3dfd5;
+    border-radius: 0;
     background: #fff;
-    box-shadow: 0 .75rem 2rem rgba(0, 0, 0, .15);
+    box-shadow: 0 .75rem 2rem rgba(0, 0, 0, .12);
+}
+
+.mobile-search-suggest .list-group-item {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.mobile-search-suggest .search-suggest__row,
+.mobile-search-suggest .search-suggest__content {
+    min-width: 0;
+}
+
+.mobile-search-suggest .search-suggest__row {
+    gap: .75rem !important;
+}
+
+.mobile-search-suggest .search-suggest__title {
+    overflow-wrap: anywhere;
+    line-height: 1.35;
+}
+
+.mobile-search-suggest .search-suggest__meta {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.mobile-search-suggest .mobile-search-suggest__all {
+    position: sticky;
+    z-index: 2;
+    bottom: 0;
+    border-top: 1px solid #e3dfd5;
 }
 
 .mobile-main-navigation.offcanvas {

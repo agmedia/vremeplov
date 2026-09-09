@@ -195,11 +195,35 @@
 
                 var timer = null;
                 var controller = null;
+                var isMobileSuggest = suggestBox.classList.contains('mobile-search-suggest');
+                var resizeFrame = null;
+
+                function updateMobileSuggestHeight() {
+                    if (!isMobileSuggest || suggestBox.classList.contains('d-none')) {
+                        return;
+                    }
+
+                    window.cancelAnimationFrame(resizeFrame);
+                    resizeFrame = window.requestAnimationFrame(function () {
+                        var viewport = window.visualViewport;
+                        var viewportBottom = viewport
+                            ? viewport.offsetTop + viewport.height
+                            : window.innerHeight;
+                        var suggestTop = suggestBox.getBoundingClientRect().top;
+                        var availableHeight = Math.max(0, Math.floor(viewportBottom - suggestTop));
+
+                        suggestBox.style.setProperty('--mobile-search-suggest-height', availableHeight + 'px');
+                    });
+                }
 
                 function closeSuggest() {
                     suggestBox.classList.add('d-none');
                     suggestBox.innerHTML = '';
                     input.setAttribute('aria-expanded', 'false');
+
+                    if (isMobileSuggest) {
+                        suggestBox.style.removeProperty('--mobile-search-suggest-height');
+                    }
 
                     if (overlay && !document.querySelector('.mobile-search-suggest:not(.d-none), #desktop-search-suggest:not(.d-none)')) {
                         overlay.classList.add('d-none');
@@ -235,7 +259,7 @@
                     link.style.padding = '10px 14px';
 
                     var row = document.createElement('div');
-                    row.className = 'd-flex justify-content-between align-items-start gap-3';
+                    row.className = 'd-flex justify-content-between align-items-start gap-3 search-suggest__row';
 
                     if (meta && meta.image) {
                         var imageWrap = document.createElement('div');
@@ -259,10 +283,10 @@
                     }
 
                     var left = document.createElement('div');
-                    left.className = 'flex-grow-1';
+                    left.className = 'flex-grow-1 search-suggest__content';
 
                     var main = document.createElement('div');
-                    main.className = 'fw-semibold text-dark';
+                    main.className = 'fw-semibold text-dark search-suggest__title';
                     main.textContent = title || '';
                     left.appendChild(main);
 
@@ -277,7 +301,7 @@
 
                     if (meta) {
                         var right = document.createElement('div');
-                        right.className = 'text-end';
+                        right.className = 'text-end search-suggest__meta';
 
                         if (typeof meta.price !== 'undefined' && meta.price !== null) {
                             var price = document.createElement('div');
@@ -306,7 +330,7 @@
 
                 function addSearchAll(query) {
                     var link = document.createElement('a');
-                    link.className = 'list-group-item list-group-item-action text-center fw-semibold';
+                    link.className = 'list-group-item list-group-item-action text-center fw-semibold mobile-search-suggest__all';
                     link.style.padding = '12px 14px';
                     link.style.background = '#f8f6f1';
                     link.href = searchUrl + '?' + encodeURIComponent(searchKey) + '=' + encodeURIComponent(query);
@@ -352,6 +376,7 @@
 
                     suggestBox.classList.remove('d-none');
                     input.setAttribute('aria-expanded', 'true');
+                    updateMobileSuggestHeight();
                     if (overlay) {
                         overlay.classList.remove('d-none');
                     }
@@ -430,6 +455,16 @@
                     overlay.addEventListener('click', function () {
                         closeSuggest();
                     });
+                }
+
+                if (isMobileSuggest) {
+                    window.addEventListener('resize', updateMobileSuggestHeight);
+                    window.addEventListener('orientationchange', updateMobileSuggestHeight);
+
+                    if (window.visualViewport) {
+                        window.visualViewport.addEventListener('resize', updateMobileSuggestHeight);
+                        window.visualViewport.addEventListener('scroll', updateMobileSuggestHeight);
+                    }
                 }
             }
 
