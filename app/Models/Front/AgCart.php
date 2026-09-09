@@ -195,8 +195,8 @@ class AgCart extends Model
                 $quantity = $request['item']['quantity'];
                 $product  = Product::where('id', $request['item']['id'])->first();
 
-                if ($quantity > $product->quantity) {
-                    return ['error' => 'Nažalost nema dovoljnih količina artikla..!'];
+                if (! $product) {
+                    return ['error' => 'Artikl nije pronađen.'];
                 }
 
                 if ($quantity == 1 && ($item->quantity == 1 || $item->quantity > $quantity)) {
@@ -209,6 +209,14 @@ class AgCart extends Model
 
                 if (isset($request['item']['relative']) && $request['item']['relative']) {
                     $relative = true;
+                }
+
+                $finalQuantity = $relative
+                    ? (int) $item->quantity + (int) $quantity
+                    : (int) $quantity;
+
+                if ($finalQuantity > (int) $product->quantity) {
+                    return ['error' => 'Nema više dostupnih primjeraka ovog artikla.'];
                 }
 
                 return $this->updateCartItem($item->id, $quantity, $relative);
@@ -443,7 +451,7 @@ class AgCart extends Model
         $product->dataLayer = TagManager::getGoogleProductDataLayer($product);
 
         if ($request['item']['quantity'] > $product->quantity) {
-            return ['error' => 'Nažalost nema dovoljnih količina artikla..!'];
+            return ['error' => 'Nema više dostupnih primjeraka ovog artikla.'];
         }
 
         $response = [

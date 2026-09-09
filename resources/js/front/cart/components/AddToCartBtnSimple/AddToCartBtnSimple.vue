@@ -1,5 +1,17 @@
 <template>
-    <button class="btn btn-primary btn-shadow btn-sm" :disabled="disabled" @click="add()" type="button">+<i class="fa-regular fa-cart-shopping fs-base ms-1"></i></button>
+    <button
+        class="btn btn-primary btn-shadow btn-sm product-card-add-button"
+        :class="{'is-blocked': blocked}"
+        :disabled="pending"
+        :aria-disabled="blocked ? 'true' : 'false'"
+        :aria-busy="pending ? 'true' : 'false'"
+        :aria-label="buttonLabel"
+        :title="buttonLabel"
+        :data-product-id="id"
+        :data-product-available="availableQuantity"
+        @click="add"
+        type="button"
+    ><i class="fa-regular fa-bag-shopping fs-base" aria-hidden="true"></i></button>
 </template>
 
 <script>
@@ -13,68 +25,111 @@ export default {
         return {
             quantity: 1,
             has_in_cart: false,
-            disabled: false
+            pending: false
+        }
+    },
+
+    computed: {
+        availableQuantity() {
+            const available = Number(this.available);
+
+            return Number.isFinite(available) ? Math.max(0, available) : 0;
+        },
+
+        quantityInCart() {
+            return this.has_in_cart ? Math.max(0, Number(this.quantity) || 0) : 0;
+        },
+
+        soldOut() {
+            return this.availableQuantity < 1;
+        },
+
+        limitReached() {
+            return !this.soldOut && this.quantityInCart >= this.availableQuantity;
+        },
+
+        blocked() {
+            return this.soldOut || this.limitReached;
+        },
+
+        buttonLabel() {
+            return this.blocked
+                ? 'Nema više dostupnih primjeraka ovog artikla'
+                : 'Dodaj u košaricu';
         }
     },
 
     mounted() {
-        let cart = this.$store.state.storage.getCart();
-        if(cart) {
-            for (const key in cart.items) {
-                if (this.id == cart.items[key].id) {
-                    this.has_in_cart = true;
-                    this.quantity = cart.items[key].quantity;
-                }
-            }
-        }
+        this.syncWithCart(this.$store.state.storage.getCart());
 
-        this.checkAvailability();
+        this.$watch(
+            () => this.$store.state.cart,
+            cart => this.syncWithCart(cart),
+            {deep: true}
+        );
     },
 
     methods: {
-        add() {
-            if (this.has_in_cart) {
-                this.quantity += 1;
-                this.updateCart();
-            } else {
-                this.addToCart();
+        syncWithCart(cart) {
+            const items = Object.values((cart && cart.items) || {});
+            const item = items.find(cartItem => String(cartItem.id) === String(this.id));
+
+            if (item) {
                 this.has_in_cart = true;
+                this.quantity = Math.max(1, Number(item.quantity) || 1);
+                return;
             }
 
-            this.checkAvailability();
+            this.has_in_cart = false;
+            this.quantity = 1;
         },
-        /**
-         *
-         */
-        addToCart() {
-            let item = {
-                id: this.id,
-                quantity: this.quantity
+
+        async add() {
+            if (this.soldOut || this.limitReached) {
+                if (window.ToastWarning) {
+                    window.ToastWarning.fire('Nema više dostupnih primjeraka ovog artikla.');
+                }
+                return;
             }
 
-            this.$store.dispatch('addToCart', item);
-        },
-
-        /**
-         *
-         */
-        updateCart() {
-            let item = {
-                id: this.id,
-                quantity: this.quantity,
-                show_add_modal: true,
-                added_quantity: 1
+            if (this.pending) {
+                return;
             }
 
-            this.$store.dispatch('updateCart', item);
-        },
+            const quantityInCart = this.quantityInCart;
+            const action = quantityInCart > 0 ? 'updateCart' : 'addToCart';
+            const item = quantityInCart > 0
+                ? {
+                    id: this.id,
+                    quantity: quantityInCart + 1,
+                    show_add_modal: true,
+                    added_quantity: 1
+                }
+                : {
+                    id: this.id,
+                    quantity: 1
+                };
 
-        checkAvailability() {
-            if (this.available <= this.quantity) {
-                this.disabled = true;
-                this.quantity = this.available;
+            this.pending = true;
+
+            try {
+                await this.$store.dispatch(action, item);
+            } finally {
+                this.pending = false;
+                this.syncWithCart(this.$store.state.cart || this.$store.state.storage.getCart());
             }
         }
     }
 };
 </script>
+
+<style>
+.product-card-add-button,
+.product-card-add-button:disabled {
+    opacity: 1 !important;
+}
+
+.product-card-add-button.is-blocked {
+    cursor: not-allowed;
+}
+</style>

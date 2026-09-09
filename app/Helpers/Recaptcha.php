@@ -23,6 +23,11 @@ class Recaptcha
      */
     private $result;
 
+    /**
+     * @var string|null
+     */
+    private $expected_action;
+
 
     /**
      * Recaptcha constructor.
@@ -39,10 +44,24 @@ class Recaptcha
      *
      * @return bool|mixed
      */
-    public function check(array $data)
+    public function check(array $data, ?string $expectedAction = null)
     {
+        $this->expected_action = $expectedAction;
+
         if (app()->environment(['local', 'testing']) && config('services.recaptcha.bypass_local', true)) {
-            $this->result = (object) ['success' => true, 'score' => 0.9, 'bypassed' => true];
+            $this->result = (object) [
+                'success' => true,
+                'score' => 0.9,
+                'action' => $expectedAction,
+                'bypassed' => true,
+            ];
+
+            return $this;
+        }
+
+        if (! config('services.recaptcha.sitekey') || ! config('services.recaptcha.secret')) {
+            Log::error('reCAPTCHA is not configured.');
+            $this->result = (object) ['success' => false, 'score' => 0.0, 'error-codes' => ['not-configured']];
 
             return $this;
         }
@@ -85,7 +104,8 @@ class Recaptcha
     {
         if (! isset($this->result)
             || ($this->result->success ?? false) !== true
-            || (float) ($this->result->score ?? 0) < 0.3) {
+            || (float) ($this->result->score ?? 0) < 0.3
+            || ($this->expected_action !== null && ($this->result->action ?? null) !== $this->expected_action)) {
             return false;
         }
 

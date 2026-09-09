@@ -98,6 +98,15 @@ class Widget extends Model
             'group_template' => 'required',
             'title' => 'required',
             'button_text' => 'nullable|string|max:80',
+            'catalog_group' => 'nullable|string|max:191',
+            'eyebrow' => 'nullable|string|max:120',
+            'eyebrow_icon' => 'nullable|in:clock,box,location-dot,thumbs-up,truck',
+            'benefit_1_text' => 'nullable|string|max:80',
+            'benefit_2_text' => 'nullable|string|max:80',
+            'benefit_3_text' => 'nullable|string|max:80',
+            'benefit_1_icon' => 'nullable|in:clock,box,location-dot,thumbs-up,truck',
+            'benefit_2_icon' => 'nullable|in:clock,box,location-dot,thumbs-up,truck',
+            'benefit_3_icon' => 'nullable|in:clock,box,location-dot,thumbs-up,truck',
         ]);
 
         $target = (string) $request->input('target', $request->input('action_group', $request->input('group')));
@@ -216,7 +225,7 @@ class Widget extends Model
         $group = $this->group()->first();
 
         if ($group->template == 'custom' && str_contains($group->slug, 'slider')) {
-            $path = ImageHelper::makeImageSet($data->output->image, 'widget', $this->title, strval($this->id), 500, 500);
+            $path = ImageHelper::makeImageSet($data->output->image, 'widget', $this->title, strval($this->id), 800, 800);
         } else {
             $path = ImageHelper::makeImageSet($data->output->image, 'widget', $this->title, strval($this->id));
         }

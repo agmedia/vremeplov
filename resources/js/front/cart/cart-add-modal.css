@@ -1,7 +1,9 @@
 .swal2-container.cart-add-modal-container {
     box-sizing: border-box;
+    z-index: 2147483000 !important;
     align-items: center !important;
     justify-content: center !important;
+    isolation: isolate;
     padding:
         max(.9rem, env(safe-area-inset-top))
         max(.9rem, env(safe-area-inset-right))
@@ -10,7 +12,7 @@
 }
 
 .swal2-container.cart-add-modal-container.swal2-backdrop-show {
-    background: rgba(45, 34, 36, .56);
+    background: rgba(45, 34, 36, .62) !important;
 }
 
 body.swal2-shown #agapp[aria-hidden=true] {

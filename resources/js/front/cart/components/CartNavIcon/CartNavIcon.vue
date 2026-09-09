@@ -7,9 +7,9 @@
                     <div class="widget-cart-item pb-2 border-bottom">
                         <button class="btn-close text-danger" type="button" @click.prevent="removeFromCart(item)" aria-label="Remove"><span aria-hidden="true">&times;</span></button>
                         <div class="d-flex align-items-center">
-                            <a class="d-block flex-shrink-0 pt-2" href="#"><img :src="item.associatedModel.image" :alt="item.name" :title="item.name" style="width: 5rem;"></a>
+                            <a class="d-block flex-shrink-0 pt-2" href="#"><img :src="item.associatedModel.image" :alt="itemName(item)" :title="itemName(item)" style="width: 5rem;"></a>
                             <div class="ps-2">
-                                <h6 class="widget-product-title"><a :href="base_path + item.attributes.path">{{ item.name }}</a></h6>
+                                <h6 class="widget-product-title"><a :href="base_path + item.attributes.path">{{ itemName(item) }}</a></h6>
                                 <div class="widget-product-meta"><span class="text-primary me-2">{{ Object.keys(item.conditions).length ? item.associatedModel.main_special_text : item.associatedModel.main_price_text }}</span><span class="text-muted">x {{ item.quantity }}</span></div>
                                 <div class="widget-product-meta"><span class="text-dark fs-sm me-2" v-if="item.associatedModel.secondary_price">{{ Object.keys(item.conditions).length ? item.associatedModel.secondary_special_text : item.associatedModel.secondary_price_text }}</span><span class="text-muted">x {{ item.quantity }}</span></div>
                             </div>
@@ -25,7 +25,7 @@
                 </div><a class="btn btn-primary btn-sm d-block w-100" :href="carturl"><i class="fa-regular fa-credit-card me-2 fs-base align-middle"></i>Dovrši kupnju</a>
             </div>
             <div class="widget widget-cart text-center pt-2" style="width: 20rem;" v-else>
-                <h1 class="mb-2 mt-1"><i class="fa-regular fa-cart-shopping"></i></h1>
+                <h1 class="mb-2 mt-1"><i class="fa-regular fa-bag-shopping"></i></h1>
                 <p>Vaša košarica je prazna!</p>
             </div>
         </div>
@@ -69,6 +69,12 @@ export default {
 
     //
     methods: {
+        itemName(item) {
+            const product = item && item.associatedModel ? item.associatedModel : {};
+
+            return product.card_name || (item && item.card_name) || (item && item.name) || 'Artikl';
+        },
+
         /**
          *
          */

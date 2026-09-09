@@ -31,6 +31,7 @@
                     @csrf
                     <input type="hidden" name="newsletter_form" value="1">
                     <input type="hidden" name="newsletter_started_at" value="{{ app(\App\Services\NewsletterSignupGuard::class)->issueToken() }}">
+                    <input type="hidden" name="recaptcha" id="recaptcha_newsletter">
 
                     <div class="newsletter-signup__honeypot" aria-hidden="true">
                         <label for="newsletter_website">Website</label>
@@ -55,6 +56,7 @@
                             Pristajem primati newsletter. Odjava je moguća u svakom trenutku.
                         </label>
                     </div>
+                    @include('front.layouts.partials.recaptcha-notice')
                 </form>
             </div>
         </div>
@@ -62,6 +64,11 @@
 </section>
 
 @push('js_after')
+    @include('front.layouts.partials.recaptcha-js', [
+        'action' => 'newsletter',
+        'fieldId' => 'recaptcha_newsletter',
+        'formId' => 'newsletter-form',
+    ])
     <script>
         (function () {
             var form = document.getElementById('newsletter-form');

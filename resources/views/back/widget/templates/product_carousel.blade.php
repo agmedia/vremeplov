@@ -54,6 +54,19 @@
                                 </div>
                             </div>
 
+                            <div class="form-group mb-3">
+                                <label for="catalog-group-select">Glavna grupa artikala</label>
+                                <select class="form-control" id="catalog-group-select" name="catalog_group">
+                                    <option value="">Sve grupe artikala</option>
+                                    @foreach (($catalogGroups ?? collect()) as $catalogGroup)
+                                        <option value="{{ $catalogGroup }}" {{ old('catalog_group', $widget->data['catalog_group'] ?? '') === $catalogGroup ? 'selected' : '' }}>
+                                            {{ \Illuminate\Support\Str::headline($catalogGroup) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <small class="form-text text-muted">Primjer: odaberite Knjige kako se u redu ne bi prikazivale karte, razglednice i ostali artikli.</small>
+                            </div>
+
                             <div class="form-group row mb-30">
                                 <label class="col-12" for="subtitle-input">Podnaslov</label>
                                 <div class="col-12">

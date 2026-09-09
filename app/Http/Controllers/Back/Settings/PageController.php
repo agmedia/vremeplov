@@ -130,5 +130,9 @@ class PageController extends Controller
     {
         Cache::forget('page.' . $page->id);
         Cache::forget('page.' . $page->slug);
+
+        if ($page->slug === 'homepage') {
+            Cache::forget('page.homepage');
+        }
     }
 }

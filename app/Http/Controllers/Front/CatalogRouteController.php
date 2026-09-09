@@ -85,6 +85,7 @@ class CatalogRouteController extends Controller
 
             if (! empty($recentIds)) {
                 $recentProducts = Product::query()
+                    ->cardData()
                     ->whereIn('id', $recentIds)
                     ->where('status', 1)
                     ->get()
@@ -98,6 +99,28 @@ class CatalogRouteController extends Controller
 
             $reviews = $prod->reviews()->get();
             $related = Helper::getRelated($group, $cat, $subcat);
+            $showAuthorLink = $prod->author && ! $this->isGenericCatalogLabel($prod->author->title);
+            $showPublisherLink = $prod->publisher && ! $this->isGenericCatalogLabel($prod->publisher->title);
+            $authorProducts = collect();
+            $publisherProducts = collect();
+
+            if ($showAuthorLink) {
+                $authorProducts = $prod->author->products()
+                    ->cardData()
+                    ->where('products.id', '!=', $prod->id)
+                    ->latest('products.updated_at')
+                    ->take(15)
+                    ->get();
+            }
+
+            if ($showPublisherLink) {
+                $publisherProducts = $prod->publisher->products()
+                    ->cardData()
+                    ->where('products.id', '!=', $prod->id)
+                    ->latest('products.updated_at')
+                    ->take(15)
+                    ->get();
+            }
             $shipping_methods = Settings::getList('shipping', 'list.%', true);
             $payment_methods = Settings::getList('payment', 'list.%', true);
 
@@ -112,6 +135,10 @@ class CatalogRouteController extends Controller
                 'bookscheme',
                 'gdl',
                 'reviews',
+                'showAuthorLink',
+                'showPublisherLink',
+                'authorProducts',
+                'publisherProducts',
                 'shipping_methods',
                 'payment_methods',
                 'recentProducts'
@@ -123,6 +150,21 @@ class CatalogRouteController extends Controller
         $products = $this->catalogProducts($request, $group, $cat, $subcat);
 
         return view('front.catalog.category.index', compact('group', 'cat', 'subcat', 'prod', 'meta', 'crumbs', 'products'));
+    }
+
+    /**
+     * Hide placeholder catalog identities from customer-facing discovery links.
+     */
+    private function isGenericCatalogLabel(?string $label): bool
+    {
+        $normalized = mb_strtolower(trim(html_entity_decode(strip_tags((string) $label), ENT_QUOTES | ENT_HTML5, 'UTF-8')), 'UTF-8');
+        $normalized = preg_replace('/\s+/u', ' ', $normalized) ?: $normalized;
+
+        if (in_array($normalized, ['', '-', 'n/a', 'na', 'ostalo', 'nepoznato', 'nije poznato'], true)) {
+            return true;
+        }
+
+        return preg_match('/(?:^|\b)(?:nepoznat(?:i|a|o)?(?:\s+(?:autor|nakladnik|izdavač))?|bez\s+(?:autora|nakladnika|izdavača)|unknown(?:\s+(?:author|publisher))?)(?:\b|$)/u', $normalized) === 1;
     }
 
 
@@ -315,6 +357,8 @@ class CatalogRouteController extends Controller
             ])
             ->map(function ($product) {
                 $now = now();
+                $displayProduct = new Product();
+                $displayProduct->setRawAttributes(['name' => $product->name]);
                 $imagesDomain = rtrim((string) config('settings.images_domain'), '/') . '/';
                 $specialFrom = $product->special_from;
                 $specialTo = $product->special_to;
@@ -340,6 +384,7 @@ class CatalogRouteController extends Controller
 
                 return [
                     'name' => $product->name,
+                    'card_name' => $displayProduct->card_name,
                     'url' => $product->url,
                     'author' => $product->author,
                     'quantity' => (int) $product->quantity,

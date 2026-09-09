@@ -1,9 +1,82 @@
 @extends('front.layouts.app')
 @php
-    $productPageTitle = mb_strlen($seo['title']) <= 42
-        ? $seo['title'] . ' - Antikvarijat Vremeplov'
-        : $seo['title'];
+    $productSeoTitle = $prod->card_name;
+    $productPageTitle = mb_strlen($productSeoTitle) <= 42
+        ? $productSeoTitle . ' - Antikvarijat Vremeplov'
+        : $productSeoTitle;
     $productLanguageCount = count(\App\Support\CatalogFilterValue::facetValues('origin', $prod->origin));
+    $productEyebrow = $subcat ? $subcat->title : ($cat ? $cat->title : \Illuminate\Support\Str::ucfirst($group));
+    $productEyebrowUrl = $subcat
+        ? route('catalog.route', ['group' => $group, 'cat' => $cat, 'subcat' => $subcat])
+        : ($cat
+            ? route('catalog.route', ['group' => $group, 'cat' => $cat])
+            : route('catalog.route', ['group' => $group]));
+    $productReviewCount = $reviews->count();
+    $productReviewAverage = $productReviewCount ? round((float) $reviews->avg('stars'), 1) : 0;
+    $productFilledStars = (int) round($productReviewAverage);
+    $productDescriptionHtml = (string) $prod->description;
+    $productDescriptionAnalysisHtml = preg_replace(
+        '/<(?:br\s*\/?>|\/p|\/div|\/li|\/h[1-6]|\/tr)>/i',
+        "\n",
+        $productDescriptionHtml
+    ) ?: $productDescriptionHtml;
+    $productDescriptionText = trim(str_replace(
+        "\xC2\xA0",
+        ' ',
+        html_entity_decode(strip_tags($productDescriptionAnalysisHtml), ENT_QUOTES | ENT_HTML5, 'UTF-8')
+    ));
+    $productDescriptionSignal = $productDescriptionText;
+    foreach (array_filter([
+        trim((string) $prod->name),
+        trim((string) $prod->card_name),
+        $prod->author ? trim((string) $prod->author->title) : '',
+    ]) as $identityText) {
+        $productDescriptionSignal = preg_replace(
+            '/' . preg_quote($identityText, '/') . '/iu',
+            ' ',
+            $productDescriptionSignal
+        ) ?: $productDescriptionSignal;
+    }
+    $productDescriptionSignal = preg_replace(
+        '/\b(?:broj|šifra|sifra|sku|ean|isbn)\s*:?\s*[\p{L}\p{N}.\/_-]+\b/iu',
+        ' ',
+        $productDescriptionSignal
+    ) ?: $productDescriptionSignal;
+    $productDescriptionSignal = preg_replace(
+        '/\b(?:autor|nakladnik|izdavač|izdavac|godina(?:\s+izdanja)?|jezik|pismo|broj\s+stranica|stranica|uvez|stanje|dimenzije|mjesto\s+izdavanja)\s*:\s*[^\n.;|]{1,100}/iu',
+        ' ',
+        $productDescriptionSignal
+    ) ?: $productDescriptionSignal;
+    $productDescriptionSignal = trim(preg_replace('/\s+/u', ' ', $productDescriptionSignal) ?: $productDescriptionSignal);
+    $productDescriptionWordCount = preg_match_all('/\p{L}[\p{L}\p{M}’\'-]*/u', $productDescriptionSignal) ?: 0;
+    $productHasDescription = mb_strlen($productDescriptionSignal, 'UTF-8') >= 120
+        && $productDescriptionWordCount >= 18;
+    $displayCatalogLabel = static function (?string $label): string {
+        $label = trim((string) $label);
+
+        if (in_array(mb_strtoupper($label, 'UTF-8'), ['VBZ', 'HRT', 'HNK', 'HAZU', 'JAZU'], true)) {
+            return mb_strtoupper($label, 'UTF-8');
+        }
+
+        return $label !== '' && mb_strtoupper($label, 'UTF-8') === $label
+            ? mb_convert_case(mb_strtolower($label, 'UTF-8'), MB_CASE_TITLE, 'UTF-8')
+            : $label;
+    };
+    $productAuthorLabel = $prod->author ? $displayCatalogLabel($prod->author->title) : '';
+    $productPublisherLabel = $prod->publisher ? $displayCatalogLabel($prod->publisher->title) : '';
+    $productNote = trim((string) $prod->note);
+    if ($productNote !== '' && preg_match('/\p{L}/u', $productNote) && mb_strtoupper($productNote, 'UTF-8') === $productNote) {
+        $productNoteLower = mb_strtolower($productNote, 'UTF-8');
+        $productNote = mb_strtoupper(mb_substr($productNoteLower, 0, 1, 'UTF-8'), 'UTF-8')
+            . mb_substr($productNoteLower, 1, null, 'UTF-8');
+        $productNote = preg_replace_callback(
+            '/\b(?:isbn|issn|ean|dvd|cd|vhs|lp|ep|hnk|hrt|hazu|jazu|eu|rh|bih|sad|sfrj|sssr|nob|nato|unesco|pdf|tv|pc|ai)\b/iu',
+            static fn (array $match): string => mb_strtolower($match[0], 'UTF-8') === 'bih'
+                ? 'BiH'
+                : mb_strtoupper($match[0], 'UTF-8'),
+            $productNote
+        ) ?: $productNote;
+    }
 @endphp
 @section ('title', $productPageTitle)
 @section ('description', $seo['description'])
@@ -17,7 +90,7 @@
 
     <meta property="og:locale" content="hr_HR" />
     <meta property="og:type" content="product" />
-    <meta property="og:title" content="{{ $seo['title'] }}" />
+    <meta property="og:title" content="{{ $productSeoTitle }}" />
     <meta property="og:description" content="{{ $seo['description']  }}" />
     <meta property="og:url" content="{{ url($prod->url) }}"  />
     <meta property="og:site_name" content="Antikvarijat Vremeplov" />
@@ -27,13 +100,13 @@
     <meta property="og:image:width" content="640" />
     <meta property="og:image:height" content="480" />
     <meta property="og:image:type" content="{{ $productImageType }}" />
-    <meta property="og:image:alt" content="{{ $prod->image_alt ?: $prod->name }}" />
+    <meta property="og:image:alt" content="{{ $prod->image_alt ?: $prod->card_name }}" />
     <meta property="product:price:amount" content="{{ $prod->main_price }}" />
     <meta property="product:price:currency" content="EUR" />
     <meta property="product:availability" content="{{ $prod->quantity > 0 ? 'instock' : 'out of stock' }}" />
     <meta property="product:retailer_item_id" content="{{ $prod->sku }}" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="{{ $seo['title'] }}" />
+    <meta name="twitter:title" content="{{ $productSeoTitle }}" />
     <meta name="twitter:description" content="{{ $seo['description'] }}" />
     <meta name="twitter:image" content="{{ $prod->image }}" />
     <link rel="stylesheet" media="screen" href="{{ asset('vendor/lightgallery/css/lightgallery-bundle.min.css')}}"/>
@@ -41,77 +114,9 @@
 @endpush
 
 @push('css_after')
-    <style>
-        .product-view section {
-            margin-bottom: 1.5rem;
-        }
-
-        .product-view .h-100.bg-light.shadow.rounded-3 {
-            border: 1px solid #e7e2d8;
-        }
-
-        .product-view .h3,
-        .product-view .h5 {
-            line-height: 1.25;
-        }
-
-        .product-view .text-accent {
-            color: #2d2821 !important;
-        }
-
-        .product-view .badge.bg-warning {
-            background-color: #cfa55a !important;
-            color: #fff;
-        }
-
-        .product-view .badge.bg-secondary {
-            background-color: #7a7467 !important;
-            color: #fff;
-        }
-
-        .product-view .accordion-button {
-            color: #3f3a33;
-            padding-top: 1rem;
-            padding-bottom: 1rem;
-        }
-
-        .product-view .accordion-button:not(.collapsed) {
-            color: #2d2821;
-            background-color: #f4f2ed;
-        }
-
-        .product-view .alert.alert-secondary {
-            margin-top: 0.75rem;
-            margin-bottom: 1.25rem;
-            background-color: #f0f1f4;
-            border-color: #e2e4ea;
-            color: #3f3a33;
-        }
-
-        .product-view__note {
-            display: flex;
-            gap: .75rem;
-            margin-top: .25rem;
-            padding: .9rem 1rem;
-            border: 1px solid #e5c88f;
-            border-left: 4px solid #c18a2f;
-            border-radius: .4rem;
-            background: #fbf5e9;
-            color: #3f3528;
-        }
-
-        .product-view__note > i {
-            flex: 0 0 auto;
-            margin-top: .15rem;
-            color: #a66e18;
-            font-size: 1.1rem;
-        }
-
-        .product-view__note p {
-            margin: 0;
-            white-space: pre-line;
-        }
-    </style>
+    <link rel="stylesheet" media="screen" href="{{ asset('js/slick/slick.css') }}">
+    <link rel="stylesheet" media="screen" href="{{ asset('js/slick/slick-theme.css') }}">
+    <link rel="stylesheet" media="screen" href="{{ asset('css/front-product-detail.css?v=1.0.11') }}">
 @endpush
 
 @if (session('analytics_event') === 'add_to_wishlist' && isset($gdl))
@@ -142,29 +147,29 @@
 
    <div class="container product-view">
        <!-- Page title + breadcrumb-->
-       <nav class="my-3" aria-label="breadcrumb">
-           <ol class="breadcrumb flex-lg-nowrap">
-               <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="fa-regular fa-house"></i>Naslovnica</a></li>
+       <nav class="product-view__breadcrumbs" aria-label="breadcrumb">
+           <ol class="breadcrumb">
+               <li class="breadcrumb-item"><a href="{{ route('index') }}"><i class="fa-regular fa-house" aria-hidden="true"></i>Naslovnica</a></li>
                @if ($group)
                    @if ($group && ! $cat && ! $subcat)
-                       <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ \Illuminate\Support\Str::ucfirst($group) }}</li>
+                       <li class="breadcrumb-item active" aria-current="page">{{ \Illuminate\Support\Str::ucfirst($group) }}</li>
                    @elseif ($group && $cat)
-                       <li class="breadcrumb-item text-nowrap active" aria-current="page"><a class="text-nowrap" href="{{ route('catalog.route', ['group' => $group]) }}">{{ \Illuminate\Support\Str::ucfirst($group) }}</a></li>
+                       <li class="breadcrumb-item active" aria-current="page"><a href="{{ route('catalog.route', ['group' => $group]) }}">{{ \Illuminate\Support\Str::ucfirst($group) }}</a></li>
                    @endif
 
                    @if ($cat && ! $subcat)
                        @if ($prod)
-                           <li class="breadcrumb-item text-nowrap active" aria-current="page"><a class="text-nowrap" href="{{ route('catalog.route', ['group' => $group, 'cat' => $cat]) }}">{{ $cat->title }}</a></li>
+                           <li class="breadcrumb-item active" aria-current="page"><a href="{{ route('catalog.route', ['group' => $group, 'cat' => $cat]) }}">{{ $cat->title }}</a></li>
                        @else
-                           <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ $cat->title }}</li>
+                           <li class="breadcrumb-item active" aria-current="page">{{ $cat->title }}</li>
                        @endif
                    @elseif ($cat && $subcat)
-                       <li class="breadcrumb-item text-nowrap active" aria-current="page"><a class="text-nowrap" href="{{ route('catalog.route', ['group' => $group, 'cat' => $cat]) }}">{{ $cat->title }}</a></li>
+                       <li class="breadcrumb-item active" aria-current="page"><a href="{{ route('catalog.route', ['group' => $group, 'cat' => $cat]) }}">{{ $cat->title }}</a></li>
                        @if ($prod)
                            @if ($cat && ! $subcat)
-                               <li class="breadcrumb-item text-nowrap active" aria-current="page"><a class="text-nowrap" href="{{ route('catalog.route', ['group' => $group, 'cat' => $cat]) }}">{{ \Illuminate\Support\Str::limit($prod->name, 50) }}</a></li>
+                               <li class="breadcrumb-item active" aria-current="page"><a href="{{ route('catalog.route', ['group' => $group, 'cat' => $cat]) }}">{{ \Illuminate\Support\Str::limit($prod->card_name, 50) }}</a></li>
                            @else
-                               <li class="breadcrumb-item text-nowrap active" aria-current="page"><a class="text-nowrap" href="{{ route('catalog.route', ['group' => $group, 'cat' => $cat, 'subcat' => $subcat]) }}">{{ $subcat->title }}</a></li>
+                               <li class="breadcrumb-item active" aria-current="page"><a href="{{ route('catalog.route', ['group' => $group, 'cat' => $cat, 'subcat' => $subcat]) }}">{{ $subcat->title }}</a></li>
                            @endif
                        @endif
                    @endif
@@ -173,130 +178,134 @@
            </ol>
        </nav>
        <!-- Content-->
-       <section class="row g-0 mx-n2 ">
+       <section class="row product-view__hero">
            @include('back.layouts.partials.session')
            <!-- Product Gallery + description-->
-           <div class="col-xl-6 px-2 mb-3">
-
-
-               <div class="h-100 bg-light shadow rounded-3 p-4">
-                   <div class="" id="gallery" style="max-height:750px">
-                       <div class="main-image product-thumb">
-
-                           <div class="galerija slider slider-for  mb-3">
+           <div class="col-xl-6 product-view__hero-column">
+               <div class="product-view__panel product-view__gallery-panel">
+                   <div class="product-gallery" id="gallery">
+                       <div class="main-image product-thumb product-gallery__inner">
+                           <div class="galerija slider slider-for product-gallery__stage">
 
                                @if ( ! empty($prod->image))
-
-
-                                   <div class="item single-product" >
-                                       <a class="link" href="{{  ($prod->image) }}">
-                                           <img src="{{  ($prod->image) }}" alt="{{ $prod->name }}" height="600" style="max-height:600px" fetchpriority="high">
+                                   <div class="item single-product product-gallery__slide">
+                                       <a class="link product-gallery__link" href="{{  ($prod->image) }}">
+                                           <img class="product-gallery__image" src="{{  ($prod->image) }}" alt="{{ $prod->image_alt ?: $prod->name }}" fetchpriority="high">
                                        </a>
                                    </div>
-
-
                                @endif
 
                                @if ($prod->images->count())
                                    @foreach ($prod->images as $key => $image)
-                                       <div class="item single-product" >
-                                           <a class="link" href="{{  config('settings.images_domain') .($image->image) }}">
-                                               <img src="{{  config('settings.images_domain') .($image->image) }}" alt="{{ $image->alt }}" height="600" style="max-height:600px">
+                                       <div class="item single-product product-gallery__slide">
+                                           <a class="link product-gallery__link" href="{{  config('settings.images_domain') .($image->image) }}">
+                                               <img class="product-gallery__image" src="{{  config('settings.images_domain') .($image->image) }}" alt="{{ $image->alt ?: $prod->name }}">
                                            </a>
                                        </div>
-
                                    @endforeach
                                @endif
                            </div>
 
-                           <ul class=" slider slider-nav mt-2 mb-2">
+                           <ul class="slider slider-nav product-gallery__thumbnails" aria-label="Ostale fotografije artikla">
                                @if ($prod->images->count())
                                    @if ( ! empty($prod->thumb))
-
                                        <li><img src="{{  ($prod->thumb) }}" class="thumb" width="100" height="100" alt="{{ $prod->name }}"></li>
-
-
                                    @endif
-                               @foreach ($prod->images as $key => $image)
-                                   <li><img src="{{  config('settings.images_domain') .($image->thumb) }}" class="thumb" width="100" height="100" alt="{{ $image->alt }}"></li>
-                               @endforeach
-
+                                   @foreach ($prod->images as $key => $image)
+                                       <li><img src="{{  config('settings.images_domain') .($image->thumb) }}" class="thumb" width="100" height="100" alt="{{ $image->alt ?: $prod->name }}"></li>
+                                   @endforeach
                                @endif
                            </ul>
                        </div>
                    </div>
                </div>
            </div>
-           <div class="col-xl-6 px-2 mb-3">
-               <div class="h-100 bg-light shadow  rounded-3 py-5 px-4 px-sm-5">
+           <div class="col-xl-6 product-view__hero-column">
+               <div class="product-view__panel product-view__purchase-panel">
+                   <a class="product-view__eyebrow" href="{{ $productEyebrowUrl }}">
+                       <i class="fa-regular fa-book-open" aria-hidden="true"></i>{{ $productEyebrow }}
+                   </a>
 
-                   @if ( $prod->quantity < 1)
-                       <span class="badge bg-warning ">Rasprodano</span>
-                   @endif
-
-                   @if ($prod->main_price > $prod->main_special)
-                       <span class="badge bg-primary ">-{{ number_format(floatval(\App\Helpers\Helper::calculateDiscount($prod->price, $prod->special())), 0) }}%</span>
-                   @endif
-
-
-
-                   <h1 class="h3"><span style="font-weight: 300;">{{ $prod->author ? $prod->author->title.':' : '' }}</span> {{ $prod->name }}</h1>
-
-                       <div class="mb-0 mt-4">
-                           @if ($prod->main_price > $prod->main_special)
-                               <span class="h3 fw-normal text-accent me-1">{{ $prod->main_special_text }}</span>
-                               <del class="text-muted fs-lg me-3">{{ $prod->main_price_text }}</del>
-                               <span class="badge bg-secondary align-middle mt-n2">Akcija</span>
-                           @else
-                               <span class="h3 fw-normal text-accent me-1">{{ $prod->main_price_text }}</span>
-                           @endif
-                          {{--  @if ($prod->quantity)
-                               <span class="badge bg-success align-middle mt-n2">Dostupno</span>
-                           @else
-                               <span class="badge bg-secondary align-middle mt-n2">Nije dostupno</span>
-                           @endif--}}
-                       </div>
-
-                       @if($prod->secondary_price_text)
-                           <div class="mb-3 mt-1">
-                               @if ($prod->main_price > $prod->main_special)
-                                   <span class="h3 fw-normal text-accent me-1">{{ $prod->secondary_special_text }}</span>
-                                   <del class="text-muted fs-lg me-3">{{ $prod->secondary_price_text }}</del>
-                               @else
-                                   <span class="h3 fw-normal text-accent me-1">{{ $prod->secondary_price_text }}</span>
-                               @endif
-                           </div>
+                   <div class="product-view__badges" aria-label="Status artikla">
+                       @if ( $prod->quantity < 1)
+                           <span class="badge bg-warning">Rasprodano</span>
                        @endif
 
-                @if ($prod->quantity > 0)
-                    <add-to-cart-btn id="{{ $prod->id }}" available="{{ $prod->quantity }}"></add-to-cart-btn>
-                @else
-                    <a class="btn btn-primary btn-shadow d-block w-100 mt-2" href="#wishlist-modal" data-bs-toggle="modal">
-                        <i class="fa-regular fa-bell"></i> Obavijesti me o dostupnosti
-                    </a>
-                @endif
+                       @if ($prod->main_price > $prod->main_special)
+                           <span class="badge bg-primary">-{{ number_format(floatval(\App\Helpers\Helper::calculateDiscount($prod->price, $prod->special())), 0) }}%</span>
+                       @endif
+                   </div>
 
-                       <!-- Light alert -->
-                       <div class="alert alert-secondary d-flex fs-sm" role="alert">
-                           <div class="alert-icon">
-                               <i class="fa-regular fa-gift"></i>
-                           </div>
-                           <div> Besplatna dostava u RH za narudžbe veće od 70 €</div>
+                   <h1 class="product-view__title">{{ $prod->card_name }}</h1>
+
+                   @if ($productReviewCount > 0)
+                       <a class="product-view__rating" href="#reviews" aria-label="Ocjena {{ number_format($productReviewAverage, 1, ',', '.') }} od 5 na temelju {{ $productReviewCount }} recenzija">
+                           <span aria-hidden="true">
+                               @for ($star = 1; $star <= 5; $star++)
+                                   <i class="fa-{{ $star <= $productFilledStars ? 'solid' : 'regular' }} fa-star"></i>
+                               @endfor
+                           </span>
+                           <small>{{ number_format($productReviewAverage, 1, ',', '.') }} · {{ $productReviewCount }} {{ $productReviewCount === 1 ? 'recenzija' : 'recenzije' }}</small>
+                       </a>
+                   @endif
+
+                   <div class="product-view__commerce">
+                       <div class="product-view__price-block">
+                           @if ($prod->main_price > $prod->main_special)
+                               <span class="product-view__price">{{ $prod->main_special_text }}</span>
+                               <del class="product-view__old-price">{{ $prod->main_price_text }}</del>
+                               <span class="badge bg-secondary">Akcija</span>
+                           @else
+                               <span class="product-view__price">{{ $prod->main_price_text }}</span>
+                           @endif
+
+                           @if($prod->secondary_price_text)
+                               <span class="product-view__secondary-price">
+                                   @if ($prod->main_price > $prod->main_special)
+                                       {{ $prod->secondary_special_text }} <del>{{ $prod->secondary_price_text }}</del>
+                                   @else
+                                       {{ $prod->secondary_price_text }}
+                                   @endif
+                               </span>
+                           @endif
                        </div>
 
+                       <span class="product-view__availability {{ $prod->quantity > 0 ? 'is-available' : 'is-unavailable' }}">
+                           <i class="fa-regular {{ $prod->quantity > 0 ? 'fa-circle-check' : 'fa-circle-xmark' }}" aria-hidden="true"></i>
+                           {{ $prod->quantity > 0 ? 'Dostupno' : 'Nije dostupno' }}
+                       </span>
+                   </div>
+
+                   <div class="product-view__buy">
+                       @if ($prod->quantity > 0)
+                           <add-to-cart-btn id="{{ $prod->id }}" available="{{ $prod->quantity }}"></add-to-cart-btn>
+                       @else
+                           <a class="btn btn-primary btn-shadow product-view__notify" href="#wishlist-modal" data-bs-toggle="modal">
+                               <i class="fa-regular fa-bell" aria-hidden="true"></i> Obavijesti me o dostupnosti
+                           </a>
+                       @endif
+                   </div>
+
+                   <div class="product-view__delivery-note" role="note">
+                       <span class="product-view__delivery-icon"><i class="fa-regular fa-truck-fast" aria-hidden="true"></i></span>
+                       <div>
+                           <strong>Besplatna dostava u Hrvatskoj</strong>
+                           <span>Za narudžbe veće od 70 €.</span>
+                       </div>
+                   </div>
+
                    <!-- Product panels-->
-                   <div class="accordion mb-4" id="productPanels">
+                   <div class="accordion product-view__accordion" id="productPanels">
                        <div class="accordion-item">
-                           <h3 class="accordion-header"><a class="accordion-button" href="#productInfo" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="productInfo"><i class="fa-regular fa-bullhorn text-muted fs-lg align-middle mt-n1 me-2"></i>Osnovne informacije</a></h3>
+                           <h3 class="accordion-header"><a class="accordion-button" href="#productInfo" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="productInfo"><i class="fa-regular fa-circle-info" aria-hidden="true"></i>Osnovne informacije</a></h3>
                            <div class="accordion-collapse collapse show" id="productInfo" data-bs-parent="#productPanels">
                                <div class="accordion-body">
-
-                                   <ul class="fs-sm ps-4 mb-0 info-list">
-                                       @if ($prod->author)
-                                           <li><strong>Autor:</strong> <a href="{{ route('catalog.route.author', ['author' => $prod->author]) }}">{{ $prod->author->title }} </a></li>
+                                   <ul class="product-view__info-list">
+                                       @if ($showAuthorLink)
+                                           <li><strong>Autor:</strong> <a href="{{ route('catalog.route.author', ['author' => $prod->author]) }}">{{ $productAuthorLabel }} </a></li>
                                        @endif
-                                       @if ($prod->publisher)
-                                           <li><strong>Nakladnik:</strong> <a href="{{ route('catalog.route.publisher', ['publisher' => $prod->publisher]) }}">{{ $prod->publisher->title }}</a> </li>
+                                       @if ($showPublisherLink)
+                                           <li><strong>Nakladnik:</strong> <a href="{{ route('catalog.route.publisher', ['publisher' => $prod->publisher]) }}">{{ $productPublisherLabel }}</a> </li>
                                        @endif
                                        @if ($prod->isbn)
                                            <li><strong>EAN:</strong> {{ $prod->isbn }} </li>
@@ -322,44 +331,39 @@
                            </div>
                        </div>
                        <div class="accordion-item">
-                           <h3 class="accordion-header"><a class="accordion-button collapsed" href="#shippingOptions" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="shippingOptions"><i class="fa-regular fa-truck-fast text-muted lead align-middle mt-n1 me-2"></i>Opcije dostave</a></h3>
+                           <h3 class="accordion-header"><a class="accordion-button collapsed" href="#shippingOptions" role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="shippingOptions"><i class="fa-regular fa-truck-fast" aria-hidden="true"></i>Opcije dostave</a></h3>
                            <div class="accordion-collapse collapse" id="shippingOptions" data-bs-parent="#productPanels">
-                               <div class="accordion-body fs-sm">
+                               <div class="accordion-body">
 
                                    @foreach($shipping_methods as $shipping_method)
-                                       <div class="d-flex justify-content-between  py-2">
+                                       <div class="product-view__method-row">
                                            <div>
-                                               <div class="fw-semibold text-dark">{{ $shipping_method->title }}</div>
+                                               <div class="product-view__method-title">{{ $shipping_method->title }}</div>
                                                {{--  <div class="fs-sm text-muted"> Besplatna dostava za narudžbe iznad {{ config('settings.free_shipping') }}€</div>--}}
                                                @if ($prod->shipping_time)
-
-                                                   <span class=" fs-sm text-muted me-1"> Rok dostave: {{ $prod->shipping_time }}</span>
-
+                                                   <span class="product-view__method-description">Rok dostave: {{ $prod->shipping_time }}</span>
                                                @endif
                                            </div>
-                                           <div>{{ $shipping_method->data->price }}€ </div>
+                                           <strong>{{ $shipping_method->data->price }}€</strong>
                                        </div>
                                    @endforeach
 
                                </div>
-                               <small class="mt-2"></small>
                            </div>
                        </div>
                        <div class="accordion-item">
-                           <h3 class="accordion-header"><a class="accordion-button collapsed" href="#localStore" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="localStore"><i class="fa-regular fa-credit-card text-muted fs-lg align-middle mt-n1 me-2"></i>Načini plaćanja</a></h3>
+                           <h3 class="accordion-header"><a class="accordion-button collapsed" href="#localStore" role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="localStore"><i class="fa-regular fa-credit-card" aria-hidden="true"></i>Načini plaćanja</a></h3>
                            <div class="accordion-collapse collapse" id="localStore" data-bs-parent="#productPanels">
-                               <div class="accordion-body fs-sm">
-
-
+                               <div class="accordion-body">
                                    @foreach($payment_methods as $payment_method)
                                        @if($prod->origin == 'Engleski' and $payment_method->code == 'cod' )
 
                                        @else
-                                           <div class="d-flex justify-content-between  py-2">
+                                           <div class="product-view__method-row">
                                                <div>
-                                                   <div class="fw-semibold text-dark">{{ $payment_method->title }}</div>
+                                                   <div class="product-view__method-title">{{ $payment_method->title }}</div>
                                                    @if (isset($payment_method->data->description))
-                                                       <div class="fs-sm text-muted">{{ $payment_method->data->description }}</div>
+                                                       <div class="product-view__method-description">{{ $payment_method->data->description }}</div>
                                                    @endif
                                                </div>
                                            </div>
@@ -373,86 +377,76 @@
                        </div>
                    </div>
                    <!-- Sharing-->
-                   <!-- ShareThis BEGIN --><div class="sharethis-inline-share-buttons"></div><!-- ShareThis END -->
+                   <div class="product-view__share">
+                       <span>Podijelite naslov</span>
+                       <!-- ShareThis BEGIN --><div class="sharethis-inline-share-buttons"></div><!-- ShareThis END -->
+                   </div>
+
+                   @if ($showAuthorLink || $showPublisherLink || $productEyebrow)
+                       <nav class="product-view__explore" aria-label="Istražite povezane naslove">
+                           <h2>Istražite još</h2>
+                           <div class="product-view__explore-links">
+                               @if ($showAuthorLink)
+                                   <a class="btn btn-outline-primary product-view__explore-link" href="{{ route('catalog.route.author', ['author' => $prod->author]) }}">
+                                       Još knjiga autora {{ $productAuthorLabel }}
+                                   </a>
+                               @endif
+                               @if ($showPublisherLink)
+                                   <a class="btn btn-outline-primary product-view__explore-link" href="{{ route('catalog.route.publisher', ['publisher' => $prod->publisher]) }}">
+                                       Više od nakladnika {{ $productPublisherLabel }}
+                                   </a>
+                               @endif
+                               @if ($productEyebrow)
+                                   <a class="btn btn-outline-primary product-view__explore-link" href="{{ $productEyebrowUrl }}">
+                                       Kategorija {{ $productEyebrow }}
+                                   </a>
+                               @endif
+                           </div>
+                       </nav>
+                   @endif
                </div>
            </div>
        </section>
        <!-- Related products-->
 
-       <section class="mx-n2 pb-2 px-2 mb-xl-3" id="tabs_widget">
-           <div class="bg-light px-2 mb-3 shadow rounded-3">
+       <section class="product-view__details" id="tabs_widget">
+           <div class="product-view__panel product-view__details-panel">
                <!-- Tabs-->
-               <ul class="nav nav-tabs" role="tablist">
-                   <li class="nav-item"><a class="nav-link py-4 px-sm-4 active" href="#specs" data-bs-toggle="tab" role="tab"><span>Opis</span> </a></li>
-                    <li class="nav-item"><a class="nav-link py-4 px-sm-4" href="#reviews" data-bs-toggle="tab" role="tab"><span>Recenzije ({{ $reviews->count() }})</span></a></li>
+               <ul class="nav nav-tabs product-view__tabs" role="tablist">
+                   <li class="nav-item"><a class="nav-link active" href="#specs" data-bs-toggle="tab" role="tab"><span>{{ $productHasDescription ? 'Opis' : 'Detalji' }}</span> </a></li>
+                    <li class="nav-item"><a class="nav-link" href="#reviews" data-bs-toggle="tab" role="tab"><span>Recenzije ({{ $reviews->count() }})</span></a></li>
                </ul>
-               <div class="px-4 pt-lg-3 pb-3 mb-5">
-                   <div class="tab-content px-lg-3">
+               <div class="product-view__details-body">
+                   <div class="tab-content">
                        <!-- Tech specs tab-->
                        <div class="tab-pane fade show active" id="specs" role="tabpanel">
                            <!-- Specs table-->
-                           <div class="row pt-2">
-                               <div class="col-lg-7 col-sm-7 d-flex flex-column">
+                           <div class="row product-view__description-grid{{ $productHasDescription ? '' : ' product-view__description-grid--metadata-only' }}">
+                               @if ($productHasDescription)
+                                   <div class="col-md-7 d-flex flex-column product-view__description-copy">
+                                       <h3 class="product-view__minor-heading">Sažetak</h3>
+                                       <div class="product-view__description-text">
+                                           {!! $productDescriptionHtml !!}
+                                       </div>
 
-                                   {{-- Naziv i autor --}}
-                                   <h2 class="h5 mb-2 pb-0">{{ $prod->name }}</h2>
-                                   @if ($prod->author)
-                                       <h3 class="h6 mb-4">{{ $prod->author->title }}</h3>
-                                   @endif
-
-                                   {{-- Sažetak i opis --}}
-                                   <p class="h6">Sažetak</p>
-                                   <div class="fs-md pb-2 mb-4">
-                                       {!! $prod->description !!}
-                                   </div>
-
-                                   {{-- Autor i tagovi na dnu --}}
-                                   @if ($prod->author || !empty($prod->tags))
-                                       <div class="mt-auto pt-3 pb-4">
-                                           @if ($prod->author)
-                                               <a class="btn btn-outline-primary btn-sm btn-shadow me-2 mb-2"
-                                                  href="{{ route('catalog.route.author', ['author' => $prod->author]) }}">
-                                                   #{{ $prod->author->title }}
-                                               </a>
-                                           @endif
-
-                                           @if(!empty($prod->tags))
-                                               @foreach($prod->tags as $tag)
-                                                   <a class="btn btn-outline-primary btn-sm btn-shadow me-2 mb-2"
+                                       @if(!empty($prod->tags))
+                                           <div class="product-view__tags">
+                                               @if(!empty($prod->tags))
+                                                   @foreach($prod->tags as $tag)
+                                                       <a class="btn btn-outline-primary btn-sm"
                                                       href="{{ route('tag', ['pojam' => $tag]) }}">
                                                        #{{ $tag }}
                                                    </a>
-                                               @endforeach
-                                           @endif
-                                       </div>
-                                   @endif
-                               </div>
-
-                               <div class="col-lg-5 col-sm-5">
-                                   <h3 class="h6">Dodatne informacije</h3>
-                                   <ul class="list-unstyled fs-md pb-2">
-
-                                       @if ($prod->author)
-                                           <li class="d-flex justify-content-between pb-2 border-bottom">
-                                               <span class="text-muted">Autor:</span>
-                                               <span>
-                        <a href="{{ route('catalog.route.author', ['author' => $prod->author]) }}">
-                            {{ Illuminate\Support\Str::limit($prod->author->title, 30) }}
-                        </a>
-                    </span>
-                                           </li>
+                                                   @endforeach
+                                               @endif
+                                           </div>
                                        @endif
+                                   </div>
+                               @endif
 
-                                       @if ($prod->publisher)
-                                           <li class="d-flex justify-content-between pb-2 border-bottom">
-                                               <span class="text-muted">Izdavač:</span>
-                                               <span>
-                        <a href="{{ route('catalog.route.publisher', ['publisher' => $prod->publisher]) }}">
-                            {{ Illuminate\Support\Str::limit($prod->publisher->title, 30) }}
-                        </a>
-                    </span>
-                                           </li>
-                                       @endif
+                               <div class="{{ $productHasDescription ? 'col-md-5' : 'col-12 product-view__metadata--full' }} product-view__metadata">
+                                   <h3 class="product-view__minor-heading">Dodatne informacije</h3>
+                                   <ul class="product-view__metadata-list">
 
                                        {{--@if ($prod->origin)
                                            <li class="d-flex justify-content-between pb-2 border-bottom">
@@ -461,55 +455,55 @@
                                        @endif--}}
 
                                        @if ($prod->year)
-                                           <li class="d-flex justify-content-between pb-2 border-bottom">
+                                           <li>
                                                <span class="text-muted">Godina izdanja:</span><span>{{ $prod->year }}</span>
                                            </li>
                                        @endif
 
                                        @if ($prod->origin)
-                                           <li class="d-flex justify-content-between pb-2 border-bottom">
+                                           <li>
                                                <span class="text-muted">{{ $productLanguageCount > 1 ? 'Jezici:' : 'Jezik:' }}</span><span>{{ $prod->origin }}</span>
                                            </li>
                                        @endif
 
                                        @if ($prod->pages)
-                                           <li class="d-flex justify-content-between pb-2 border-bottom">
+                                           <li>
                                                <span class="text-muted">Broj stranica:</span><span>{{ $prod->pages }}</span>
                                            </li>
                                        @endif
 
                                        @if ($prod->dimensions)
-                                           <li class="d-flex justify-content-between pb-2 border-bottom">
+                                           <li>
                                                <span class="text-muted">Dimenzije:</span><span>{{ $prod->dimensions.' cm' }}</span>
                                            </li>
                                        @endif
 
                                        @if ($prod->letter)
-                                           <li class="d-flex justify-content-between pb-2 border-bottom">
+                                           <li>
                                                <span class="text-muted">Pismo:</span><span>{{ $prod->letter }}</span>
                                            </li>
                                        @endif
 
                                        @if ($prod->condition)
-                                           <li class="d-flex justify-content-between pb-2 border-bottom">
+                                           <li>
                                                <span class="text-muted">Stanje:</span><span>{{ $prod->condition }}</span>
                                            </li>
                                        @endif
 
                                        @if ($prod->binding)
-                                           <li class="d-flex justify-content-between pb-2 border-bottom">
+                                           <li>
                                                <span class="text-muted">Uvez:</span><span>{{ $prod->binding }}</span>
                                            </li>
                                        @endif
 
                                    </ul>
 
-                                   @if (trim((string) $prod->note) !== '')
+                                   @if ($productNote !== '')
                                        <aside class="product-view__note" aria-label="Napomena o primjerku">
                                            <i class="fa-duotone fa-triangle-exclamation" aria-hidden="true"></i>
                                            <div>
                                                <h4 class="h6 mb-1">Napomena o primjerku</h4>
-                                               <p>{{ $prod->note }}</p>
+                                               <p>{{ $productNote }}</p>
                                            </div>
                                        </aside>
                                    @endif
@@ -518,13 +512,13 @@
 
                        </div>
                        <div class="tab-pane fade" id="reviews" role="tabpanel">
-                           <div class="row pt-3">
+                           <div class="row product-view__reviews-grid">
                                <div class="col-lg-7">
-                                   <h3 class="h6 mb-3">Recenzije kupaca</h3>
+                                   <h3 class="product-view__minor-heading">Recenzije kupaca</h3>
 
                                    @forelse ($reviews as $review)
-                                       <article class="border rounded-3 p-3 mb-3">
-                                           <div class="d-flex justify-content-between align-items-center mb-2">
+                                       <article class="product-view__review-card">
+                                           <div class="product-view__review-head">
                                                <div>
                                                    <strong>{{ $review->fname }} {{ $review->lname }}</strong>
                                                    @if ($review->is_verified_purchase)
@@ -533,7 +527,7 @@
                                                </div>
                                                <small class="text-muted">{{ \Illuminate\Support\Carbon::make($review->created_at)->format('d.m.Y.') }}</small>
                                            </div>
-                                           <div class="mb-2 text-warning">
+                                           <div class="product-view__review-stars">
                                                @for ($i = 1; $i <= 5; $i++)
                                                    <i class="fa-{{ $i <= (int) $review->stars ? 'solid' : 'regular' }} fa-star{{ $i <= (int) $review->stars ? ' active' : '' }}" aria-hidden="true"></i>
                                                @endfor
@@ -546,7 +540,8 @@
                                </div>
 
                                <div class="col-lg-5 mt-4 mt-lg-0">
-                                   <h3 class="h6 mb-3">Napišite recenziju</h3>
+                                   <div class="product-view__review-form">
+                                   <h3 class="product-view__minor-heading">Napišite recenziju</h3>
                                    @php
                                        $authUser = auth()->user();
                                        $detail = $authUser ? optional($authUser->details) : null;
@@ -557,7 +552,7 @@
                                            $defaultReviewName = $authUser->name;
                                        }
                                    @endphp
-                                   <form method="POST" action="{{ route('komentar.proizvoda') }}">
+                                   <form method="POST" action="{{ route('komentar.proizvoda') }}" id="review-form">
                                        @csrf
                                        <input type="hidden" name="product_id" value="{{ $prod->id }}">
                                        <input type="hidden" name="recaptcha" id="recaptcha_review">
@@ -589,7 +584,9 @@
                                        </div>
 
                                        <button type="submit" class="btn btn-primary w-100">Pošalji recenziju</button>
+                                       @include('front.layouts.partials.recaptcha-notice')
                                    </form>
+                                   </div>
                                </div>
                            </div>
                        </div>
@@ -598,13 +595,47 @@
                </div>
            </div>
        </section>
-       <!-- Product description-->
-       <section class="pb-5 mb-2 mb-xl-4">
-           <div class=" flex-wrap justify-content-between align-items-center  text-center">
-               <h2 class="h3 mb-4 pt-1 font-title me-3 text-center"> Možda vas zanima</h2>
-
+       @if($authorProducts->isNotEmpty())
+           <section class="product-view__products-section">
+               <div class="product-view__section-heading">
+                   <h2>Još knjiga autora {{ $productAuthorLabel }}</h2>
+                   <p>Drugi dostupni naslovi istog autora.</p>
+               </div>
+               <div class="tns-carousel tns-controls-static tns-controls-outside product-view__carousel">
+                   <div class="tns-carousel-inner" data-carousel-options='{"items":2,"controls":false,"nav":{{ $authorProducts->count() > 2 ? 'true' : 'false' }},"loop":false,"responsive":{"0":{"items":2,"gutter":5},"500":{"items":2,"gutter":10},"768":{"items":3,"nav":{{ $authorProducts->count() > 3 ? 'true' : 'false' }},"gutter":10},"1100":{"items":4,"controls":{{ $authorProducts->count() > 4 ? 'true' : 'false' }},"nav":{{ $authorProducts->count() > 4 ? 'true' : 'false' }},"gutter":10},"1300":{"items":5,"controls":{{ $authorProducts->count() > 5 ? 'true' : 'false' }},"nav":{{ $authorProducts->count() > 5 ? 'true' : 'false' }},"gutter":10}}}'>
+                       @foreach ($authorProducts as $authorProduct)
+                           <div>
+                               @include('front.catalog.category.product', ['product' => $authorProduct])
+                           </div>
+                       @endforeach
+                   </div>
+               </div>
+           </section>
+       @endif
+       @if($publisherProducts->isNotEmpty())
+           <section class="product-view__products-section">
+               <div class="product-view__section-heading">
+                   <h2>Više knjiga nakladnika {{ $productPublisherLabel }}</h2>
+                   <p>Drugi dostupni naslovi istog nakladnika.</p>
+               </div>
+               <div class="tns-carousel tns-controls-static tns-controls-outside product-view__carousel">
+                   <div class="tns-carousel-inner" data-carousel-options='{"items":2,"controls":false,"nav":{{ $publisherProducts->count() > 2 ? 'true' : 'false' }},"loop":false,"responsive":{"0":{"items":2,"gutter":5},"500":{"items":2,"gutter":10},"768":{"items":3,"nav":{{ $publisherProducts->count() > 3 ? 'true' : 'false' }},"gutter":10},"1100":{"items":4,"controls":{{ $publisherProducts->count() > 4 ? 'true' : 'false' }},"nav":{{ $publisherProducts->count() > 4 ? 'true' : 'false' }},"gutter":10},"1300":{"items":5,"controls":{{ $publisherProducts->count() > 5 ? 'true' : 'false' }},"nav":{{ $publisherProducts->count() > 5 ? 'true' : 'false' }},"gutter":10}}}'>
+                       @foreach ($publisherProducts as $publisherProduct)
+                           <div>
+                               @include('front.catalog.category.product', ['product' => $publisherProduct])
+                           </div>
+                       @endforeach
+                   </div>
+               </div>
+           </section>
+       @endif
+       <!-- Related products -->
+       <section class="product-view__products-section">
+           <div class="product-view__section-heading">
+               <h2>Možda vas zanima</h2>
+               <p>Još odabranih naslova iz slične kategorije.</p>
            </div>
-           <div class="tns-carousel tns-controls-static tns-controls-outside tns-nav-enabled pt-2">
+           <div class="tns-carousel tns-controls-static tns-controls-outside tns-nav-enabled product-view__carousel">
                <div class="tns-carousel-inner tns-nav-enabled" data-carousel-options='{"items": 2, "controls": false, "nav": true, "responsive": {"0":{"items":2, "gutter": 5},"500":{"items":2, "gutter": 10},"768":{"items":3, "gutter": 10}, "1100":{"items":4, "controls": true, "gutter": 10}, "1300":{"items":5, "controls": true, "gutter": 10}, "1600":{"items":5, "controls": true, "gutter": 10}}}'>
                    @foreach (collect($related)->where('quantity', '>', 0)->unique('id')->take(15) as $cat_product)
                        @if ($cat_product->id  != $prod->id)
@@ -618,12 +649,12 @@
        </section>
        @if(isset($recentProducts) && $recentProducts->isNotEmpty())
 
-       <section class="pb-5 mb-2 mb-xl-4">
-           <div class=" flex-wrap justify-content-between align-items-center  text-center">
-               <h2 class="h3 mb-4 pt-1 font-title me-3 text-center"> Nedavno pregledano</h2>
-
+       <section class="product-view__products-section">
+           <div class="product-view__section-heading">
+               <h2>Nedavno pregledano</h2>
+               <p>Naslovi koje ste otvorili tijekom ovog pregleda.</p>
            </div>
-           <div class="tns-carousel tns-controls-static tns-controls-outside tns-nav-enabled pt-2">
+           <div class="tns-carousel tns-controls-static tns-controls-outside tns-nav-enabled product-view__carousel">
                <div class="tns-carousel-inner tns-nav-enabled" data-carousel-options='{"items": 2, "controls": false, "nav": true, "responsive": {"0":{"items":2, "gutter": 5},"500":{"items":2, "gutter": 10},"768":{"items":3, "gutter": 10}, "1100":{"items":4, "controls": true, "gutter": 10}, "1300":{"items":5, "controls": true, "gutter": 10}, "1600":{"items":5, "controls": true, "gutter": 10}}}'>
                    @foreach ($recentProducts as $recent)
                        @if ($recent->id != $prod->id)
@@ -642,8 +673,6 @@
 
 @push('js_after')
 
-    <link rel="stylesheet" media="screen" href="{{ asset('js/slick/slick.css') }}">
-    <link rel="stylesheet" media="screen" href="{{ asset('js/slick/slick-theme.css') }}">
     <script src="{{ asset('js/slick/slick.min.js') }}"></script>
     <link rel="stylesheet" media="screen" href="{{ asset('js/simple-lightbox.css?v2.14.0') }}">
     <script src="{{ asset('js/simple-lightbox.js?v2.14.0') }}"></script>
@@ -689,7 +718,7 @@
             dots:           false,
             centerMode:     false,
             focusOnSelect:  true,
-            loop:           true,
+            infinite:       true,
 
         });
 
@@ -713,26 +742,11 @@
         })();
     </script>
 
-    @if (config('services.recaptcha.sitekey'))
-        <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.sitekey') }}"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                if (typeof grecaptcha === 'undefined') {
-                    return;
-                }
-
-                grecaptcha.ready(function () {
-                    grecaptcha.execute('{{ config('services.recaptcha.sitekey') }}', {action: 'review'})
-                        .then(function (token) {
-                            var el = document.getElementById('recaptcha_review');
-                            if (el) {
-                                el.value = token;
-                            }
-                        });
-                });
-            });
-        </script>
-    @endif
+    @include('front.layouts.partials.recaptcha-js', [
+        'action' => 'review',
+        'fieldId' => 'recaptcha_review',
+        'formId' => 'review-form',
+    ])
 
     @include('front.layouts.modals.wishlist-email')
 @endpush

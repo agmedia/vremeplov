@@ -55,30 +55,10 @@
 
     @if (request()->routeIs(['index']))
 
-        <header class="container pt-4 text-center">
+        <header class="visually-hidden">
             <h1 class="h2 mb-2">Antikvarijat Vremeplov</h1>
             <p class="text-muted mb-0">Antikvarne i rabljene knjige, stare razglednice, plakati, časopisi i kolekcionarski predmeti.</p>
         </header>
-
-        <section class="container pt-4" aria-label="BOX NOW dostava">
-            <picture>
-                <source
-                    media="(max-width: 767.98px)"
-                    srcset="{{ config('settings.images_domain') . 'media/img/boxnow-banner-mobile.jpg' }}"
-                    width="610"
-                    height="610"
-                >
-                <img
-                    class="img-fluid d-block w-100 rounded-3"
-                    src="{{ config('settings.images_domain') . 'media/img/boxnow-banner-desktop.png' }}"
-                    width="2098"
-                    height="750"
-                    alt="BOX NOW – besplatna dostava, dostupna 24/7, brzo i pristupačno"
-                    fetchpriority="high"
-                    decoding="async"
-                >
-            </picture>
-        </section>
 
         {!! $page->description !!}
 

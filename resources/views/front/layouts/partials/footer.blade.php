@@ -1,6 +1,6 @@
 <!-- Footer-->
 
-<section class="footer-benefits" style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;" aria-label="Prednosti kupnje">
+<section class="footer-benefits" aria-label="Prednosti kupnje">
     <div class="container">
         <div class="row g-0 footer-benefits__grid">
             <div class="col-6 col-lg-3">

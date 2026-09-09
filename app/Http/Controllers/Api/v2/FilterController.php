@@ -381,8 +381,16 @@ class FilterController extends Controller
 
 
         $products = (new Product())->filter($request)
-                                   ->with('author')
+                                   ->cardData()
                                    ->paginate(config('settings.pagination.front'));
+
+        $products->getCollection()->each(function (Product $product) {
+            $category = $product->categories->firstWhere('parent_id', 0) ?: $product->categories->first();
+            $product->setAttribute('card_category', $category ? [
+                'title' => $category->title,
+                'url' => $category->url(),
+            ] : null);
+        });
 
 
         return response()->json($products);

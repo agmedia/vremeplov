@@ -34,7 +34,7 @@ class CreateNewUser implements CreatesNewUsers
         ])->validate();
 
         // Recaptcha
-        $recaptcha = (new Recaptcha())->check($input);
+        $recaptcha = (new Recaptcha())->check($input, 'register');
 
         if ( ! $recaptcha->ok()) {
             return back()->withErrors(['error' => 'ReCaptcha Error! Kontaktirajte administratora!']);

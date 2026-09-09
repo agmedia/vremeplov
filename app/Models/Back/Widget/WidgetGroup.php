@@ -41,6 +41,16 @@ class WidgetGroup extends Model
 
 
     /**
+     * All widgets are needed in the admin so a disabled item can be edited
+     * and enabled again. The storefront continues to use widgets().
+     */
+    public function allWidgets()
+    {
+        return $this->hasMany(Widget::class, 'group_id', 'id')->orderBy('sort_order');
+    }
+
+
+    /**
      * @return array
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
@@ -117,7 +127,6 @@ class WidgetGroup extends Model
             'template'   => $this->request->template,
             'type'       => null,
             'title'      => $this->request->title,
-            'slug'       => Str::slug($this->request->title),
             'width'      => $this->request->width ?: 12,
             'status'     => (isset($this->request->status) and $this->request->status == 'on') ? 1 : 0,
             'updated_at' => Carbon::now()

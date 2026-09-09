@@ -18,10 +18,10 @@
         <div class="d-sm-flex justify-content-between align-items-center my-2 pb-3 border-bottom" v-for="item in (($store.state.cart && $store.state.cart.items) || [])">
             <div class="d-block d-sm-flex align-items-center text-center text-sm-start">
                 <a class="d-inline-block flex-shrink-0 mx-auto me-sm-4" :href="base_path + item.attributes.path">
-                    <img :src="item.associatedModel.image" width="120" :alt="item.name" :title="item.name">
+                    <img :src="item.associatedModel.image" width="120" :alt="itemName(item)" :title="itemName(item)">
                 </a>
                 <div class="pt-2">
-                    <h3 class="product-title fs-base mb-2"><a :href="base_path + item.attributes.path">{{ item.name }}</a></h3>
+                    <h3 class="product-title fs-base mb-2"><a :href="base_path + item.attributes.path">{{ itemName(item) }}</a></h3>
 
                     <div class="fs-lg text-primary pt-2">{{ Object.keys(item.conditions).length ? item.associatedModel.main_special_text : item.associatedModel.main_price_text }}</div>
                     <div class="fs-sm text-dark pt-2" v-if="item.associatedModel.secondary_price">{{ Object.keys(item.conditions).length ? item.associatedModel.secondary_special_text : item.associatedModel.secondary_price_text }}</div>
@@ -73,6 +73,12 @@
         },
 
         methods: {
+
+            itemName(item) {
+                const product = item && item.associatedModel ? item.associatedModel : {};
+
+                return product.card_name || (item && item.card_name) || (item && item.name) || 'Artikl';
+            },
 
             /**
              *

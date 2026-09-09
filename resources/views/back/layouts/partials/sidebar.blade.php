@@ -99,7 +99,7 @@
 
                 <li class="nav-main-item">
                     <a class="nav-main-link{{ request()->routeIs(['orders', 'orders.*']) ? ' active' : '' }}" href="{{ route('orders') }}">
-                        <i class="nav-main-link-icon si si-basket-loaded"></i>
+                        <i class="nav-main-link-icon fa-regular fa-bag-shopping"></i>
                         <span class="nav-main-link-name">Narudžbe</span>
                     </a>
                 </li>

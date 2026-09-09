@@ -36,6 +36,12 @@ class AuthorSearch extends Component
      */
     public $list = null;
 
+    /** @var string */
+    public $inputName = 'author_id';
+
+    /** @var bool */
+    public $allowCreate = true;
+
     /**
      * @var array
      */

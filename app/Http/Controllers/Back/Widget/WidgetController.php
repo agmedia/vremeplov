@@ -8,6 +8,7 @@ use App\Models\Back\Widget\WidgetGroup;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class WidgetController extends Controller
@@ -26,7 +27,7 @@ class WidgetController extends Controller
             $query->where('group_id', $request->input('group'));
         }
 
-        $groups = $query->with('widgets')->paginate(config('settings.pagination.items'));
+        $groups = $query->with('allWidgets')->paginate(config('settings.pagination.items'));
 
         return view('back.widget.index', compact('groups'));
     }
@@ -44,7 +45,9 @@ class WidgetController extends Controller
             $selected = WidgetGroup::where('id', $request->input('group'))->first();
 
             if ($selected) {
-                return view('back.widget.templates.' . $selected->template, compact('selected', 'sizes'));
+                $catalogGroups = $this->catalogGroups();
+
+                return view('back.widget.templates.' . $selected->template, compact('selected', 'sizes', 'catalogGroups'));
             }
         }
 
@@ -98,6 +101,7 @@ class WidgetController extends Controller
 
         if ($widget->group) {
             $selected = $widget->group;
+            $catalogGroups = $this->catalogGroups();
 
             $widget->data = @unserialize($widget->data, ['allowed_classes' => false]);
             $widget->data = is_array($widget->data) ? $widget->data : [];
@@ -108,7 +112,7 @@ class WidgetController extends Controller
                 $widget->links = collect($widget->data['list'])->flatten()->toJson();
             }
 
-            return view('back.widget.templates.' . $widget->group->template, compact('selected', 'sizes', 'widget'));
+            return view('back.widget.templates.' . $widget->group->template, compact('selected', 'sizes', 'widget', 'catalogGroups'));
         }
 
         $groups = WidgetGroup::where('status', 1)->get();
@@ -167,6 +171,17 @@ class WidgetController extends Controller
     private function flush(): void
     {
         Artisan::call('optimize:clear');
+    }
+
+
+    private function catalogGroups()
+    {
+        return DB::table('products')
+            ->whereNotNull('group')
+            ->where('group', '!=', '')
+            ->distinct()
+            ->orderBy('group')
+            ->pluck('group');
     }
 
 

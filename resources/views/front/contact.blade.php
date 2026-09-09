@@ -73,7 +73,7 @@
 
             <div class="col-12 col-sm-6 mb-5 ">
                 <h2 class="h4 mb-4">Pošaljite upit</h2>
-                <form action="{{ route('poruka') }}" method="POST" class="mb-3" data-analytics-form="contact">
+                <form action="{{ route('poruka') }}" method="POST" class="mb-3" id="contact-form" data-analytics-form="contact">
                     @csrf
                     <div class="row g-3">
                         <div class="col-sm-12">
@@ -97,6 +97,7 @@
                             <textarea class="form-control" id="cf-message" rows="6" placeholder="" name="message"></textarea>
                             @error('message')<div class="invalid-feedback">Molimo upišite poruku!</div>@enderror
                             <button class="btn btn-primary mt-4" type="submit">Pošaljite upit</button>
+                            @include('front.layouts.partials.recaptcha-notice')
                         </div>
                     </div>
                     <input type="hidden" name="recaptcha" id="recaptcha">
@@ -125,7 +126,11 @@
 @endsection
 
 @push('js_after')
-    @include('front.layouts.partials.recaptcha-js')
+    @include('front.layouts.partials.recaptcha-js', [
+        'action' => 'contact',
+        'fieldId' => 'recaptcha',
+        'formId' => 'contact-form',
+    ])
     @if (session()->has('success'))
         <script>window.VremeplovAnalytics.track('generate_lead', {form_name: 'contact'});</script>
     @endif

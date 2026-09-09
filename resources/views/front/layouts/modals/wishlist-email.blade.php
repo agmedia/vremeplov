@@ -20,6 +20,7 @@
                     <input type="hidden" name="recaptcha" id="recaptcha_wishlist">
                     <input type="hidden" name="product_id" value="{{ $prod->id }}">
                     <button class="btn btn-primary btn-shadow d-block w-100" type="submit">Obavijesti me</button>
+                    @include('front.layouts.partials.recaptcha-notice')
                 </form>
             </div>
         </div>
@@ -27,29 +28,9 @@
 </div>
 
 @push('js_after')
-    @if (config('services.recaptcha.sitekey'))
-    <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.sitekey') }}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var modalEl = document.getElementById('wishlist-modal');
-
-            if (!modalEl || typeof grecaptcha === 'undefined') {
-                return;
-            }
-
-            modalEl.addEventListener('shown.bs.modal', function () {
-                grecaptcha.ready(function () {
-                    grecaptcha.execute('{{ config('services.recaptcha.sitekey') }}', {action: 'wishlist'})
-                        .then(function (token) {
-                            var el = document.getElementById('recaptcha_wishlist');
-
-                            if (el) {
-                                el.value = token;
-                            }
-                        });
-                });
-            });
-        });
-    </script>
-    @endif
+    @include('front.layouts.partials.recaptcha-js', [
+        'action' => 'wishlist',
+        'fieldId' => 'recaptcha_wishlist',
+        'formId' => 'wishlist-tab',
+    ])
 @endpush

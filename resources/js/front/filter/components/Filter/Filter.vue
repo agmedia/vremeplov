@@ -20,14 +20,20 @@
                         <i class="fa-regular fa-chevron-down" :class="{'is-open': openSections.categories}" aria-hidden="true"></i>
                     </button>
                     <div class="catalog-filter-section__content" v-show="openSections.categories">
-                        <ul class="catalog-filter-options">
-                            <li v-for="item in categories" :key="item.id">
+                        <label class="catalog-filter-search" v-if="categories.length > 8">
+                            <span class="visually-hidden">Pretraži kategorije</span>
+                            <input type="search" v-model.trim="searchCategory" class="form-control" placeholder="Pretraži kategorije">
+                            <i class="fa-regular fa-magnifying-glass" aria-hidden="true"></i>
+                        </label>
+                        <ul class="catalog-filter-options" v-if="filteredCategories.length">
+                            <li v-for="item in filteredCategories" :key="item.id">
                                 <a class="catalog-filter-category" :class="{'is-active': item.active}" :href="item.url">
                                     <span>{{ item.title }}</span>
                                     <span class="catalog-filter-count">{{ formatCount(item.count) }}</span>
                                 </a>
                             </li>
                         </ul>
+                        <p class="catalog-filter-empty" v-else>Nema kategorija za taj pojam.</p>
                     </div>
                 </section>
 
@@ -174,6 +180,7 @@ export default {
             start: '',
             end: '',
             search_query: '',
+            searchCategory: '',
             searchAuthor: '',
             searchPublisher: '',
             show_authors: false,
@@ -195,6 +202,16 @@ export default {
     },
 
     computed: {
+        filteredCategories() {
+            const query = this.normalizeSearchValue(this.searchCategory);
+
+            if (!query) {
+                return this.categories;
+            }
+
+            return this.categories.filter(item => this.normalizeSearchValue(item.title).includes(query));
+        },
+
         activeFilterCount() {
             return (this.start ? 1 : 0)
                 + (this.end ? 1 : 0)
@@ -354,7 +371,7 @@ export default {
             this.end = query.end || '';
             this.search_query = query.pojam || '';
             this.selectedAuthors = this.parseList(query.autor, '+');
-            this.selectedPublishers = this.parseList(query.nakladnik, '+');
+            this.selectedPublishers = this.publisher ? [] : this.parseList(query.nakladnik, '+');
 
             ['pismo', 'stanje', 'uvez', 'jezik'].forEach(key => {
                 this.$set(this.selectedCharacteristics, key, this.parseList(query[key], '|'));
@@ -388,6 +405,7 @@ export default {
             }
             if (this.publisher) {
                 params.publisher = this.publisher;
+                params.nakladnik = this.publisher;
             }
 
             return params;
@@ -426,6 +444,7 @@ export default {
         cleanQuery() {
             this.start = '';
             this.end = '';
+            this.searchCategory = '';
             this.selectedAuthors = [];
             this.selectedPublishers = [];
             ['pismo', 'stanje', 'uvez', 'jezik'].forEach(key => this.$set(this.selectedCharacteristics, key, []));
@@ -480,6 +499,13 @@ export default {
 
         facetId(key, facetIndex, itemIndex) {
             return `filter-${key}-${facetIndex}-${itemIndex}`;
+        },
+
+        normalizeSearchValue(value) {
+            return String(value || '')
+                .toLocaleLowerCase('hr-HR')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '');
         },
 
         formatCount(value) {

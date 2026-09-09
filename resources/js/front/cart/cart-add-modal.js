@@ -45,10 +45,25 @@ function resolveImage(cartItem) {
     return product.thumb || product.image || DEFAULT_IMAGE;
 }
 
+function resolveProductName(cartItem) {
+    const product = cartItem?.associatedModel || {};
+    const name = String(product.card_name || cartItem?.card_name || cartItem?.name || 'Odabrani artikl').trim();
+
+    if (! name || name !== name.toLocaleUpperCase('hr-HR')) {
+        return name || 'Odabrani artikl';
+    }
+
+    return name
+        .toLocaleLowerCase('hr-HR')
+        .replace(/(^|[\s([\-{\u2013\u2014])([a-z\u010d\u0107\u0111\u0161\u017e])/g, (match, prefix, letter) => (
+            prefix + letter.toLocaleUpperCase('hr-HR')
+        ));
+}
+
 function buildModalHtml(cartItem, requestedItem) {
     const quantityAdded = resolveQuantity(requestedItem?.quantity);
     const quantityInCart = resolveQuantity(cartItem?.quantity);
-    const productName = cartItem?.name || 'Odabrani artikl';
+    const productName = resolveProductName(cartItem);
     const price = resolvePrice(cartItem);
 
     return `

@@ -47,12 +47,83 @@ class Product extends Model
         'secondary_price_text',
         'secondary_special',
         'secondary_special_text',
+        'card_name',
     ];
 
     /**
      * @var
      */
     protected $eur;
+
+
+    /**
+     * Calm down legacy all-caps titles on customer-facing product cards without
+     * changing the stored catalog name or already well-formatted titles.
+     */
+    public function getCardNameAttribute(): string
+    {
+        $name = trim(htmlspecialchars_decode((string) $this->name, ENT_QUOTES));
+
+        if ($name === '' || ! preg_match('/\p{L}/u', $name)) {
+            return $name;
+        }
+
+        preg_match_all('/\p{L}/u', $name, $letters);
+        $uppercaseLetters = 0;
+        $lowercaseLetters = 0;
+
+        foreach ($letters[0] as $letter) {
+            $uppercase = mb_strtoupper($letter, 'UTF-8');
+            $lowercase = mb_strtolower($letter, 'UTF-8');
+
+            if ($uppercase === $lowercase) {
+                continue;
+            }
+
+            if ($letter === $uppercase) {
+                $uppercaseLetters++;
+            } else {
+                $lowercaseLetters++;
+            }
+        }
+
+        $casedLetterCount = $uppercaseLetters + $lowercaseLetters;
+        $isLegacyUppercaseTitle = $casedLetterCount >= 4
+            && ($uppercaseLetters / $casedLetterCount) >= .8;
+
+        if (! $isLegacyUppercaseTitle) {
+            return $name;
+        }
+
+        $protectedTokens = [];
+        $name = preg_replace_callback(
+            '/\b(?:(DVD|CD|VHS|LP|EP|HNK|HRT|HAZU|JAZU|ISBN|ISSN|EAN|EU|RH|BIH|SAD|SFRJ|SSSR|NOB|NATO|UNESCO|PDF|TV|PC|AI|VBZ)(?:-(\p{L}{1,8}))?|([IVXLCDM]{2,}))\b/u',
+            static function (array $match) use (&$protectedTokens): string {
+                $placeholder = "\u{E000}" . count($protectedTokens) . "\u{E001}";
+                $token = ! empty($match[1]) ? $match[1] : $match[3];
+                $token = $token === 'BIH' ? 'BiH' : $token;
+
+                if (! empty($match[2])) {
+                    $token .= '-' . mb_strtolower($match[2], 'UTF-8');
+                }
+
+                $protectedTokens[$placeholder] = $token;
+
+                return $placeholder;
+            },
+            $name
+        ) ?: $name;
+
+        $name = mb_convert_case(mb_strtolower($name, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+        $name = preg_replace_callback(
+            '/(?<=\s)(I|Te|Pa|Ni|Niti|A|Ali|Nego|No|Ili|U|Na|Za|Od|Do|Iz|S|Sa|O|Po|Pri|Prema|Kroz|Bez)(?=\s)/u',
+            static fn (array $match): string => mb_strtolower($match[0], 'UTF-8'),
+            $name
+        );
+        $name = strtr($name, $protectedTokens);
+
+        return preg_replace('/\s+([,:;.!?])/u', '$1', $name) ?: $name;
+    }
 
 
     /**
@@ -532,7 +603,7 @@ class Product extends Model
      */
     public function scopePopular(Builder $query, $count = 12): Builder
     {
-        return $query->where('status', 1)->orderBy('viewed', 'desc')->limit($count);
+        return $query->where('status', 1)->orderByDesc('viewed')->orderByDesc('id')->limit($count);
     }
 
 
@@ -555,6 +626,18 @@ class Product extends Model
     public function scopeBasicData(Builder $query): Builder
     {
         return $query->select('id', 'name', 'url', 'image', 'price', 'special', 'author_id');
+    }
+
+
+    /**
+     * Relationships and aggregates shared by every customer-facing card.
+     */
+    public function scopeCardData(Builder $query): Builder
+    {
+        return $query
+            ->with(['author', 'action', 'categories'])
+            ->withCount('reviews')
+            ->withAvg('reviews', 'stars');
     }
 
     /*******************************************************************************

@@ -195,21 +195,21 @@ class Helper
         $related = null;
 
         if ($subcat) {
-            $related = $subcat->products()->inRandomOrder()->take(10)->get();
+            $related = $subcat->products()->cardData()->inRandomOrder()->take(10)->get();
 
         } else {
             if ($cat) {
-                $related = $cat->products()->inRandomOrder()->take(10)->get();
+                $related = $cat->products()->cardData()->inRandomOrder()->take(10)->get();
             }
         }
 
         if ( ! $related) {
-            $related = Product::query()->where('group', $group)->inRandomOrder()->take(10)->get();
+            $related = Product::query()->cardData()->where('group', $group)->inRandomOrder()->take(10)->get();
         }
 
         if ($related->count() < 9) {
             $related = $related
-                ->merge(Product::query()->inRandomOrder()->take(10 - $related->count())->get())
+                ->merge(Product::query()->cardData()->inRandomOrder()->take(10 - $related->count())->get())
                 ->unique('id')
                 ->values();
         }
@@ -228,6 +228,14 @@ class Helper
         if ($description == '') {
             return '';
         }
+
+        // CKEditor wraps standalone widget tokens in paragraphs. Strip only
+        // those wrappers so the generated <section> elements remain valid HTML.
+        $description = preg_replace(
+            '~<p\b[^>]*>(?:\s|&nbsp;|<br\s*/?>)*(\+\+[a-z0-9_-]+\+\+)(?:\s|&nbsp;|<br\s*/?>)*</p>~i',
+            '$1',
+            $description
+        ) ?? $description;
 
         $cache_key = md5($description);
 
@@ -362,14 +370,41 @@ class Helper
         } else {
             foreach ($loadedWidgets as $widget) {
                 $data = static::decodeWidgetData($widget->data);
+                $imagePath = ltrim((string) $widget->image, '/');
+                $benefitIcons = ['clock', 'box', 'location-dot', 'thumbs-up', 'truck'];
+                $benefits = [];
+
+                for ($benefitNumber = 1; $benefitNumber <= 3; $benefitNumber++) {
+                    $text = trim((string) ($data['benefit_' . $benefitNumber . '_text'] ?? ''));
+
+                    if ($text === '') {
+                        continue;
+                    }
+
+                    $icon = (string) ($data['benefit_' . $benefitNumber . '_icon'] ?? 'clock');
+
+                    $benefits[] = [
+                        'text' => $text,
+                        'icon' => in_array($icon, $benefitIcons, true) ? $icon : 'clock',
+                    ];
+                }
 
                 $widgets[] = [
                     'id'       => $widget->id,
                     'title'    => $widget->title,
                     'subtitle' => $widget->subtitle,
+                    'eyebrow'  => trim((string) ($data['eyebrow'] ?? '')),
+                    'eyebrow_icon' => in_array(($data['eyebrow_icon'] ?? ''), $benefitIcons, true)
+                        ? $data['eyebrow_icon']
+                        : 'truck',
+                    'benefits' => $benefits,
                     'color'    => $widget->badge,
                     'url'      => $widget->url,
-                    'image'    => $widget->thumb,
+                    'image'    => $imagePath
+                        ? (is_file(public_path($imagePath))
+                            ? asset($imagePath)
+                            : config('settings.images_domain') . $imagePath)
+                        : null,
                     'button_text' => $data['button_text'] ?? 'Pogledajte ponudu',
                     'width'    => $widget->width,
                     'right'    => (isset($data['right']) && $data['right'] == 'on') ? 1 : null,
@@ -451,6 +486,10 @@ class Helper
 
         $prods->active()->available();
 
+        if ( ! empty($data['catalog_group'])) {
+            $prods->where('group', $data['catalog_group']);
+        }
+
         if (isset($data['best_selling']) && $data['best_selling'] == 'on') {
             static::applyBestSellingOrder($prods);
         } elseif (isset($data['popular']) && $data['popular'] == 'on') {
@@ -467,7 +506,7 @@ class Helper
             $prods->whereIn('id', $data['list']);
         }
 
-        return $prods->with(['author', 'action']);
+        return $prods->cardData();
     }
 
 
@@ -483,7 +522,7 @@ class Helper
 
         static::applyProductWidgetOrder($products, $data);
 
-        return $products->with(['author', 'action', 'categories'])->limit(15);
+        return $products->cardData()->limit(15);
     }
 
 
@@ -497,7 +536,7 @@ class Helper
 
         static::applyProductWidgetOrder($products, $data);
 
-        return $products->with(['author', 'publisher', 'action'])->limit(15);
+        return $products->with('publisher')->cardData()->limit(15);
     }
 
 
@@ -506,7 +545,7 @@ class Helper
         if (isset($data['best_selling']) && $data['best_selling'] == 'on') {
             static::applyBestSellingOrder($products);
         } elseif (isset($data['popular']) && $data['popular'] == 'on') {
-            $products->orderByDesc('viewed');
+            $products->orderByDesc('viewed')->orderByDesc('id');
         } else {
             $products->orderByDesc(isset($data['new']) ? 'created_at' : 'updated_at');
         }
@@ -545,7 +584,9 @@ class Helper
         $blogs->active();
 
         if (isset($data['new']) && $data['new'] == 'on') {
-            $blogs->last();
+            // Automatski način uvijek prikazuje najnovije objave, ne ručni
+            // izbor koji je možda ostao spremljen od ranije.
+            return $blogs->latest('created_at')->limit(5);
         }
 
         if (isset($data['popular']) && $data['popular'] == 'on') {
@@ -636,6 +677,10 @@ class Helper
         $reviews = (new Review())->newQuery()
             ->where('status', 1)
             ->with(['product.author']);
+
+        if (isset($data['featured_only']) && $data['featured_only'] == 'on') {
+            $reviews->where('featured', 1);
+        }
 
         if ( ! empty($data['list'])) {
             $reviews->whereIn('id', $data['list']);

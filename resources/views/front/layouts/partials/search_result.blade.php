@@ -5,7 +5,7 @@
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
-                <h3 class="alert-heading font-size-h4 my-2">{{ $product->name }}</h3>
+                <h3 class="alert-heading font-size-h4 my-2">{{ $product->card_name }}</h3>
                 <p class="mb-0">{{ $product->price }}</p>
             </div>
         @endforeach

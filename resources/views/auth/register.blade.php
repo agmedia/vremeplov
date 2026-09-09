@@ -77,7 +77,7 @@
                                 </a>
                                 <p class="text-uppercase font-w700 font-size-sm text-muted">Napravite korisnički račun</p>
                             </div>
-                            <form method="POST" action="{{ route('register') }}">
+                            <form method="POST" action="{{ route('register') }}" id="register-form">
                                 @csrf
                                 <div class="form-group">
                                     <input type="text" class="form-control form-control-alt" id="name" name="name" placeholder="Korisničko ime" value="{{ old('name') }}">
@@ -117,6 +117,7 @@
                                     <button type="submit" class="btn  btn-block btn-hero-primary">
                                         <i class="fa fa-fw fa-plus mr-1"></i> Registrirajte se
                                     </button>
+                                    @include('front.layouts.partials.recaptcha-notice')
                                 </div>
                                 <input type="hidden" name="recaptcha" id="recaptcha">
                             </form>
@@ -138,5 +139,9 @@
 @endsection
 
 @push('js_after')
-    @include('front.layouts.partials.recaptcha-js')
+    @include('front.layouts.partials.recaptcha-js', [
+        'action' => 'register',
+        'fieldId' => 'recaptcha',
+        'formId' => 'register-form',
+    ])
 @endpush

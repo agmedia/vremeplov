@@ -91,7 +91,7 @@
 
     <!-- Main Theme Styles + Bootstrap-->
     <link rel="stylesheet" media="screen" href="/css/theme.css?v=1.91">
-    <link rel="stylesheet" media="screen" href="/css/front-vremeplov.css?v=1.0.12">
+    <link rel="stylesheet" media="screen" href="/css/front-vremeplov.css?v=1.0.40">
     @include('front.layouts.partials.analytics')
 
     @stack('css_after')
@@ -114,25 +114,26 @@
    <small> Poštovani, zbog povećanog broja narudžbi povodom Interlibera, molimo vas za razumijevanje i strpljenje tijekom isporuke. Zahvaljujemo na vašem strpljenju i povjerenju.</small>
 </div>-->
 <!-- Light topbar -->
-<div class="topbar topbar-dark  bg-light position-relative" style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
+<div class="topbar topbar-dark site-topbar bg-light position-relative" style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
     <div class="container">
 
-        <div class="topbar-text text-nowrap  d-inline-block">
-            <span class=" me-1">Podrška</span>
-            <a class="topbar-link" href="tel:00385917627441">091 762 7441</a>
+        <div class="topbar-text site-topbar__contacts text-nowrap d-inline-flex align-items-center gap-3">
+            <a class="topbar-link d-inline-flex align-items-center" href="tel:00385917627441">
+                <i class="fa-regular fa-phone me-1 text-primary" aria-hidden="true"></i>
+                <span>091 762 7441</span>
+            </a>
+            <a class="topbar-link d-inline-flex align-items-center" href="mailto:{{ config('mail.admin') }}">
+                <i class="fa-regular fa-envelope me-2 text-primary" aria-hidden="true"></i>{{ config('mail.admin') }}
+            </a>
         </div>
         <div class="topbar-text  d-none  d-md-inline-block">Besplatna dostava U RH za narudžbe iznad 70 €</div>
-        <div class="ms-3 text-nowrap ">
+        <div class="site-topbar__social ms-3 text-nowrap d-none d-md-flex">
             <a class="topbar-link me-2 d-inline-block" aria-label="Pratite nas na Facebooku" href="https://www.facebook.com/antikavrijatvremeplov">
                 <i class="fa-brands fa-facebook-f"></i>
             </a>
 
             <a class="topbar-link me-2 d-inline-block" aria-label="Pratite nas na Instagramu" href="https://www.instagram.com/antikvarijatvremeplov">
                 <i class="fa-brands fa-instagram"></i>
-            </a>
-
-            <a class="topbar-link me-0 d-inline-block" aria-label="Pošaljite nam e-mail" href="mailto:{{ config('mail.from.address') }}">
-                <i class="fa-regular fa-envelope"></i>
             </a>
 
         </div>
@@ -174,7 +175,7 @@
 
 
 
-<script src="/js/cart.js?v=2.2.9"></script>
+<script src="/js/cart.js?v=2.3.5"></script>
 
 <script src="/js/theme.min.js?v=1.2"></script>
 

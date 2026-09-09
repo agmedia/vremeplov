@@ -43,7 +43,7 @@
                                 <div class="product-thumb">
 
                                     <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
-                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
+                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-bag-shopping"></i></button>
                                     </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga.jpg" alt="Product">
                                 </div>
                                 <div class="card-body">
@@ -68,7 +68,7 @@
                                 <div class="product-thumb">
 
                                     <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
-                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
+                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-bag-shopping"></i></button>
                                     </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga2.jpg" alt="Product">
                                 </div>
                                 <div class="card-body">
@@ -93,7 +93,7 @@
                                 <div class="product-thumb">
 
                                     <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
-                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
+                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-bag-shopping"></i></button>
                                     </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga3.jpg" alt="Product">
                                 </div>
                                 <div class="card-body">
@@ -118,7 +118,7 @@
                                 <div class="product-thumb">
 
                                     <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
-                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
+                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-bag-shopping"></i></button>
                                     </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga4.jpg" alt="Product">
                                 </div>
                                 <div class="card-body">
@@ -143,7 +143,7 @@
                                 <div class="product-thumb">
 
                                     <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
-                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
+                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-bag-shopping"></i></button>
                                     </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga3.jpg" alt="Product">
                                 </div>
                                 <div class="card-body">
@@ -179,7 +179,7 @@
                     <div class="card product-card-alt">
                         <div class="product-thumb">
                             <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-bag-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -204,7 +204,7 @@
                         <div class="product-thumb">
 
                             <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-bag-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga2.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -229,7 +229,7 @@
                         <div class="product-thumb">
 
                             <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-bag-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga3.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -254,7 +254,7 @@
                         <div class="product-thumb">
 
                             <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-bag-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga4.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -279,7 +279,7 @@
                         <div class="product-thumb">
 
                             <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-bag-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga3.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -354,7 +354,7 @@
                         <div class="product-thumb">
 
                             <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="#"><i class="fa-regular fa-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-bag-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -379,7 +379,7 @@
                         <div class="product-thumb">
 
                             <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-bag-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga2.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -404,7 +404,7 @@
                         <div class="product-thumb">
 
                             <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-bag-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga3.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -429,7 +429,7 @@
                         <div class="product-thumb">
 
                             <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-bag-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga4.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -454,7 +454,7 @@
                         <div class="product-thumb">
 
                             <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-bag-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga3.jpg" alt="Product">
                         </div>
                         <div class="card-body">

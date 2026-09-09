@@ -444,7 +444,9 @@ Route::post('/newsletter/prijava', [HomeController::class, 'newsletter'])
     ->middleware('throttle:newsletter')
     ->name('newsletter.subscribe');
 Route::get('/kontakt', [HomeController::class, 'contact'])->name('kontakt');
-Route::post('/kontakt/posalji', [HomeController::class, 'sendContactMessage'])->name('poruka');
+Route::post('/kontakt/posalji', [HomeController::class, 'sendContactMessage'])
+    ->middleware('throttle:10,1')
+    ->name('poruka');
 Route::get('/jednostrani-raskid-ugovora', [HomeController::class, 'contractTermination'])
     ->name('contract-termination');
 Route::post('/jednostrani-raskid-ugovora', [HomeController::class, 'sendContractTermination'])
@@ -458,7 +460,9 @@ Route::get('/zahtjev-za-recenziju/{token}', [ProductReviewInvitationController::
 Route::post('/zahtjev-za-recenziju/{token}', [ProductReviewInvitationController::class, 'store'])
     ->middleware(['signed', 'throttle:10,10'])
     ->name('product-review-invitations.store');
-Route::post('/dodaj-u-listu-zelja', [HomeController::class, 'wishlist'])->name('wishlist');
+Route::post('/dodaj-u-listu-zelja', [HomeController::class, 'wishlist'])
+    ->middleware('throttle:10,1')
+    ->name('wishlist');
 //
 Route::get('/kosarica', [CheckoutController::class, 'cart'])->name('kosarica');
 Route::get('/kosarica/nastavi/{order}', AbandonedCartRecoveryController::class)

@@ -47,7 +47,7 @@
                             @else
                                 {{ $item['title'] ?? ($item['name'] ?? 'Stavka #' . ($item['id'] ?? '')) }} {{ isset($item['sku']) ? '— ' . $item['sku'] : '' }}
                             @endif
-                            <input type="hidden" name="action_list[{{ isset($item['id']) ? $item['id'] : '' }}]" value="{{ isset($item['id']) ? $item['id'] : '' }}">
+                            <input type="hidden" name="{{ $inputName }}[{{ isset($item['id']) ? $item['id'] : '' }}]" value="{{ isset($item['id']) ? $item['id'] : '' }}">
                         </td>
                         <td class="text-right font-size-sm">
                             <a class="btn btn-sm btn-alt-secondary" href="javascript:void(0)" wire:click="removeItem({{ isset($item['id']) ? $item['id'] : '' }})">
@@ -59,7 +59,9 @@
                 </tbody>
             </table>
         </div>
-        <input type="hidden" value="{{ $group }}" name="group">
+        @if ($includeGroupInput)
+            <input type="hidden" value="{{ $group }}" name="group">
+        @endif
 
     </div>
 </div>

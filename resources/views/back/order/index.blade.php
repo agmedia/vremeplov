@@ -16,7 +16,7 @@
         <div class="content content-full">
             <div class="admin-page-heading">
                 <div>
-                    <div class="admin-page-kicker"><i class="fa fa-shopping-cart" aria-hidden="true"></i> Prodaja</div>
+                    <div class="admin-page-kicker"><i class="fa-regular fa-bag-shopping" aria-hidden="true"></i> Prodaja</div>
                     <h1 class="admin-page-title">Narudžbe</h1>
                     <p class="admin-page-description">Pronađite narudžbu, provjerite plaćanje i upravljajte obradom i dostavom.</p>
                 </div>

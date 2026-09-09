@@ -18,7 +18,7 @@
             <div class="steps steps-dark checkout-progress-shell checkout-steps-six pt-2 pb-3 mb-4" aria-label="Napredak kupnje">
                 <a class="step-item active" href="{{ route('kosarica') }}">
                     <div class="step-progress"><span class="step-count">1</span></div>
-                    <div class="step-label"><i class="fa-regular fa-cart-shopping"></i>Košarica</div>
+                    <div class="step-label"><i class="fa-regular fa-bag-shopping"></i>Košarica</div>
                 </a>
                 <span class="step-item active">
                     <span class="step-progress"><span class="step-count">2</span></span>

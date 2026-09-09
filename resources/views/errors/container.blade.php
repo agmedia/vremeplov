@@ -68,7 +68,7 @@
 <script src="{{ asset('js/smooth-scroll.polyfills.min.js?v=1.2') }}"></script>
 <!-- Main theme script-->
 
-<script src="{{ asset('js/cart.js?v=2.0.2') }}"></script>
+<script src="{{ asset('js/cart.js?v=2.3.5') }}"></script>
 
 <script src="{{ asset('js/theme.min.js') }}"></script>
 @stack('js')

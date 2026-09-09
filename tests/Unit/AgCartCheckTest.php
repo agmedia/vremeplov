@@ -161,6 +161,27 @@ class AgCartCheckTest extends TestCase
         $this->assertNull($response['message']);
     }
 
+    public function test_add_does_not_increment_an_existing_item_past_available_stock(): void
+    {
+        DB::table('products')->insert([
+            'id' => 30,
+            'name' => 'Posljednji primjerak',
+            'quantity' => 1,
+            'status' => true,
+        ]);
+
+        $cartId = $this->newCartId();
+        $this->addCartItem($cartId, 30, 'Posljednji primjerak', 1);
+        $cart = new CartForStockCheckTest($cartId);
+
+        $response = $cart->add(new Request([
+            'item' => ['id' => 30, 'quantity' => 1],
+        ]));
+
+        $this->assertSame('Nema više dostupnih primjeraka ovog artikla.', $response['error']);
+        $this->assertSame(1, $cart->get()['count']);
+    }
+
     private function newCartId(): string
     {
         return 'stock-check-' . uniqid('', true);

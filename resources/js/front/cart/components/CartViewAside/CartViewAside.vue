@@ -18,9 +18,9 @@
                     <h2 class="widget-title text-center mb-2">Sažetak narudžbe</h2>
 
                     <div class="d-flex align-items-center pb-2 border-bottom" v-for="item in (($store.state.cart && $store.state.cart.items) || [])">
-                        <a class="d-block flex-shrink-0" :href="base_path + item.attributes.path"><img :src="item.associatedModel.image" :alt="item.name" width="64"></a>
+                        <a class="d-block flex-shrink-0" :href="base_path + item.attributes.path"><img :src="item.associatedModel.image" :alt="itemName(item)" width="64"></a>
                         <div class="ps-2">
-                            <h6 class="widget-product-title"><a :href="base_path + item.attributes.path">{{ item.name }}</a></h6>
+                            <h6 class="widget-product-title"><a :href="base_path + item.attributes.path">{{ itemName(item) }}</a></h6>
                             <div class="widget-product-meta">
                                 <span class="text-primary me-2">{{ Object.keys(item.conditions).length ? item.associatedModel.main_special_text : item.associatedModel.main_price_text }}</span>
                                 <span class="text-muted">x {{ item.quantity }}</span>
@@ -119,6 +119,12 @@
         },
 
         methods: {
+            itemName(item) {
+                const product = item && item.associatedModel ? item.associatedModel : {};
+
+                return product.card_name || (item && item.card_name) || (item && item.name) || 'Artikl';
+            },
+
             /**
              *
              * @param item

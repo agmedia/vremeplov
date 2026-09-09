@@ -5,6 +5,14 @@
     <link rel="stylesheet" href="{{ asset('js/plugins/flatpickr/flatpickr.min.css') }}">
 @endpush
 
+@php
+    $relatedSlider = isset($blog) ? $blog->related_slider : [];
+    $relatedSliderMode = old('related_slider_mode', $relatedSlider['mode'] ?? 'none');
+    $relatedSliderTitle = old('related_slider_title', $relatedSlider['title'] ?? '');
+    $relatedSliderAuthorId = old('related_slider_author_id', $relatedSlider['author_id'] ?? 0);
+    $relatedSliderProductIds = old('related_slider_products', $relatedSlider['product_ids'] ?? []);
+@endphp
+
 @section('content')
     <div class="bg-body-light">
         <div class="content content-full">
@@ -46,7 +54,7 @@
 
                             <div class="form-group">
                                 <label for="short-description-input">Sažetak</label>
-                                <textarea class="form-control" id="short-description-input" name="short_description" rows="3" placeholder="Enter an excerpt..">{{ isset($blog) ? $blog->short_description : old('title') }}</textarea>
+                                <textarea class="form-control" id="short-description-input" name="short_description" rows="3" placeholder="Kratki uvod u članak...">{{ isset($blog) ? $blog->short_description : old('short_description') }}</textarea>
                                 <div class="form-text text-muted font-size-sm font-italic">Vidljivo na početnoj stranici</div>
                             </div>
                             <div class="form-group row">
@@ -83,12 +91,75 @@
 
             <div class="block">
                 <div class="block-header block-header-default">
+                    <div>
+                        <h3 class="block-title">Povezane knjige na dnu članka</h3>
+                        <p class="font-size-sm text-muted mb-0 mt-1">Odaberite pojedinačne knjige ili autora. Slider se prikazuje samo kad postoje dostupne knjige.</p>
+                    </div>
+                </div>
+                <div class="block-content">
+                    <div class="row justify-content-center push">
+                        <div class="col-md-10">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label for="related-slider-mode">Izvor knjiga</label>
+                                        <select class="form-control" id="related-slider-mode" name="related_slider_mode">
+                                            <option value="none" {{ $relatedSliderMode === 'none' ? 'selected' : '' }}>Bez slidera</option>
+                                            <option value="books" {{ $relatedSliderMode === 'books' ? 'selected' : '' }}>Ručno odabrane knjige</option>
+                                            <option value="author" {{ $relatedSliderMode === 'author' ? 'selected' : '' }}>Dostupne knjige autora</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label for="related-slider-title">Naslov slidera</label>
+                                        <input class="form-control" id="related-slider-title" name="related_slider_title" type="text" maxlength="191" value="{{ $relatedSliderTitle }}" placeholder="Npr. Još naslova Julesa Vernea">
+                                        <small class="form-text text-muted">Ako ostane prazno, naslov se oblikuje automatski.</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="related-slider-author" class="related-slider-panel">
+                                <div class="form-group">
+                                    <label>Autor čije će se dostupne knjige prikazati</label>
+                                    @livewire('back.layout.search.author-search', [
+                                        'author_id' => (int) $relatedSliderAuthorId,
+                                        'inputName' => 'related_slider_author_id',
+                                        'allowCreate' => false,
+                                    ])
+                                    @error('related_slider_author_id')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div id="related-slider-books" class="related-slider-panel">
+                                <label>Odabrane knjige</label>
+                                @livewire('back.marketing.action-group-list', [
+                                    'group' => 'product',
+                                    'list' => $relatedSliderProductIds,
+                                    'inputName' => 'related_slider_products',
+                                    'maxItems' => 15,
+                                    'productGroup' => 'knjige',
+                                    'includeGroupInput' => false,
+                                    'emitListState' => false,
+                                ])
+                                @error('related_slider_products')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="block">
+                <div class="block-header block-header-default">
                     <h3 class="block-title">Meta Data - SEO</h3>
                 </div>
                 <div class="block-content">
                     <div class="row justify-content-center">
                         <div class="col-md-10 ">
-                            <form action="be_pages_ecom_product_edit.html" method="POST" onsubmit="return false;">
                                 <div class="form-group">
                                     <label for="meta-title-input">Meta naslov</label>
                                     <input type="text" class="js-maxlength form-control" id="meta-title-input" name="meta_title" value="{{ isset($blog) ? $blog->meta_title : old('meta_title') }}" maxlength="70" data-always-show="true" data-placement="top">
@@ -110,7 +181,6 @@
                                     <input type="text" class="form-control" id="slug-input" name="slug" value="{{ isset($blog) ? $blog->slug : old('slug') }}" disabled>
                                 </div>
 
-                            </form>
                         </div>
                     </div>
                 </div>
@@ -151,6 +221,26 @@
 
     <script>
         $(() => {
+            const relatedSliderMode = document.getElementById('related-slider-mode');
+            const relatedSliderAuthor = document.getElementById('related-slider-author');
+            const relatedSliderBooks = document.getElementById('related-slider-books');
+
+            function updateRelatedSliderPanels() {
+                const mode = relatedSliderMode ? relatedSliderMode.value : 'none';
+
+                if (relatedSliderAuthor) {
+                    relatedSliderAuthor.hidden = mode !== 'author';
+                }
+                if (relatedSliderBooks) {
+                    relatedSliderBooks.hidden = mode !== 'books';
+                }
+            }
+
+            if (relatedSliderMode) {
+                relatedSliderMode.addEventListener('change', updateRelatedSliderPanels);
+                updateRelatedSliderPanels();
+            }
+
             ClassicEditor
             .create(document.querySelector('#description-editor'), {
                 ckfinder: {

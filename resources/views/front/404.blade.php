@@ -54,7 +54,3 @@
     </div>
 
 @endsection
-
-@push('js_after')
-    @include('front.layouts.partials.recaptcha-js')
-@endpush

@@ -109,7 +109,7 @@ class RouteResolver
                 }
 
             } else {
-                $this->title = $category->meta_title ?: $category->title;
+                $this->title = trim((string) $category->title);
                 $this->description = $this->categoryDescription($category);
                 $this->canonical = url($this->group . '/' . $category->slug);
             }
@@ -145,7 +145,7 @@ class RouteResolver
                 }
 
             } else {
-                $this->title = $subcategory->meta_title ?: $subcategory->title;
+                $this->title = trim((string) $subcategory->title);
                 $this->description = $this->categoryDescription($subcategory);
                 $this->canonical = url($this->group . '/' . $category->slug . '/' . $subcategory->slug);
             }
@@ -244,12 +244,43 @@ class RouteResolver
 
     private function categoryDescription(Category $category): string
     {
-        $description = trim(strip_tags((string) ($category->meta_description ?: $category->description)));
+        $title = trim((string) $category->title);
+        $normalizedTitle = mb_strtolower($title, 'UTF-8');
+        $description = '';
 
-        if ($description === '' || mb_strtolower($description) === mb_strtolower(trim((string) $category->title))) {
-            $description = 'Pregledajte dostupne artikle iz kategorije ' . $category->title . ' u Antikvarijatu Vremeplov.';
+        foreach ([$category->meta_description, $category->description] as $candidate) {
+            $candidate = preg_replace('/<(?:br\s*\/?|\/p|\/div|\/li|\/h[1-6])>/iu', ' ', (string) $candidate) ?: (string) $candidate;
+            $candidate = html_entity_decode(trim(strip_tags($candidate)), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $candidate = trim(preg_replace('/\s+/u', ' ', $candidate) ?: $candidate);
+            $normalizedCandidate = mb_strtolower(rtrim($candidate, " .\t\n\r\0\x0B"), 'UTF-8');
+            $looksLikeLegacySeo = $candidate === ''
+                || $normalizedCandidate === rtrim($normalizedTitle, '.')
+                || mb_strtoupper($candidate, 'UTF-8') === $candidate
+                || preg_match('/(?:antikvarijat\s+vremeplov|lopašićeva|zvonimirova\s+24|10000\s+zagreb|broj\s+telefona|01\s*\/\s*777|dodaj\s+u\s+košaricu|dodaj\s+u\s+kosaricu|mailto:)/iu', $candidate);
+
+            if (! $looksLikeLegacySeo) {
+                $description = $candidate;
+                break;
+            }
         }
 
-        return mb_substr($description, 0, 160);
+        if ($description === '') {
+            $templates = [
+                'knjige' => 'Knjige iz kategorije %s: rabljena, rijetka i antikvarna izdanja.',
+                'novine-i-casopisi' => 'Stare novine i časopisi iz kategorije %s: rijetka i kolekcionarska izdanja.',
+                'plakati' => 'Originalni, stari i kolekcionarski plakati iz kategorije %s.',
+                'razglednice' => 'Stare i kolekcionarske razglednice iz kategorije %s.',
+                'zemljopisne-karte' => 'Stare i kolekcionarske zemljopisne karte iz kategorije %s.',
+                'stari-dokumenti' => 'Stari i kolekcionarski dokumenti iz kategorije %s.',
+                'dionice' => 'Povijesne i kolekcionarske dionice iz kategorije %s.',
+                'diplome' => 'Stare i kolekcionarske diplome iz kategorije %s.',
+                'reklame' => 'Stare reklame i promotivni materijali iz kategorije %s.',
+                'ambalaza' => 'Stara i kolekcionarska ambalaža iz kategorije %s.',
+            ];
+            $template = $templates[$category->group] ?? 'Istražite dostupne kolekcionarske artikle iz kategorije %s.';
+            $description = sprintf($template, $title);
+        }
+
+        return Str::limit($description, 155, '…');
     }
 }

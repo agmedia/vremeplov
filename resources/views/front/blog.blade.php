@@ -106,22 +106,43 @@
 
     </div>
     @else
-        <div class="container pb-5">
-            <div class="row justify-content-center pt-5 mt-md-2">
-                <div class="col-lg-9">
-                    <!-- Post meta-->
-                    <!-- Gallery-->
-                    <div class="gallery row pb-2">
-                        <div class="col-sm-12"><span class="gallery-item rounded-3 mb-grid-gutter"  data-bs-sub-html="&lt;h6 class=&quot;fs-sm text-light&quot;&gt;Gallery image caption #1&lt;/h6&gt;"><img src="{{ $blog->image }}" alt="{{ $blog->title }}"><span class="gallery-item-caption">{{ $blog->title }}</span></span></div>
-
-                    </div>
-                    <!-- Post content-->
-
-                    {!! $blog->description !!}
-
+        @php
+            $articleLead = \Illuminate\Support\Str::limit(
+                trim(strip_tags((string) $blog->short_description)),
+                360
+            );
+            $articleWords = preg_split(
+                '/\s+/u',
+                trim(strip_tags((string) $blog->description)),
+                -1,
+                PREG_SPLIT_NO_EMPTY
+            );
+            $readingMinutes = max(1, (int) ceil(count($articleWords ?: []) / 200));
+        @endphp
+        <div class="container blog-article-shell pb-5">
+            <article class="blog-article pt-4 pt-md-5">
+                <div class="blog-article__meta" aria-label="Podaci o članku">
+                    <span><i class="fa-regular fa-calendar-days" aria-hidden="true"></i>{{ \Carbon\Carbon::make($blog->created_at)->locale('hr')->format('d.m.Y.') }}</span>
+                    <span><i class="fa-regular fa-clock" aria-hidden="true"></i>{{ $readingMinutes }} min čitanja</span>
                 </div>
-            </div>
+
+                <figure class="blog-article__hero">
+                    <img src="{{ $blog->image }}" loading="eager" fetchpriority="high" decoding="async" alt="{{ $blog->title }}">
+                </figure>
+
+                @if ($articleLead)
+                    <p class="blog-article__lead">{{ $articleLead }}</p>
+                @endif
+
+                <div class="blog-article__body">
+                    {!! $blog->description !!}
+                </div>
+            </article>
         </div>
+
+        @if (! empty($relatedProductsWidget))
+            @include('front.layouts.widget.widget_product_carousel', ['data' => $relatedProductsWidget])
+        @endif
 
     @endif
 

@@ -1,7 +1,8 @@
 <div class="mb-0 input-group">
-    <input type="search" wire:model.debounce.300ms="search" class="form-control  @error('author_id') is-invalid @enderror" id="author-input" placeholder="{{ !$list ? 'Dodaj autora...' : 'Odaberi autora...' }}" autocomplete="off">
+    <input type="search" wire:model.debounce.300ms="search" class="form-control @error($inputName) is-invalid @enderror" id="author-input" placeholder="{{ !$list && $allowCreate ? 'Dodaj autora...' : 'Odaberi autora...' }}" autocomplete="off">
     @if ( ! $list)
-        <input type="hidden" wire:model="author_id" name="author_id">
+        <input type="hidden" wire:model="author_id" name="{{ $inputName }}">
+        @if ($allowCreate)
         <span class="input-group-append" data-toggle="modal" data-target="#new-author-modal">
             <a href="javascript:void(0)" wire:click="viewAddWindow" class="btn btn-secondary btn-search py-0"><i class="fa fa-plus pt-2"></i></a>
         </span>
@@ -20,6 +21,7 @@
                 </div>
             </div>
         </div>
+        @endif
     @endif
 
     @if( ! empty($search_results))

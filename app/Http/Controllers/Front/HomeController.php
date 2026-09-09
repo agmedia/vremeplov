@@ -14,6 +14,8 @@ use App\Models\Back\Marketing\Wishlist;
 use App\Models\Back\Orders\Order;
 use App\Models\ContractTermination;
 use App\Models\Front\Blog;
+use App\Models\Front\Catalog\Author;
+use App\Models\Front\Catalog\Product;
 use App\Models\Front\Faq;
 use App\Models\Front\Page;
 use App\Models\Sitemap;
@@ -70,7 +72,74 @@ class HomeController extends Controller
             return view('front.blog', compact('blogs'));
         }
 
-        return view('front.blog', compact('blog'));
+        $relatedProductsWidget = $this->relatedBlogProducts($blog);
+
+        return view('front.blog', compact('blog', 'relatedProductsWidget'));
+    }
+
+
+    private function relatedBlogProducts(Blog $blog): ?array
+    {
+        $settings = $blog->related_slider;
+        $mode = $settings['mode'] ?? null;
+
+        if (! in_array($mode, ['books', 'author'], true)) {
+            return null;
+        }
+
+        $query = Product::query()
+            ->active()
+            ->available()
+            ->where('group', 'knjige')
+            ->cardData();
+
+        $url = route('catalog.route', ['group' => '/knjige']);
+        $subtitle = 'Pažljivo odabrani dostupni naslovi iz naše ponude.';
+
+        if ($mode === 'author') {
+            $author = Author::active()->find((int) ($settings['author_id'] ?? 0));
+            if (! $author) {
+                return null;
+            }
+
+            $items = $query
+                ->where('author_id', $author->id)
+                ->orderByDesc('viewed')
+                ->orderByDesc('updated_at')
+                ->limit(15)
+                ->get();
+            $title = trim((string) ($settings['title'] ?? '')) ?: 'Još naslova autora ' . $author->title;
+            $subtitle = 'Dostupna izdanja autora ' . $author->title . '.';
+            $url = route('catalog.route.author', ['author' => $author]);
+        } else {
+            $ids = collect($settings['product_ids'] ?? [])
+                ->map(fn ($id) => (int) $id)
+                ->filter()
+                ->unique()
+                ->take(15)
+                ->values();
+
+            if ($ids->isEmpty()) {
+                return null;
+            }
+
+            $itemsById = $query->whereIn('id', $ids)->get()->keyBy('id');
+            $items = $ids->map(fn ($id) => $itemsById->get($id))->filter()->values();
+            $title = trim((string) ($settings['title'] ?? '')) ?: 'Knjige povezane s člankom';
+        }
+
+        if ($items->isEmpty()) {
+            return null;
+        }
+
+        return [
+            'title' => $title,
+            'subtitle' => $subtitle,
+            'url' => $url,
+            'items' => $items,
+            'css' => 'blog-related-products',
+            'container' => false,
+        ];
     }
 
 
@@ -135,6 +204,16 @@ class HomeController extends Controller
 
         if ($validator->fails()) {
             return $this->newsletterValidationErrors($request, $validator->errors()->toArray());
+        }
+
+        $recaptcha = (new Recaptcha())->check($request->toArray(), 'newsletter');
+
+        if (! $recaptcha->ok()) {
+            return $this->newsletterValidationError(
+                $request,
+                'recaptcha',
+                'Sigurnosna provjera nije uspjela. Osvježite stranicu i pokušajte ponovno.'
+            );
         }
 
         NewsletterSubscriber::subscribeFromHomepage(
@@ -208,13 +287,9 @@ class HomeController extends Controller
             'website.max' => 'Obrazac nije moguće poslati.',
         ]);
 
-        $siteKey = config('services.recaptcha.sitekey');
-        $secretKey = config('services.recaptcha.secret');
-        if ($siteKey && $secretKey) {
-            $recaptcha = (new Recaptcha())->check($request->toArray());
-            if (! $recaptcha || ! $recaptcha->ok()) {
-                return back()->withErrors(['recaptcha' => 'Sigurnosna provjera nije uspjela. Pokušajte ponovno.'])->withInput();
-            }
+        $recaptcha = (new Recaptcha())->check($request->toArray(), 'contract_termination');
+        if (! $recaptcha->ok()) {
+            return back()->withErrors(['recaptcha' => 'Sigurnosna provjera nije uspjela. Pokušajte ponovno.'])->withInput();
         }
 
         $submittedAt = now();
@@ -277,16 +352,11 @@ class HomeController extends Controller
      */
     public function sendProductComment(Request $request)
     {
-        $siteKey = config('services.recaptcha.sitekey');
-        $secretKey = config('services.recaptcha.secret');
+        $recaptcha = (new Recaptcha())->check($request->toArray(), 'review');
 
-        if ($siteKey && $secretKey) {
-            $recaptcha = (new Recaptcha())->check($request->toArray());
-
-            if (! $recaptcha || ! $recaptcha->ok()) {
-                return back()->withErrors(['error' => 'ReCaptcha Error! Kontaktirajte administratora!'])
-                    ->withInput();
-            }
+        if (! $recaptcha->ok()) {
+            return back()->withErrors(['error' => 'Sigurnosna provjera nije uspjela. Pokušajte ponovno.'])
+                ->withInput();
         }
 
         $review = new Review();
@@ -311,16 +381,11 @@ class HomeController extends Controller
         $wish = new Wishlist();
         $wish->validateRequest($request);
 
-        $siteKey = config('services.recaptcha.sitekey');
-        $secretKey = config('services.recaptcha.secret');
+        $recaptcha = (new Recaptcha())->check($request->toArray(), 'wishlist');
 
-        if ($siteKey && $secretKey) {
-            $recaptcha = (new Recaptcha())->check($request->toArray());
-
-            if (! $recaptcha || ! $recaptcha->ok()) {
-                return back()->withErrors(['error' => 'ReCaptcha Error! Kontaktirajte administratora!'])
-                    ->withInput();
-            }
+        if (! $recaptcha->ok()) {
+            return back()->withErrors(['error' => 'Sigurnosna provjera nije uspjela. Pokušajte ponovno.'])
+                ->withInput();
         }
 
         if ($wish->create()) {
@@ -349,10 +414,10 @@ class HomeController extends Controller
         ]);
 
         // Recaptcha
-        $recaptcha = (new Recaptcha())->check($request->toArray());
+        $recaptcha = (new Recaptcha())->check($request->toArray(), 'contact');
 
         if ( ! $recaptcha->ok()) {
-            return back()->withErrors(['error' => 'ReCaptcha Error! Kontaktirajte administratora!']);
+            return back()->withErrors(['error' => 'Sigurnosna provjera nije uspjela. Pokušajte ponovno.']);
         }
 
         $message = $request->toArray();

@@ -86,4 +86,31 @@ class NewsletterSignupTest extends TestCase
             'newsletter_started_at' => $token,
         ])->assertStatus(422)->assertJsonValidationErrors('gdpr');
     }
+
+    public function test_signup_is_rejected_when_recaptcha_action_does_not_match(): void
+    {
+        config([
+            'services.recaptcha.bypass_local' => false,
+            'services.recaptcha.sitekey' => 'test-site-key',
+            'services.recaptcha.secret' => 'test-secret-key',
+            'services.recaptcha.verify_url' => 'data://text/plain,' . rawurlencode(json_encode([
+                'success' => true,
+                'score' => 0.9,
+                'action' => 'contact',
+            ])),
+        ]);
+
+        $token = app(NewsletterSignupGuard::class)->issueToken();
+        $this->travel(3)->seconds();
+
+        $this->postJson(route('newsletter.subscribe'), [
+            'email' => 'citatelj@example.test',
+            'gdpr' => '1',
+            'website' => '',
+            'newsletter_started_at' => $token,
+            'recaptcha' => 'token-for-wrong-action',
+        ])->assertStatus(422)->assertJsonValidationErrors('recaptcha');
+
+        $this->assertDatabaseCount('newsletter_subscribers', 0);
+    }
 }

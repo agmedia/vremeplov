@@ -46,7 +46,7 @@
                                     </div>
                                 </div>
                             </div>
-                            @if ($group->widgets)
+                            @if ($group->allWidgets->isNotEmpty())
                                 <div id="accordion_q{{ $group->id }}" class="collapse @if($loop->first) show @endif" role="tabpanel" aria-labelledby="accordion_h{{ $group->id }}" data-parent="#accordion">
                                     <div class="block-content pb-4">
                                         <div class="row">
@@ -57,7 +57,7 @@
                                             <div class="col-md-8">
                                                 <h4>Lista Widgeta</h4>
                                                 <div class="row">
-                                                    @foreach($group->widgets()->get() as $widget)
+                                                    @foreach($group->allWidgets as $widget)
                                                         <div class="col-md-4">
                                                             <a class="block block-rounded block-link-pop text-center" href="{{ route('widget.edit', ['widget' => $widget])  }}">
                                                                 @if ($widget->image)
@@ -65,6 +65,13 @@
                                                                 @endif
                                                                 <div class="block-content block-content-full bg-black-5">
                                                                     <p class="font-w600 mb-0">{{ $widget->title }}</p>
+                                                                    <p class="mb-1">
+                                                                        @if ($widget->status)
+                                                                            <span class="badge badge-success">Aktivan</span>
+                                                                        @else
+                                                                            <span class="badge badge-secondary">Neaktivan</span>
+                                                                        @endif
+                                                                    </p>
                                                                     <p class="font-size-sm font-italic text-muted mb-0">
                                                                         {{ $widget->subtitle }}
                                                                     </p>

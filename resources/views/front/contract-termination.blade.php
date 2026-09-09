@@ -26,7 +26,7 @@
 
         <div class="row g-4 align-items-start">
             <div class="col-lg-9">
-                <form class="termination-card p-3 p-md-4" action="{{ route('contract-termination.send') }}" method="post" data-analytics-form="contract_termination">
+                <form class="termination-card p-3 p-md-4" action="{{ route('contract-termination.send') }}" method="post" id="contract-termination-form" data-analytics-form="contract_termination">
                     @csrf
                     <input type="text" name="website" class="d-none" tabindex="-1" autocomplete="off" aria-hidden="true">
                     <div class="termination-note mb-4">Ovaj obrazac služi za raskid ugovora. Za reklamaciju neispravnog ili neusklađenog proizvoda javite se na <a href="mailto:{{ config('mail.from.address') }}">{{ config('mail.from.address') }}</a>.</div>
@@ -62,6 +62,7 @@
                         <div class="form-check mb-3"><input class="form-check-input" id="ct-statement" name="statement" type="checkbox" value="1" required {{ old('statement') ? 'checked' : '' }}><label class="form-check-label" for="ct-statement">Ovime nedvosmisleno izjavljujem da jednostrano raskidam ugovor za gore navedenu robu. *</label></div>
                         @if (config('services.recaptcha.sitekey'))<input type="hidden" name="recaptcha" id="recaptcha">@endif
                         <button class="btn btn-primary px-4" type="submit"><i class="fa-regular fa-envelope me-2"></i>Pošalji izjavu</button>
+                        @include('front.layouts.partials.recaptcha-notice')
                         <p class="small text-muted mt-3 mb-0">Podatke koristimo isključivo za obradu zahtjeva i ispunjavanje zakonskih obveza.</p>
                     </section>
                 </form>
@@ -87,7 +88,11 @@
 
 @push('js_after')
     @if (config('services.recaptcha.sitekey'))
-        @include('front.layouts.partials.recaptcha-js')
+        @include('front.layouts.partials.recaptcha-js', [
+            'action' => 'contract_termination',
+            'fieldId' => 'recaptcha',
+            'formId' => 'contract-termination-form',
+        ])
     @endif
     @if (session()->has('success'))
         <script>window.VremeplovAnalytics.track('generate_lead', {form_name: 'contract_termination'});</script>

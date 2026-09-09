@@ -14,6 +14,9 @@
 
 
 @section('content')
+    @php
+        $isSliderGroup = str_contains($selected->slug, 'slider');
+    @endphp
     <div class="content" id="pages-app">
 
         @include('back.layouts.partials.session')
@@ -48,8 +51,8 @@
                                     <div class="row">
                                         <div class="col-md-10 offset-md-1" id="size-half">
                                             <div class="slim"
-                                                 data-ratio="16:9"
-                                                 data-force-size="500,500"
+                                                 data-ratio="{{ $isSliderGroup ? '1:1' : '16:9' }}"
+                                                 data-force-size="{{ $isSliderGroup ? '800,800' : '500,500' }}"
                                                  data-max-file-size="2">
                                                 <img src="{{ isset($widget) && isset($widget->image) ? asset($widget->image) : '' }}" alt=""/>
                                                 <input type="file" name="image"/>
@@ -79,6 +82,54 @@
                                     <textarea class="form-control" id="subtitle-input" name="subtitle" rows="4" placeholder="Kratak tekst, ako je potreban..">{{ isset($widget->subtitle) ? $widget->subtitle : '' }}</textarea>
                                 </div>
                             </div>
+
+                            @if ($isSliderGroup)
+                                @php
+                                    $benefitIcons = [
+                                        'clock' => 'Sat',
+                                        'box' => 'Paket',
+                                        'location-dot' => 'Lokacija',
+                                        'thumbs-up' => 'Preporuka',
+                                        'truck' => 'Dostava',
+                                    ];
+                                @endphp
+                                <div class="block mb-3">
+                                    <div class="block-content" style="background-color: #f8f9f9; border: 1px solid #e9e9e9; padding: 24px;">
+                                        <h6 class="mb-3">Istaknuta poruka i pogodnosti</h6>
+                                        <div class="form-group row mb-3">
+                                            <div class="col-md-4">
+                                                <label for="eyebrow-icon">Ikona poruke</label>
+                                                <select class="form-control" id="eyebrow-icon" name="eyebrow_icon">
+                                                    @foreach ($benefitIcons as $iconValue => $iconLabel)
+                                                        <option value="{{ $iconValue }}" {{ old('eyebrow_icon', $widget->data['eyebrow_icon'] ?? 'truck') === $iconValue ? 'selected' : '' }}>{{ $iconLabel }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <label for="eyebrow-input">Istaknuta poruka iznad naslova</label>
+                                                <input type="text" class="form-control" name="eyebrow" id="eyebrow-input" maxlength="120" value="{{ old('eyebrow', $widget->data['eyebrow'] ?? '') }}" placeholder="Npr. Besplatna dostava do 1.10.">
+                                            </div>
+                                        </div>
+
+                                        @for ($benefitNumber = 1; $benefitNumber <= 3; $benefitNumber++)
+                                            <div class="form-group row mb-3">
+                                                <div class="col-md-4">
+                                                    <label for="benefit-{{ $benefitNumber }}-icon">Ikona {{ $benefitNumber }}</label>
+                                                    <select class="form-control" id="benefit-{{ $benefitNumber }}-icon" name="benefit_{{ $benefitNumber }}_icon">
+                                                        @foreach ($benefitIcons as $iconValue => $iconLabel)
+                                                            <option value="{{ $iconValue }}" {{ old('benefit_' . $benefitNumber . '_icon', $widget->data['benefit_' . $benefitNumber . '_icon'] ?? 'clock') === $iconValue ? 'selected' : '' }}>{{ $iconLabel }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <label for="benefit-{{ $benefitNumber }}-text">Tekst pogodnosti {{ $benefitNumber }}</label>
+                                                    <input type="text" class="form-control" name="benefit_{{ $benefitNumber }}_text" id="benefit-{{ $benefitNumber }}-text" maxlength="80" value="{{ old('benefit_' . $benefitNumber . '_text', $widget->data['benefit_' . $benefitNumber . '_text'] ?? '') }}" placeholder="Ostavite prazno ako se ne prikazuje">
+                                                </div>
+                                            </div>
+                                        @endfor
+                                    </div>
+                                </div>
+                            @endif
 
                             <div class="form-group mb-3">
                                 <label for="button-text-input">Tekst gumba</label>
@@ -244,6 +295,12 @@
 
 
         function setSize(size) {
+            @if ($isSliderGroup)
+                $('#size-half').removeClass('ag-hide');
+                $('#size-all').addClass('ag-hide');
+                return;
+            @endif
+
             if (size == 12) {
                 $('#size-half').addClass('ag-hide');
                 $('#size-all').removeClass('ag-hide');

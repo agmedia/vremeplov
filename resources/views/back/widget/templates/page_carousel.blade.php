@@ -79,12 +79,19 @@
                                                 <div class="custom-control custom-switch custom-control-success">
                                                     <input type="checkbox" class="custom-control-input" id="new-switch" name="new" @if (isset($widget->data['new']) and $widget->data['new']) checked @endif>
                                                     <label class="custom-control-label" for="new-switch">Uključi nove stavke</label>
+                                                    <small class="form-text text-muted">Za blog automatski prikazuje najnovijih najviše 5 objava, neovisno o ručnom odabiru.</small>
                                                 </div>
                                             </div>
                                             <div class="form-group mb-5">
                                                 <div class="custom-control custom-switch custom-control-success">
                                                     <input type="checkbox" class="custom-control-input" id="popular-switch" name="popular" @if (isset($widget->data['popular']) and $widget->data['popular']) checked @endif>
                                                     <label class="custom-control-label" for="popular-switch">Uključi popularne stavke</label>
+                                                </div>
+                                            </div>
+                                            <div class="form-group mb-5">
+                                                <div class="custom-control custom-switch custom-control-success">
+                                                    <input type="checkbox" class="custom-control-input" id="featured-only-switch" name="featured_only" @if (isset($widget->data['featured_only']) and $widget->data['featured_only']) checked @endif>
+                                                    <label class="custom-control-label" for="featured-only-switch">Prikaži samo izdvojene stavke</label>
                                                 </div>
                                             </div>
                                             <div class="form-group mb-3">

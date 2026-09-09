@@ -39,26 +39,33 @@
 
         <div class="row catalog-products-grid" :class="'catalog-products-grid--mobile-' + mobileColumns" v-if="products_loaded && products.total">
             <div class="catalog-product-col d-flex align-items-stretch" v-for="product in products.data" :key="product.id">
-                <article class="card product-card catalog-product-card shadow-sm pb-2">
-                    <span class="badge bg-warning mt-1 ms-1" v-if="product.quantity <= 0">Rasprodano</span>
-                    <span class="badge rounded-pill bg-primary mt-1 ms-1 badge-shadow" v-if="product.special">
+                <article class="card product-card product-card--refined catalog-product-card">
+                    <span class="badge bg-warning product-card__badge" v-if="product.quantity <= 0">Rasprodano</span>
+                    <span class="badge rounded-pill bg-primary badge-shadow product-card__badge" v-if="product.special">
                         -{{ $store.state.service.getDiscountAmount(product.price, product.special) }}%
                     </span>
-                    <a class="card-img-top d-block overflow-hidden" :href="origin + product.url">
-                        <img loading="lazy" :src="thumbnail(product)" width="250" height="300" :alt="product.name">
+                    <a class="card-img-top product-card__media d-block overflow-hidden" :href="origin + product.url">
+                        <img loading="lazy" :src="thumbnail(product)" width="250" height="300" :alt="product.card_name || product.name">
                     </a>
-                    <div class="card-body py-2">
-                        <h3 class="product-title fs-sm mt-2 mb-1"><a :href="origin + product.url">{{ product.name }}</a></h3>
-                        <div class="product-price" v-if="product.special">
-                            <small class="text-muted">NC 30 dana: {{ product.main_price_text }}</small>
+                    <div class="card-body product-card__body">
+                        <a class="product-card__category" v-if="product.card_category" :href="product.card_category.url">{{ product.card_category.title }}</a>
+                        <div class="product-card__rating" v-if="Number(product.reviews_count) > 0" :aria-label="ratingLabel(product)">
+                            <span aria-hidden="true">
+                                <i v-for="star in 5" :key="star" :class="[star <= roundedRating(product) ? 'fa-solid' : 'fa-regular', 'fa-star']"></i>
+                            </span>
+                            <small>({{ product.reviews_count }})</small>
                         </div>
-                        <div class="product-price">
-                            <span class="text-primary">{{ product.special ? product.main_special_text : product.main_price_text }}</span>
+                        <h3 class="product-title product-card__title"><a :href="origin + product.url">{{ product.card_name || product.name }}</a></h3>
+                        <div class="product-price product-card__previous-price" v-if="product.special">
+                            <small>NC 30 dana: {{ product.main_price_text }}</small>
+                        </div>
+                        <div class="product-price product-card__price">
+                            <span>{{ product.special ? product.main_special_text : product.main_price_text }}</span>
                         </div>
                     </div>
-                    <div class="product-floating-btn" v-if="product.quantity > 0">
-                        <button class="btn btn-primary btn-shadow btn-sm" :disabled="product.disabled" v-on:click="add(product.id, product.quantity)" type="button" :aria-label="'Dodaj ' + product.name + ' u košaricu'">
-                            <span aria-hidden="true">+</span><i class="fa-regular fa-cart-shopping fs-base ms-1" aria-hidden="true"></i>
+                    <div class="product-floating-btn product-card__action" v-if="product.quantity > 0">
+                        <button class="btn btn-primary btn-shadow btn-sm" :class="{'is-blocked': product.disabled}" v-on:click="add(product.id, product.quantity)" type="button" :aria-disabled="product.disabled ? 'true' : 'false'" :title="product.disabled ? 'Nema više dostupnih primjeraka ovog artikla' : 'Dodaj u košaricu'" :aria-label="product.disabled ? 'Nema više dostupnih primjeraka artikla ' + (product.card_name || product.name) : 'Dodaj ' + (product.card_name || product.name) + ' u košaricu'">
+                            <i class="fa-regular fa-bag-shopping fs-base" aria-hidden="true"></i>
                         </button>
                     </div>
                 </article>
@@ -182,7 +189,7 @@ export default {
             this.start = query.start || '';
             this.end = query.end || '';
             this.autor = query.autor || '';
-            this.nakladnik = query.nakladnik || '';
+            this.nakladnik = this.publisher ? '' : (query.nakladnik || '');
             this.pismo = query.pismo || '';
             this.stanje = query.stanje || '';
             this.uvez = query.uvez || '';
@@ -349,13 +356,25 @@ export default {
             return Number(value || 0).toLocaleString('hr-HR');
         },
 
+        roundedRating(product) {
+            return Math.max(0, Math.min(5, Math.round(Number(product.reviews_avg_stars || 0))));
+        },
+
+        ratingLabel(product) {
+            const average = Number(product.reviews_avg_stars || 0).toLocaleString('hr-HR', {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+            });
+            return `Ocjena ${average} od 5 na temelju ${product.reviews_count} recenzija`;
+        },
+
         add(id, productQuantity) {
             const cart = this.$store.state.storage.getCart();
             const cartItems = cart && cart.items ? cart.items : {};
 
             for (const key in cartItems) {
                 if (Number(id) === Number(cartItems[key].id) && Number(productQuantity) <= Number(cartItems[key].quantity)) {
-                    return window.ToastWarning.fire('Nažalost nema dovoljnih količina artikla.');
+                    return window.ToastWarning.fire('Nema više dostupnih primjeraka ovog artikla.');
                 }
             }
 

@@ -105,7 +105,7 @@ class OrderStats extends Model
             'qty'   => $query->count(),
             'href'  => route('orders'),
             'label' => 'Narudžbe',
-            'icon'  => 'si si-basket-loaded'
+            'icon'  => 'fa-regular fa-bag-shopping'
         ];
     }
 }

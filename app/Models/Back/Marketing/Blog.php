@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class Blog extends Model
 {
@@ -40,7 +41,27 @@ class Blog extends Model
     public function validateRequest(Request $request)
     {
         $request->validate([
-            'title' => 'required'
+            'title' => ['required', 'string', 'max:191'],
+            'related_slider_mode' => ['nullable', Rule::in(['none', 'books', 'author'])],
+            'related_slider_title' => ['nullable', 'string', 'max:191'],
+            'related_slider_author_id' => [
+                Rule::requiredIf($request->input('related_slider_mode') === 'author'),
+                'nullable',
+                'integer',
+                'exists:authors,id',
+            ],
+            'related_slider_products' => [
+                Rule::requiredIf($request->input('related_slider_mode') === 'books'),
+                'nullable',
+                'array',
+                'min:1',
+                'max:15',
+            ],
+            'related_slider_products.*' => [
+                'integer',
+                'distinct',
+                Rule::exists('products', 'id')->where('group', 'knjige'),
+            ],
         ]);
 
         $this->request = $request;
@@ -99,9 +120,9 @@ class Blog extends Model
             'meta_title'        => $this->request->meta_title,
             'meta_description'  => $this->request->meta_description,
             'slug'              => isset($this->request->slug) ? Str::slug($this->request->slug) : Str::slug($this->request->title),
-            'keywords'          => null,
-            'publish_date'      => $this->request->publish_date ? Carbon::make($this->request->publish_date) : null,
             'keywords'          => false,
+            'related_slider'    => $this->relatedSliderPayload(),
+            'publish_date'      => $this->request->publish_date ? Carbon::make($this->request->publish_date) : null,
             'status'            => (isset($this->request->status) and $this->request->status == 'on') ? 1 : 0,
             'updated_at'        => Carbon::now()
         ];
@@ -111,6 +132,50 @@ class Blog extends Model
         }
 
         return $response;
+    }
+
+
+    /**
+     * Decode the optional related-products configuration safely.
+     */
+    public function getRelatedSliderAttribute($value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        $decoded = json_decode((string) $value, true);
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
+
+    private function relatedSliderPayload(): ?string
+    {
+        $mode = (string) $this->request->input('related_slider_mode', 'none');
+
+        if (! in_array($mode, ['books', 'author'], true)) {
+            return null;
+        }
+
+        $payload = [
+            'mode' => $mode,
+            'title' => trim((string) $this->request->input('related_slider_title')),
+        ];
+
+        if ($mode === 'author') {
+            $payload['author_id'] = (int) $this->request->input('related_slider_author_id');
+        } else {
+            $payload['product_ids'] = collect($this->request->input('related_slider_products', []))
+                ->map(fn ($id) => (int) $id)
+                ->filter()
+                ->unique()
+                ->take(15)
+                ->values()
+                ->all();
+        }
+
+        return json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
 

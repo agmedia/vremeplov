@@ -89,4 +89,89 @@ if (!window.__AG_CART_BOOTED__) {
     });
 
     window.CartAddSuccess = (payload = {}) => showCartAddSuccessModal(app.$swal, payload);
+
+    if (!window.__AG_CLONED_CART_BUTTONS__) {
+        window.__AG_CLONED_CART_BUTTONS__ = true;
+
+        const syncClonedCartButtons = () => {
+            const cart = storeInstance.state.storage.getCart() || {};
+            const cartItems = Object.values(cart.items || {});
+
+            document.querySelectorAll('.tns-slide-cloned .product-card-add-button[data-product-id]').forEach(button => {
+                const available = Math.max(0, Number(button.dataset.productAvailable) || 0);
+                const item = cartItems.find(cartItem => String(cartItem.id) === String(button.dataset.productId));
+                const quantityInCart = item ? Math.max(0, Number(item.quantity) || 0) : 0;
+                const blocked = available < 1 || quantityInCart >= available;
+                const label = blocked
+                    ? 'Nema više dostupnih primjeraka ovog artikla'
+                    : 'Dodaj u košaricu';
+
+                button.classList.toggle('is-blocked', blocked);
+                button.setAttribute('aria-disabled', blocked ? 'true' : 'false');
+                button.setAttribute('aria-label', label);
+                button.setAttribute('title', label);
+            });
+        };
+
+        storeInstance.watch(
+            state => state.cart,
+            () => window.requestAnimationFrame(syncClonedCartButtons),
+            {deep: true}
+        );
+
+        if (document.readyState === 'complete') {
+            window.requestAnimationFrame(syncClonedCartButtons);
+        } else {
+            window.addEventListener('load', syncClonedCartButtons, {once: true});
+        }
+
+        document.addEventListener('click', async (event) => {
+            const target = event.target instanceof Element ? event.target : null;
+            const button = target && target.closest('.tns-slide-cloned .product-card-add-button[data-product-id]');
+
+            if (!button) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (button.dataset.cartPending === 'true') {
+                return;
+            }
+
+            const id = button.dataset.productId;
+            const available = Math.max(0, Number(button.dataset.productAvailable) || 0);
+            const cart = storeInstance.state.storage.getCart() || {};
+            const cartItems = Object.values(cart.items || {});
+            const existing = cartItems.find(item => String(item.id) === String(id));
+            const quantityInCart = existing ? Math.max(0, Number(existing.quantity) || 0) : 0;
+
+            if (available < 1 || quantityInCart >= available) {
+                window.ToastWarning.fire('Nema više dostupnih primjeraka ovog artikla.');
+                return;
+            }
+
+            const action = quantityInCart > 0 ? 'updateCart' : 'addToCart';
+            const item = quantityInCart > 0
+                ? {
+                    id,
+                    quantity: quantityInCart + 1,
+                    show_add_modal: true,
+                    added_quantity: 1,
+                }
+                : {id, quantity: 1};
+
+            button.dataset.cartPending = 'true';
+            button.setAttribute('aria-busy', 'true');
+
+            try {
+                await storeInstance.dispatch(action, item);
+            } finally {
+                delete button.dataset.cartPending;
+                button.setAttribute('aria-busy', 'false');
+                syncClonedCartButtons();
+            }
+        });
+    }
 }

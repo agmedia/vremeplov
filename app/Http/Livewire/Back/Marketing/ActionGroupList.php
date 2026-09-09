@@ -49,6 +49,21 @@ class ActionGroupList extends Component
      */
     public $list = [];
 
+    /** @var string */
+    public $inputName = 'action_list';
+
+    /** @var int|null */
+    public $maxItems;
+
+    /** @var string|null */
+    public $productGroup;
+
+    /** @var bool */
+    public $includeGroupInput = true;
+
+    /** @var bool */
+    public $emitListState = true;
+
 
     public function mount()
     {
@@ -76,7 +91,17 @@ class ActionGroupList extends Component
         if ($this->search != '') {
             switch ($this->group) {
                 case 'product':
-                    $this->search_results = Product::where('name', 'like', '%' . $this->search . '%')->orWhere('sku', 'like', '%' . $this->search . '%')->limit(5)->get();
+                    $query = Product::query()
+                        ->where(function ($query) {
+                            $query->where('name', 'like', '%' . $this->search . '%')
+                                ->orWhere('sku', 'like', '%' . $this->search . '%');
+                        });
+
+                    if ($this->productGroup) {
+                        $query->where('group', $this->productGroup);
+                    }
+
+                    $this->search_results = $query->limit(5)->get();
                     break;
                 case 'category':
                 case 'product_category':
@@ -120,9 +145,26 @@ class ActionGroupList extends Component
         $this->search = '';
         $this->search_results = [];
 
+        if (isset($this->list[$id])) {
+            return;
+        }
+
+        if ($this->maxItems && count($this->list) >= (int) $this->maxItems) {
+            $this->emit('error_alert', ['message' => 'Možete odabrati najviše ' . (int) $this->maxItems . ' stavki.']);
+
+            return;
+        }
+
         switch ($this->group) {
             case 'product':
-                $this->list[$id] = Product::where('id', $id)->first();
+                $query = Product::where('id', $id);
+                if ($this->productGroup) {
+                    $query->where('group', $this->productGroup);
+                }
+                $item = $query->first();
+                if ($item) {
+                    $this->list[$id] = $item;
+                }
                 break;
             case 'category':
             case 'product_category':
@@ -149,7 +191,7 @@ class ActionGroupList extends Component
      */
     public function removeItem(int $id)
     {
-        if ($this->list[$id]) {
+        if (isset($this->list[$id])) {
             unset($this->list[$id]);
         }
     }
@@ -170,10 +212,12 @@ class ActionGroupList extends Component
      */
     public function render()
     {
-        if ( ! empty($this->list)) {
-            $this->emit('list_full');
-        } else {
-            $this->emit('list_empty');
+        if ($this->emitListState) {
+            if ( ! empty($this->list)) {
+                $this->emit('list_full');
+            } else {
+                $this->emit('list_empty');
+            }
         }
 
         $this->checkGroup();
