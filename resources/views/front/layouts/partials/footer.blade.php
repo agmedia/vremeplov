@@ -101,6 +101,8 @@
                             <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.actions') }}">Akcije</a></li>
                         @endif
                         <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.blog') }}">Blog</a></li>
+                        <li class="widget-list-item"><a class="widget-list-link" href="{{ route('book-purchase.create') }}">Otkup knjiga</a></li>
+                        <li class="widget-list-item"><a class="widget-list-link" href="{{ route('faq') }}">Česta pitanja</a></li>
                         <li class="widget-list-item"><a class="widget-list-link" href="{{ route('kontakt') }}">Kontakt</a></li>
                     </ul>
                 </div>

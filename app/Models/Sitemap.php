@@ -169,6 +169,11 @@ class Sitemap
         ];
 
         $this->response[] = [
+            'url' => route('book-purchase.create'),
+            'lastmod' => null,
+        ];
+
+        $this->response[] = [
             'url' => route('catalog.route.blog'),
             'lastmod' => $blogLastmod ? Carbon::parse($blogLastmod)->tz('UTC')->toAtomString() : null,
         ];

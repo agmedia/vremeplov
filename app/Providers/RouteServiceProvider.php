@@ -110,5 +110,45 @@ class RouteServiceProvider extends ServiceProvider
 
             return $limits;
         });
+
+        RateLimiter::for('book-purchase', function (Request $request) {
+            $secret = (string) config('app.key');
+            $ip = (string) $request->ip();
+            $email = Str::lower(trim((string) $request->input('email', '')));
+            $limits = [
+                Limit::perMinutes(10, 5)
+                    ->by('book-purchase:ip:' . hash_hmac('sha256', $ip, $secret)),
+            ];
+
+            if ($email !== '') {
+                $limits[] = Limit::perDay(5)
+                    ->by('book-purchase:email:' . hash_hmac('sha256', $email, $secret));
+            }
+
+            return $limits;
+        });
+
+        RateLimiter::for('contract-termination', function (Request $request) {
+            $secret = (string) config('app.key');
+
+            return Limit::perMinute(10)
+                ->by('contract-termination:ip:' . hash_hmac('sha256', (string) $request->ip(), $secret));
+        });
+
+        RateLimiter::for('product-review-invitation-view', function (Request $request) {
+            $secret = (string) config('app.key');
+            $signature = (string) $request->route('token') . '|' . (string) $request->ip();
+
+            return Limit::perMinute(30)
+                ->by('product-review-invitation-view:' . hash_hmac('sha256', $signature, $secret));
+        });
+
+        RateLimiter::for('product-review-invitation-submit', function (Request $request) {
+            $secret = (string) config('app.key');
+            $signature = (string) $request->route('token') . '|' . (string) $request->ip();
+
+            return Limit::perMinutes(10, 10)
+                ->by('product-review-invitation-submit:' . hash_hmac('sha256', $signature, $secret));
+        });
     }
 }

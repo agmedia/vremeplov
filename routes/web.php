@@ -16,6 +16,7 @@ use App\Http\Controllers\Back\Marketing\NewsletterSubscriberController;
 use App\Http\Controllers\Back\OrderController;
 use App\Http\Controllers\Back\Marketing\ActionController;
 use App\Http\Controllers\Back\Marketing\BlogController;
+use App\Http\Controllers\Back\Marketing\BookPurchaseController as AdminBookPurchaseController;
 use App\Http\Controllers\Back\Settings\ApiController;
 use App\Http\Controllers\Back\Settings\App\CurrencyController;
 use App\Http\Controllers\Back\Settings\App\GeoZoneController;
@@ -38,6 +39,7 @@ use App\Http\Controllers\Front\CheckoutController;
 use App\Http\Controllers\Front\AbandonedCartRecoveryController;
 use App\Http\Controllers\Front\CustomerController;
 use App\Http\Controllers\Front\HomeController;
+use App\Http\Controllers\Front\BookPurchaseController as FrontBookPurchaseController;
 use App\Http\Controllers\Front\OrderTrackingController;
 use App\Http\Controllers\Front\ProductReviewInvitationController;
 use Illuminate\Support\Facades\Route;
@@ -198,6 +200,17 @@ Route::middleware(['auth:sanctum', 'verified', 'no.customers'])->prefix('admin')
         Route::get('faq/{faq}/edit', [FaqController::class, 'edit'])->name('faqs.edit');
         Route::patch('faq/{faq}', [FaqController::class, 'update'])->name('faqs.update');
         Route::delete('faq/{faq}', [FaqController::class, 'destroy'])->name('faqs.destroy');
+
+        // OTKUP KNJIGA
+        Route::get('otkup-knjiga', [AdminBookPurchaseController::class, 'index'])->name('book-purchases.index');
+        Route::get('otkup-knjiga/tekst/uredi', [AdminBookPurchaseController::class, 'editContent'])->name('book-purchases.content.edit');
+        Route::patch('otkup-knjiga/tekst', [AdminBookPurchaseController::class, 'updateContent'])->name('book-purchases.content.update');
+        Route::get('otkup-knjiga/{purchase}/fotografije/{photo}', [AdminBookPurchaseController::class, 'photo'])
+            ->where('photo', '[0-9]+')
+            ->name('book-purchases.photos.show');
+        Route::get('otkup-knjiga/{purchase}', [AdminBookPurchaseController::class, 'show'])->name('book-purchases.show');
+        Route::patch('otkup-knjiga/{purchase}', [AdminBookPurchaseController::class, 'update'])->name('book-purchases.update');
+        Route::delete('otkup-knjiga/{purchase}', [AdminBookPurchaseController::class, 'destroy'])->name('book-purchases.destroy');
 
         // WISHLIST
         Route::get('wishlists', [WishlistController::class, 'index'])->name('wishlists');
@@ -451,15 +464,19 @@ Route::post('/kontakt/posalji', [HomeController::class, 'sendContactMessage'])
 Route::get('/jednostrani-raskid-ugovora', [HomeController::class, 'contractTermination'])
     ->name('contract-termination');
 Route::post('/jednostrani-raskid-ugovora', [HomeController::class, 'sendContractTermination'])
-    ->middleware('throttle:10,1')
+    ->middleware('throttle:contract-termination')
     ->name('contract-termination.send');
 Route::get('/faq', [HomeController::class, 'faq'])->name('faq');
+Route::get('/otkup-knjiga', [FrontBookPurchaseController::class, 'create'])->name('book-purchase.create');
+Route::post('/otkup-knjiga/posalji', [FrontBookPurchaseController::class, 'store'])
+    ->middleware('throttle:book-purchase')
+    ->name('book-purchase.store');
 Route::post('/komentar/proizvoda/posalji', [HomeController::class, 'sendProductComment'])->name('komentar.proizvoda');
 Route::get('/zahtjev-za-recenziju/{token}', [ProductReviewInvitationController::class, 'show'])
-    ->middleware(['signed', 'throttle:30,1'])
+    ->middleware(['signed', 'throttle:product-review-invitation-view'])
     ->name('product-review-invitations.show');
 Route::post('/zahtjev-za-recenziju/{token}', [ProductReviewInvitationController::class, 'store'])
-    ->middleware(['signed', 'throttle:10,10'])
+    ->middleware(['signed', 'throttle:product-review-invitation-submit'])
     ->name('product-review-invitations.store');
 Route::post('/dodaj-u-listu-zelja', [HomeController::class, 'wishlist'])
     ->middleware('throttle:10,1')
