@@ -43,6 +43,7 @@
 }
 
 .mobile-search-suggest {
+    display: block;
     position: absolute;
     z-index: 1042;
     top: 100%;
@@ -63,6 +64,7 @@
 .mobile-search-suggest .list-group-item {
     width: 100%;
     min-width: 0;
+    flex: none;
     overflow: hidden;
 }
 
