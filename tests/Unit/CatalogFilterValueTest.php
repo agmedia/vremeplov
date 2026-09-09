@@ -186,4 +186,12 @@ class CatalogFilterValueTest extends TestCase
             CatalogFilterValue::storageDisplay('origin', 'Hrvatski, latinica')
         );
     }
+
+    public function test_selected_languages_are_stored_in_stable_canonical_order(): void
+    {
+        $this->assertSame(
+            'Hrvatski, Engleski, Njemački',
+            CatalogFilterValue::storageDisplay('origin', 'Njemački, Hrvatski, Engleski')
+        );
+    }
 }

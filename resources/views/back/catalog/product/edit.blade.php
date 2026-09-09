@@ -12,11 +12,15 @@
 @section('content')
 
     @php
+        $selectedOrigins = old('origin', $data['attribute_values']['origin'] ?? []);
+        $selectedOrigins = is_array($selectedOrigins)
+            ? $selectedOrigins
+            : array_filter([$selectedOrigins]);
         $selectedProductAttributes = [
             'letter' => old('letter', $data['attribute_values']['letter'] ?? null),
             'condition' => old('condition', $data['attribute_values']['condition'] ?? null),
             'binding' => old('binding', $data['attribute_values']['binding'] ?? null),
-            'origin' => old('origin', $data['attribute_values']['origin'] ?? null),
+            'origin' => $selectedOrigins,
         ];
     @endphp
 
@@ -311,18 +315,20 @@
                                             </div>
 
                                             <div class="col-md-6 col-xl-3">
-                                                <label for="origin-select">Jezik</label>
-                                                <select class="js-select2 form-control" id="origin-select" name="origin" style="width: 100%;" data-placeholder="Odaberite jezik">
-                                                    <option></option>
+                                                <label for="origin-select">Jezici</label>
+                                                <select class="js-select2 form-control" id="origin-select" name="origin[]" style="width: 100%;" data-placeholder="Odaberite jedan ili više jezika" multiple>
                                                     @if ($data['origins'])
                                                         @foreach ($data['origins'] as $origin)
-                                                            <option value="{{ $origin }}" {{ $origin === $selectedProductAttributes['origin'] ? 'selected' : '' }}>
+                                                            <option value="{{ $origin }}" {{ in_array($origin, $selectedProductAttributes['origin'], true) ? 'selected' : '' }}>
                                                                 {{ $origin }}{{ ($data['legacy_attribute_values']['origin'] ?? null) === $origin ? ' (postojeća vrijednost)' : '' }}
                                                             </option>
                                                         @endforeach
                                                     @endif
                                                 </select>
                                                 @error('origin')
+                                                <span class="text-danger font-italic">{{ $message }}</span>
+                                                @enderror
+                                                @error('origin.*')
                                                 <span class="text-danger font-italic">{{ $message }}</span>
                                                 @enderror
                                             </div>
@@ -474,8 +480,12 @@
             $('#publisher-select').select2({
                 tags: true
             });
-            $('#letter-select, #binding-select, #condition-select, #origin-select').select2({
+            $('#letter-select, #binding-select, #condition-select').select2({
                 allowClear: true
+            });
+            $('#origin-select').select2({
+                allowClear: true,
+                placeholder: 'Odaberite jedan ili više jezika'
             });
             $('#shipping_time-select').select2({
                 tags: true

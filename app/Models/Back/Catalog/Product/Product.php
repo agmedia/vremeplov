@@ -204,6 +204,45 @@ class Product extends Model
         foreach (self::CONTROLLED_ATTRIBUTES as $attribute) {
             $input = $request->input($attribute);
 
+            if ($attribute === 'origin') {
+                if ($input === null || $input === '') {
+                    $input = [];
+                } elseif (! is_array($input)) {
+                    // Keep requests from the old single-select form compatible.
+                    $input = [$input];
+                }
+
+                $input = array_values(array_filter($input, function ($value) {
+                    return $value !== null && $value !== '';
+                }));
+                $request->merge(['origin' => $input]);
+
+                $currentValue = $this->exists ? $this->getOriginal($attribute) : null;
+                $currentData = $this->controlledAttributeData($attribute, $currentValue);
+                $attributeRules['origin'] = [
+                    'nullable',
+                    'array',
+                    'max:' . count($currentData['options']),
+                    function ($attribute, $value, $fail) {
+                        if (! is_array($value)
+                            || count(array_filter($value, fn ($language) => ! is_scalar($language))) > 0) {
+                            return;
+                        }
+
+                        if (mb_strlen(implode(', ', $value), 'UTF-8') > 191) {
+                            $fail('Odabrani jezici premašuju dopuštenu duljinu.');
+                        }
+                    },
+                ];
+                $attributeRules['origin.*'] = [
+                    'string',
+                    'distinct',
+                    Rule::in($currentData['options']),
+                ];
+
+                continue;
+            }
+
             if ($input === null || is_scalar($input)) {
                 $normalized = CatalogFilterValue::storageDisplay($attribute, $input);
                 $request->merge([
@@ -238,7 +277,17 @@ class Product extends Model
             'letter.in' => 'Odaberite pismo s ponuđenog popisa.',
             'condition.in' => 'Odaberite stanje s ponuđenog popisa.',
             'binding.in' => 'Odaberite uvez s ponuđenog popisa.',
-            'origin.in' => 'Odaberite jezik s ponuđenog popisa.',
+            'origin.*.in' => 'Odaberite jezike s ponuđenog popisa.',
+            'origin.*.distinct' => 'Svaki jezik može biti odabran samo jednom.',
+        ]);
+
+        $languages = array_map(function ($language) {
+            return CatalogFilterValue::storageDisplay('origin', $language);
+        }, $request->input('origin', []));
+        $request->merge([
+            'origin' => $languages
+                ? CatalogFilterValue::storageDisplay('origin', implode(', ', $languages))
+                : null,
         ]);
 
         // Set Product Model request variable
@@ -445,6 +494,25 @@ class Product extends Model
         $selected = $selected === '' ? null : $selected;
         $options = CatalogFilterValue::facetOptions($attribute);
         $legacy = null;
+
+        if ($attribute === 'origin') {
+            $selectedLanguages = $selected === null
+                ? []
+                : CatalogFilterValue::facetValues('origin', $selected);
+            $canonicalSelection = implode(', ', $selectedLanguages);
+
+            if ($selected !== null && $selected !== $canonicalSelection) {
+                $legacy = $selected;
+                $selectedLanguages = [$legacy];
+                $options[] = $legacy;
+            }
+
+            return [
+                'options' => array_values(array_unique($options)),
+                'selected' => $selectedLanguages,
+                'legacy' => $legacy,
+            ];
+        }
 
         if ($selected !== null && ! in_array($selected, $options, true)) {
             $legacy = $selected;

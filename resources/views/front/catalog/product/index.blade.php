@@ -3,6 +3,7 @@
     $productPageTitle = mb_strlen($seo['title']) <= 42
         ? $seo['title'] . ' - Antikvarijat Vremeplov'
         : $seo['title'];
+    $productLanguageCount = count(\App\Support\CatalogFilterValue::facetValues('origin', $prod->origin));
 @endphp
 @section ('title', $productPageTitle)
 @section ('description', $seo['description'])
@@ -467,7 +468,7 @@
 
                                        @if ($prod->origin)
                                            <li class="d-flex justify-content-between pb-2 border-bottom">
-                                               <span class="text-muted">Jezik:</span><span>{{ $prod->origin }}</span>
+                                               <span class="text-muted">{{ $productLanguageCount > 1 ? 'Jezici:' : 'Jezik:' }}</span><span>{{ $prod->origin }}</span>
                                            </li>
                                        @endif
 

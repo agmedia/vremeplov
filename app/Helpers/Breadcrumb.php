@@ -6,6 +6,7 @@ use App\Models\Front\Catalog\Author;
 use App\Models\Front\Catalog\Category;
 use App\Models\Front\Catalog\Product;
 use App\Models\Front\Catalog\Publisher;
+use App\Support\CatalogFilterValue;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -277,10 +278,17 @@ class Breadcrumb
                     'srpski' => 'sr',
                     'slovenski' => 'sl',
                 ];
-                $language = mb_strtolower(trim((string) $prod->origin));
+                $schemaLanguages = collect(CatalogFilterValue::facetValues('origin', $prod->origin))
+                    ->map(function ($language) use ($languages) {
+                        return $languages[mb_strtolower($language)] ?? $language;
+                    })
+                    ->values()
+                    ->all();
 
-                if (isset($languages[$language])) {
-                    $schema['inLanguage'] = $languages[$language];
+                if (count($schemaLanguages) === 1) {
+                    $schema['inLanguage'] = $schemaLanguages[0];
+                } elseif ($schemaLanguages) {
+                    $schema['inLanguage'] = $schemaLanguages;
                 }
             }
 
@@ -296,7 +304,7 @@ class Breadcrumb
 
             $additionalProperties = collect([
                 'Godina izdanja' => ! $isBook ? $prod->year : null,
-                'Jezik' => $prod->origin,
+                (count(CatalogFilterValue::facetValues('origin', $prod->origin)) > 1 ? 'Jezici' : 'Jezik') => $prod->origin,
                 'Broj stranica' => $prod->pages,
                 'Dimenzije' => $prod->dimensions ? $prod->dimensions . ' cm' : null,
                 'Stanje' => $prod->condition,

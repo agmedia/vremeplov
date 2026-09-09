@@ -259,7 +259,7 @@ class ProductHistory extends Model
 
         // origin changed
         if ($this->old['origin'] != $this->new['origin']) {
-            $this->changed .= '<li>Promjenjeno mjesto izdavanja: <b>' . $this->old['origin'] . '</b> u <b>' . $this->new['origin'] . '</b></li>';
+            $this->changed .= '<li>Promijenjeni jezici: <b>' . $this->old['origin'] . '</b> u <b>' . $this->new['origin'] . '</b></li>';
         }
 
         // letter changed
