@@ -490,7 +490,6 @@
 .checkout-progress-shell {
     padding-right: .65rem;
     padding-left: .65rem;
-    border-bottom: 1px solid rgba(45, 34, 36, .1);
 }
 
 .checkout-steps-six .step-progress {

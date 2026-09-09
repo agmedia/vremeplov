@@ -41,7 +41,7 @@
                     <small class="text-muted">Kliknite cijenu, godinu ili policu za brzu izmjenu.</small>
                 </div>
                 <div class="admin-toolbar-actions">
-                    <button class="btn btn-outline-primary" type="button" data-toggle="collapse" data-target="#productFilters" aria-expanded="{{ $activeFilterCount ? 'true' : 'false' }}" aria-controls="productFilters">
+                    <button class="btn btn-outline-primary" type="button" data-toggle="collapse" data-target="#productFilters" data-admin-filter-toggle="products-{{ auth()->id() }}" aria-expanded="true" aria-controls="productFilters">
                         <i class="fa fa-filter mr-1" aria-hidden="true"></i> Filtri
                         @if($activeFilterCount)
                             <span class="admin-count">{{ $activeFilterCount }}</span>
@@ -52,7 +52,7 @@
                     @endif
                 </div>
             </div>
-            <div class="collapse {{ $activeFilterCount ? 'show' : '' }}" id="productFilters">
+            <div class="collapse show" id="productFilters" data-admin-filter-memory="products-{{ auth()->id() }}">
                 <div class="block-content admin-filter-panel">
                     <form action="{{ route('products') }}" method="get">
 

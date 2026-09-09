@@ -139,6 +139,43 @@
                     .attr('aria-label', 'Pretraži opcije');
             });
 
+            $(function () {
+                $('[data-admin-filter-memory]').each(function () {
+                    const panel = this;
+                    const panelKey = panel.dataset.adminFilterMemory;
+                    const storageKey = 'vremeplov.admin.filters.' + panelKey;
+                    const $panel = $(panel);
+                    const $toggle = $('[data-admin-filter-toggle="' + panelKey + '"]');
+                    let savedState = null;
+
+                    try {
+                        savedState = window.localStorage.getItem(storageKey);
+                    } catch (error) {
+                        savedState = null;
+                    }
+
+                    const open = savedState !== 'closed';
+                    $panel.toggleClass('show', open);
+                    $toggle.toggleClass('collapsed', ! open).attr('aria-expanded', open ? 'true' : 'false');
+
+                    $panel.on('shown.bs.collapse', function () {
+                        try {
+                            window.localStorage.setItem(storageKey, 'open');
+                        } catch (error) {
+                            // Filtri i dalje rade ako preglednik blokira lokalnu pohranu.
+                        }
+                    });
+
+                    $panel.on('hidden.bs.collapse', function () {
+                        try {
+                            window.localStorage.setItem(storageKey, 'closed');
+                        } catch (error) {
+                            // Filtri i dalje rade ako preglednik blokira lokalnu pohranu.
+                        }
+                    });
+                });
+            });
+
             /**
              *
              */

@@ -39,14 +39,14 @@
                             <i class="fa fa-times mr-1" aria-hidden="true"></i> Očisti filtre
                         </a>
                     @endif
-                    <button type="button" class="btn btn-light" data-toggle="collapse" data-target="#order-filters" aria-expanded="{{ $hasActiveFilters ? 'true' : 'false' }}" aria-controls="order-filters">
+                    <button type="button" class="btn btn-light" data-toggle="collapse" data-target="#order-filters" data-admin-filter-toggle="orders-{{ auth()->id() }}" aria-expanded="true" aria-controls="order-filters">
                         <i class="fa fa-filter mr-1" aria-hidden="true"></i> Filtri
                         @if($hasActiveFilters)<span class="badge badge-primary ml-1">Aktivni</span>@endif
                     </button>
                 </div>
             </div>
 
-            <div id="order-filters" class="collapse {{ $hasActiveFilters ? 'show' : '' }} admin-filter-panel">
+            <div id="order-filters" class="collapse show admin-filter-panel" data-admin-filter-memory="orders-{{ auth()->id() }}">
                 <div class="block-content">
                     <form action="{{ route('orders') }}" method="GET">
                         <div class="row align-items-end">
