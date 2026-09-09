@@ -52,29 +52,13 @@
 
 @section('content')
 
-    <!-- Page Title-->
-    <div class="bg-light pt-4 pb-3"  style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
-        <div class="container  justify-content-between py-2 py-lg-3">
-            <div class="order-lg-2 mb-3  pt-lg-2">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb breadcrumb-dark justify-content-center ">
-                                <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="fa-regular fa-house"></i>Naslovnica</a></li>
-                                <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('catalog.route.blog') }}"><i class="fa-regular fa-house"></i>Blog</a></li>
-
-                                <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ isset($blogs) ? 'Objave' : $blog->title }}</li>
-                            </ol>
-                        </nav>
-
-            </div>
-            <div class="order-lg-1 pe-lg-4 text-center ">
-                @if(isset($blogs))
-            <h1 class="text-dark">Blog</h1>
-                @else
-                    <h1 class="text-dark">{{ $blog->title }}</h1>
-                @endif
-        </div>
-        </div>
-    </div>
+    @include('front.layouts.partials.page-heading', [
+        'title' => isset($blogs) ? 'Blog' : $blog->title,
+        'current' => isset($blogs) ? 'Blog' : $blog->title,
+        'parents' => isset($blogs) ? [] : [
+            ['label' => 'Blog', 'url' => route('catalog.route.blog')],
+        ],
+    ])
 
     @if(isset($blogs))
 

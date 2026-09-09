@@ -10,12 +10,12 @@
 @endpush
 
 @section('content')
+    @include('front.layouts.partials.page-heading', [
+        'title' => 'Jednostrani raskid ugovora',
+    ])
+
     <main class="container termination-page py-4 py-lg-5">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-4"><li class="breadcrumb-item"><a href="{{ route('index') }}"><i class="fa-regular fa-house me-1"></i>Naslovnica</a></li><li class="breadcrumb-item active">Jednostrani raskid ugovora</li></ol>
-        </nav>
         <div class="mb-4">
-            <h1 class="h2 mb-2">Obrazac za jednostrani raskid ugovora</h1>
             <p class="mb-0">Ovim obrascem možete jednostavno i nedvosmisleno raskinuti ugovor sklopljen na daljinu. Razlog nije potrebno navesti, a potvrdu primitka bez odgađanja šaljemo na vaš e-mail.</p>
         </div>
 

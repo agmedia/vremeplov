@@ -20,32 +20,23 @@
 
 @section('content')
 
-
-    <!-- Page Title (Light)-->
-    <div class="bg-light pt-4 pb-3"  style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
-        <div class="container d-lg-flex justify-content-between align-items-center py-2 py-lg-3">
-
-            <div class="order-1 pe-lg-4 mb-3 mb-lg-0 text-center text-start align-items-center">
-                <h1 class="h3 text-dark mb-0"> Lista autora</h1>
-            </div>
-            <div class="order-2 mb-3 mb-lg-0 pt-0 align-items-center">
-                <form action="{{ route('pretrazi', ['tip' => 'author']) }}" method="get" style="max-width:500px; margin: 0 auto;">
-                    <div class="input-group input-group-lg flex-nowrap">
-                        <input type="text" class="form-control rounded-start" name="{{ config('settings.search_keyword') }}" placeholder="Pretražite po autoru">
-                        <button class="btn btn-primary btn-lg fs-base" type="submit"><i class="fa-regular fa-magnifying-glass"></i></button>
-                    </div>
-                </form>
-            </div>
-
-
-        </div>
-
-    </div>
-
-
+    @include('front.layouts.partials.page-heading', [
+        'title' => 'Lista autora',
+        'current' => 'Autori',
+    ])
 
     <!-- Topics grid-->
     <section class="container py-3 mb-5">
+        <div class="row justify-content-center pt-3">
+            <div class="col-lg-6">
+                <form action="{{ route('pretrazi', ['tip' => 'author']) }}" method="get">
+                    <div class="input-group input-group-lg flex-nowrap">
+                        <input type="text" class="form-control rounded-start" name="{{ config('settings.search_keyword') }}" placeholder="Pretražite po autoru">
+                        <button class="btn btn-primary btn-lg fs-base" type="submit" aria-label="Pretraži autore"><i class="fa-regular fa-magnifying-glass"></i></button>
+                    </div>
+                </form>
+            </div>
+        </div>
         <div class="row align-items-center py-md-3">
             <div class="col-lg-12   py-2 text-center">
                 <div class="scrolling-wrapper">

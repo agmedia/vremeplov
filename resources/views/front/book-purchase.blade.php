@@ -25,23 +25,13 @@
 
 @push('css_after')
     <style>
-        .book-purchase-page{color:#4f4440}.book-purchase-page h1,.book-purchase-page h2{color:#2d2224;font-family:Georgia,'Times New Roman',serif}.book-purchase-card{background:#fff;border:1px solid #e7ddd0;border-radius:16px;box-shadow:0 10px 32px rgba(45,34,36,.07)}.book-purchase-intro{font-size:1.05rem;line-height:1.8}.book-purchase-intro p:last-child{margin-bottom:0}.book-purchase-page .form-label{font-weight:700;color:#3f3331}.book-purchase-page .form-control{border-color:#ddcfbf;border-radius:11px;padding:.75rem 1rem}.book-purchase-page .form-control:focus{border-color:#c7a361;box-shadow:0 0 0 .2rem rgba(199,163,97,.17)}.book-purchase-files{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px;margin-top:16px}.book-purchase-file{position:relative;border:1px solid #e3d8ca;border-radius:12px;background:#faf7f2;padding:9px;min-width:0}.book-purchase-file__preview{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:1/1;border-radius:8px;background:#eee7dc;overflow:hidden;color:#9b7f55}.book-purchase-file__preview img{width:100%;height:100%;object-fit:cover}.book-purchase-file__name{display:block;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.78rem}.book-purchase-file__remove{width:100%;margin-top:7px}.book-purchase-upload{border:1px dashed #c9b291;border-radius:13px;background:#fbf8f3;padding:20px}.book-purchase-required{color:#9d342d}.book-purchase-privacy{background:#f8f3ea;border-radius:10px;padding:14px 16px}
+        .book-purchase-page{color:#4f4440}.book-purchase-page h1,.book-purchase-page h2{color:#2d2224;font-family:Georgia,'Times New Roman',serif}.book-purchase-card{background:#fff;border:1px solid #e7ddd0;border-radius:16px;box-shadow:0 10px 32px rgba(45,34,36,.07)}.book-purchase-intro{font-size:1.05rem;line-height:1.8}.book-purchase-intro p:last-child{margin-bottom:0}.book-purchase-page .form-label{font-weight:700;color:#3f3331}.book-purchase-page .form-control{border-color:#ddcfbf;border-radius:11px;padding:.75rem 1rem}.book-purchase-page .form-control:focus{border-color:#c7a361;box-shadow:0 0 0 .2rem rgba(199,163,97,.17)}.book-purchase-files{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px;margin-top:16px}.book-purchase-file{position:relative;border:1px solid #e3d8ca;border-radius:12px;background:#faf7f2;padding:9px;min-width:0}.book-purchase-file__preview{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:1/1;border-radius:8px;background:#eee7dc;overflow:hidden;color:#9b7f55}.book-purchase-file__preview img{width:100%;height:100%;object-fit:cover}.book-purchase-file__name{display:block;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.78rem}.book-purchase-file__remove{width:100%;margin-top:7px}.book-purchase-upload{border:1px dashed #c9b291;border-radius:13px;background:#fbf8f3;padding:20px}.book-purchase-required{color:#9d342d}.book-purchase-privacy{display:flex;align-items:flex-start;gap:.75rem;background:#f8f3ea;border-radius:10px;padding:14px 16px}.book-purchase-privacy .form-check-input{float:none;flex:0 0 auto;margin:.3em 0 0}.book-purchase-privacy .form-check-label{min-width:0}
     </style>
 @endpush
 
 @section('content')
     <main class="book-purchase-page">
-        <div class="bg-light pt-4 pb-3" style="background-image:url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat:repeat;">
-            <div class="container d-lg-flex justify-content-between py-2 py-lg-3">
-                <nav class="order-lg-2 mb-3 mb-lg-0 pt-lg-2" aria-label="breadcrumb">
-                    <ol class="breadcrumb breadcrumb-dark flex-lg-nowrap justify-content-center justify-content-lg-start mb-0">
-                        <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="fa-regular fa-house me-1"></i>Naslovnica</a></li>
-                        <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ $content['title'] }}</li>
-                    </ol>
-                </nav>
-                <div class="order-lg-1 pe-lg-4 text-center text-lg-start"><h1 class="h2 text-dark mb-0">{{ $content['title'] }}</h1></div>
-            </div>
-        </div>
+        @include('front.layouts.partials.page-heading', ['title' => $content['title']])
 
         <section class="container py-4 py-lg-5">
             @include('front.layouts.partials.session')
