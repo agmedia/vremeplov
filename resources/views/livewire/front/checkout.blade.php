@@ -26,7 +26,7 @@
             <div class="step-progress"><span class="step-count">4</span></div>
             <div class="step-label"><i class="fa-regular fa-credit-card"></i>Plaćanje</div>
         </a>
-        <a class="step-item" @if($checkoutCanBeReviewed) href="{{ route('pregled') }}" @else wire:click="changeStep('placanje')" href="javascript:void(0);" @endif>
+        <a class="step-item" @if($checkoutCanBeReviewed) href="{{ route('pregled') }}" @elseif($step === 'placanje') wire:click="reviewOrder" href="javascript:void(0);" @else wire:click="changeStep('placanje')" href="javascript:void(0);" @endif>
             <div class="step-progress"><span class="step-count">5</span></div>
             <div class="step-label"><i class="fa-regular fa-eye"></i>Pregledaj</div>
         </a>
@@ -353,10 +353,12 @@
                 </tbody>
             </table>
         </div>
-        @error('payment') <small class="text-danger">Način plaćanja je obvezan</small> @enderror
+        @error('payment')
+            <div id="checkout-payment-error" class="alert alert-danger mt-3 mb-0" role="alert">{{ $message }}</div>
+        @enderror
         <div class=" d-flex pt-4 mt-3">
             <div class="w-50 pe-3"><a class="btn btn-secondary d-block w-100" wire:click="changeStep('dostava')" href="javascript:void(0);"><i class="fa-regular fa-arrow-left mt-sm-0 me-1"></i><span class="d-none d-sm-inline">Povratak na odabir dostave</span><span class="d-inline d-sm-none">Povratak</span></a></div>
-            <div class="w-50 ps-2"><a class="btn btn-primary d-block w-100" @if($checkoutCanBeReviewed) href="{{ route('pregled') }}" @else wire:click="changeStep('placanje')" href="javascript:void(0);" @endif><span class="d-none d-sm-inline">Pregledajte narudžbu</span><span class="d-inline d-sm-none">Nastavi</span><i class="fa-regular fa-arrow-right mt-sm-0 ms-1"></i></a></div>
+            <div class="w-50 ps-2"><a class="btn btn-primary d-block w-100" wire:click="reviewOrder" href="javascript:void(0);"><span class="d-none d-sm-inline">Pregledajte narudžbu</span><span class="d-inline d-sm-none">Nastavi</span><i class="fa-regular fa-arrow-right mt-sm-0 ms-1"></i></a></div>
         </div>
     @endif
     </div>
@@ -448,7 +450,37 @@
             document.head.appendChild(script);
         }
 
+        function focusFirstCheckoutError() {
+            window.setTimeout(() => {
+                const firstError = document.querySelector('#checkout-payment-error, .checkout-flow-card .is-invalid, .checkout-flow-card [aria-invalid="true"], .checkout-flow-card .alert-danger');
+
+                if (!firstError) {
+                    return;
+                }
+
+                firstError.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                });
+
+                if (typeof firstError.focus === 'function') {
+                    firstError.focus({preventScroll: true});
+                }
+            }, 0);
+        }
+
+        function scrollCheckoutToTop() {
+            window.setTimeout(() => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth',
+                });
+            }, 0);
+        }
+
         document.addEventListener('DOMContentLoaded', initBoxNowMap);
+        window.addEventListener('checkout-validation-failed', focusFirstCheckoutError);
+        window.addEventListener('checkout-step-changed', scrollCheckoutToTop);
         document.addEventListener('livewire:load', () => {
             initBoxNowMap();
 

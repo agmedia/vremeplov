@@ -44,24 +44,24 @@
 </section>
 
 
-<footer class="bg-dark pt-sm-5"  style="background-image: url({{ config('settings.images_domain') . 'media/img/footer-vintage-bg.jpg' }});background-repeat: repeat;">
+<footer class="bg-dark pt-4 pt-sm-5"  style="background-image: url({{ config('settings.images_domain') . 'media/img/footer-vintage-bg.jpg' }});background-repeat: repeat;">
 
 
 
     <div class="container pt-2 pb-3">
         <div class="row">
-            <div class="col-md-3  text-center text-md-start mb-4">
+            <div class="col-12 col-md-3 text-start mb-4">
 
-                <h3 class="widget-title fw-700 d-none d-md-block text-white"><span>Antikvarijat Vremeplov</span></h3>
-                <p class=" text-white  fs-md pb-1 d-none d-sm-block">
+                <h3 class="widget-title fw-700 text-white"><span>Antikvarijat Vremeplov</span></h3>
+                <p class="text-white fs-md pb-1">
 
                     <strong>Adresa</strong><br>Zvonimirova 24<br> 10000 Zagreb</p>
 
 
-                <p class=" text-white  fs-md pb-1 d-none d-sm-block">  <strong>Broj telefona</strong><br>
+                <p class="text-white fs-md pb-1">  <strong>Broj telefona</strong><br>
                   091 762 7441</p>
 
-                <p class=" text-white  fs-md pb-1 d-none d-sm-block">  <strong>Radno vrijeme
+                <p class="text-white fs-md pb-1">  <strong>Radno vrijeme
                        </strong><br>
                     Pon-Pet: 09 -14h i 16 - 19h<br>
                     Sub: 10 - 13h
@@ -69,7 +69,7 @@
                 </p>
 
 
-                <div class="widget mt-4 text-md-nowrap text-center text-sm-start">
+                <div class="widget mt-4 text-md-nowrap text-start">
                     <a class="btn-social bs-light bg-primary bs-instagram me-2 mb-2" aria-label="Pratite nas na Instagramu" href="https://www.instagram.com/antikvarijatvremeplov"><i class="fa-brands fa-instagram"></i></a>
                     <a class="btn-social bs-light bg-primary bs-facebook me-2 mb-2" aria-label="Pratite nas na Facebooku" href="https://www.facebook.com/antikavrijatvremeplov"><i class="fa-brands fa-facebook-f"></i></a>
                 </div>

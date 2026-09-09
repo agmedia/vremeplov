@@ -18,6 +18,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 class Checkout extends Component
@@ -273,7 +274,8 @@ class Checkout extends Component
      */
     public function changeStep(string $step = '')
     {
-        $this->checkCart();
+        try {
+            $this->checkCart();
 
         if (in_array($step, ['', 'podaci']) && $this->cart) {
             $this->gdl = TagManager::getGoogleCartDataLayer($this->cart->get());
@@ -335,20 +337,57 @@ class Checkout extends Component
 
         CheckoutSession::setStep($step);
 
-        if (request()->hasHeader('X-Livewire') && $this->gdl_event && ! empty($this->gdl)) {
-            $ecommerce = ['items' => $this->gdl];
-            if ($this->gdl_event === 'add_shipping_info' && $this->gdl_shipping) {
-                $ecommerce['shipping_tier'] = $this->gdl_shipping;
-            }
-            if ($this->gdl_event === 'add_payment_info' && $this->gdl_payment) {
-                $ecommerce['payment_type'] = $this->gdl_payment;
-            }
+        $this->dispatchBrowserEvent('checkout-step-changed', [
+            'step' => $step,
+        ]);
 
-            $this->dispatchBrowserEvent('ga4-event', [
-                'event' => $this->gdl_event,
-                'ecommerce' => $ecommerce,
+            if (request()->hasHeader('X-Livewire') && $this->gdl_event && ! empty($this->gdl)) {
+                $ecommerce = ['items' => $this->gdl];
+                if ($this->gdl_event === 'add_shipping_info' && $this->gdl_shipping) {
+                    $ecommerce['shipping_tier'] = $this->gdl_shipping;
+                }
+                if ($this->gdl_event === 'add_payment_info' && $this->gdl_payment) {
+                    $ecommerce['payment_type'] = $this->gdl_payment;
+                }
+
+                $this->dispatchBrowserEvent('ga4-event', [
+                    'event' => $this->gdl_event,
+                    'ecommerce' => $ecommerce,
+                ]);
+            }
+        } catch (ValidationException $exception) {
+            $this->dispatchBrowserEvent('checkout-validation-failed', [
+                'step' => $step,
             ]);
+
+            throw $exception;
         }
+    }
+
+
+    public function reviewOrder()
+    {
+        $this->resetErrorBag('payment');
+        $this->checkCart();
+
+        if (! $this->cart || ($this->cart->get()['count'] ?? 0) <= 0) {
+            return redirect()->route('kosarica');
+        }
+
+        if (! $this->paymentIsAvailable((string) $this->payment)) {
+            $this->payment = '';
+            CheckoutSession::forgetPayment();
+            $this->addError('payment', 'Odaberite način plaćanja prije nastavka.');
+            $this->dispatchBrowserEvent('checkout-validation-failed', [
+                'step' => 'placanje',
+            ]);
+
+            return null;
+        }
+
+        CheckoutSession::setPayment($this->payment);
+
+        return redirect()->route('pregled');
     }
 
 

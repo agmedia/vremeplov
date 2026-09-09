@@ -63,6 +63,28 @@ class BoxNowCheckoutStateTest extends TestCase
         $this->assertStringContainsString('new WeakSet()', $view);
         $this->assertStringContainsString("script.dataset.boxnowWidget = '1'", $view);
     }
+
+    public function test_checkout_step_changes_scroll_to_the_top_and_payment_errors_are_visible(): void
+    {
+        $component = file_get_contents(app_path('Http/Livewire/Front/Checkout.php'));
+        $view = file_get_contents(resource_path('views/livewire/front/checkout.blade.php'));
+
+        $this->assertStringContainsString("dispatchBrowserEvent('checkout-step-changed'", $component);
+        $this->assertStringContainsString('wire:click="reviewOrder"', $view);
+        $this->assertStringContainsString('id="checkout-payment-error"', $view);
+        $this->assertStringContainsString("window.addEventListener('checkout-step-changed', scrollCheckoutToTop)", $view);
+        $this->assertStringContainsString("window.addEventListener('checkout-validation-failed', focusFirstCheckoutError)", $view);
+    }
+
+    public function test_final_payment_buttons_use_the_short_mobile_safe_label(): void
+    {
+        foreach (['bank', 'cod', 'corvus', 'payway', 'pickup', 'wspay', 'paypal_standard'] as $payment) {
+            $view = file_get_contents(resource_path("views/front/checkout/payment/{$payment}.blade.php"));
+
+            $this->assertStringContainsString('Dovrši narudžbu', $view);
+            $this->assertStringNotContainsString('Naručite uz obvezu plaćanja', $view);
+        }
+    }
 }
 
 
