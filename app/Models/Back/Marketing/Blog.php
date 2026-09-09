@@ -45,23 +45,36 @@ class Blog extends Model
             'related_slider_mode' => ['nullable', Rule::in(['none', 'books', 'author'])],
             'related_slider_title' => ['nullable', 'string', 'max:191'],
             'related_slider_author_id' => [
-                Rule::requiredIf($request->input('related_slider_mode') === 'author'),
-                'nullable',
+                'exclude_unless:related_slider_mode,author',
+                'required',
                 'integer',
                 'exists:authors,id',
             ],
             'related_slider_products' => [
-                Rule::requiredIf($request->input('related_slider_mode') === 'books'),
-                'nullable',
+                'exclude_unless:related_slider_mode,books',
+                'required',
                 'array',
                 'min:1',
                 'max:15',
             ],
             'related_slider_products.*' => [
+                'exclude_unless:related_slider_mode,books',
                 'integer',
                 'distinct',
                 Rule::exists('products', 'id')->where('group', 'knjige'),
             ],
+        ], [
+            'related_slider_mode.in' => 'Odaberite valjan izvor povezanih knjiga.',
+            'related_slider_author_id.required' => 'Odaberite autora za povezane knjige.',
+            'related_slider_author_id.integer' => 'Odabrani autor nije valjan.',
+            'related_slider_author_id.exists' => 'Odabrani autor više ne postoji.',
+            'related_slider_products.required' => 'Odaberite najmanje jednu povezanu knjigu.',
+            'related_slider_products.array' => 'Odabrane povezane knjige nisu valjane.',
+            'related_slider_products.min' => 'Odaberite najmanje jednu povezanu knjigu.',
+            'related_slider_products.max' => 'Možete odabrati najviše 15 povezanih knjiga.',
+            'related_slider_products.*.integer' => 'Jedna od odabranih knjiga nije valjana.',
+            'related_slider_products.*.distinct' => 'Ista knjiga ne može biti odabrana više puta.',
+            'related_slider_products.*.exists' => 'Jedna od odabranih knjiga više nije dostupna.',
         ]);
 
         $this->request = $request;

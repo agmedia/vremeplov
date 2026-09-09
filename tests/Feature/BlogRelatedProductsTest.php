@@ -135,6 +135,23 @@ class BlogRelatedProductsTest extends TestCase
         $this->assertDatabaseMissing('pages', ['title' => 'Članak bez odabranog autora']);
     }
 
+    public function test_blog_admin_ignores_stale_related_values_when_slider_is_disabled(): void
+    {
+        $response = $this->actingAs(User::factory()->create())
+            ->post(route('blogs.store'), [
+                'title' => 'Članak bez povezanog slidera',
+                'related_slider_mode' => 'none',
+                'related_slider_author_id' => 0,
+                'related_slider_products' => [999999],
+            ]);
+
+        $stored = DB::table('pages')->where('title', 'Članak bez povezanog slidera')->first();
+
+        $response->assertSessionDoesntHaveErrors();
+        $this->assertNotNull($stored);
+        $this->assertNull($stored->related_slider);
+    }
+
     public function test_blog_admin_rejects_non_book_items_in_manual_mode(): void
     {
         $author = $this->createAuthor('Autor karte');
