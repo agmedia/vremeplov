@@ -14,6 +14,7 @@ use App\Models\Back\Catalog\Product\ProductCategory;
 use App\Models\Back\Orders\Order;
 use App\Models\Back\Settings\Settings;
 use App\Models\Back\TempTable;
+use App\Support\CatalogFilterValue;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -152,6 +153,17 @@ class AkademskaKnjigaMk
                         $author_id = $import->resolveAuthor($data['author']);
                     }
 
+                    $catalogAttributes = [];
+                    foreach ([
+                        'origin' => 'Engleski',
+                        'letter' => null,
+                        'condition' => null,
+                        'binding' => $data['formaCover'] ?? null,
+                    ] as $column => $value) {
+                        $normalized = CatalogFilterValue::storageDisplay($column, $value);
+                        $catalogAttributes[$column] = $normalized === '' ? null : $normalized;
+                    }
+
                     $id = Product::query()->insertGetId([
                         'author_id'            => $author_id,
                         'publisher_id'         => $publisher_id,
@@ -173,10 +185,10 @@ class AkademskaKnjigaMk
                         'meta_description'     => $data['title'].' - '.$data['author'].' - '.$data['bookPublisherId']['bookPublisherName'],
                         'pages'                => $data['numberOfPages'],
                         'dimensions'           => null,
-                        'origin'               => 'Engleski',
-                        'letter'               => null,
-                        'condition'            => null,
-                        'binding'              => $data['formaCover'],
+                        'origin'               => $catalogAttributes['origin'],
+                        'letter'               => $catalogAttributes['letter'],
+                        'condition'            => $catalogAttributes['condition'],
+                        'binding'              => $catalogAttributes['binding'],
                         'year'                 => $data['yearPublished'],
                         'shipping_time'        => '10-15 dana',
                         'youtube_product_url'  => '',

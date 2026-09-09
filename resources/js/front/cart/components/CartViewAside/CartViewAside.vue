@@ -7,7 +7,7 @@
                     <h3 class="fw-bold text-primary">{{ $store.state.service.formatMainPrice(($store.state.cart && $store.state.cart.total) ? $store.state.cart.total : 0) }}</h3>
                     <h4 class="fs-sm" v-if="$store.state.cart.secondary_price">{{ $store.state.service.formatSecondaryPrice(($store.state.cart && $store.state.cart.total) ? $store.state.cart.total : 0) }}</h4>
                 </div>
-                <a class="btn btn-primary btn-shadow d-block w-100 mt-4" :href="checkouturl">NASTAVI NA NAPLATU <i class="ci-arrow-right fs-sm"></i></a>
+                <a class="btn btn-primary btn-shadow d-block w-100 mt-4" :href="checkouturl">NASTAVI NA NAPLATU <i class="fa-regular fa-arrow-right fs-sm"></i></a>
 
             </div>
         </div>

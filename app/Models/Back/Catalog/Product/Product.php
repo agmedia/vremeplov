@@ -8,6 +8,7 @@ use App\Models\Back\Catalog\Author;
 use App\Models\Back\Catalog\Category;
 use App\Models\Back\Catalog\Publisher;
 use App\Models\Back\Settings\Settings;
+use App\Support\CatalogFilterValue;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Bouncer;
 use Illuminate\Validation\ValidationException;
 
@@ -49,6 +51,9 @@ class Product extends Model
      * @var null
      */
     protected $old_product = null;
+
+    /** Attributes that are controlled enumerations in the manual admin form. */
+    private const CONTROLLED_ATTRIBUTES = ['letter', 'condition', 'binding', 'origin'];
 
 
     /**
@@ -194,13 +199,46 @@ class Product extends Model
      */
     public function validateRequest(Request $request)
     {
+        $attributeRules = [];
+
+        foreach (self::CONTROLLED_ATTRIBUTES as $attribute) {
+            $input = $request->input($attribute);
+
+            if ($input === null || is_scalar($input)) {
+                $normalized = CatalogFilterValue::storageDisplay($attribute, $input);
+                $request->merge([
+                    $attribute => $normalized === '' ? null : $normalized,
+                ]);
+            }
+
+            $currentValue = $this->exists ? $this->getOriginal($attribute) : null;
+            $currentData = $this->controlledAttributeData($attribute, $currentValue);
+            $attributeRules[$attribute] = [
+                'nullable',
+                'string',
+                'max:191',
+                Rule::in($currentData['options']),
+            ];
+        }
+
+        if (is_string($request->input('note'))) {
+            $note = trim($request->input('note'));
+            $request->merge(['note' => $note === '' ? null : $note]);
+        }
+
         // Validate the request.
-        $request->validate([
+        $request->validate(array_merge([
             'name'     => 'required',
             'sku'      => 'required',
             'price'    => 'required',
             'quantity' => 'required',
-            'group'    => 'required'
+            'group'    => 'required',
+            'note'     => 'nullable|string|max:2000',
+        ], $attributeRules), [
+            'letter.in' => 'Odaberite pismo s ponuđenog popisa.',
+            'condition.in' => 'Odaberite stanje s ponuđenog popisa.',
+            'binding.in' => 'Odaberite uvez s ponuđenog popisa.',
+            'origin.in' => 'Odaberite jezik s ponuđenog popisa.',
         ]);
 
         // Set Product Model request variable
@@ -250,6 +288,7 @@ class Product extends Model
             'letter'               => $this->request->letter,
             'condition'            => $this->request->condition,
             'binding'              => $this->request->binding,
+            'note'                 => $this->request->note,
             'year'                 => $this->request->year,
             //'shipping_time'        => $this->request->shipping_time,
             /*'youtube_product_url'  => $this->request->youtube_product_url,
@@ -326,6 +365,7 @@ class Product extends Model
             'letter'               => $this->request->letter,
             'condition'            => $this->request->condition,
             'binding'              => $this->request->binding,
+            'note'                 => $this->request->note,
             'year'                 => $this->request->year,
             'shipping_time'        => $this->request->shipping_time,
             'youtube_product_url'  => $this->request->youtube_product_url,
@@ -366,15 +406,55 @@ class Product extends Model
      */
     public function getRelationsData(): array
     {
+        $attributeValues = [];
+        $legacyAttributeValues = [];
+
+        $attributeOptions = [];
+
+        foreach (self::CONTROLLED_ATTRIBUTES as $attribute) {
+            $currentValue = $this->exists ? $this->getAttribute($attribute) : null;
+            $currentData = $this->controlledAttributeData($attribute, $currentValue);
+            $attributeOptions[$attribute] = $currentData['options'];
+            $attributeValues[$attribute] = $currentData['selected'];
+            $legacyAttributeValues[$attribute] = $currentData['legacy'];
+        }
+
         return [
             'categories'     => (new Category())->getList(false),
             'groups'         => \App\Models\Front\Catalog\Category::getGroups(),
             'images'         => ProductImage::getAdminList($this->id),
-            'letters'        => Settings::get('product', 'letter_styles'),
-            'conditions'     => Settings::get('product', 'condition_styles'),
-            'bindings'       => Settings::get('product', 'binding_styles'),
+            'letters'        => $attributeOptions['letter'],
+            'conditions'     => $attributeOptions['condition'],
+            'bindings'       => $attributeOptions['binding'],
+            'origins'        => $attributeOptions['origin'],
+            'attribute_values' => $attributeValues,
+            'legacy_attribute_values' => $legacyAttributeValues,
             'shipping_times' => Settings::get('product', 'shipping_time_styles'),
             'taxes'          => Settings::get('tax', 'list')
+        ];
+    }
+
+
+    /**
+     * Keep an unsupported legacy value selectable only on its existing
+     * product, while all new values must come from the shared facet options.
+     */
+    private function controlledAttributeData(string $attribute, $currentValue): array
+    {
+        $selected = CatalogFilterValue::storageDisplay($attribute, $currentValue);
+        $selected = $selected === '' ? null : $selected;
+        $options = CatalogFilterValue::facetOptions($attribute);
+        $legacy = null;
+
+        if ($selected !== null && ! in_array($selected, $options, true)) {
+            $legacy = $selected;
+            $options[] = $legacy;
+        }
+
+        return [
+            'options' => array_values(array_unique($options)),
+            'selected' => $selected,
+            'legacy' => $legacy,
         ];
     }
 
@@ -384,9 +464,6 @@ class Product extends Model
      */
     public function checkSettings()
     {
-        Settings::setProduct('letter_styles', $this->request->letter);
-        Settings::setProduct('condition_styles', $this->request->condition);
-        Settings::setProduct('binding_styles', $this->request->binding);
         Settings::setProduct('shipping_time_styles', $this->request->shipping_time);
 
         return $this;

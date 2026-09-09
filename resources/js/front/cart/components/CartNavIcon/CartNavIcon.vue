@@ -1,5 +1,5 @@
 <template>
-    <div class="navbar-tool dropdown ms-1"><a class="navbar-tool-icon-box  dropdown-toggle" :href="carturl"><span class="navbar-tool-label">{{ $store.state.cart ? $store.state.cart.count : 0 }}</span><i class="navbar-tool-icon ci-bag"></i></a>
+    <div class="navbar-tool dropdown ms-1"><a class="navbar-tool-icon-box  dropdown-toggle" :href="carturl"><span class="navbar-tool-label">{{ $store.state.cart ? $store.state.cart.count : 0 }}</span><i class="navbar-tool-icon fa-regular fa-bag-shopping"></i></a>
         <!-- Cart dropdown-->
         <div class="dropdown-menu dropdown-menu-end">
             <div class="widget widget-cart px-3 pt-2 pb-3" style="width: 24rem;" v-if="$store.state.cart && $store.state.cart.count">
@@ -22,10 +22,10 @@
                         <span v-if="$store.state.cart.secondary_price" class="text-muted">{{ $store.state.service.formatSecondaryPrice(($store.state.cart && $store.state.cart.total) ? $store.state.cart.total : 0) }}</span>
                     </div>
 
-                </div><a class="btn btn-primary btn-sm d-block w-100" :href="carturl"><i class="ci-card me-2 fs-base align-middle"></i>Dovrši kupnju</a>
+                </div><a class="btn btn-primary btn-sm d-block w-100" :href="carturl"><i class="fa-regular fa-credit-card me-2 fs-base align-middle"></i>Dovrši kupnju</a>
             </div>
             <div class="widget widget-cart text-center pt-2" style="width: 20rem;" v-else>
-                <h1 class="mb-2 mt-1"><i class="ci-cart"></i></h1>
+                <h1 class="mb-2 mt-1"><i class="fa-regular fa-cart-shopping"></i></h1>
                 <p>Vaša košarica je prazna!</p>
             </div>
         </div>

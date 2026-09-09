@@ -32,7 +32,7 @@
                 <form action="{{ route('pretrazi', ['tip' => 'author']) }}" method="get" style="max-width:500px; margin: 0 auto;">
                     <div class="input-group input-group-lg flex-nowrap">
                         <input type="text" class="form-control rounded-start" name="{{ config('settings.search_keyword') }}" placeholder="Pretražite po autoru">
-                        <button class="btn btn-primary btn-lg fs-base" type="submit"><i class="ci-search"></i></button>
+                        <button class="btn btn-primary btn-lg fs-base" type="submit"><i class="fa-regular fa-magnifying-glass"></i></button>
                     </div>
                 </form>
             </div>

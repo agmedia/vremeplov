@@ -277,6 +277,11 @@ class ProductHistory extends Model
             $this->changed .= '<li>Promjenjen uvez: <b>' . $this->old['binding'] . '</b> u <b>' . $this->new['binding'] . '</b></li>';
         }
 
+        // Customer-visible product note changed
+        if (($this->old['note'] ?? null) != ($this->new['note'] ?? null)) {
+            $this->changed .= '<li>Promijenjena je napomena o primjerku.</li>';
+        }
+
         // year changed
         if ($this->old['year'] != $this->new['year']) {
             $this->changed .= '<li>Promjenjena godina izdavanja: <b>' . $this->old['year'] . '</b> u <b>' . $this->new['year'] . '</b></li>';

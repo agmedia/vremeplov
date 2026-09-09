@@ -11,6 +11,7 @@ use App\Models\Back\Catalog\Product\Product;
 use App\Models\Back\Catalog\Product\ProductCategory;
 use App\Models\Back\Settings\Settings;
 use App\Models\Back\TempTable;
+use App\Support\CatalogFilterValue;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -87,6 +88,17 @@ class PlavaKrava
                         $author_id = $import->resolveAuthor($item[1]);
                     }
 
+                    $catalogAttributes = [];
+                    foreach ([
+                        'origin' => $item[22] ?? null,
+                        'letter' => null,
+                        'condition' => null,
+                        'binding' => $item[20] ?? null,
+                    ] as $column => $value) {
+                        $normalized = CatalogFilterValue::storageDisplay($column, $value);
+                        $catalogAttributes[$column] = $normalized === '' ? null : $normalized;
+                    }
+
                     $id = Product::query()->insertGetId([
                         'author_id'            => $author_id,
                         'publisher_id'         => $publisher_id,
@@ -108,10 +120,10 @@ class PlavaKrava
                         'meta_description'     => $item[17],
                         'pages'                => $item[18],
                         'dimensions'           => $item[19],
-                        'origin'               => $item[22],
-                        'letter'               => null,
-                        'condition'            => null,
-                        'binding'              => $item[20],
+                        'origin'               => $catalogAttributes['origin'],
+                        'letter'               => $catalogAttributes['letter'],
+                        'condition'            => $catalogAttributes['condition'],
+                        'binding'              => $catalogAttributes['binding'],
                         'year'                 => $item[21],
                         'shipping_time'        => '2-4 dana',
                         'youtube_product_url'  => '',

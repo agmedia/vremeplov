@@ -12,23 +12,23 @@
     <div class="steps steps-dark pt-2 pb-3 mb-5">
         <a class="step-item active" href="{{ route('kosarica') }}">
             <div class="step-progress"><span class="step-count">1</span></div>
-            <div class="step-label"><i class="ci-cart"></i>Košarica</div>
+            <div class="step-label"><i class="fa-regular fa-cart-shopping"></i>Košarica</div>
         </a>
         <a class="step-item @if($step == 'podaci') current @endif @if(in_array($step, ['podaci', 'dostava', 'placanje'])) active @endif" wire:click="changeStep('podaci')" href="javascript:void(0);">
             <div class="step-progress"><span class="step-count">2</span></div>
-            <div class="step-label"><i class="ci-user-circle"></i>Podaci</div>
+            <div class="step-label"><i class="fa-regular fa-circle-user"></i>Podaci</div>
         </a>
         <a class="step-item @if($step == 'dostava') current @endif @if(in_array($step, ['dostava', 'placanje'])) active @endif" wire:click="changeStep('dostava')" href="javascript:void(0);">
             <div class="step-progress"><span class="step-count">3</span></div>
-            <div class="step-label"><i class="ci-package"></i>Dostava</div>
+            <div class="step-label"><i class="fa-regular fa-box"></i>Dostava</div>
         </a>
         <a class="step-item @if($step == 'placanje') current @endif @if(in_array($step, ['placanje'])) active @endif" wire:click="changeStep('placanje')" href="javascript:void(0);">
             <div class="step-progress"><span class="step-count">4</span></div>
-            <div class="step-label"><i class="ci-card"></i>Plaćanje</div>
+            <div class="step-label"><i class="fa-regular fa-credit-card"></i>Plaćanje</div>
         </a>
         <a class="step-item" @if($checkoutCanBeReviewed) href="{{ route('pregled') }}" @else wire:click="changeStep('placanje')" href="javascript:void(0);" @endif>
             <div class="step-progress"><span class="step-count">5</span></div>
-            <div class="step-label"><i class="ci-check-circle"></i>Pregledaj</div>
+            <div class="step-label"><i class="fa-regular fa-circle-check"></i>Pregledaj</div>
         </a>
     </div>
 
@@ -82,7 +82,7 @@
         @if (auth()->guest())
             <div class="alert alert-custom d-flex mb-3" role="alert">
                 <div class="alert-icon">
-                    <i class="ci-user"></i>
+                    <i class="fa-regular fa-user"></i>
                 </div>
                 <div><a data-bs-toggle="collapse" href="#collapseLogin" role="button" aria-expanded="false" aria-controls="collapseLogin" class="alert-link">Prijava</a> za registrirane korisnike!</div>
             </div>
@@ -226,8 +226,8 @@
         </div>
 
         <div class="d-flex pt-4 mt-3">
-            <div class="w-50 pe-3"><a class="btn btn-secondary d-block w-100" href="{{ route('kosarica') }}"><i class="ci-arrow-left mt-sm-0 me-1"></i><span class="d-none d-sm-inline">Povratak na košaricu</span><span class="d-inline d-sm-none">Povratak</span></a></div>
-            <div class="w-50 ps-2"><a class="btn btn-primary d-block w-100" wire:click="changeStep('dostava')" href="javascript:void(0);"><span class="d-none d-sm-inline">Na odabir dostave</span><span class="d-inline d-sm-none">Nastavi</span><i class="ci-arrow-right mt-sm-0 ms-1"></i></a></div>
+            <div class="w-50 pe-3"><a class="btn btn-secondary d-block w-100" href="{{ route('kosarica') }}"><i class="fa-regular fa-arrow-left mt-sm-0 me-1"></i><span class="d-none d-sm-inline">Povratak na košaricu</span><span class="d-inline d-sm-none">Povratak</span></a></div>
+            <div class="w-50 ps-2"><a class="btn btn-primary d-block w-100" wire:click="changeStep('dostava')" href="javascript:void(0);"><span class="d-none d-sm-inline">Na odabir dostave</span><span class="d-inline d-sm-none">Nastavi</span><i class="fa-regular fa-arrow-right mt-sm-0 ms-1"></i></a></div>
         </div>
 
     @endif
@@ -304,7 +304,7 @@
                     Odaberite Box Now paketomat u kojem želite preuzeti pošiljku.
                 </div>
                 <button type="button" class="boxnow-map-widget-button btn btn-primary mb-3">
-                    <i class="ci-location me-2" aria-hidden="true"></i>Odaberi Box Now paketomat
+                    <i class="fa-regular fa-location-dot me-2" aria-hidden="true"></i>Odaberi Box Now paketomat
                 </button>
                 <div id="boxnowmap"></div>
                 <input class="form-control mt-2" type="text" id="boxnow-commentp" wire:model="commentp" placeholder="Odabrani Box Now paketomat" readonly required>
@@ -315,8 +315,8 @@
 
         @error('shipping') <small class="text-danger">Način dostave je obvezan</small> @enderror
         <div class=" d-flex pt-4 mt-3">
-            <div class="w-50 pe-3"><a class="btn btn-secondary d-block w-100" wire:click="changeStep('podaci')" href="javascript:void(0);"><i class="ci-arrow-left mt-sm-0 me-1"></i><span class="d-none d-sm-inline">Povratak na unos podataka</span><span class="d-inline d-sm-none">Povratak</span></a></div>
-            <div class="w-50 ps-2"><a class="btn btn-primary d-block w-100" wire:click="changeStep('placanje')" href="javascript:void(0);"><span class="d-none d-sm-inline">Na odabir plaćanja</span><span class="d-inline d-sm-none">Nastavi</span><i class="ci-arrow-right mt-sm-0 ms-1"></i></a></div>
+            <div class="w-50 pe-3"><a class="btn btn-secondary d-block w-100" wire:click="changeStep('podaci')" href="javascript:void(0);"><i class="fa-regular fa-arrow-left mt-sm-0 me-1"></i><span class="d-none d-sm-inline">Povratak na unos podataka</span><span class="d-inline d-sm-none">Povratak</span></a></div>
+            <div class="w-50 ps-2"><a class="btn btn-primary d-block w-100" wire:click="changeStep('placanje')" href="javascript:void(0);"><span class="d-none d-sm-inline">Na odabir plaćanja</span><span class="d-inline d-sm-none">Nastavi</span><i class="fa-regular fa-arrow-right mt-sm-0 ms-1"></i></a></div>
         </div>
     @endif
 
@@ -342,8 +342,8 @@
         </div>
         @error('payment') <small class="text-danger">Način plaćanja je obvezan</small> @enderror
         <div class=" d-flex pt-4 mt-3">
-            <div class="w-50 pe-3"><a class="btn btn-secondary d-block w-100" wire:click="changeStep('dostava')" href="javascript:void(0);"><i class="ci-arrow-left mt-sm-0 me-1"></i><span class="d-none d-sm-inline">Povratak na odabir dostave</span><span class="d-inline d-sm-none">Povratak</span></a></div>
-            <div class="w-50 ps-2"><a class="btn btn-primary d-block w-100" @if($checkoutCanBeReviewed) href="{{ route('pregled') }}" @else wire:click="changeStep('placanje')" href="javascript:void(0);" @endif><span class="d-none d-sm-inline">Pregledajte narudžbu</span><span class="d-inline d-sm-none">Nastavi</span><i class="ci-arrow-right mt-sm-0 ms-1"></i></a></div>
+            <div class="w-50 pe-3"><a class="btn btn-secondary d-block w-100" wire:click="changeStep('dostava')" href="javascript:void(0);"><i class="fa-regular fa-arrow-left mt-sm-0 me-1"></i><span class="d-none d-sm-inline">Povratak na odabir dostave</span><span class="d-inline d-sm-none">Povratak</span></a></div>
+            <div class="w-50 ps-2"><a class="btn btn-primary d-block w-100" @if($checkoutCanBeReviewed) href="{{ route('pregled') }}" @else wire:click="changeStep('placanje')" href="javascript:void(0);" @endif><span class="d-none d-sm-inline">Pregledajte narudžbu</span><span class="d-inline d-sm-none">Nastavi</span><i class="fa-regular fa-arrow-right mt-sm-0 ms-1"></i></a></div>
         </div>
     @endif
 

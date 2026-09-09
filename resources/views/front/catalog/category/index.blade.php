@@ -4,7 +4,7 @@
     @php
         $canonicalUrl = $meta['canonical'];
         $pageNumber = max(1, (int) request()->input('page', 1));
-        $hasFacetParameters = request()->hasAny(['start', 'end', 'autor', 'nakladnik', 'sort']);
+        $hasFacetParameters = request()->hasAny(['start', 'end', 'autor', 'nakladnik', 'pismo', 'stanje', 'uvez', 'jezik', 'sort']);
 
         if ($pageNumber > 1 && ! $hasFacetParameters && ! request()->routeIs('pretrazi', 'tag')) {
             $canonicalUrl .= (str_contains($canonicalUrl, '?') ? '&' : '?') . 'page=' . $pageNumber;
@@ -43,55 +43,61 @@
 
 @section('content')
 
-    <!-- Page Title-->
-    <div class="bg-light pt-4 pb-3"  style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
-        <div class="container d-lg-flex justify-content-between py-2 py-lg-3">
-
+    <div class="catalog-heading" style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
+        <div class="container catalog-heading__inner">
             @if (isset($crumbs) && ! empty($crumbs))
-                <div class="order-lg-2 mb-3 mb-lg-0 pt-lg-2">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb breadcrumb-dark flex-lg-nowrap justify-content-center">
-                            @foreach ($crumbs['itemListElement'] as $crumb)
-                                @if ($loop->last)
-                                    <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ $crumb['name'] }}</li>
-                                @else
-                                    <li class="breadcrumb-item"><a class="text-nowrap" href="{{ $crumb['item'] }}"><i class="ci-home"></i>{{ $crumb['name'] }}</a></li>
-                                @endif
-                            @endforeach
-                        </ol>
-                    </nav>
-                </div>
+                <nav class="catalog-heading__breadcrumb" aria-label="Breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        @foreach ($crumbs['itemListElement'] as $crumb)
+                            @if ($loop->last)
+                                <li class="breadcrumb-item active" aria-current="page">{{ $crumb['name'] }}</li>
+                            @else
+                                <li class="breadcrumb-item">
+                                    <a href="{{ $crumb['item'] }}">
+                                        @if ($loop->first)
+                                            <i class="fa-regular fa-house" aria-hidden="true"></i>
+                                        @endif
+                                        <span>{{ $crumb['name'] }}</span>
+                                    </a>
+                                </li>
+                            @endif
+                        @endforeach
+                    </ol>
+                </nav>
             @endif
 
             @if (isset($meta) && ! empty($meta))
-                <div class="order-lg-1 pe-lg-4 text-center text-lg-start">
-                    <h1 class="h3 text-dark mb-0">{{ $meta['title'] }}</h1>
+                <div class="catalog-heading__copy">
+                    <h1 class="catalog-heading__title">{{ $meta['title'] }}</h1>
                     @if (! empty($meta['description']))
-                        <p class="text-dark opacity-75 mb-0 mt-2">{{ $meta['description'] }}</p>
+                        <p class="catalog-heading__description">{{ $meta['description'] }}</p>
                     @endif
                 </div>
             @endif
-
         </div>
     </div>
 
 
 
+    @php($catalogFiltersEnabled = isset($group) && $group === 'knjige')
     <div class="container pb-4 mb-2 mb-md-4 mt-4" id="filter-app" v-cloak>
         <div class="row">
             <filter-view ids="{{ isset($ids) ? $ids : null }}"
                          group="{{ isset($group) ? $group : null }}"
+                         catalog-root="{{ request()->route('group') === \App\Helpers\Helper::categoryGroupPath(true) ? 'all' : '' }}"
                          cat="{{ isset($cat) ? $cat : null }}"
                          subcat="{{ isset($subcat) ? $subcat : null }}"
                          author="{{ isset($author) ? $author['slug'] : null }}"
-                         publisher="{{ isset($publisher) ? $publisher['slug'] : null }}">
+                         publisher="{{ isset($publisher) ? $publisher['slug'] : null }}"
+                         :filters-enabled="{{ $catalogFiltersEnabled ? 'true' : 'false' }}">
             </filter-view>
             <products-view ids="{{ isset($ids) ? $ids : null }}"
                            group="{{ isset($group) ? $group : null }}"
                            cat="{{ isset($cat) ? $cat['id'] : null }}"
                            subcat="{{ isset($subcat) ? $subcat['id'] : null }}"
                            author="{{ isset($author) ? $author['slug'] : null }}"
-                           publisher="{{ isset($publisher) ? $publisher['slug'] : null }}">
+                           publisher="{{ isset($publisher) ? $publisher['slug'] : null }}"
+                           :filters-enabled="{{ $catalogFiltersEnabled ? 'true' : 'false' }}">
             </products-view>
         </div>
     </div>

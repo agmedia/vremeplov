@@ -8,6 +8,7 @@ use App\Helpers\Recaptcha;
 use App\Http\Controllers\Controller;
 use App\Imports\ProductImport;
 use App\Mail\ContactFormMessage;
+use App\Models\Back\Marketing\NewsletterSubscriber;
 use App\Models\Back\Marketing\Review;
 use App\Models\Back\Marketing\Wishlist;
 use App\Models\Back\Orders\Order;
@@ -17,10 +18,12 @@ use App\Models\Front\Faq;
 use App\Models\Front\Page;
 use App\Models\Sitemap;
 use App\Services\ContractTerminationNotificationService;
+use App\Services\NewsletterSignupGuard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
 
@@ -91,6 +94,88 @@ class HomeController extends Controller
     public function contact(Request $request)
     {
         return view('front.contact');
+    }
+
+    /**
+     * Store newsletter interest locally. Mailchimp synchronization will be
+     * added separately once the audience configuration is available.
+     */
+    public function newsletter(Request $request, NewsletterSignupGuard $signupGuard)
+    {
+        if ($signupGuard->honeypotIsFilled($request->input('website'))) {
+            return $this->newsletterSuccessResponse($request);
+        }
+
+        $timing = $signupGuard->timingResult($request->input('newsletter_started_at'));
+
+        if ($timing === NewsletterSignupGuard::TOO_FAST) {
+            return $this->newsletterValidationError(
+                $request,
+                'newsletter_started_at',
+                'Pričekajte trenutak pa pokušajte ponovno.'
+            );
+        }
+
+        if ($timing !== NewsletterSignupGuard::ALLOWED) {
+            return $this->newsletterValidationError(
+                $request,
+                'newsletter_started_at',
+                'Obrazac je istekao. Osvježite stranicu pa pokušajte ponovno.'
+            );
+        }
+
+        $validator = Validator::make($request->only(['email', 'gdpr']), [
+            'email' => ['required', 'string', 'email:rfc', 'max:191'],
+            'gdpr' => ['required', 'accepted'],
+        ], [
+            'email.required' => 'Upišite svoju e-mail adresu.',
+            'email.email' => 'Upišite ispravnu e-mail adresu.',
+            'gdpr.accepted' => 'Za prijavu je potrebna privola za primanje newslettera.',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->newsletterValidationErrors($request, $validator->errors()->toArray());
+        }
+
+        NewsletterSubscriber::subscribeFromHomepage(
+            Str::lower(trim((string) $request->input('email'))),
+            auth()->id()
+        );
+
+        return $this->newsletterSuccessResponse($request);
+    }
+
+    private function newsletterSuccessResponse(Request $request)
+    {
+        $message = 'Hvala na prijavi! Novosti će stizati na vašu e-mail adresu.';
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => $message,
+            ]);
+        }
+
+        return back()->with('newsletter_success', $message);
+    }
+
+    private function newsletterValidationError(Request $request, string $field, string $message)
+    {
+        return $this->newsletterValidationErrors($request, [$field => [$message]]);
+    }
+
+    private function newsletterValidationErrors(Request $request, array $errors)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'message' => collect($errors)->flatten()->first(),
+                'errors' => $errors,
+            ], 422);
+        }
+
+        return back()
+            ->withErrors($errors)
+            ->withInput($request->except(['_token', 'newsletter_started_at', 'website']));
     }
 
     public function contractTermination()

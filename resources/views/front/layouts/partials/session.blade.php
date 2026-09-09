@@ -2,7 +2,7 @@
     <!-- Success alert -->
     <div class="alert alert-success d-flex" role="alert">
         <div class="alert-icon">
-            <i class="ci-check-circle"></i>
+            <i class="fa-regular fa-circle-check"></i>
         </div>
         <div>Uspjeh..! {{ session('success') }}</div>
     </div>
@@ -10,7 +10,7 @@
 @if(session('error'))
     <div class="alert alert-danger d-flex" role="alert">
         <div class="alert-icon">
-            <i class="ci-close-circle"></i>
+            <i class="fa-regular fa-circle-xmark"></i>
         </div>
         <div>Greška..! {{ session('error') }}</div>
     </div>
@@ -19,7 +19,7 @@
 @if(session('warning'))
     <div class="alert alert-warning d-flex" role="alert">
         <div class="alert-icon">
-            <i class="ci-security-announcement"></i>
+            <i class="fa-regular fa-shield-exclamation"></i>
         </div>
         <div>Upozorenje..! {{ session('warning') }}</div>
     </div>

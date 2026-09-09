@@ -86,6 +86,30 @@
             border-color: #e2e4ea;
             color: #3f3a33;
         }
+
+        .product-view__note {
+            display: flex;
+            gap: .75rem;
+            margin-top: .25rem;
+            padding: .9rem 1rem;
+            border: 1px solid #e5c88f;
+            border-left: 4px solid #c18a2f;
+            border-radius: .4rem;
+            background: #fbf5e9;
+            color: #3f3528;
+        }
+
+        .product-view__note > i {
+            flex: 0 0 auto;
+            margin-top: .15rem;
+            color: #a66e18;
+            font-size: 1.1rem;
+        }
+
+        .product-view__note p {
+            margin: 0;
+            white-space: pre-line;
+        }
     </style>
 @endpush
 
@@ -119,7 +143,7 @@
        <!-- Page title + breadcrumb-->
        <nav class="my-3" aria-label="breadcrumb">
            <ol class="breadcrumb flex-lg-nowrap">
-               <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="ci-home"></i>Naslovnica</a></li>
+               <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="fa-regular fa-house"></i>Naslovnica</a></li>
                @if ($group)
                    @if ($group && ! $cat && ! $subcat)
                        <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ \Illuminate\Support\Str::ucfirst($group) }}</li>
@@ -247,14 +271,14 @@
                     <add-to-cart-btn id="{{ $prod->id }}" available="{{ $prod->quantity }}"></add-to-cart-btn>
                 @else
                     <a class="btn btn-primary btn-shadow d-block w-100 mt-2" href="#wishlist-modal" data-bs-toggle="modal">
-                        <i class="ci-bell"></i> Obavijesti me o dostupnosti
+                        <i class="fa-regular fa-bell"></i> Obavijesti me o dostupnosti
                     </a>
                 @endif
 
                        <!-- Light alert -->
                        <div class="alert alert-secondary d-flex fs-sm" role="alert">
                            <div class="alert-icon">
-                               <i class="ci-gift"></i>
+                               <i class="fa-regular fa-gift"></i>
                            </div>
                            <div> Besplatna dostava u RH za narudžbe veće od 70 €</div>
                        </div>
@@ -262,7 +286,7 @@
                    <!-- Product panels-->
                    <div class="accordion mb-4" id="productPanels">
                        <div class="accordion-item">
-                           <h3 class="accordion-header"><a class="accordion-button" href="#productInfo" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="productInfo"><i class="ci-announcement text-muted fs-lg align-middle mt-n1 me-2"></i>Osnovne informacije</a></h3>
+                           <h3 class="accordion-header"><a class="accordion-button" href="#productInfo" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="productInfo"><i class="fa-regular fa-bullhorn text-muted fs-lg align-middle mt-n1 me-2"></i>Osnovne informacije</a></h3>
                            <div class="accordion-collapse collapse show" id="productInfo" data-bs-parent="#productPanels">
                                <div class="accordion-body">
 
@@ -297,7 +321,7 @@
                            </div>
                        </div>
                        <div class="accordion-item">
-                           <h3 class="accordion-header"><a class="accordion-button collapsed" href="#shippingOptions" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="shippingOptions"><i class="ci-delivery text-muted lead align-middle mt-n1 me-2"></i>Opcije dostave</a></h3>
+                           <h3 class="accordion-header"><a class="accordion-button collapsed" href="#shippingOptions" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="shippingOptions"><i class="fa-regular fa-truck-fast text-muted lead align-middle mt-n1 me-2"></i>Opcije dostave</a></h3>
                            <div class="accordion-collapse collapse" id="shippingOptions" data-bs-parent="#productPanels">
                                <div class="accordion-body fs-sm">
 
@@ -321,7 +345,7 @@
                            </div>
                        </div>
                        <div class="accordion-item">
-                           <h3 class="accordion-header"><a class="accordion-button collapsed" href="#localStore" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="localStore"><i class="ci-card text-muted fs-lg align-middle mt-n1 me-2"></i>Načini plaćanja</a></h3>
+                           <h3 class="accordion-header"><a class="accordion-button collapsed" href="#localStore" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="localStore"><i class="fa-regular fa-credit-card text-muted fs-lg align-middle mt-n1 me-2"></i>Načini plaćanja</a></h3>
                            <div class="accordion-collapse collapse" id="localStore" data-bs-parent="#productPanels">
                                <div class="accordion-body fs-sm">
 
@@ -478,6 +502,16 @@
                                        @endif
 
                                    </ul>
+
+                                   @if (trim((string) $prod->note) !== '')
+                                       <aside class="product-view__note" aria-label="Napomena o primjerku">
+                                           <i class="fa-duotone fa-triangle-exclamation" aria-hidden="true"></i>
+                                           <div>
+                                               <h4 class="h6 mb-1">Napomena o primjerku</h4>
+                                               <p>{{ $prod->note }}</p>
+                                           </div>
+                                       </aside>
+                                   @endif
                                </div>
                            </div>
 
@@ -500,7 +534,7 @@
                                            </div>
                                            <div class="mb-2 text-warning">
                                                @for ($i = 1; $i <= 5; $i++)
-                                                   <i class="ci-star{{ $i <= (int) $review->stars ? '-filled active' : '' }}"></i>
+                                                   <i class="fa-{{ $i <= (int) $review->stars ? 'solid' : 'regular' }} fa-star{{ $i <= (int) $review->stars ? ' active' : '' }}" aria-hidden="true"></i>
                                                @endfor
                                            </div>
                                            <p class="mb-0">{!! nl2br(e(strip_tags($review->message))) !!}</p>

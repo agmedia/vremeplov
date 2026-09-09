@@ -45,6 +45,8 @@
                                     <select class="form-control" id="target-select" name="target">
                                         <option></option>
                                         <option value="product" {{ (isset($widget->target) and $widget->target == 'product') ? 'selected="selected"' : '' }}>Artikli</option>
+                                        <option value="product_category" {{ (isset($widget->target) and $widget->target == 'product_category') ? 'selected="selected"' : '' }}>Kategorije artikala</option>
+                                        <option value="publisher" {{ (isset($widget->target) and $widget->target == 'publisher') ? 'selected="selected"' : '' }}>Izdavači</option>
                                         {{--@foreach ($targets as $target)
                                             <option value="{{ $target->id }}" {{ (isset($widget) and $target->id == $widget->target) ? 'selected="selected"' : '' }}>{{ $target->title }}</option>
                                         @endforeach--}}
@@ -90,6 +92,12 @@
                                                     <label class="custom-control-label" for="popular-switch">Uključi popularne stavke</label>
                                                 </div>
                                             </div>
+                                            <div class="form-group mb-5">
+                                                <div class="custom-control custom-switch custom-control-success">
+                                                    <input type="checkbox" class="custom-control-input" id="best-selling-switch" name="best_selling" @if (isset($widget->data['best_selling']) and $widget->data['best_selling']) checked @endif>
+                                                    <label class="custom-control-label" for="best-selling-switch">Uključi najprodavanije (zadnjih 30 dana)</label>
+                                                </div>
+                                            </div>
                                             <div class="form-group mb-3">
                                                 <div class="custom-control custom-switch custom-control-success">
                                                     <input type="checkbox" class="custom-control-input" id="status-switch" name="status" @if (isset($widget) and $widget->status) checked @endif>
@@ -118,7 +126,7 @@
                             @if (isset($widget))
                                 @livewire('back.marketing.action-group-list', ['group' => $widget->target, 'list' => json_decode($widget->links)])
                             @else
-                                @livewire('back.marketing.action-group-list', ['group' => 'products'])
+                                @livewire('back.marketing.action-group-list', ['group' => 'product'])
                             @endif
 
                         </div>

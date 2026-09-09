@@ -21,7 +21,7 @@
 
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb breadcrumb-light flex-lg-nowrap justify-content-center justify-content-lg-start">
-                        <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="ci-home"></i>Naslovnica</a></li>
+                        <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="fa-regular fa-house"></i>Naslovnica</a></li>
                         <li class="breadcrumb-item text-nowrap active" aria-current="page">Česta pitanja</li>
                     </ol>
                 </nav>

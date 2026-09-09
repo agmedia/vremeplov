@@ -1,4 +1,5 @@
-<div class="article pb-1" data-analytics-item='@json(\App\Models\TagManager::getGoogleProductDataLayer($product, false))'>
+@php($analyticsItem = \App\Models\TagManager::getGoogleProductDataLayer($product, false))
+<div class="article pb-1" data-analytics-item='@json($analyticsItem)'>
 
     <div class="card product-card d-flex align-items-stretch shadow pb-1">
         @if ($product->main_price > $product->main_special)

@@ -11,6 +11,15 @@
 
 @section('content')
 
+    @php
+        $selectedProductAttributes = [
+            'letter' => old('letter', $data['attribute_values']['letter'] ?? null),
+            'condition' => old('condition', $data['attribute_values']['condition'] ?? null),
+            'binding' => old('binding', $data['attribute_values']['binding'] ?? null),
+            'origin' => old('origin', $data['attribute_values']['origin'] ?? null),
+        ];
+    @endphp
+
     <div class="admin-page-hero">
         <div class="content content-full">
             <div class="admin-page-heading">
@@ -252,43 +261,70 @@
                                         </div>
 
                                         <div class="form-group row items-push mb-4">
-                                            <div class="col-md-4 d-none">
+                                            <div class="col-md-6 col-xl-3">
                                                 <label for="letter-select">Pismo</label>
-                                                <select class="js-select2 form-control" id="letter-select" name="letter" style="width: 100%;" data-placeholder="Odaberite ili upišite pismo">
+                                                <select class="js-select2 form-control" id="letter-select" name="letter" style="width: 100%;" data-placeholder="Odaberite pismo">
                                                     <option></option>
                                                     @if ($data['letters'])
                                                         @foreach ($data['letters'] as $letter)
-                                                            <option value="{{ $letter }}" {{ ((isset($product)) and ($letter == $product->letter)) ? 'selected' : '' }}>{{ $letter }}</option>
+                                                            <option value="{{ $letter }}" {{ $letter === $selectedProductAttributes['letter'] ? 'selected' : '' }}>
+                                                                {{ $letter }}{{ ($data['legacy_attribute_values']['letter'] ?? null) === $letter ? ' (postojeća vrijednost)' : '' }}
+                                                            </option>
                                                         @endforeach
                                                     @endif
                                                 </select>
+                                                @error('letter')
+                                                <span class="text-danger font-italic">{{ $message }}</span>
+                                                @enderror
                                             </div>
-                                            <div class="col-md-4">
-                                                <label for="dm-post-edit-slug">Stanje</label>
-                                                <select class="js-select2 form-control" id="condition-select" name="condition" style="width: 100%;" data-placeholder="Odaberite ili upišite stanje">
+                                            <div class="col-md-6 col-xl-3">
+                                                <label for="condition-select">Stanje</label>
+                                                <select class="js-select2 form-control" id="condition-select" name="condition" style="width: 100%;" data-placeholder="Odaberite stanje">
                                                     <option></option>
                                                     @if ($data['conditions'])
                                                         @foreach ($data['conditions'] as $condition)
-                                                            <option value="{{ $condition }}" {{ ((isset($product)) and ($condition == $product->condition)) ? 'selected' : '' }}>{{ $condition }}</option>
+                                                            <option value="{{ $condition }}" {{ $condition === $selectedProductAttributes['condition'] ? 'selected' : '' }}>
+                                                                {{ $condition }}{{ ($data['legacy_attribute_values']['condition'] ?? null) === $condition ? ' (postojeća vrijednost)' : '' }}
+                                                            </option>
                                                         @endforeach
                                                     @endif
                                                 </select>
+                                                @error('condition')
+                                                <span class="text-danger font-italic">{{ $message }}</span>
+                                                @enderror
                                             </div>
-                                            <div class="col-md-4">
-                                                <label for="dm-post-edit-slug">Uvez</label>
-                                                <select class="js-select2 form-control" id="binding-select" name="binding" style="width: 100%;" data-placeholder="Odaberite ili upišite uvez">
+                                            <div class="col-md-6 col-xl-3">
+                                                <label for="binding-select">Uvez</label>
+                                                <select class="js-select2 form-control" id="binding-select" name="binding" style="width: 100%;" data-placeholder="Odaberite uvez">
                                                     <option></option>
                                                     @if ($data['bindings'])
                                                         @foreach ($data['bindings'] as $binding)
-                                                            <option value="{{ $binding }}" {{ ((isset($product)) and ($binding == $product->binding)) ? 'selected' : '' }}>{{ $binding }}</option>
+                                                            <option value="{{ $binding }}" {{ $binding === $selectedProductAttributes['binding'] ? 'selected' : '' }}>
+                                                                {{ $binding }}{{ ($data['legacy_attribute_values']['binding'] ?? null) === $binding ? ' (postojeća vrijednost)' : '' }}
+                                                            </option>
                                                         @endforeach
                                                     @endif
                                                 </select>
+                                                @error('binding')
+                                                <span class="text-danger font-italic">{{ $message }}</span>
+                                                @enderror
                                             </div>
 
-                                            <div class="col-md-4">
-                                                <label for="origin-input">Jezik</label>
-                                                <input type="text" class="form-control" id="origin-input" name="origin" placeholder="Upišite jezik" value="{{ isset($product) ? $product->origin : old('origin') }}">
+                                            <div class="col-md-6 col-xl-3">
+                                                <label for="origin-select">Jezik</label>
+                                                <select class="js-select2 form-control" id="origin-select" name="origin" style="width: 100%;" data-placeholder="Odaberite jezik">
+                                                    <option></option>
+                                                    @if ($data['origins'])
+                                                        @foreach ($data['origins'] as $origin)
+                                                            <option value="{{ $origin }}" {{ $origin === $selectedProductAttributes['origin'] ? 'selected' : '' }}>
+                                                                {{ $origin }}{{ ($data['legacy_attribute_values']['origin'] ?? null) === $origin ? ' (postojeća vrijednost)' : '' }}
+                                                            </option>
+                                                        @endforeach
+                                                    @endif
+                                                </select>
+                                                @error('origin')
+                                                <span class="text-danger font-italic">{{ $message }}</span>
+                                                @enderror
                                             </div>
                                         </div>
 
@@ -306,6 +342,15 @@
                                                 <label for="dimensions-input">Dimenzije</label>
                                                 <input type="text" class="form-control" id="dimensions-input" name="dimensions" placeholder="Upišite dimenzije" value="{{ isset($product) ? $product->dimensions : old('dimensions') }}">
                                             </div>
+                                        </div>
+
+                                        <div class="form-group mb-3">
+                                            <label for="note-input">Napomena</label>
+                                            <textarea class="form-control" id="note-input" name="note" rows="4" maxlength="2000" placeholder="Npr. posveta na prvoj stranici, oštećenje korica ili druga važna napomena o primjerku">{{ old('note', isset($product) ? $product->note : '') }}</textarea>
+                                            <small class="form-text text-muted">Vidljiva je kupcu uz dodatne informacije o artiklu.</small>
+                                            @error('note')
+                                            <span class="d-block text-danger font-italic">{{ $message }}</span>
+                                            @enderror
                                         </div>
 
                                     </div>
@@ -429,16 +474,10 @@
             $('#publisher-select').select2({
                 tags: true
             });
-            $('#letter-select').select2({
-                tags: true
-            });
-            $('#binding-select').select2({
-                tags: true
+            $('#letter-select, #binding-select, #condition-select, #origin-select').select2({
+                allowClear: true
             });
             $('#shipping_time-select').select2({
-                tags: true
-            });
-            $('#condition-select').select2({
                 tags: true
             });
 

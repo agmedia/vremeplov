@@ -37,6 +37,11 @@ class Review extends Model
         'is_verified_purchase' => 'boolean',
     ];
 
+    public function product()
+    {
+        return $this->belongsTo(\App\Models\Front\Catalog\Product::class, 'product_id');
+    }
+
     public function invitation()
     {
         return $this->belongsTo(\App\Models\ProductReviewInvitation::class, 'invitation_id');

@@ -48,7 +48,7 @@
                 <div class="widget widget-filter mb-4 pb-4 border-bottom d-none d-sm-block">
                     <h3 class="widget-title">Autor</h3>
                     <div class="input-group input-group-sm mb-2 autocomplete">
-                        <input type="search" wire:model.debounce.300ms="searcha" class=" form-control rounded-end pe-5" placeholder="Pretraži autora"><i class="ci-search position-absolute top-50 end-0 translate-middle-y fs-sm me-3"></i>
+                        <input type="search" wire:model.debounce.300ms="searcha" class=" form-control rounded-end pe-5" placeholder="Pretraži autora"><i class="fa-regular fa-magnifying-glass position-absolute top-50 end-0 translate-middle-y fs-sm me-3"></i>
                         @if ( ! empty($authors))
                             <div id="myInputautocomplete-list" class="autocomplete-items">
                                 @forelse($authors as $author)
@@ -70,7 +70,7 @@
                 <div class="widget widget-filter mb-4 pb-4 border-bottom d-none d-sm-block">
                     <h3 class="widget-title">Nakladnici</h3>
                     <div class="input-group input-group-sm mb-2 autocomplete">
-                        <input type="search" wire:model.debounce.300ms="searchp" class=" form-control rounded-end pe-5" placeholder="Pretraži nakladnika"><i class="ci-search position-absolute top-50 end-0 translate-middle-y fs-sm me-3"></i>
+                        <input type="search" wire:model.debounce.300ms="searchp" class=" form-control rounded-end pe-5" placeholder="Pretraži nakladnika"><i class="fa-regular fa-magnifying-glass position-absolute top-50 end-0 translate-middle-y fs-sm me-3"></i>
                         @if ( ! empty($publishers))
                             <div id="myInputautocomplete-list" class="autocomplete-items">
                                 @forelse($publishers as $publisher)
@@ -86,7 +86,7 @@
                 </div>
             @endif
 
-            <button type="button" onclick="cleanURL();" class="btn btn-primary mt-4"><i class=" ci-trash"></i> Očisti sve</button>
+            <button type="button" onclick="cleanURL();" class="btn btn-primary mt-4"><i class=" fa-regular fa-trash-can"></i> Očisti sve</button>
 
         </div>
     </div>

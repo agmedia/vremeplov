@@ -43,6 +43,10 @@ class Widget extends Model
      */
     public function getWebpAttribute($value)
     {
+        if (! $this->image) {
+            return null;
+        }
+
         return config('settings.images_domain') . str_replace('.jpg', '.webp', $this->image);
     }
 
@@ -54,6 +58,10 @@ class Widget extends Model
      */
     public function getThumbAttribute($value)
     {
+        if (! $this->image) {
+            return null;
+        }
+
         return config('settings.images_domain') . str_replace('.jpg', '-thumb.webp', $this->image);
     }
 
@@ -88,8 +96,15 @@ class Widget extends Model
         // Validate the request.
         $request->validate([
             'group_template' => 'required',
-            'title' => 'required'
+            'title' => 'required',
+            'button_text' => 'nullable|string|max:80',
         ]);
+
+        $target = (string) $request->input('target', $request->input('action_group', $request->input('group')));
+
+        if ($target !== '') {
+            $request->merge(['target' => $target]);
+        }
 
         // Set Product Model request variable
         $this->setRequest($request);
@@ -123,19 +138,7 @@ class Widget extends Model
         if ($this->request->has('group_template')) {
             $group = WidgetGroup::where('id', $this->request->group_id)->first();
             $group_id = $group->id;
-
-            $arr = $this->request->toArray();
-            unset($arr['_token']);
-            unset($arr['_method']);
-            unset($arr['image']);
-            unset($arr['image_long']);
-
-            if ($this->request->has('action_list')) {
-                $arr['list'] = $this->request->input('action_list');
-                unset($arr['action_list']);
-            }
-
-            $data = serialize($arr);
+            $data = $this->serializeRequestData();
         }
 
         $id = $this->insertGetId([
@@ -169,19 +172,7 @@ class Widget extends Model
         if ($this->request->has('group_template')) {
             $group = WidgetGroup::where('id', $this->request->group_id)->first();
             $group_id = $group->id;
-
-            $arr = $this->request->toArray();
-            unset($arr['_token']);
-            unset($arr['_method']);
-            unset($arr['image']);
-            unset($arr['image_long']);
-
-            if ($this->request->has('action_list')) {
-                $arr['list'] = $this->request->input('action_list');
-                unset($arr['action_list']);
-            }
-
-            $data = serialize($arr);
+            $data = $this->serializeRequestData();
         }
 
         $ok = $this->where('id', $id)->update([
@@ -262,6 +253,12 @@ class Widget extends Model
     }
 
 
+    public static function resolveSelectionTarget(array $data): ?string
+    {
+        return $data['target'] ?? $data['group'] ?? $data['action_group'] ?? null;
+    }
+
+
     /**
      * Set Product Model request variable.
      *
@@ -270,6 +267,22 @@ class Widget extends Model
     private function setRequest($request)
     {
         $this->request = $request;
+    }
+
+
+    private function serializeRequestData(): string
+    {
+        $data = $this->request->toArray();
+
+        unset($data['_token'], $data['_method'], $data['image'], $data['image_long']);
+        unset($data['action_group']);
+
+        if ($this->request->has('action_list')) {
+            $data['list'] = $this->request->input('action_list');
+            unset($data['action_list']);
+        }
+
+        return serialize($data);
     }
 
 

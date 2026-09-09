@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class Helper
@@ -207,7 +208,10 @@ class Helper
         }
 
         if ($related->count() < 9) {
-            $related->merge(Product::query()->inRandomOrder()->take(10 - $related->count())->get());
+            $related = $related
+                ->merge(Product::query()->inRandomOrder()->take(10 - $related->count())->get())
+                ->unique('id')
+                ->values();
         }
 
         return $related;
@@ -279,11 +283,25 @@ class Helper
             $wg = $wgs->where('slug', $id)->first();
         }
 
+        if ( ! $wg) {
+            return str_replace('++' . $id . '++', '', $description);
+        }
+
         $widgets = [];
+        $loadedWidgets = $wg->relationLoaded('widgets')
+            ? $wg->widgets->sortBy('sort_order')
+            : $wg->widgets()->orderBy('sort_order')->get();
 
         if ($wg->template == 'product_carousel' || $wg->template == 'page_carousel') {
-            $widget = $wg->widgets()->first();
-            $data   = unserialize($widget->data);
+            $widget = $loadedWidgets->first();
+
+            if ( ! $widget) {
+                return str_replace('++' . $id . '++', '', $description);
+            }
+
+            $data = static::decodeWidgetData($widget->data);
+            $items = collect();
+            $tablename = '';
 
             if (static::isDescriptionTarget($data, 'product')) {
                 $items     = static::products($data)->get();
@@ -296,13 +314,33 @@ class Helper
             }
 
             if (static::isDescriptionTarget($data, 'category')) {
-                $items     = static::category($data)->get();
-                $tablename = 'category';
+                if ($wg->template === 'product_carousel') {
+                    $items = static::productsByCategory($data)->get();
+                    $tablename = 'product_category';
+                } else {
+                    $items = static::category($data)->get();
+                    $tablename = 'category';
+                }
+            }
+
+            if (static::isDescriptionTarget($data, 'product_category')) {
+                $items = static::productsByCategory($data)->get();
+                $tablename = 'product_category';
             }
 
             if (static::isDescriptionTarget($data, 'publisher')) {
-                $items     = static::publisher($data)->get();
-                $tablename = 'publisher';
+                if ($wg->template === 'product_carousel') {
+                    $items = static::productsByPublisher($data)->get();
+                    $tablename = 'publisher';
+                } else {
+                    $items = static::publisher($data)->get();
+                    $tablename = 'publisher_list';
+                }
+            }
+
+            if (static::isDescriptionTarget($data, 'author')) {
+                $items = static::authors($data)->get();
+                $tablename = 'author';
             }
 
             if (static::isDescriptionTarget($data, 'reviews')) {
@@ -315,22 +353,24 @@ class Helper
                 'subtitle'   => $widget->subtitle,
                 'url'        => $widget->url,
                 'tablename'  => $tablename,
-                'css'        => $data['css'],
+                'css'        => $data['css'] ?? null,
                 'container'  => (isset($data['container']) && $data['container'] == 'on') ? 1 : null,
                 'background' => (isset($data['background']) && $data['background'] == 'on') ? 1 : null,
                 'items'      => $items
             ];
 
         } else {
-            foreach ($wg->widgets()->orderBy('sort_order')->get() as $widget) {
-                $data = unserialize($widget->data);
+            foreach ($loadedWidgets as $widget) {
+                $data = static::decodeWidgetData($widget->data);
 
                 $widgets[] = [
+                    'id'       => $widget->id,
                     'title'    => $widget->title,
                     'subtitle' => $widget->subtitle,
                     'color'    => $widget->badge,
                     'url'      => $widget->url,
                     'image'    => $widget->thumb,
+                    'button_text' => $data['button_text'] ?? 'Pogledajte ponudu',
                     'width'    => $widget->width,
                     'right'    => (isset($data['right']) && $data['right'] == 'on') ? 1 : null,
                 ];
@@ -342,6 +382,18 @@ class Helper
             view('front.layouts.widget.widget_' . $wg->template, ['data' => $widgets]),
             $description
         );
+    }
+
+
+    private static function decodeWidgetData(?string $data): array
+    {
+        if ( ! $data) {
+            return [];
+        }
+
+        $decoded = @unserialize($data, ['allowed_classes' => false]);
+
+        return is_array($decoded) ? $decoded : [];
     }
 
 
@@ -357,6 +409,9 @@ class Helper
             return true;
         }
         if (isset($data['group']) && $data['group'] == $target) {
+            return true;
+        }
+        if (isset($data['action_group']) && $data['action_group'] == $target) {
             return true;
         }
 
@@ -396,7 +451,9 @@ class Helper
 
         $prods->active()->available();
 
-        if (isset($data['popular']) && $data['popular'] == 'on') {
+        if (isset($data['best_selling']) && $data['best_selling'] == 'on') {
+            static::applyBestSellingOrder($prods);
+        } elseif (isset($data['popular']) && $data['popular'] == 'on') {
             $prods->popular();
         } elseif (isset($data['new']) && $data['new'] == 'on') {
             // "Novo" uključuje i starije naslove koji su upravo ponovno
@@ -411,6 +468,68 @@ class Helper
         }
 
         return $prods->with(['author', 'action']);
+    }
+
+
+    private static function productsByCategory(array $data): Builder
+    {
+        $products = (new Product())->newQuery()->active()->available();
+
+        if ( ! empty($data['list'])) {
+            $products->whereHas('categories', function (Builder $query) use ($data) {
+                $query->whereIn('categories.id', $data['list']);
+            });
+        }
+
+        static::applyProductWidgetOrder($products, $data);
+
+        return $products->with(['author', 'action', 'categories'])->limit(15);
+    }
+
+
+    private static function productsByPublisher(array $data): Builder
+    {
+        $products = (new Product())->newQuery()->active()->available();
+
+        if ( ! empty($data['list'])) {
+            $products->whereIn('publisher_id', $data['list']);
+        }
+
+        static::applyProductWidgetOrder($products, $data);
+
+        return $products->with(['author', 'publisher', 'action'])->limit(15);
+    }
+
+
+    private static function applyProductWidgetOrder(Builder $products, array $data): void
+    {
+        if (isset($data['best_selling']) && $data['best_selling'] == 'on') {
+            static::applyBestSellingOrder($products);
+        } elseif (isset($data['popular']) && $data['popular'] == 'on') {
+            $products->orderByDesc('viewed');
+        } else {
+            $products->orderByDesc(isset($data['new']) ? 'created_at' : 'updated_at');
+        }
+    }
+
+
+    private static function applyBestSellingOrder(Builder $products): void
+    {
+        $sales = DB::table('order_products')
+            ->join('orders', 'orders.id', '=', 'order_products.order_id')
+            ->whereIn('orders.order_status_id', OrderHelper::turnoverStatuses())
+            ->where('orders.created_at', '>=', now()->subDays(30))
+            ->groupBy('order_products.product_id')
+            ->select('order_products.product_id', DB::raw('SUM(order_products.quantity) as sold_quantity'));
+
+        $products
+            ->leftJoinSub($sales, 'widget_sales', function ($join) {
+                $join->on('products.id', '=', 'widget_sales.product_id');
+            })
+            ->select('products.*')
+            ->orderByDesc('widget_sales.sold_quantity')
+            ->orderByDesc('products.updated_at')
+            ->limit(15);
     }
 
 
@@ -495,6 +614,18 @@ class Helper
     }
 
 
+    private static function authors(array $data): Builder
+    {
+        $authors = (new Author())->newQuery()->active();
+
+        if ( ! empty($data['list'])) {
+            $authors->whereIn('id', $data['list']);
+        }
+
+        return $authors->orderBy('title');
+    }
+
+
     /**
      * @param array $data
      *
@@ -502,11 +633,19 @@ class Helper
      */
     private static function reviews(array $data): Builder
     {
-        $reviews = (new Review())->newQuery();
+        $reviews = (new Review())->newQuery()
+            ->where('status', 1)
+            ->with(['product.author']);
 
-        $reviews->where('featured', '1')->limit(10)->get();
+        if ( ! empty($data['list'])) {
+            $reviews->whereIn('id', $data['list']);
+        }
 
-        return $reviews;
+        return $reviews
+            ->orderByDesc('featured')
+            ->orderBy('sort_order')
+            ->latest('id')
+            ->limit(15);
     }
 
 

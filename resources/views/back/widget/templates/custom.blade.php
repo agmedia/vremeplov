@@ -80,6 +80,11 @@
                                 </div>
                             </div>
 
+                            <div class="form-group mb-3">
+                                <label for="button-text-input">Tekst gumba</label>
+                                <input type="text" class="form-control" name="button_text" id="button-text-input" value="{{ old('button_text', $widget->data['button_text'] ?? 'Pogledajte ponudu') }}" maxlength="80" placeholder="Pogledajte ponudu">
+                            </div>
+
                             <div class="block">
                                 <div class="block-content" style="background-color: #f8f9f9; border: 1px solid #e9e9e9; padding: 30px;">
 <!--                                    <div class="form-group row mb-3">

@@ -11,7 +11,14 @@
                         <div class="autocomplete" >
                             <div id="myInputautocomplete-list" class="autocomplete-items">
                                 @foreach($search_results as $item)
-                                    <div wire:click="addItem({{ $item->id }})">{{ isset($item->title) ? $item->title : $item->name }} - {{ isset($item->sku) ? $item->sku : '' }}</div>
+                                    <div wire:click="addItem({{ $item->id }})">
+                                        @if ($group === 'reviews')
+                                            {{ trim($item->fname . ' ' . $item->lname) ?: 'Anonimno' }} — {{ \Illuminate\Support\Str::limit($item->message, 65) }}
+                                            @if ($item->product)<small>({{ $item->product->name }})</small>@endif
+                                        @else
+                                            {{ isset($item->title) ? $item->title : $item->name }} {{ isset($item->sku) ? '— ' . $item->sku : '' }}
+                                        @endif
+                                    </div>
                                 @endforeach
                             </div>
                         </div>
@@ -35,7 +42,11 @@
                 @foreach ($list as $item)
                     <tr>
                         <td class="font-size-sm">
-                            {{ isset($item['title']) ? $item['title'] : (isset($item['name']) ? $item['name'] : 'WTF') }} - {{ isset($item['sku']) ? $item['sku'] : '' }}
+                            @if ($group === 'reviews')
+                                {{ trim(($item['fname'] ?? '') . ' ' . ($item['lname'] ?? '')) ?: 'Anonimno' }} — {{ \Illuminate\Support\Str::limit($item['message'] ?? '', 75) }}
+                            @else
+                                {{ $item['title'] ?? ($item['name'] ?? 'Stavka #' . ($item['id'] ?? '')) }} {{ isset($item['sku']) ? '— ' . $item['sku'] : '' }}
+                            @endif
                             <input type="hidden" name="action_list[{{ isset($item['id']) ? $item['id'] : '' }}]" value="{{ isset($item['id']) ? $item['id'] : '' }}">
                         </td>
                         <td class="text-right font-size-sm">

@@ -20,7 +20,7 @@
                         <p class="text-light pb-0 from-bottom delay-4">Knjižara: <a class="text-light" href="https://goo.gl/maps/n9hHexFj7vVxUGGi8">Ul. Antuna Šoljana 33, 10090, Zagreb</a></p>
                         <p class="text-light pb-2 from-bottom delay-4"> Radno vrijeme: Pon-Pet: 8-20, Sub: 9-15</p>
 
-                        <div class="scale-up delay-5 mx-auto mx-lg-0"><a class="btn btn-primary" href="{{ route('catalog.route', ['group' => \App\Helpers\Helper::categoryGroupPath(true)]) }}">Pogledajte ponudu<i class="ci-arrow-right ms-2 me-n1"></i></a></div>
+                        <div class="scale-up delay-5 mx-auto mx-lg-0"><a class="btn btn-primary" href="{{ route('catalog.route', ['group' => \App\Helpers\Helper::categoryGroupPath(true)]) }}">Pogledajte ponudu<i class="fa-regular fa-arrow-right ms-2 me-n1"></i></a></div>
                     </div>
                 </div>
             </div>
@@ -42,7 +42,7 @@
                 @foreach ($kategorijefeatured as $cat)
                     <div class="article mb-grid-gutter">
                         <a class="card border-0 shadow" href="{{ url(\Illuminate\Support\Str::slug($cat->group) . '/' . $cat->slug) }}">
-                            <span class="blog-entry-meta-label fs-sm"><i class="ci-heart text-primary me-0"></i></span>
+                            <span class="blog-entry-meta-label fs-sm"><i class="fa-regular fa-heart text-primary me-0"></i></span>
                             <img class="card-img-top" loading="lazy" width="310" height="310" src="{{ $cat->image }}" alt="{{ $cat->title }}">
                             <div class="card-body py-3 text-center">
                                 <h3 class="h6 mt-1 text-primary">{{ $cat->title }}</h3>
@@ -67,7 +67,7 @@
                         <p class="fs-xl fw-bold text-light pb-0 from-bottom delay-3">Stephen King: Kula tmine II i III </p>
                         <p class="fs-xl text-light pb-0 from-bottom delay-3"><small>+ GRATIS knjiga na poklon: Gospodar prstenova - dvije kule</small></p>
                         <p class=" h4 pb-2 font-bold mb-3 text-white"><small>Prije:</small> 48,71 €   <small>Sada:</small> 13,27 €</p>
-                        <a class="btn mb-3 btn-primary" href="https://www.zuzi.hr/kategorija-proizvoda/beletristika/stephen-king-kula-tmine-iiiii-gospodar-prstenova-dvije-kule">Pogledajte ponudu <i class="ci-arrow-right ms-2 me-n1"></i></a>
+                        <a class="btn mb-3 btn-primary" href="https://www.zuzi.hr/kategorija-proizvoda/beletristika/stephen-king-kula-tmine-iiiii-gospodar-prstenova-dvije-kule">Pogledajte ponudu <i class="fa-regular fa-arrow-right ms-2 me-n1"></i></a>
                     </div>
                    <a href="https://www.zuzi.hr/kategorija-proizvoda/beletristika/stephen-king-kula-tmine-iiiii-gospodar-prstenova-dvije-kule"> <img class="d-block mx-auto mx-sm-0 rounded-end rounded-xs pb-4 pb-sm-0" src="{{ config('settings.images_domain') . 'media/img/stephen-king-kula.webp' }}"  width="480" alt="Knjige Stephena Kinga"> </a>
                 </div>

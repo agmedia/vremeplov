@@ -63,6 +63,36 @@ After deploying tracking migrations, use `php artisan migrate --force`. The
 legacy `database/008_add_boxnow_shipping_tracking.sql` remains available only
 for installations that cannot run Laravel migrations.
 
+### Catalog filter normalization during deployment
+
+After taking a database backup, run the pending migrations (including the
+product `note` column), then inspect the catalog cleanup plan on the target
+environment. The command is read-only unless `--apply` is explicitly supplied:
+
+```bash
+php artisan migrate --force
+php artisan catalog:normalize-filter-data
+```
+
+If the reported author, publisher, and product counts look correct, schedule a
+maintenance window, pause catalog imports and queue/scheduler workers, apply the
+same normalization transactionally, and then clear cached application data:
+
+```bash
+php artisan catalog:normalize-filter-data --apply
+php artisan cache:clear
+```
+
+Running the apply command again is safe; a completed normalization reports zero
+remaining changes. It deliberately does not expand initials or merge names on a
+semantic/fuzzy match. Detailed condition text is moved to the product note only
+when the `note` column exists and the base condition can be classified safely;
+otherwise that source text is retained for manual review. Author or publisher
+duplicate groups with more than one non-empty slug or URL are always skipped:
+their records, product references, and marketing-action links remain untouched.
+There is no force option for those groups; configure redirects and merge them
+through an explicit manual procedure.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

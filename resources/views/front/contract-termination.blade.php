@@ -12,7 +12,7 @@
 @section('content')
     <main class="container termination-page py-4 py-lg-5">
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-4"><li class="breadcrumb-item"><a href="{{ route('index') }}"><i class="ci-home me-1"></i>Naslovnica</a></li><li class="breadcrumb-item active">Jednostrani raskid ugovora</li></ol>
+            <ol class="breadcrumb mb-4"><li class="breadcrumb-item"><a href="{{ route('index') }}"><i class="fa-regular fa-house me-1"></i>Naslovnica</a></li><li class="breadcrumb-item active">Jednostrani raskid ugovora</li></ol>
         </nav>
         <div class="mb-4">
             <h1 class="h2 mb-2">Obrazac za jednostrani raskid ugovora</h1>
@@ -61,7 +61,7 @@
                         <h2 class="termination-section-title mb-3"><span class="termination-step">3</span> Izjava i slanje</h2>
                         <div class="form-check mb-3"><input class="form-check-input" id="ct-statement" name="statement" type="checkbox" value="1" required {{ old('statement') ? 'checked' : '' }}><label class="form-check-label" for="ct-statement">Ovime nedvosmisleno izjavljujem da jednostrano raskidam ugovor za gore navedenu robu. *</label></div>
                         @if (config('services.recaptcha.sitekey'))<input type="hidden" name="recaptcha" id="recaptcha">@endif
-                        <button class="btn btn-primary px-4" type="submit"><i class="ci-mail me-2"></i>Pošalji izjavu</button>
+                        <button class="btn btn-primary px-4" type="submit"><i class="fa-regular fa-envelope me-2"></i>Pošalji izjavu</button>
                         <p class="small text-muted mt-3 mb-0">Podatke koristimo isključivo za obradu zahtjeva i ispunjavanje zakonskih obveza.</p>
                     </section>
                 </form>

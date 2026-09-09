@@ -93,7 +93,7 @@
                 <div class="order-lg-2 mb-1 mb-lg-0 pt-lg-2">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb breadcrumb-dark flex-lg-nowrap justify-content-center justify-content-lg-start">
-                            <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="ci-home"></i>Naslovnica</a></li>
+                            <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="fa-regular fa-house"></i>Naslovnica</a></li>
                             <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ $page->title }}</li>
                         </ol>
                     </nav>

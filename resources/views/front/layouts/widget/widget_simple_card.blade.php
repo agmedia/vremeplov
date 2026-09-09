@@ -1,31 +1,31 @@
-<!-- {"title": "Banneri", "description": "Widget za bannere"} -->
-<section class="container  " >
-   <!-- <div class="d-flex flex-wrap justify-content-between align-items-center pt-1  pb-3 mb-3">
-        <h2 class="h3 mb-0 pt-3 font-title me-3"> DODATNO U PONUDI </h2>
-    </div> -->
-
-    <div class="row  mt-1 ">
-        @foreach ($data as $widget)
-            @if($widget['width'] == 6)
-            <div class="col-sm-12 col-lg-{{ $widget['width'] }} mb-grid-gutter">
-                <div class="d-block d-sm-flex justify-content-between align-items-center  rounded-3" style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
-                        <div class="pt-5 py-sm-4 px-4 ps-md-4 pe-4 text-center text-sm-start pb-4 pb-md-0">
-                                <h2 class="font-title">{{ $widget['title'] }}</h2>
-                                <p class="text-muted pb-2">{{ $widget['subtitle'] }}</p><a class="btn btn-primary" aria-label="Pogledajte ponudu" href="{{ url($widget['url']) }}">Pogledajte ponudu <i class="ci-arrow-right ms-2 me-n1"></i></a>
+<!-- {"title": "Banneri", "description": "Kombinirani promotivni banneri."} -->
+@if (collect($data)->isNotEmpty())
+    <section class="container py-3">
+        <div class="row g-3">
+            @foreach ($data as $widget)
+                @php
+                    $width = in_array((int) $widget['width'], [4, 6, 8, 12], true) ? (int) $widget['width'] : 12;
+                    $hasLink = ! empty($widget['url']) && $widget['url'] !== '/';
+                @endphp
+                <div class="col-12 col-xl-{{ $width }}">
+                    <article class="widget-simple-card d-flex flex-column flex-sm-row {{ $widget['right'] ? '' : 'flex-sm-row-reverse' }} rounded-3">
+                        <div class="widget-simple-card__copy p-4 d-flex flex-column justify-content-center text-center text-sm-start">
+                            <h2 class="h3 font-title mb-2">{{ $widget['title'] }}</h2>
+                            @if (! empty($widget['subtitle']))
+                                <p class="text-muted mb-3">{{ $widget['subtitle'] }}</p>
+                            @endif
+                            @if ($hasLink)
+                                <div><a class="btn btn-primary btn-sm" href="{{ url($widget['url']) }}">Pogledajte ponudu <i class="fa-regular fa-arrow-right ms-1" aria-hidden="true"></i></a></div>
+                            @endif
                         </div>
-                    <a  href="{{ url($widget['url']) }}">   <img class="d-block mx-auto mx-sm-0 rounded-end pb-4 pb-sm-0 " width="290" height="290" src="{{ $widget['image'] }}" style="max-width:290px" alt="{{ $widget['title'] }}"></a>
+                        @if (! empty($widget['image']))
+                            @if ($hasLink)<a class="widget-simple-card__media" href="{{ url($widget['url']) }}">@else<div class="widget-simple-card__media">@endif
+                                <img src="{{ $widget['image'] }}" width="420" height="300" loading="lazy" alt="{{ $widget['title'] }}">
+                            @if ($hasLink)</a>@else</div>@endif
+                        @endif
+                    </article>
                 </div>
-            </div>
-
-            @else
-
-                <div class="col-sm-12 col-lg-{{ $widget['width'] }} mb-grid-gutter">
-                    <div class="d-block d-sm-flex justify-content-between align-items-center  rounded-3" style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
-                        <a  href="{{ url($widget['url']) }}">   <img class="d-block mx-auto mx-sm-0 rounded-3  pb-4 pb-sm-0 "  src="https://www.antikvarijat-vremeplov.hr/media/img/aukcija.jpg"  alt="{{ $widget['title'] }}"></a>
-                    </div>
-                </div>
-
-           @endif
-        @endforeach
-    </div>
-</section>
+            @endforeach
+        </div>
+    </section>
+@endif

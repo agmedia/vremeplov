@@ -10,6 +10,7 @@ use App\Models\Front\Catalog\Product;
 use App\Models\Back\Marketing\Review;
 use App\Models\Back\Marketing\Wishlist;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -40,6 +41,13 @@ class AppServiceProvider extends ServiceProvider
             : Page::where('subgroup', 'Uvjeti kupnje')->get();
         View::share('uvjeti_kupnje', $uvjeti_kupnje);
 
+        $hasCatalogActions = Schema::hasTable('products')
+            ? Cache::remember('catalog.navigation.has-actions.v2', now()->addMinutes(5), function () {
+                return Product::query()->active()->hasStock()->onSale()->exists();
+            })
+            : false;
+        View::share('hasCatalogActions', $hasCatalogActions);
+
         View::composer('back.layouts.partials.topbar', function ($view) {
             $wishlistReadyCount = Schema::hasTable('wishlist') && Schema::hasTable('products')
                 ? Wishlist::query()->readyToSend()->count()
@@ -49,6 +57,35 @@ class AppServiceProvider extends ServiceProvider
                 : 0;
 
             $view->with(compact('wishlistReadyCount', 'pendingCommentCount'));
+        });
+
+        View::composer('front.layouts.partials.header', function ($view) {
+            $mobileNavigationGroups = collect();
+            $mobileNavigationBookCategories = collect();
+
+            if (Schema::hasTable('categories')) {
+                $mobileNavigationGroups = Category::getGroups();
+                $bookNavigationGroup = $mobileNavigationGroups->firstWhere('slug', 'knjige');
+                $bookNavigationGroupSlug = $bookNavigationGroup->slug ?? 'knjige';
+                $mobileNavigationBookCategories = Helper::resolveCache('categories')->remember(
+                    'mobile-navigation.books.v3',
+                    config('cache.life'),
+                    function () use ($bookNavigationGroupSlug) {
+                        return Category::query()
+                            ->active()
+                            ->topList($bookNavigationGroupSlug)
+                            ->orderBy('title')
+                            ->select('id', 'title', 'group', 'slug', 'sort_order')
+                            ->with(['subcategories' => function ($query) {
+                                $query->select('id', 'parent_id', 'title', 'group', 'slug', 'sort_order')
+                                    ->orderBy('title');
+                            }])
+                            ->get();
+                    }
+                );
+            }
+
+            $view->with(compact('mobileNavigationGroups', 'mobileNavigationBookCategories'));
         });
 
         /*$nacini_placanja = Page::where('subgroup', 'Načini plaćanja')->get();

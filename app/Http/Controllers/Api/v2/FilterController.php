@@ -9,9 +9,12 @@ use App\Models\Back\Catalog\Product\ProductImage;
 use App\Models\Front\Catalog\Author;
 use App\Models\Front\Catalog\Category;
 use App\Models\Front\Catalog\Publisher;
+use App\Support\CatalogFilterValue;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -26,43 +29,85 @@ class FilterController extends Controller
      */
     public function categories(Request $request)
     {
-        if ( ! $request->input('params')) {
+        if ( ! $request->has('params')) {
             return response()->json(['status' => 300, 'message' => 'Error!']);
         }
 
-        $params = $request->input('params');
+        $params = $this->requestParams($request);
+        $response = [];
+        $parentId = $this->categoryId($params['cat'] ?? null);
+        $selectedSubcategoryId = $this->categoryId($params['subcat'] ?? null);
+        $group = trim((string) ($params['group'] ?? ''));
 
-        // Uvijekprikaži sve kategorije
-        $response = Helper::resolveCache('categories')->remember('nav', config('cache.life'), function () use ($params) {
-            $groups = Category::getGroups();
+        // Na korijenu grupe prikazujemo samo njezine kategorije, a unutar
+        // kategorije samo njezine izravne podkategorije.
+        if ($parentId) {
+            $parent = Category::query()
+                ->active()
+                ->where('parent_id', 0)
+                ->when($group !== '', fn (Builder $query) => $query->where('group', $group))
+                ->find($parentId);
 
-            foreach ($groups as $key => $group) {
-                $categories = Category::active()->topList($group->slug)->orderBy('title')->with('subcategories')->get()->toArray();
-                $count      = Product::query()->where('group', $group->slug)->where('quantity', '>', 0)->count();
-
-                $response[] = [
-                    'id'    => $key,
-                    'title' => $group->title,
-                    'icon'  => '',
-                    'count' => $count,//$category['products_count'],
-                    'url'   => route('catalog.route', ['group' => $group->slug]),
-                    'subs'  => $this->resolveCategoryArray($categories, 'categories')
-                ];
+            if ($parent) {
+                $response = $parent->subcategories()
+                    ->active()
+                    ->withCount('products')
+                    ->get()
+                    ->map(function (Category $category) use ($parent, $selectedSubcategoryId) {
+                        return [
+                            'id' => $category->id,
+                            'title' => $category->title,
+                            'count' => (int) $category->products_count,
+                            'url' => $parent->url($category),
+                            'active' => $selectedSubcategoryId === (int) $category->id,
+                        ];
+                    })
+                    ->values()
+                    ->all();
             }
+        } elseif (($params['catalog_root'] ?? null) === 'all') {
+            $counts = Product::query()
+                ->active()
+                ->hasStock()
+                ->select('group', DB::raw('COUNT(*) as aggregate'))
+                ->groupBy('group')
+                ->pluck('aggregate', 'group');
 
-            return $response;
-        });
-        //}
+            $response = Category::getGroups()
+                ->map(function ($catalogGroup) use ($counts) {
+                    $count = (int) ($counts->get($catalogGroup->slug) ?? $counts->get($catalogGroup->title) ?? 0);
 
-        // Ako su posebni ID artikala.
-        if (isset($params['ids']) && $params['ids'] != '[]') {
-            $_ids = collect(explode(',', substr($params['ids'], 1, -1)))->unique();
-
-            $categories = Category::active()->whereHas('products', function ($query) use ($_ids) {
-                $query->active()->hasStock()->whereIn('id', $_ids);
-            })->sortByName()->withCount('products')->get()->toArray();
-
-            $response = $this->resolveCategoryArray($categories, 'categories');
+                    return [
+                        'id' => 'group-' . $catalogGroup->slug,
+                        'title' => $catalogGroup->title,
+                        'count' => $count,
+                        'url' => route('catalog.route', ['group' => $catalogGroup->slug]),
+                        'active' => false,
+                    ];
+                })
+                ->filter(fn ($catalogGroup) => $catalogGroup['count'] > 0)
+                ->sortBy(fn ($catalogGroup) => Str::lower($catalogGroup['title']))
+                ->values()
+                ->all();
+        } elseif ($group !== '') {
+            $response = Category::query()
+                ->active()
+                ->where('parent_id', 0)
+                ->where('group', $group)
+                ->withCount('products')
+                ->orderBy('title')
+                ->get()
+                ->map(function (Category $category) {
+                    return [
+                        'id' => $category->id,
+                        'title' => $category->title,
+                        'count' => (int) $category->products_count,
+                        'url' => $category->url(),
+                        'active' => false,
+                    ];
+                })
+                ->values()
+                ->all();
         }
 
         $etag = sha1(json_encode($response));
@@ -71,6 +116,78 @@ class FilterController extends Controller
             ->setEtag($etag)
             ->setPublic()
             ->setMaxAge(config('cache.one_day'))        // 1 day
+            ->header('Cache-Control', 'public, max-age=' . config('cache.one_day'));
+    }
+
+
+    /**
+     * Return available product characteristics for the active catalog context.
+     *
+     * @param Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function characteristics(Request $request)
+    {
+        $params = $this->requestParams($request);
+        $response = [];
+
+        foreach ([
+            'letter' => ['key' => 'pismo', 'title' => 'Pismo'],
+            'condition' => ['key' => 'stanje', 'title' => 'Stanje'],
+            'binding' => ['key' => 'uvez', 'title' => 'Uvez'],
+            'origin' => ['key' => 'jezik', 'title' => 'Jezik'],
+        ] as $column => $definition) {
+            $items = $this->productContextQuery($params, $definition['key'])
+                ->whereNotNull($column)
+                ->where($column, '!=', '')
+                ->select($column . ' as value', DB::raw('COUNT(*) as count'))
+                ->groupBy($column)
+                ->get()
+                ->flatMap(function ($item) use ($column) {
+                    $rawValue = trim((string) $item->value);
+
+                    return collect(CatalogFilterValue::facetValues($column, $rawValue))
+                        ->map(function (string $label) use ($item) {
+                            return [
+                                'value' => CatalogFilterValue::key($label),
+                                'label' => $label,
+                                'count' => (int) $item->count,
+                            ];
+                        });
+                })
+                ->filter(function ($item) {
+                    return $item['value'] !== '' && $item['label'] !== '';
+                })
+                ->groupBy('value')
+                ->map(function ($variants, $value) {
+                    $preferred = $variants->sortByDesc('count')->first();
+
+                    return [
+                        'value' => $value,
+                        'label' => $preferred['label'],
+                        'count' => $variants->sum('count'),
+                    ];
+                })
+                ->sortByDesc('count')
+                ->values();
+
+            if ($items->isNotEmpty()) {
+                $response[] = [
+                    'key' => $definition['key'],
+                    'title' => $definition['title'],
+                    'items' => $items,
+                ];
+            }
+        }
+
+        $etag = sha1(json_encode($response));
+
+        return response()
+            ->json($response)
+            ->setEtag($etag)
+            ->setPublic()
+            ->setMaxAge(config('cache.one_day'))
             ->header('Cache-Control', 'public, max-age=' . config('cache.one_day'));
     }
 
@@ -165,36 +282,22 @@ class FilterController extends Controller
             return response()->json(['status' => 300, 'message' => 'Error!']);
         }
 
-        $params = $request->input('params');
+        $params = $this->requestParams($request);
+        $authors = [];
+        $publishers = [];
 
-        if (isset($params['autor']) && $params['autor']) {
-            if (strpos($params['autor'], '+') !== false) {
-                $arr = explode('+', $params['autor']);
-
-                foreach ($arr as $item) {
-                    $_author         = Author::where('slug', $item)->first();
-                    $this->authors[] = $_author;
-                }
-
-            } else {
-                $_author         = Author::where('slug', $params['autor'])->first();
-                $this->authors[] = $_author;
-            }
+        if ( ! empty($params['autor'])) {
+            $authors = Author::query()
+                ->whereIn('slug', $this->entitySlugs($params['autor']))
+                ->get()
+                ->all();
         }
 
-        if (isset($params['nakladnik']) && $params['nakladnik']) {
-            if (strpos($params['nakladnik'], '+') !== false) {
-                $arr = explode('+', $params['nakladnik']);
-
-                foreach ($arr as $item) {
-                    $_publisher         = Publisher::where('slug', $item)->first();
-                    $this->publishers[] = $_publisher;
-                }
-
-            } else {
-                $_publisher         = Publisher::where('slug', $params['nakladnik'])->first();
-                $this->publishers[] = $_publisher;
-            }
+        if ( ! empty($params['nakladnik'])) {
+            $publishers = Publisher::query()
+                ->whereIn('slug', $this->entitySlugs($params['nakladnik']))
+                ->get()
+                ->all();
         }
 
         $request_data = [];
@@ -208,19 +311,19 @@ class FilterController extends Controller
         }
 
         if (isset($params['cat']) && $params['cat']) {
-            $request_data['cat'] = $params['cat'];
+            $request_data['cat'] = $this->categoryId($params['cat']);
         }
 
         if (isset($params['subcat']) && $params['subcat']) {
-            $request_data['subcat'] = $params['subcat'];
+            $request_data['subcat'] = $this->categoryId($params['subcat']);
         }
 
         if (isset($params['autor']) && $params['autor']) {
-            $request_data['autor'] = $this->authors;
+            $request_data['autor'] = $authors;
         }
 
         if (isset($params['nakladnik']) && $params['nakladnik']) {
-            $request_data['nakladnik'] = $this->publishers;
+            $request_data['nakladnik'] = $publishers;
         }
 
         if (isset($params['start']) && $params['start']) {
@@ -229,6 +332,12 @@ class FilterController extends Controller
 
         if (isset($params['end']) && $params['end']) {
             $request_data['end'] = $params['end'];
+        }
+
+        foreach (['pismo', 'stanje', 'uvez', 'jezik'] as $attribute) {
+            if ( ! empty($params[$attribute])) {
+                $request_data[$attribute] = $this->filterValues($params[$attribute]);
+            }
         }
 
         if (isset($params['sort']) && $params['sort']) {
@@ -288,11 +397,18 @@ class FilterController extends Controller
     public function authors(Request $request)
     {
         if ($request->has('params')) {
-            $params = json_decode($request->input('params'), true);
+            $params = array_merge([
+                'ids' => '',
+                'group' => '',
+                'cat' => '',
+                'subcat' => '',
+                'author' => '',
+                'publisher' => '',
+                'search_author' => '',
+                'search_publisher' => '',
+            ], $this->requestParams($request));
 
-            $response = (new Author())->filter($params)
-                                      ->get()
-                                      ->toArray();
+            $response = $this->authorFacet($params);
 
         } else {
             $response = Helper::resolveCache('authors')->remember('featured', config('cache.life'), function () {
@@ -323,13 +439,18 @@ class FilterController extends Controller
     public function publishers(Request $request)
     {
         if ($request->has('params')) {
-            $params = json_decode($request->input('params'), true);
+            $params = array_merge([
+                'ids' => '',
+                'group' => '',
+                'cat' => '',
+                'subcat' => '',
+                'author' => '',
+                'publisher' => '',
+                'search_author' => '',
+                'search_publisher' => '',
+            ], $this->requestParams($request));
 
-            $response = (new Publisher())->filter($params)
-                                         ->basicData()
-                                         ->withCount('products')
-                                         ->get()
-                                         ->toArray();
+            $response = $this->publisherFacet($params);
 
         } else {
             $response = Helper::resolveCache('publishers')->remember('featured', config('cache.life'), function () {
@@ -350,5 +471,376 @@ class FilterController extends Controller
             ->setMaxAge(config('cache.one_day'))        // 1 day
             ->header('Cache-Control', 'public, max-age=' . config('cache.one_day'));
     }
+
+
+    /**
+     * @param Request $request
+     *
+     * @return array
+     */
+    private function requestParams(Request $request): array
+    {
+        $params = $request->input('params', []);
+
+        if (is_array($params)) {
+            return $params;
+        }
+
+        if (is_string($params)) {
+            $decoded = json_decode($params, true);
+
+            return is_array($decoded) ? $decoded : [];
+        }
+
+        return [];
+    }
+
+
+    /**
+     * @param mixed $value
+     *
+     * @return int|null
+     */
+    private function categoryId($value): ?int
+    {
+        if (is_array($value)) {
+            $value = $value['id'] ?? null;
+        } elseif (is_string($value) && str_starts_with(trim($value), '{')) {
+            $decoded = json_decode($value, true);
+            $value = is_array($decoded) ? ($decoded['id'] ?? null) : null;
+        }
+
+        return is_numeric($value) && (int) $value > 0 ? (int) $value : null;
+    }
+
+
+    /**
+     * @param mixed $value
+     *
+     * @return array
+     */
+    private function filterValues($value): array
+    {
+        $values = is_array($value) ? $value : preg_split('/[+|]/', (string) $value);
+
+        return collect($values)
+            ->map(function ($item) {
+                return trim((string) $item);
+            })
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+
+    /**
+     * Resolve one or more grouped entity values back to their real slugs.
+     * Commas are reserved for aliases inside one visually de-duplicated option.
+     *
+     * @param mixed $value
+     *
+     * @return array
+     */
+    private function entitySlugs($value): array
+    {
+        return collect(is_array($value) ? $value : [$value])
+            ->flatMap(function ($item) {
+                return preg_split('/[+|,]/', (string) $item) ?: [];
+            })
+            ->map(fn ($slug) => trim((string) $slug))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+
+    /**
+     * Authors available in the current product context, with obvious duplicate
+     * name variants represented by one checkbox.
+     */
+    private function authorFacet(array $params): array
+    {
+        $counts = $this->productContextQuery($params, 'autor')
+            ->whereNotNull('author_id')
+            ->select('author_id', DB::raw('COUNT(*) as aggregate'))
+            ->groupBy('author_id')
+            ->pluck('aggregate', 'author_id');
+
+        if ($counts->isEmpty()) {
+            return [];
+        }
+
+        $selectedSlugs = $this->entitySlugs($params['autor'] ?? ($params['author'] ?? []));
+        $search = trim((string) ($params['search_author'] ?? ''));
+        $query = Author::query()
+            ->active()
+            ->whereIn('id', $counts->keys());
+
+        if ($search !== '') {
+            $query->where('title', 'like', '%' . $search . '%');
+        } else {
+            $query->where(function (Builder $query) use ($selectedSlugs) {
+                $query->where('featured', 1);
+                if ($selectedSlugs) {
+                    $query->orWhereIn('slug', $selectedSlugs);
+                }
+            });
+        }
+
+        return $this->groupEntityFacet(
+            $query->limit(200)->get(['id', 'title', 'slug', 'url']),
+            $counts,
+            true
+        );
+    }
+
+
+    /**
+     * Publishers available in the current product context.
+     */
+    private function publisherFacet(array $params): array
+    {
+        $counts = $this->productContextQuery($params, 'nakladnik')
+            ->whereNotNull('publisher_id')
+            ->select('publisher_id', DB::raw('COUNT(*) as aggregate'))
+            ->groupBy('publisher_id')
+            ->pluck('aggregate', 'publisher_id');
+
+        if ($counts->isEmpty()) {
+            return [];
+        }
+
+        $selectedSlugs = $this->entitySlugs($params['nakladnik'] ?? ($params['publisher'] ?? []));
+        $search = trim((string) ($params['search_publisher'] ?? ''));
+        $query = Publisher::query()
+            ->active()
+            ->whereIn('id', $counts->keys());
+
+        if ($search !== '') {
+            $query->where('title', 'like', '%' . $search . '%');
+        } else {
+            $query->where(function (Builder $query) use ($selectedSlugs) {
+                $query->where('featured', 1);
+                if ($selectedSlugs) {
+                    $query->orWhereIn('slug', $selectedSlugs);
+                }
+            });
+        }
+
+        return $this->groupEntityFacet(
+            $query->limit(200)->get(['id', 'title', 'slug', 'url']),
+            $counts,
+            false
+        );
+    }
+
+
+    /**
+     * @param \Illuminate\Support\Collection $entities
+     * @param \Illuminate\Support\Collection $counts
+     */
+    private function groupEntityFacet($entities, $counts, bool $people): array
+    {
+        $groups = $people
+            ? $this->groupPeople($entities)
+            : $entities->groupBy(fn ($entity) => CatalogFilterValue::key($entity->title));
+
+        return collect($groups)
+            ->map(function ($variants) use ($counts) {
+                $preferred = $variants
+                    ->sortByDesc(fn ($entity) => $this->entityLabelScore($entity->title))
+                    ->first();
+                $slugs = $variants->pluck('slug')->filter()->unique()->sort()->values();
+
+                return [
+                    'id' => $preferred->id,
+                    'title' => CatalogFilterValue::display($preferred->title),
+                    'slug' => $slugs->implode(','),
+                    'slugs' => $slugs->all(),
+                    'url' => $preferred->url,
+                    'products_count' => (int) $variants->sum(fn ($entity) => (int) ($counts[$entity->id] ?? 0)),
+                ];
+            })
+            ->filter(fn ($entity) => $entity['slug'] !== '' && $entity['products_count'] > 0)
+            ->sortBy(fn ($entity) => Str::lower($entity['title']))
+            ->values()
+            ->all();
+    }
+
+
+    /**
+     * Build transitive groups for harmless author-name variants: punctuation,
+     * reordered full names and initials that still share the same surname.
+     */
+    private function groupPeople($entities): array
+    {
+        $groups = [];
+
+        foreach ($entities as $entity) {
+            $matchingGroups = [];
+            foreach ($groups as $index => $group) {
+                if ($group->contains(fn ($member) => $this->personNamesMatch($entity->title, $member->title))) {
+                    $matchingGroups[] = $index;
+                }
+            }
+
+            if (empty($matchingGroups)) {
+                $groups[] = collect([$entity]);
+                continue;
+            }
+
+            $target = array_shift($matchingGroups);
+            $groups[$target]->push($entity);
+            foreach (array_reverse($matchingGroups) as $index) {
+                $groups[$target] = $groups[$target]->merge($groups[$index]);
+                array_splice($groups, $index, 1);
+            }
+        }
+
+        return $groups;
+    }
+
+
+    private function personNamesMatch($first, $second): bool
+    {
+        if (CatalogFilterValue::personKey($first) === CatalogFilterValue::personKey($second)) {
+            return true;
+        }
+
+        $firstTokens = $this->personNameTokens($first);
+        $secondTokens = $this->personNameTokens($second);
+        if (empty($firstTokens) || empty($secondTokens)) {
+            return false;
+        }
+
+        $firstSorted = $firstTokens;
+        $secondSorted = $secondTokens;
+        sort($firstSorted, SORT_STRING);
+        sort($secondSorted, SORT_STRING);
+        if ($firstSorted === $secondSorted) {
+            return true;
+        }
+
+        $hasInitials = collect($firstTokens)->contains(fn ($token) => strlen($token) === 1)
+            || collect($secondTokens)->contains(fn ($token) => strlen($token) === 1);
+        if ( ! $hasInitials || count($firstTokens) !== count($secondTokens)) {
+            return false;
+        }
+
+        $firstInitials = collect($firstTokens)->map(fn ($token) => substr($token, 0, 1))->sort()->values();
+        $secondInitials = collect($secondTokens)->map(fn ($token) => substr($token, 0, 1))->sort()->values();
+        $sharedFullTokens = array_intersect(
+            array_filter($firstTokens, fn ($token) => strlen($token) > 1),
+            array_filter($secondTokens, fn ($token) => strlen($token) > 1)
+        );
+
+        return $firstInitials->all() === $secondInitials->all() && ! empty($sharedFullTokens);
+    }
+
+
+    private function personNameTokens($value): array
+    {
+        $plain = Str::lower(Str::ascii(CatalogFilterValue::display($value)));
+
+        return array_values(array_filter(
+            preg_split('/[^a-z0-9]+/', $plain) ?: [],
+            fn ($token) => $token !== '' && ! in_array($token, ['dr', 'mr', 'prof'], true)
+        ));
+    }
+
+
+    private function entityLabelScore($value): int
+    {
+        $label = CatalogFilterValue::display($value);
+        $letters = preg_replace('/[^\pL\pN]+/u', '', $label) ?? '';
+        $words = preg_split('/\s+/u', $label) ?: [];
+        $uppercasePenalty = mb_strtoupper($label) === $label ? 20 : 0;
+
+        return (count($words) * 100) + mb_strlen($letters) - $uppercasePenalty;
+    }
+
+
+    /**
+     * @param array $params
+     *
+     * @return Builder
+     */
+    private function productContextQuery(array $params, ?string $exceptFacet = null): Builder
+    {
+        $query = Product::query()->active()->hasStock();
+
+        if ( ! empty($params['ids'])) {
+            $ids = is_array($params['ids'])
+                ? $params['ids']
+                : explode(',', trim((string) $params['ids'], '[]'));
+
+            $query->whereIn('id', collect($ids)->filter(function ($id) {
+                return is_numeric($id);
+            })->map(function ($id) {
+                return (int) $id;
+            })->unique());
+        }
+
+        if ( ! empty($params['group'])) {
+            $query->where('group', $params['group']);
+        }
+
+        $subcategoryId = $this->categoryId($params['subcat'] ?? null);
+        $categoryId = $this->categoryId($params['cat'] ?? null);
+        foreach (array_filter([$categoryId, $subcategoryId]) as $contextCategoryId) {
+            $query->whereHas('categories', function ($categoryQuery) use ($contextCategoryId) {
+                $categoryQuery->where('category_id', $contextCategoryId);
+            });
+        }
+
+        $authorSlugs = $this->entitySlugs($params['autor'] ?? ($params['author'] ?? []));
+        if ($exceptFacet !== 'autor' && $authorSlugs) {
+            $query->whereIn('author_id', Author::query()->whereIn('slug', $authorSlugs)->pluck('id'));
+        }
+
+        $publisherSlugs = $this->entitySlugs($params['nakladnik'] ?? ($params['publisher'] ?? []));
+        if ($exceptFacet !== 'nakladnik' && $publisherSlugs) {
+            $query->whereIn('publisher_id', Publisher::query()->whereIn('slug', $publisherSlugs)->pluck('id'));
+        }
+
+        if ( ! empty($params['start'])) {
+            $query->where(function ($yearQuery) use ($params) {
+                $yearQuery->where('year', '>=', $params['start'])->orWhereNull('year');
+            });
+        }
+
+        if ( ! empty($params['end'])) {
+            $query->where(function ($yearQuery) use ($params) {
+                $yearQuery->where('year', '<=', $params['end'])->orWhereNull('year');
+            });
+        }
+
+        foreach ([
+            'pismo' => 'letter',
+            'stanje' => 'condition',
+            'uvez' => 'binding',
+            'jezik' => 'origin',
+        ] as $parameter => $column) {
+            if ($parameter === $exceptFacet || empty($params[$parameter])) {
+                continue;
+            }
+
+            $values = collect($this->filterValues($params[$parameter]))
+                ->map(fn ($value) => CatalogFilterValue::facetKey($column, $value))
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
+            if ($values) {
+                $query->whereFacetValues($column, $values);
+            }
+        }
+
+        return $query;
+    }
+
 
 }

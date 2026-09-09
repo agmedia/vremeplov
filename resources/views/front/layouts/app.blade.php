@@ -91,6 +91,7 @@
 
     <!-- Main Theme Styles + Bootstrap-->
     <link rel="stylesheet" media="screen" href="/css/theme.css?v=1.91">
+    <link rel="stylesheet" media="screen" href="/css/front-vremeplov.css?v=1.0.7">
     @include('front.layouts.partials.analytics')
 
     @stack('css_after')
@@ -123,15 +124,15 @@
         <div class="topbar-text  d-none  d-md-inline-block">Besplatna dostava U RH za narudžbe iznad 70 €</div>
         <div class="ms-3 text-nowrap ">
             <a class="topbar-link me-2 d-inline-block" aria-label="Pratite nas na Facebooku" href="https://www.facebook.com/antikavrijatvremeplov">
-                <i class="ci-facebook"></i>
+                <i class="fa-brands fa-facebook-f"></i>
             </a>
 
             <a class="topbar-link me-2 d-inline-block" aria-label="Pratite nas na Instagramu" href="https://www.instagram.com/antikvarijatvremeplov">
-                <i class="ci-instagram"></i>
+                <i class="fa-brands fa-instagram"></i>
             </a>
 
             <a class="topbar-link me-0 d-inline-block" aria-label="Pošaljite nam e-mail" href="mailto:{{ config('mail.from.address') }}">
-                <i class="ci-mail"></i>
+                <i class="fa-regular fa-envelope"></i>
             </a>
 
         </div>
@@ -149,13 +150,17 @@
         @yield('content')
     </main>
 
+    @unless (request()->routeIs('kosarica', 'naplata', 'pregled', 'checkout*'))
+        @include('front.layouts.partials.newsletter')
+    @endunless
+
     @include('front.layouts.partials.footer')
 
     @include('front.layouts.partials.handheld')
 </div>
 
 <!-- Back To Top Button-->
-<a class="btn-scroll-top" href="#top" aria-label="Povratak na vrh stranice" data-scroll><span class="btn-scroll-top-tooltip text-muted fs-sm me-2"></span><i class="btn-scroll-top-icon ci-arrow-up"></i></a>
+<a class="btn-scroll-top" href="#top" aria-label="Povratak na vrh stranice" data-scroll><span class="btn-scroll-top-tooltip text-muted fs-sm me-2"></span><i class="btn-scroll-top-icon fa-regular fa-arrow-up"></i></a>
 <!-- Vendor Styles including: Font Icons, Plugins, etc.-->
 <link rel="stylesheet" media="screen" href="/css/tiny-slider.css?v=1.2"/>
 <!-- Vendor scrits: js libraries and plugins-->
@@ -169,9 +174,9 @@
 
 
 
-<script src="/js/cart.js?v=2.2.3"></script>
+<script src="/js/cart.js?v=2.2.6"></script>
 
-<script src="/js/theme.min.js"></script>
+<script src="/js/theme.min.js?v=1.2"></script>
 
 <script>
     $(() => {

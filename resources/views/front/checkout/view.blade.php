@@ -8,7 +8,7 @@
             <div class="order-lg-2 mb-3 mb-lg-0 pt-lg-2">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb breadcrumb-dark flex-lg-nowrap justify-content-center justify-content-lg-start">
-                        <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="ci-home"></i>Naslovnica</a></li>
+                        <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="fa-regular fa-house"></i>Naslovnica</a></li>
 
                         <li class="breadcrumb-item text-nowrap active" aria-current="page">Potvrdite narudžbu</li>
                     </ol>
@@ -28,23 +28,23 @@
                 <div class="steps steps-dark pt-2 pb-3 mb-2">
                     <a class="step-item active" href="{{ route('kosarica') }}">
                         <div class="step-progress"><span class="step-count">1</span></div>
-                        <div class="step-label"><i class="ci-cart"></i>Košarica</div>
+                        <div class="step-label"><i class="fa-regular fa-cart-shopping"></i>Košarica</div>
                     </a>
                     <a class="step-item active" href="{{ route('naplata', ['step' => 'podaci']) }}">
                         <div class="step-progress"><span class="step-count">2</span></div>
-                        <div class="step-label"><i class="ci-user-circle"></i>Podaci</div>
+                        <div class="step-label"><i class="fa-regular fa-circle-user"></i>Podaci</div>
                     </a>
                     <a class="step-item active" href="{{ route('naplata', ['step' => 'dostava']) }}">
                         <div class="step-progress"><span class="step-count">3</span></div>
-                        <div class="step-label"><i class="ci-package"></i>Dostava</div>
+                        <div class="step-label"><i class="fa-regular fa-box"></i>Dostava</div>
                     </a>
                     <a class="step-item active" href="{{ route('naplata', ['step' => 'placanje']) }}">
                         <div class="step-progress"><span class="step-count">4</span></div>
-                        <div class="step-label"><i class="ci-card"></i>Plaćanje</div>
+                        <div class="step-label"><i class="fa-regular fa-credit-card"></i>Plaćanje</div>
                     </a>
                     <a class="step-item current active" href="{{ route('pregled') }}">
                         <div class="step-progress"><span class="step-count">5</span></div>
-                        <div class="step-label"><i class="ci-check-circle"></i>Pregledaj</div>
+                        <div class="step-label"><i class="fa-regular fa-circle-check"></i>Pregledaj</div>
                     </a>
                 </div>
                 <h2 class="h6 pt-1 pb-3 mb-3">Pregled košarice</h2>

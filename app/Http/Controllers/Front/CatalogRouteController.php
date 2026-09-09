@@ -364,7 +364,7 @@ class CatalogRouteController extends Controller
     public function actions(Request $request, ?Category $cat = null, ?Category $subcat = null)
     {
         $group = null;
-        $ids = Product::query()->active()->hasStock()->whereNotNull('special')->pluck('id');
+        $ids = Product::query()->active()->hasStock()->onSale()->pluck('id');
         $crumbs = null;
         $meta = [
             'title' => 'Akcijska ponuda',
@@ -391,7 +391,7 @@ class CatalogRouteController extends Controller
         ?Author $author = null,
         ?Publisher $publisher = null
     ) {
-        $data = $request->only(['start', 'end', 'sort']);
+        $data = $request->only(['start', 'end', 'sort', 'pismo', 'stanje', 'uvez', 'jezik']);
 
         if ($group) {
             $data['group'] = $group;
@@ -409,7 +409,7 @@ class CatalogRouteController extends Controller
             $data['autor'] = [$author];
         } elseif ($request->filled('autor')) {
             $data['autor'] = Author::query()
-                ->whereIn('slug', explode('+', (string) $request->input('autor')))
+                ->whereIn('slug', preg_split('/[+,]/', (string) $request->input('autor')) ?: [])
                 ->get();
         }
 
@@ -417,7 +417,7 @@ class CatalogRouteController extends Controller
             $data['nakladnik'] = [$publisher];
         } elseif ($request->filled('nakladnik')) {
             $data['nakladnik'] = Publisher::query()
-                ->whereIn('slug', explode('+', (string) $request->input('nakladnik')))
+                ->whereIn('slug', preg_split('/[+,]/', (string) $request->input('nakladnik')) ?: [])
                 ->get();
         }
 

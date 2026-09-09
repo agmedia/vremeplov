@@ -51,7 +51,7 @@
             <div class="widget widget-filter mb-4 pb-4 border-bottom d-none d-sm-block">
                 <h3 class="widget-title">Autor</h3>
                 <div class="input-group input-group-sm mb-2 autocomplete">
-                    <input type="search" wire:model.debounce.300ms="searcha" class=" form-control rounded-end pe-5" placeholder="Pretraži autora"><i class="ci-search position-absolute top-50 end-0 translate-middle-y fs-sm me-3"></i>
+                    <input type="search" wire:model.debounce.300ms="searcha" class=" form-control rounded-end pe-5" placeholder="Pretraži autora"><i class="fa-regular fa-magnifying-glass position-absolute top-50 end-0 translate-middle-y fs-sm me-3"></i>
                     @if ( ! empty($authors))
                         <div id="myInputautocomplete-list" class="autocomplete-items">
                             @forelse($authors as $author)
@@ -72,7 +72,7 @@
             <div class="widget widget-filter mb-4 pb-4 border-bottom d-none d-sm-block">
                 <h3 class="widget-title">Nakladnici</h3>
                 <div class="input-group input-group-sm mb-2 autocomplete">
-                    <input type="search" wire:model.debounce.300ms="searchp" class=" form-control rounded-end pe-5" placeholder="Pretraži nakladnika"><i class="ci-search position-absolute top-50 end-0 translate-middle-y fs-sm me-3"></i>
+                    <input type="search" wire:model.debounce.300ms="searchp" class=" form-control rounded-end pe-5" placeholder="Pretraži nakladnika"><i class="fa-regular fa-magnifying-glass position-absolute top-50 end-0 translate-middle-y fs-sm me-3"></i>
                     @if ( ! empty($publishers))
                         <div id="myInputautocomplete-list" class="autocomplete-items">
                             @forelse($publishers as $publisher)
@@ -88,13 +88,13 @@
                 </div>
             </div>
 
-            <button type="button" onclick="cleanURL();" class="btn btn-primary mt-4"><i class=" ci-trash"></i> Očisti sve</button>
+            <button type="button" onclick="cleanURL();" class="btn btn-primary mt-4"><i class=" fa-regular fa-trash-can"></i> Očisti sve</button>
 
             @if (strpos(Request::path(), 'zemljovidi-i-vedute') !== false && Request::path() != 'zemljovidi-i-vedute')
-                <a href="{{ route('catalog.route', ['group' => 'zemljovidi-i-vedute']) }}" class="btn btn-secondary ms-2 mt-4"><i class="ci-arrow-left me-2"></i>Povratak</a>
+                <a href="{{ route('catalog.route', ['group' => 'zemljovidi-i-vedute']) }}" class="btn btn-secondary ms-2 mt-4"><i class="fa-regular fa-arrow-left me-2"></i>Povratak</a>
 
                 @elseif (strpos(Request::path(), \App\Helpers\Helper::categoryGroupPath(true)) !== false && Request::path() != config('settings.group_path'))
-             <a href="{{ route('catalog.route', ['group' => \App\Helpers\Helper::categoryGroupPath(true)]) }}" class="btn btn-secondary ms-2 mt-4"><i class="ci-arrow-left me-2"></i>Povratak</a>
+             <a href="{{ route('catalog.route', ['group' => \App\Helpers\Helper::categoryGroupPath(true)]) }}" class="btn btn-secondary ms-2 mt-4"><i class="fa-regular fa-arrow-left me-2"></i>Povratak</a>
             @endif
 </div>
 </div>

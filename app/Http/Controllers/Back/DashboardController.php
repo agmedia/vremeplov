@@ -21,6 +21,7 @@ use App\Models\Back\Orders\Order;
 use App\Models\Back\Orders\OrderProduct;
 use App\Models\Back\Settings\Api\OC_Import;
 use App\Models\Back\Settings\Settings;
+use App\Support\CatalogFilterValue;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Bouncer;
@@ -240,6 +241,17 @@ class DashboardController extends Controller
                 $attributes = $import->resolveAttributes($product_description->description);
                 $author = $import->resolveAuthor($product_description->name);
                 $publisher = $import->resolvePublisher(isset($attributes['Izdavač']) ? $attributes['Izdavač'] : '');
+                $catalogAttributes = [];
+
+                foreach ([
+                    'origin' => 'Jezik',
+                    'letter' => 'Pismo',
+                    'condition' => 'Stanje',
+                    'binding' => 'Uvez',
+                ] as $column => $source) {
+                    $normalized = CatalogFilterValue::storageDisplay($column, $attributes[$source] ?? null);
+                    $catalogAttributes[$column] = $normalized === '' ? null : $normalized;
+                }
 
                 $product_id = Product::insertGetId([
                     'author_id'        => $author,
@@ -264,10 +276,10 @@ class DashboardController extends Controller
                     'meta_description' => $product_description->meta_description,
                     'pages'            => isset($attributes['Broj stranica']) ? $attributes['Broj stranica'] : null,
                     'dimensions'       => null,
-                    'origin'           => isset($attributes['Jezik']) ? $attributes['Jezik'] : null,
-                    'letter'           => isset($attributes['Pismo']) ? $attributes['Pismo'] : null,
-                    'condition'        => isset($attributes['Stanje']) ? $attributes['Stanje'] : null,
-                    'binding'          => isset($attributes['Uvez']) ? $attributes['Uvez'] : null,
+                    'origin'           => $catalogAttributes['origin'],
+                    'letter'           => $catalogAttributes['letter'],
+                    'condition'        => $catalogAttributes['condition'],
+                    'binding'          => $catalogAttributes['binding'],
                     'year'             => isset($attributes['Godina']) ? str_replace('.', '', $attributes['Godina']) : null,
                     'viewed'           => 0,
                     'sort_order'       => 0,

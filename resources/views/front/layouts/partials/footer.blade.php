@@ -1,28 +1,45 @@
 <!-- Footer-->
 
-<section class=" pt-3 pb-2 " style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;">
-
-    <div class="container pt-lg-1">
-     <div class="row pt-4 text-center">
-         <div class="row pt-lg-2 text-left px-3 px-sm-1">
-
-             <div class="col-lg-3 col-sm-6 col-6 mb-grid-gutter"><div class="d-inline-flex align-items-top-center text-start"><i class="ci-book text-primary" style="font-size: 2.6rem;"></i> <div class="ps-3"><p class="text-dark fw-bold fs-base mb-1">Preko 50000 artikala</p> <p class="text-dark fs-ms opacity-70 mb-0">Velika kolekcija naslova </p></div></div></div>
-
-             <div class="col-lg-3 col-sm-6 col-6 mb-grid-gutter"><div class="d-inline-flex align-items-top-center text-start"><i class="ci-gift text-primary" style="font-size: 2.6rem;"></i> <div class="ps-3"><p class="text-dark fw-bold fs-base mb-1">Besplatna dostava</p> <p class="text-dark fs-ms opacity-70 mb-0">Za narudžbe iznad 70 €</p></div></div></div>
-
-
-             <div class="col-lg-3 col-sm-6 col-6 mb-grid-gutter">
-
-                 <div class="d-inline-flex align-items-top-center text-start"><i class="ci-truck text-primary" style="font-size: 2.6rem;"></i> <div class="ps-3"><p class="text-dark fw-bold fs-base mb-1">Brza dostava</p> <p class="text-dark fs-ms opacity-70 mb-0">GLS i BOX NOW dostava</p></div></div></div>
-
-             <div class="col-lg-3 col-sm-6 col-6 mb-grid-gutter"><div class="d-inline-flex align-items-top-center text-start"><i class="ci-security-check text-primary" style="font-size: 2.6rem;"></i> <div class="ps-3"><p class="text-dark fw-bold fs-base mb-1">Sigurna kupovina</p> <p class="text-dark fs-ms opacity-70 mb-0">SSL certifikat i WSPay</p></div></div></div>
-
-
-
-         </div>
-
-     </div>
-
+<section class="footer-benefits" style="background-image: url({{ config('settings.images_domain') . 'media/img/vintage-bg.jpg' }});background-repeat: repeat;" aria-label="Prednosti kupnje">
+    <div class="container">
+        <div class="row g-0 footer-benefits__grid">
+            <div class="col-6 col-lg-3">
+                <div class="footer-benefit">
+                    <span class="footer-benefit__icon" aria-hidden="true"><i class="fa-duotone fa-books"></i></span>
+                    <div>
+                        <p class="footer-benefit__title">Preko 50.000 artikala</p>
+                        <p class="footer-benefit__text">Velika kolekcija naslova</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="footer-benefit">
+                    <span class="footer-benefit__icon" aria-hidden="true"><i class="fa-duotone fa-box-open-full"></i></span>
+                    <div>
+                        <p class="footer-benefit__title">Besplatna dostava</p>
+                        <p class="footer-benefit__text">Za narudžbe iznad 70 €</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="footer-benefit">
+                    <span class="footer-benefit__icon" aria-hidden="true"><i class="fa-duotone fa-truck-fast"></i></span>
+                    <div>
+                        <p class="footer-benefit__title">Brza dostava</p>
+                        <p class="footer-benefit__text">GLS i BOX NOW dostava</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="footer-benefit">
+                    <span class="footer-benefit__icon" aria-hidden="true"><i class="fa-duotone fa-shield-check"></i></span>
+                    <div>
+                        <p class="footer-benefit__title">Sigurna kupovina</p>
+                        <p class="footer-benefit__text">SSL certifikat i WSPay</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -53,8 +70,8 @@
 
 
                 <div class="widget mt-4 text-md-nowrap text-center text-sm-start">
-                    <a class="btn-social bs-light bg-primary bs-instagram me-2 mb-2" aria-label="Pratite nas na Instagramu" href="https://www.instagram.com/antikvarijatvremeplov"><i class="ci-instagram"></i></a>
-                    <a class="btn-social bs-light bg-primary bs-facebook me-2 mb-2" aria-label="Pratite nas na Facebooku" href="https://www.facebook.com/antikavrijatvremeplov"><i class="ci-facebook"></i></a>
+                    <a class="btn-social bs-light bg-primary bs-instagram me-2 mb-2" aria-label="Pratite nas na Instagramu" href="https://www.instagram.com/antikvarijatvremeplov"><i class="fa-brands fa-instagram"></i></a>
+                    <a class="btn-social bs-light bg-primary bs-facebook me-2 mb-2" aria-label="Pratite nas na Facebooku" href="https://www.facebook.com/antikavrijatvremeplov"><i class="fa-brands fa-facebook-f"></i></a>
                 </div>
             </div>
             <!-- Mobile dropdown menu (visible on screens below md)-->
@@ -80,7 +97,9 @@
                         <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route', ['group' => \App\Helpers\Helper::categoryGroupPath(true)]) }}">Web shop</a></li>
                         <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route', ['group' => '/knjige']) }}">Sve knjige</a>
                         <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.author') }}">Autori</a>
-                        <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.actions') }}">Akcije</a>
+                        @if ($hasCatalogActions ?? false)
+                            <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.actions') }}">Akcije</a></li>
+                        @endif
                         <li class="widget-list-item"><a class="widget-list-link" href="{{ route('catalog.route.blog') }}">Blog</a></li>
                         <li class="widget-list-item"><a class="widget-list-link" href="{{ route('kontakt') }}">Kontakt</a></li>
                     </ul>

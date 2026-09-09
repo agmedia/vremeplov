@@ -12,6 +12,7 @@ use App\Http\Controllers\Back\DashboardController;
 use App\Http\Controllers\Back\ProductReviewBackfillController;
 use App\Http\Controllers\Back\Marketing\ReviewController;
 use App\Http\Controllers\Back\Marketing\WishlistController;
+use App\Http\Controllers\Back\Marketing\NewsletterSubscriberController;
 use App\Http\Controllers\Back\OrderController;
 use App\Http\Controllers\Back\Marketing\ActionController;
 use App\Http\Controllers\Back\Marketing\BlogController;
@@ -206,6 +207,14 @@ Route::middleware(['auth:sanctum', 'verified', 'no.customers'])->prefix('admin')
         Route::post('wishlists/{wishlist}/send', [WishlistController::class, 'send'])
             ->middleware('admin.manager')
             ->name('wishlists.send');
+
+        // NEWSLETTER
+        Route::get('newsletter-subscribers', [NewsletterSubscriberController::class, 'index'])
+            ->middleware('admin.manager')
+            ->name('newsletter-subscribers.index');
+        Route::get('newsletter-subscribers/export', [NewsletterSubscriberController::class, 'export'])
+            ->middleware('admin.manager')
+            ->name('newsletter-subscribers.export');
     });
 
     // KORISNICI
@@ -326,11 +335,13 @@ Route::prefix('api/v2')->group(function () {
         Route::post('/getProducts', [FilterController::class, 'products']);
         Route::post('/getAuthors', [FilterController::class, 'authors']);
         Route::post('/getPublishers', [FilterController::class, 'publishers']);
+        Route::post('/getCharacteristics', [FilterController::class, 'characteristics']);
 
         Route::get('/getCategories', [FilterController::class, 'categories']);
         Route::get('/getProducts', [FilterController::class, 'products']);
         Route::get('/getAuthors', [FilterController::class, 'authors']);
         Route::get('/getPublishers', [FilterController::class, 'publishers']);
+        Route::get('/getCharacteristics', [FilterController::class, 'characteristics']);
     });
 
     // SETTINGS
@@ -429,6 +440,9 @@ Route::prefix('api/v2')->group(function () {
  * FRONT ROUTES
  */
 Route::get('/', [HomeController::class, 'index'])->name('index');
+Route::post('/newsletter/prijava', [HomeController::class, 'newsletter'])
+    ->middleware('throttle:newsletter')
+    ->name('newsletter.subscribe');
 Route::get('/kontakt', [HomeController::class, 'contact'])->name('kontakt');
 Route::post('/kontakt/posalji', [HomeController::class, 'sendContactMessage'])->name('poruka');
 Route::get('/jednostrani-raskid-ugovora', [HomeController::class, 'contractTermination'])

@@ -30,12 +30,12 @@
             <div class="pt-2 pt-sm-0 ps-sm-3 mx-auto mx-sm-0 text-center text-sm-start" style="max-width: 9rem;">
                 <label class="form-label">Količina: {{item.quantity}}</label>
                 <input class="form-control" type="number" v-model.number="item.quantity" min="1" :max="item.associatedModel.quantity" @change="updateCart(item)">
-                <button class="btn btn-link px-0 text-danger" type="button" @click.prevent="removeFromCart(item)"><i class="ci-close-circle me-2"></i><span class="fs-sm">Ukloni</span></button>
+                <button class="btn btn-link px-0 text-danger" type="button" @click.prevent="removeFromCart(item)"><i class="fa-regular fa-circle-xmark me-2"></i><span class="fs-sm">Ukloni</span></button>
             </div>
         </div>
 
         <div class="d-block pt-3 pb-4 pb-sm-5 mt-1 text-center text-sm-start" v-if="show_buttons">
-            <a class="btn btn-outline-dark btn-sm ps-2" :href="continueurl"><i class="ci-arrow-left me-2"></i>Natrag na trgovinu</a>
+            <a class="btn btn-outline-dark btn-sm ps-2" :href="continueurl"><i class="fa-regular fa-arrow-left me-2"></i>Natrag na trgovinu</a>
         </div>
     </div>
 </template>

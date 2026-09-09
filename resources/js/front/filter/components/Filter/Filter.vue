@@ -1,404 +1,490 @@
 <template>
-    <aside class="col-lg-auto">
-        <!-- Sidebar-->
-        <div class="offcanvas offcanvas-collapse bg-white  rounded-3 shadow-lg py-1 pt-0" id="shop-sidebar" style="max-width: 22rem;">
-            <div class="offcanvas-cap bg-white align-items-center shadow-sm">
-                <h2 class="h3 mb-0 text-primary">Filtriraj</h2>
-                <button class="btn-close ms-auto" type="button" data-bs-dismiss="offcanvas" v-on:click="closeWindow" aria-label="Close"></button>
+    <aside class="catalog-filter-column">
+        <div class="offcanvas offcanvas-start offcanvas-collapse catalog-filter-panel" id="shop-sidebar" tabindex="-1" aria-labelledby="shop-sidebar-title">
+            <div class="catalog-filter-header">
+                <h2 id="shop-sidebar-title">
+                    <i class="fa-duotone fa-list-tree d-none d-lg-inline-flex" aria-hidden="true"></i>
+                    <i class="fa-duotone d-lg-none" :class="filtersEnabled ? 'fa-sliders' : 'fa-list-tree'" aria-hidden="true"></i>
+                    <span class="d-none d-lg-inline">Menu</span>
+                    <span class="d-lg-none">{{ filtersEnabled ? 'Filter' : 'Menu' }}</span>
+                </h2>
+                <button class="catalog-filter-close" type="button" data-bs-dismiss="offcanvas" v-on:click="closeWindow" aria-label="Zatvori filter">
+                    <i class="fa-regular fa-xmark" aria-hidden="true"></i>
+                </button>
             </div>
-            <div class="offcanvas-body py-grid-gutter px-lg-grid-gutter">
-                <!-- Categories-->
-                <div class="widget widget-categories mb-2 pb-2 " v-if="categories">
-                    <h3 class="widget-title " >Kategorije</h3>
-                    <div class="accordion mt-n1" id="shop-categories">
-                        <div class="accordion-item " v-for="cat in categories">
-                            <h3 class="accordion-header" v-if="category && (category.id == cat.id)" >
-                                <a :href="cat.url" v-if="cat.subs " class="accordion-button py-1 none" data-bs-toggle="collapse" :data-bs-target="'#id' + cat.id" aria-expanded="true" :aria-controls="'id'+ cat.id" role="link">
-                                    {{ cat.title }} <span class="badge bg-light ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
-                                </a>
-                                <a :href="cat.url" v-if="!cat.subs" class="accordion-button py-1 none collapsed" role="link">
-                                    {{ cat.title }} <span class="badge bg-light ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
-                                </a>
-                            </h3>
 
-                            <h3 class="accordion-header" v-else>
-                                <a :href="cat.url" v-if="cat.subs" class="accordion-button py-1 none collapsed" data-bs-toggle="collapse"  :data-bs-target="'#id' + cat.id" aria-expanded="false" :aria-controls="'id'+ cat.id" role="link">
-                                    {{ cat.title }} <span class="badge bg-light ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
+            <div class="catalog-filter-body">
+                <section class="catalog-filter-section" v-if="categories.length">
+                    <button class="catalog-filter-section__toggle" type="button" v-on:click="toggleSection('categories')" :aria-expanded="openSections.categories ? 'true' : 'false'">
+                        <span><i class="fa-duotone fa-books" aria-hidden="true"></i>Kategorije</span>
+                        <i class="fa-regular fa-chevron-down" :class="{'is-open': openSections.categories}" aria-hidden="true"></i>
+                    </button>
+                    <div class="catalog-filter-section__content" v-show="openSections.categories">
+                        <ul class="catalog-filter-options">
+                            <li v-for="item in categories" :key="item.id">
+                                <a class="catalog-filter-category" :class="{'is-active': item.active}" :href="item.url">
+                                    <span>{{ item.title }}</span>
+                                    <span class="catalog-filter-count">{{ formatCount(item.count) }}</span>
                                 </a>
-                                <a :href="cat.url" v-if="!cat.subs" class="accordion-button py-1 none collapsed" role="link">
-                                    {{ cat.title }} <span class="badge bg-light ms-2 position-absolute end-0 fw-bold">{{ Number(cat.count).toLocaleString('hr-HR') }}</span>
-                                </a>
-                            </h3>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
 
-                             <div class="collapse show" :id="'id'+ cat.id" v-if="cat.subs && category && (category.id == cat.id)" data-bs-parent="#shop-categories">
-                                <div class="pt-2 pb-2 pe-2 subcat">
-                                    <div class="widget widget-links">
-                                        <ul class="widget-list" v-for="subcategory in cat.subs" >
-                                            <li class="widget-list-item"><a class="widget-list-link" :href="subcategory.url">{{ subcategory.title }} </a></li>
-                                        </ul>
-                                        <ul class="widget-list" >
-                                            <li class="widget-list-item"><a class="btn btn-primary btn-sm mt-2 mb-2" :href="cat.url">Pogledajte sve</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                             </div>
-                            <div class="collapse" :id="'id'+ cat.id"  v-else data-bs-parent="#shop-categories">
-                                <div class="pt-2 pb-2 pe-2 subcat">
-                                    <div class="widget widget-links">
-                                        <ul class="widget-list" v-for="subcategory in cat.subs" >
-                                            <li class="widget-list-item"><a class="widget-list-link" :href="subcategory.url">{{ subcategory.title }} </a></li>
-                                        </ul>
-                                        <ul class="widget-list pt-2" >
-                                            <li class="widget-list-item"><a class="btn btn-primary btn-sm mt-2 mb-2" :href="cat.url">Pogledajte sve</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
+                <section class="catalog-filter-section" v-if="filtersEnabled">
+                    <button class="catalog-filter-section__toggle" type="button" v-on:click="toggleSection('year')" :aria-expanded="openSections.year ? 'true' : 'false'">
+                        <span><i class="fa-duotone fa-calendar-range" aria-hidden="true"></i>Godina izdanja</span>
+                        <i class="fa-regular fa-chevron-down" :class="{'is-open': openSections.year}" aria-hidden="true"></i>
+                    </button>
+                    <div class="catalog-filter-section__content" v-show="openSections.year">
+                        <div class="catalog-filter-years">
+                            <label>
+                                <span class="visually-hidden">Godina od</span>
+                                <input class="form-control" inputmode="numeric" maxlength="4" placeholder="Od" type="text" v-model.trim="start">
+                                <small>g</small>
+                            </label>
+                            <label>
+                                <span class="visually-hidden">Godina do</span>
+                                <input class="form-control" inputmode="numeric" maxlength="4" placeholder="Do" type="text" v-model.trim="end">
+                                <small>g</small>
+                            </label>
                         </div>
                     </div>
-                </div>
-                <!-- Date range-->
-                <div class="widget mb-4 pb-4 mt-4 border-bottom">
-                    <h3 class="widget-title">Godina izdanja</h3>
-                    <div >
-                        <div class="d-flex pb-1">
-                            <div class="w-50 pe-2 me-2">
-                                <div class="input-group input-group-sm">
-                                    <input class="form-control range-slider-value-min" placeholder="Od" type="text" v-model="start">
-                                    <span class="input-group-text">g</span>
-                                </div>
-                            </div>
-                            <div class="w-50 ps-2">
-                                <div class="input-group input-group-sm">
-                                    <input class="form-control range-slider-value-max" placeholder="Do" type="text" v-model="end">
-                                    <span class="input-group-text">g</span>
-                                </div>
-                            </div>
+                </section>
+
+                <section class="catalog-filter-section" v-if="filtersEnabled && characteristics.length">
+                    <button class="catalog-filter-section__toggle" type="button" v-on:click="toggleSection('characteristics')" :aria-expanded="openSections.characteristics ? 'true' : 'false'">
+                        <span><i class="fa-duotone fa-book-open" aria-hidden="true"></i>Karakteristike</span>
+                        <i class="fa-regular fa-chevron-down" :class="{'is-open': openSections.characteristics}" aria-hidden="true"></i>
+                    </button>
+                    <div class="catalog-filter-section__content" v-show="openSections.characteristics">
+                        <div class="catalog-filter-facet" v-for="(facet, facetIndex) in characteristics" :key="facet.key">
+                            <h3>{{ facet.title }}</h3>
+                            <ul class="catalog-filter-options catalog-filter-options--checks catalog-filter-options--scroll">
+                                <li v-for="(item, itemIndex) in facet.items" :key="item.value">
+                                    <label class="catalog-filter-check" :for="facetId(facet.key, facetIndex, itemIndex)">
+                                        <input class="form-check-input" type="checkbox" :id="facetId(facet.key, facetIndex, itemIndex)" :value="item.value" v-model="selectedCharacteristics[facet.key]">
+                                        <span>{{ item.label }}</span>
+                                        <span class="catalog-filter-count">{{ formatCount(item.count) }}</span>
+                                    </label>
+                                </li>
+                            </ul>
                         </div>
                     </div>
-                </div>
-                <!-- Publishers -->
-                <div class="widget widget-filter mb-4 pb-4 border-bottom" v-if="show_publishers">
-                    <h3 class="widget-title">Nakladnici<span v-if="!publishers_loaded" class="spinner-border spinner-border-sm" style="float: right;"></span></h3>
-                    <div class="input-group input-group-sm mb-2 autocomplete">
-                        <input type="search" v-model="searchPublisher" class="form-control rounded-end pe-5" placeholder="Pretraži nakladnike"><i class="ci-search position-absolute top-50 end-0 translate-middle-y fs-sm me-3"></i>
+                </section>
+
+                <section class="catalog-filter-section" v-if="filtersEnabled && show_authors">
+                    <button class="catalog-filter-section__toggle" type="button" v-on:click="toggleSection('authors')" :aria-expanded="openSections.authors ? 'true' : 'false'">
+                        <span><i class="fa-duotone fa-user-pen" aria-hidden="true"></i>Autori</span>
+                        <span class="catalog-filter-section__end">
+                            <span v-if="!authors_loaded" class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Učitavanje</span></span>
+                            <i class="fa-regular fa-chevron-down" :class="{'is-open': openSections.authors}" aria-hidden="true"></i>
+                        </span>
+                    </button>
+                    <div class="catalog-filter-section__content" v-show="openSections.authors">
+                        <label class="catalog-filter-search">
+                            <span class="visually-hidden">Pretraži autore</span>
+                            <input type="search" v-model.trim="searchAuthor" class="form-control" placeholder="Pretraži autore">
+                            <i class="fa-regular fa-magnifying-glass" aria-hidden="true"></i>
+                        </label>
+                        <ul class="catalog-filter-options catalog-filter-options--checks catalog-filter-options--scroll">
+                            <li v-for="(item, index) in authors" :key="item.slug">
+                                <label class="catalog-filter-check" :for="'filter-author-' + index">
+                                    <input class="form-check-input" type="checkbox" :id="'filter-author-' + index" :value="item.slug" v-model="selectedAuthors">
+                                    <span>{{ item.title }}</span>
+                                    <span class="catalog-filter-count">{{ formatCount(item.products_count) }}</span>
+                                </label>
+                            </li>
+                        </ul>
                     </div>
-                    <ul class="widget-list widget-filter-list list-unstyled pt-1" style="max-height: 11rem;" data-simplebar data-simplebar-auto-hide="false">
-                        <li class="widget-filter-item d-flex justify-content-between align-items-center mb-1" v-for="publisher in publishers">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" :id="publisher.slug" :value="publisher.slug" v-model="selectedPublishers">
-                                <label class="form-check-label widget-filter-item-text" :for="publisher.slug">{{ publisher.title }}</label>
-                            </div><span class="fs-xs text-muted"><a :href="origin + publisher.url">{{ Number(publisher.products_count).toLocaleString('hr-HR') }}</a></span>
-                        </li>
-                    </ul>
-                </div>
-                <!-- Authors -->
-                <div class="widget widget-filter mb-4 pb-4 border-bottom" v-if="show_authors">
-                    <h3 class="widget-title">Autori<span v-if="!authors_loaded" class="spinner-border spinner-border-sm" style="float: right;"></span></h3>
-                    <div class="input-group input-group-sm mb-2 autocomplete">
-                        <input type="search" v-model="searchAuthor" class="form-control rounded-end pe-5" placeholder="Pretraži autora"><i class="ci-search position-absolute top-50 end-0 translate-middle-y fs-sm me-3"></i>
+                </section>
+
+                <section class="catalog-filter-section" v-if="filtersEnabled && show_publishers">
+                    <button class="catalog-filter-section__toggle" type="button" v-on:click="toggleSection('publishers')" :aria-expanded="openSections.publishers ? 'true' : 'false'">
+                        <span><i class="fa-duotone fa-building" aria-hidden="true"></i>Nakladnici</span>
+                        <span class="catalog-filter-section__end">
+                            <span v-if="!publishers_loaded" class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Učitavanje</span></span>
+                            <i class="fa-regular fa-chevron-down" :class="{'is-open': openSections.publishers}" aria-hidden="true"></i>
+                        </span>
+                    </button>
+                    <div class="catalog-filter-section__content" v-show="openSections.publishers">
+                        <label class="catalog-filter-search">
+                            <span class="visually-hidden">Pretraži nakladnike</span>
+                            <input type="search" v-model.trim="searchPublisher" class="form-control" placeholder="Pretraži nakladnike">
+                            <i class="fa-regular fa-magnifying-glass" aria-hidden="true"></i>
+                        </label>
+                        <ul class="catalog-filter-options catalog-filter-options--checks catalog-filter-options--scroll">
+                            <li v-for="(item, index) in publishers" :key="item.slug">
+                                <label class="catalog-filter-check" :for="'filter-publisher-' + index">
+                                    <input class="form-check-input" type="checkbox" :id="'filter-publisher-' + index" :value="item.slug" v-model="selectedPublishers">
+                                    <span>{{ item.title }}</span>
+                                    <span class="catalog-filter-count">{{ formatCount(item.products_count) }}</span>
+                                </label>
+                            </li>
+                        </ul>
                     </div>
-                    <ul class="widget-list widget-filter-list list-unstyled pt-1" style="max-height: 11rem;" data-simplebar data-simplebar-auto-hide="false">
-                        <li class="widget-filter-item d-flex justify-content-between align-items-center mb-1" v-for="author in authors">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" :id="author.slug" :value="author.slug" v-model="selectedAuthors">
-                                <label class="form-check-label widget-filter-item-text" :for="author.slug">{{ author.title }}</label>
-                            </div><span class="fs-xs text-muted"><a :href="origin + author.url">{{ Number(author.products_count).toLocaleString('hr-HR') }}</a></span>
-                        </li>
-                    </ul>
-                </div>
-                <button type="button" class="btn btn-primary mt-4" v-on:click="cleanQuery"><i class=" ci-trash"></i> Očisti sve</button>
+                </section>
+            </div>
+
+            <div class="catalog-filter-actions" v-if="filtersEnabled">
+                <button class="btn catalog-filter-clear" type="button" v-on:click="cleanQuery" :disabled="!hasActiveFilters">
+                    <i class="fa-regular fa-trash-can" aria-hidden="true"></i>
+                    <span>Očisti</span>
+                </button>
+                <button class="btn btn-primary catalog-filter-apply" type="button" v-on:click="applyFilters">
+                    Prikaži rezultate
+                </button>
             </div>
         </div>
     </aside>
 </template>
 
 <script>
-    export default {
-        props: {
-            ids: String,
-            group: String,
-            cat: String,
-            subcat: String,
-            author: String,
-            publisher: String,
+export default {
+    props: {
+        ids: String,
+        group: String,
+        cat: String,
+        subcat: String,
+        author: String,
+        publisher: String,
+        catalogRoot: String,
+        filtersEnabled: {
+            type: Boolean,
+            default: false,
         },
-        //
-        data() {
-            return {
-                categories: [],
-                category: null,
-                subcategory: null,
-                authors: [],
-                publishers: [],
-                selectedAuthors: [],
-                selectedPublishers: [],
-                start: '',
-                end: '',
-                autor: '',
-                nakladnik: '',
-                search_query: '',
-                searchAuthor: '',
-                searchPublisher: '',
-                show_authors: false,
-                authors_loaded: false,
-                show_publishers: false,
-                publishers_loaded: false,
-                origin: location.origin + '/'
-            }
+    },
+
+    data() {
+        return {
+            categories: [],
+            category: null,
+            subcategory: null,
+            characteristics: [],
+            authors: [],
+            publishers: [],
+            selectedAuthors: [],
+            selectedPublishers: [],
+            selectedCharacteristics: {
+                pismo: [],
+                stanje: [],
+                uvez: [],
+                jezik: [],
+            },
+            start: '',
+            end: '',
+            search_query: '',
+            searchAuthor: '',
+            searchPublisher: '',
+            show_authors: false,
+            authors_loaded: false,
+            show_publishers: false,
+            publishers_loaded: false,
+            openSections: {
+                categories: true,
+                year: false,
+                characteristics: false,
+                authors: false,
+                publishers: false,
+            },
+            searchTimers: {
+                authors: null,
+                publishers: null,
+            },
+        };
+    },
+
+    computed: {
+        activeFilterCount() {
+            return (this.start ? 1 : 0)
+                + (this.end ? 1 : 0)
+                + this.selectedAuthors.length
+                + this.selectedPublishers.length
+                + Object.values(this.selectedCharacteristics).reduce((total, values) => total + values.length, 0);
         },
-        //
-        watch: {
-            start(currentValue) {
-                this.setQueryParam('start', currentValue);
-            },
-            end(currentValue) {
-                this.setQueryParam('end', currentValue);
-            },
-            selectedAuthors(value) {
-                this.autor = value.join('+');
-                this.setQueryParamOther('autor', this.autor);
-            },
-            selectedPublishers(value) {
-                this.nakladnik = value.join('+');
-                this.setQueryParamOther('nakladnik', this.nakladnik);
-            },
-            searchAuthor(value) {
-                if (value.length > 2 || value == '') {
-                    return this.getAuthors();
-                }
-            },
-            searchPublisher(value) {
-                if (value.length > 2 || value == '') {
-                    return this.getPublishers();
-                }
-            },
-            $route(params) {
-                this.checkQuery(params);
+
+        hasActiveFilters() {
+            return this.activeFilterCount > 0;
+        },
+    },
+
+    watch: {
+        searchAuthor(value) {
+            window.clearTimeout(this.searchTimers.authors);
+            if (value.length > 2 || value === '') {
+                this.searchTimers.authors = window.setTimeout(() => this.getAuthors(), 250);
             }
         },
 
-        //
-        mounted() {
-            this.checkQuery(this.$route);
-            this.checkCategory();
-            this.getCategories();
+        searchPublisher(value) {
+            window.clearTimeout(this.searchTimers.publishers);
+            if (value.length > 2 || value === '') {
+                this.searchTimers.publishers = window.setTimeout(() => this.getPublishers(), 250);
+            }
+        },
 
-            if (this.author == '') {
+        $route(route) {
+            this.checkQuery(route);
+        },
+    },
+
+    mounted() {
+        this.category = this.parseEntity(this.cat);
+        this.subcategory = this.parseEntity(this.subcat);
+        this.checkQuery(this.$route);
+        this.getCategories();
+
+        if (this.filtersEnabled) {
+            this.getCharacteristics();
+
+            if (!this.author) {
                 this.show_authors = true;
                 this.getAuthors();
             }
 
-            if (this.publisher == '') {
+            if (!this.publisher) {
                 this.show_publishers = true;
                 this.getPublishers();
             }
+        }
+    },
 
-            this.preselect();
+    beforeDestroy() {
+        window.clearTimeout(this.searchTimers.authors);
+        window.clearTimeout(this.searchTimers.publishers);
+    },
+
+    methods: {
+        getCategories() {
+            axios.post('filter/getCategories', {params: this.setParams()})
+                .then(response => {
+                    this.categories = Array.isArray(response.data) ? response.data : [];
+                })
+                .catch(() => {
+                    this.categories = [];
+                });
         },
 
-        methods: {
-            /**
-            *
-            **/
-            getCategories() {
-                let params = this.setParams();
-
-                axios.get('filter/getCategories', { params: { params } }).then(response => {
-                    this.categories = response.data;
-
-                    if (this.group != '') {
-                        this.categories.forEach((item) => {
-                            let slug = item.url.substring(item.url.lastIndexOf('/') + 1);
-
-                            if (this.group == slug) {
-                                this.category = item;
-                            }
-                        });
-                    }
+        getCharacteristics() {
+            axios.post('filter/getCharacteristics', {params: this.setParams()})
+                .then(response => {
+                    this.characteristics = Array.isArray(response.data) ? response.data : [];
+                })
+                .catch(() => {
+                    this.characteristics = [];
                 });
-            },
+        },
 
-            /**
-             *
-             **/
-            checkCategory() {
-                if (this.cat != '') {
-                    this.category = JSON.parse(this.cat);
-                }
-                if (this.subcat != '') {
-                    this.subcategory = JSON.parse(this.subcat);
-                }
-            },
-
-            /**
-             *
-             **/
-            getAuthors() {
-                this.authors_loaded = false;
-                let params = this.setParams();
-
-                axios.get('filter/getAuthors', { params: { params } }).then(response => {
+        getAuthors() {
+            this.authors_loaded = false;
+            axios.post('filter/getAuthors', {params: this.setParams()})
+                .then(response => {
+                    this.authors = Array.isArray(response.data) ? response.data : [];
+                    this.selectedAuthors = this.syncSelectedEntityGroups(this.selectedAuthors, this.authors);
+                })
+                .catch(() => {
+                    this.authors = [];
+                })
+                .finally(() => {
                     this.authors_loaded = true;
-                    this.authors = response.data;
                 });
-            },
+        },
 
-            /**
-             *
-             **/
-            getPublishers() {
-                this.publishers_loaded = false;
-                let params = this.setParams();
-
-                axios.get('filter/getPublishers', { params: { params } }).then(response => {
+        getPublishers() {
+            this.publishers_loaded = false;
+            axios.post('filter/getPublishers', {params: this.setParams()})
+                .then(response => {
+                    this.publishers = Array.isArray(response.data) ? response.data : [];
+                    this.selectedPublishers = this.syncSelectedEntityGroups(this.selectedPublishers, this.publishers);
+                })
+                .catch(() => {
+                    this.publishers = [];
+                })
+                .finally(() => {
                     this.publishers_loaded = true;
-                    this.publishers = response.data;
                 });
-            },
+        },
 
-            /**
-             *
-             **/
-            setQueryParam(type, value) {
-                if (value.length > 3 && value.length < 5) {
-                    this.closeWindow();
-                    this.$router.push({query: this.resolveQuery()}).catch(()=>{});
-                }
-
-                if (value == '') {
-                    this.closeWindow();
-                    this.$router.push({query: this.resolveQuery()}).catch(()=>{});
-                }
-            },
-
-            /**
-             *
-             **/
-            setQueryParamOther(type, value) {
-                this.closeWindow();
-                this.$router.push({query: this.resolveQuery()}).catch(()=>{});
-
-                if (value == '') {
-                    this.$router.push({query: this.resolveQuery()}).catch(()=>{});
-                }
-            },
-
-            /**
-             *
-             **/
-            resolveQuery() {
-                let params = {
-                    start: this.start,
-                    end: this.end,
-                    autor: this.autor,
-                    nakladnik: this.nakladnik,
-                    page: this.page,
-                    pojam: this.search_query,
-                };
-
-                this.checkNoFollowQuery(params);
-
-                return Object.entries(params).reduce((acc, [key, val]) => {
-                    if (!val) return acc
-                    return { ...acc, [key]: val }
-                }, {});
-            },
-
-            /**
-             *
-             */
-            checkNoFollowQuery(param) {
-                if (param.nakladnik || param.autor || param.start || param.end) {
-                    if (!document.querySelectorAll('meta[name="robots"]').length > 0) {
-                        $('head').append('<meta name=robots content=noindex,nofollow>');
-                    }
-                } else {
-                    if (document.querySelectorAll('meta[name="robots"]').length > 0) {
-                        document.querySelector("[name='robots']").remove()
-                    }
-                }
-            },
-
-            /**
-             *
-             **/
-            checkQuery(params) {
-                this.start = params.query.start ? params.query.start : '';
-                this.end = params.query.end ? params.query.end : '';
-                this.autor = params.query.autor ? params.query.autor : '';
-                this.nakladnik = params.query.nakladnik ? params.query.nakladnik : '';
-                this.search_query = params.query.pojam ? params.query.pojam : '';
-            },
-
-            /**
-             *
-             */
-            setParams() {
-                let params = {
-                    ids: this.ids,
-                    group: this.group,
-                    cat: this.category ? this.category.id : this.cat,
-                    subcat: this.subcategory ? this.subcategory.id : this.subcat,
-                    author: this.author,
-                    publisher: this.publisher,
-                    search_author: this.searchAuthor,
-                    search_publisher: this.searchPublisher,
-                    pojam: this.search_query
-                };
-
-                if (this.author != '') {
-                    params.author = this.author;
-                }
-                if (this.publisher != '') {
-                    params.publisher = this.publisher;
-                }
-
-                return params;
-            },
-
-            /**
-             *
-             */
-            preselect() {
-                if (this.autor != '') {
-                    if ((this.autor).includes('+')) {
-                        this.selectedAuthors = (this.autor).split('+');
-                    } else {
-                        this.selectedAuthors = [this.autor];
-                    }
-                }
-                if (this.nakladnik != '') {
-                    if ((this.nakladnik).includes('+')) {
-                        this.selectedPublishers = (this.nakladnik).split('+');
-                    } else {
-                        this.selectedPublishers = [this.nakladnik];
-                    }
-                }
-            },
-
-            /**
-             *
-             */
-            cleanQuery() {
-                this.$router.push({query: {}}).catch(()=>{});
-                this.selectedAuthors = [];
-                this.selectedPublishers = [];
-                this.start = '';
-                this.end = '';
-            },
-
-            /**
-             *
-             */
-            closeWindow() {
-                $('#shop-sidebar').removeClass('collapse show');
+        parseEntity(value) {
+            if (!value) {
+                return null;
             }
-        }
-    };
+
+            if (typeof value === 'object') {
+                return value;
+            }
+
+            try {
+                const entity = JSON.parse(value);
+                return entity && typeof entity === 'object' ? entity : null;
+            } catch (error) {
+                return /^\d+$/.test(String(value)) ? {id: Number(value)} : null;
+            }
+        },
+
+        parseList(value, separator) {
+            if (!value) {
+                return [];
+            }
+
+            if (Array.isArray(value)) {
+                return value.filter(Boolean);
+            }
+
+            return String(value).split(separator).map(item => item.trim()).filter(Boolean);
+        },
+
+        syncSelectedEntityGroups(selected, items) {
+            const resolved = (selected || []).map(value => {
+                const aliases = String(value).split(',').filter(Boolean);
+                const matching = (items || []).find(item => {
+                    const itemAliases = Array.isArray(item.slugs) ? item.slugs : String(item.slug || '').split(',');
+                    return aliases.some(alias => itemAliases.includes(alias));
+                });
+
+                return matching ? matching.slug : value;
+            });
+
+            return Array.from(new Set(resolved));
+        },
+
+        checkQuery(route) {
+            const query = route && route.query ? route.query : {};
+            this.start = query.start || '';
+            this.end = query.end || '';
+            this.search_query = query.pojam || '';
+            this.selectedAuthors = this.parseList(query.autor, '+');
+            this.selectedPublishers = this.parseList(query.nakladnik, '+');
+
+            ['pismo', 'stanje', 'uvez', 'jezik'].forEach(key => {
+                this.$set(this.selectedCharacteristics, key, this.parseList(query[key], '|'));
+            });
+        },
+
+        setParams() {
+            const params = {
+                ids: this.ids,
+                group: this.group,
+                cat: this.category ? this.category.id : this.cat,
+                subcat: this.subcategory ? this.subcategory.id : this.subcat,
+                author: this.author,
+                publisher: this.publisher,
+                catalog_root: this.catalogRoot,
+                autor: this.selectedAuthors.join('+'),
+                nakladnik: this.selectedPublishers.join('+'),
+                start: this.start,
+                end: this.end,
+                pismo: this.selectedCharacteristics.pismo.join('|'),
+                stanje: this.selectedCharacteristics.stanje.join('|'),
+                uvez: this.selectedCharacteristics.uvez.join('|'),
+                jezik: this.selectedCharacteristics.jezik.join('|'),
+                search_author: this.searchAuthor,
+                search_publisher: this.searchPublisher,
+                pojam: this.search_query,
+            };
+
+            if (this.author) {
+                params.author = this.author;
+            }
+            if (this.publisher) {
+                params.publisher = this.publisher;
+            }
+
+            return params;
+        },
+
+        resolveQuery() {
+            const current = this.$route && this.$route.query ? this.$route.query : {};
+            const params = {
+                pojam: current.pojam || this.search_query,
+                sort: current.sort || '',
+                start: this.start,
+                end: this.end,
+                autor: this.selectedAuthors.join('+'),
+                nakladnik: this.selectedPublishers.join('+'),
+                pismo: this.selectedCharacteristics.pismo.join('|'),
+                stanje: this.selectedCharacteristics.stanje.join('|'),
+                uvez: this.selectedCharacteristics.uvez.join('|'),
+                jezik: this.selectedCharacteristics.jezik.join('|'),
+            };
+
+            this.checkNoFollowQuery(params);
+
+            return Object.entries(params).reduce((query, [key, value]) => {
+                if (value !== '' && value !== null && typeof value !== 'undefined') {
+                    query[key] = value;
+                }
+                return query;
+            }, {});
+        },
+
+        applyFilters() {
+            this.$router.push({query: this.resolveQuery()}).catch(() => {});
+            this.closeWindow();
+        },
+
+        cleanQuery() {
+            this.start = '';
+            this.end = '';
+            this.selectedAuthors = [];
+            this.selectedPublishers = [];
+            ['pismo', 'stanje', 'uvez', 'jezik'].forEach(key => this.$set(this.selectedCharacteristics, key, []));
+
+            this.$nextTick(() => {
+                this.$router.push({query: this.resolveQuery()}).catch(() => {});
+            });
+        },
+
+        checkNoFollowQuery(params) {
+            const hasFilters = ['start', 'end', 'autor', 'nakladnik', 'pismo', 'stanje', 'uvez', 'jezik']
+                .some(key => Boolean(params[key]));
+            let tag = document.querySelector('meta[name="robots"][data-catalog-filter]');
+
+            if (hasFilters && !document.querySelector('meta[name="robots"]')) {
+                tag = document.createElement('meta');
+                tag.name = 'robots';
+                tag.content = 'noindex,nofollow';
+                tag.setAttribute('data-catalog-filter', 'true');
+                document.head.appendChild(tag);
+            } else if (!hasFilters && tag) {
+                tag.remove();
+            }
+        },
+
+        toggleSection(section) {
+            this.$set(this.openSections, section, !this.openSections[section]);
+        },
+
+        closeWindow() {
+            if (window.innerWidth >= 992) {
+                return;
+            }
+
+            const panel = document.getElementById('shop-sidebar');
+            if (panel && window.bootstrap && window.bootstrap.Offcanvas) {
+                const instance = window.bootstrap.Offcanvas.getInstance(panel);
+                if (instance) {
+                    instance.hide();
+                    return;
+                }
+            }
+
+            if (panel) {
+                panel.classList.remove('show');
+                panel.setAttribute('aria-hidden', 'true');
+            }
+            document.querySelectorAll('.offcanvas-backdrop').forEach(backdrop => backdrop.remove());
+            document.body.classList.remove('offcanvas-open');
+            document.body.style.removeProperty('overflow');
+        },
+
+        facetId(key, facetIndex, itemIndex) {
+            return `filter-${key}-${facetIndex}-${itemIndex}`;
+        },
+
+        formatCount(value) {
+            return Number(value || 0).toLocaleString('hr-HR');
+        },
+    },
+};
 </script>
-
-
-<style>
-
-</style>

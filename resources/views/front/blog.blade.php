@@ -58,8 +58,8 @@
             <div class="order-lg-2 mb-3  pt-lg-2">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb breadcrumb-dark justify-content-center ">
-                                <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="ci-home"></i>Naslovnica</a></li>
-                                <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('catalog.route.blog') }}"><i class="ci-home"></i>Blog</a></li>
+                                <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('index') }}"><i class="fa-regular fa-house"></i>Naslovnica</a></li>
+                                <li class="breadcrumb-item"><a class="text-nowrap" href="{{ route('catalog.route.blog') }}"><i class="fa-regular fa-house"></i>Blog</a></li>
 
                                 <li class="breadcrumb-item text-nowrap active" aria-current="page">{{ isset($blogs) ? 'Objave' : $blog->title }}</li>
                             </ol>

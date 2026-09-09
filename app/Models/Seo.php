@@ -133,7 +133,7 @@ class Seo
         $data = $request->toArray();
 
         if ($target == 'filter') {
-            if (array_key_exists('start', $data) || array_key_exists('end', $data) || array_key_exists('autor', $data) || array_key_exists('nakladnik', $data) || array_key_exists('sort', $data)) {
+            if (collect(['start', 'end', 'autor', 'nakladnik', 'pismo', 'stanje', 'uvez', 'jezik', 'sort'])->contains(fn ($key) => array_key_exists($key, $data))) {
                 array_push($response, Metatags::noFollow());
             }
         }

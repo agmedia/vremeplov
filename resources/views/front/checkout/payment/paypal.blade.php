@@ -10,7 +10,7 @@
 <div class="row">
     <div class="col-md-6">
         <a class="btn btn-secondary d-block w-100" href="{{ route('naplata') }}">
-            <i class="ci-arrow-left  me-1"></i><span class="d-none d-sm-inline">Povratak na plaćanje</span><span class="d-inline d-sm-none">Povratak</span>
+            <i class="fa-regular fa-arrow-left  me-1"></i><span class="d-none d-sm-inline">Povratak na plaćanje</span><span class="d-inline d-sm-none">Povratak</span>
         </a>
     </div>
     <div class="col-md-6">
@@ -19,20 +19,20 @@
     </div>
     <div class="col-md-12">
         <div class="alert alert-success d-flex align-items-center fade mt-3" role="alert" id="success_alert">
-            <i class="h3 ci-check-circle text-success" style="margin: 0 20px 5px 0;"></i>
+            <i class="h3 fa-regular fa-circle-check text-success" style="margin: 0 20px 5px 0;"></i>
             <div class="ml-3">
                 Uspješno plaćanje..! Hvala vam na povjerenju.
             </div>
         </div>
         <div class="alert alert-warning d-flex align-items-center fade d-none mt-3" role="alert" id="warning_alert">
-            <i class="h3 ci-announcement text-warning" style="margin: 0 20px 5px 0;"></i>
+            <i class="h3 fa-regular fa-bullhorn text-warning" style="margin: 0 20px 5px 0;"></i>
             <div>
                 Došlo je do otkazivanja plaćanja..! Možda želite dodati još
                 <a href="{{ route('catalog.route', ['group' => \App\Helpers\Helper::categoryGroupPath(true)]) }}"> nešto</a> u košaricu?
             </div>
         </div>
         <div class="alert alert-danger d-flex align-items-center fade d-none mt-3" role="alert" id="danger_alert">
-            <i class="h3 ci-close-circle text-danger" style="margin: 0 20px 5px 0;"></i>
+            <i class="h3 fa-regular fa-circle-xmark text-danger" style="margin: 0 20px 5px 0;"></i>
             <div>
                 Došlo je do greške prilikom plačanja..! Pokušajte ponovo ili nas <a href="{{ route('kontakt') }}"> kontaktirajte</a>.
             </div>

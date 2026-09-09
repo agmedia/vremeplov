@@ -91,5 +91,24 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60);
         });
+
+        RateLimiter::for('newsletter', function (Request $request) {
+            $secret = (string) config('app.key');
+            $email = $request->input('email');
+            $email = is_string($email) ? Str::lower(trim($email)) : '';
+            $ip = (string) $request->ip();
+
+            $limits = [
+                Limit::perMinutes(10, 6)
+                    ->by('newsletter:ip:' . hash_hmac('sha256', $ip, $secret)),
+            ];
+
+            if ($email !== '') {
+                $limits[] = Limit::perDay(3)
+                    ->by('newsletter:email-ip:' . hash_hmac('sha256', $email . '|' . $ip, $secret));
+            }
+
+            return $limits;
+        });
     }
 }

@@ -144,6 +144,13 @@
                                 <span class="nav-main-link-name">Wishlist</span>
                             </a>
                         </li>
+                        @if(auth()->user() && (Bouncer::is(auth()->user())->an('master') || Bouncer::is(auth()->user())->an('admin')))
+                            <li class="nav-main-item">
+                                <a class="nav-main-link{{ request()->routeIs('newsletter-subscribers.*') ? ' active' : '' }}" href="{{ route('newsletter-subscribers.index') }}">
+                                    <span class="nav-main-link-name">Newsletter</span>
+                                </a>
+                            </li>
+                        @endif
                     </ul>
                 </li>
 

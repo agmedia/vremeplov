@@ -7,6 +7,7 @@ use App\Models\Back\Catalog\Category;
 use App\Models\Back\Catalog\Product\Product;
 use App\Models\Back\Catalog\Publisher;
 use App\Models\Back\Marketing\Blog;
+use App\Models\Back\Marketing\Review;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
@@ -78,6 +79,7 @@ class ActionGroupList extends Component
                     $this->search_results = Product::where('name', 'like', '%' . $this->search . '%')->orWhere('sku', 'like', '%' . $this->search . '%')->limit(5)->get();
                     break;
                 case 'category':
+                case 'product_category':
                     $this->search_results = Category::where('title', 'like', '%' . $this->search . '%')->limit(5)->get();
                     break;
                 case 'publisher':
@@ -88,6 +90,22 @@ class ActionGroupList extends Component
                     break;
                 case 'blog':
                     $this->search_results = Blog::where('title', 'like', '%' . $this->search . '%')->limit(5)->get();
+                    break;
+                case 'reviews':
+                    $this->search_results = Review::query()
+                        ->where('status', 1)
+                        ->where(function ($query) {
+                            $query->where('fname', 'like', '%' . $this->search . '%')
+                                ->orWhere('lname', 'like', '%' . $this->search . '%')
+                                ->orWhere('message', 'like', '%' . $this->search . '%')
+                                ->orWhereHas('product', function ($product) {
+                                    $product->where('name', 'like', '%' . $this->search . '%');
+                                });
+                        })
+                        ->with('product:id,name')
+                        ->latest('id')
+                        ->limit(8)
+                        ->get();
                     break;
             }
         }
@@ -107,6 +125,7 @@ class ActionGroupList extends Component
                 $this->list[$id] = Product::where('id', $id)->first();
                 break;
             case 'category':
+            case 'product_category':
                 $this->list[$id] = Category::where('id', $id)->first();
                 break;
             case 'publisher':
@@ -117,6 +136,9 @@ class ActionGroupList extends Component
                 break;
             case 'blog':
                 $this->list[$id] = Blog::where('id', $id)->first();
+                break;
+            case 'reviews':
+                $this->list[$id] = Review::with('product:id,name')->where('id', $id)->first();
                 break;
         }
     }

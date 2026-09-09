@@ -15,15 +15,15 @@
                         <form action="{{ route('pretrazi', ['tip' => 'autor']) }}" method="get">
                             <div class="input-group input-group-lg flex-nowrap">
                                 <input type="text" class="form-control rounded-start" name="{{ config('settings.search_keyword') }}" placeholder="Pretražite po nazivu ili autoru">
-                                <button class="btn btn-primary btn-lg fs-base" type="submit"><i class="ci-search"></i></button>
+                                <button class="btn btn-primary btn-lg fs-base" type="submit"><i class="fa-regular fa-magnifying-glass"></i></button>
                             </div>
                         </form>
                         <div class="form-text text-white py-2"><span class="text-muted-light">*</span> Sve knjige na stranici su dostupne</div>
                     </div>
                 </div>
                 <div class="widget mt-4 text-md-nowrap text-center text-md-start">
-                    <a class="btn-social bs-light bs-instagram me-2 mb-2" href="https://www.instagram.com/antikvarijat_biblos/"><i class="ci-instagram"></i></a>
-                    <a class="btn-social bs-light bs-facebook me-2 mb-2" href="https://www.facebook.com/AntikvarijatBiblos/"><i class="ci-facebook"></i></a>
+                    <a class="btn-social bs-light bs-instagram me-2 mb-2" href="https://www.instagram.com/antikvarijat_biblos/"><i class="fa-brands fa-instagram"></i></a>
+                    <a class="btn-social bs-light bs-facebook me-2 mb-2" href="https://www.facebook.com/AntikvarijatBiblos/"><i class="fa-brands fa-facebook-f"></i></a>
                 </div>
             </div>
         </div>
@@ -42,8 +42,8 @@
                             <div class="card product-card-alt">
                                 <div class="product-thumb">
 
-                                    <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="ci-eye"></i></a>
-                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="ci-cart"></i></button>
+                                    <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
+                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
                                     </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga.jpg" alt="Product">
                                 </div>
                                 <div class="card-body">
@@ -51,12 +51,12 @@
                                         <div class="text-muted fs-xs me-1"><a class="product-meta fw-medium" href="{{ route('knjiga') }}">
 
                                                 Wroblewski David </a></div>
-                                        <div class="star-rating"><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i>
+                                        <div class="star-rating"><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i>
                                         </div>
                                     </div>
                                     <h3 class="product-title fs-sm mb-2"><a href="{{ route('knjiga') }}">Priča o Edgaru Sawtelleu</a></h3>
                                     <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                        <div class="fs-sm me-2"><i class="ci-book text-muted me-1"></i><span class="fs-xs ms-1">Književnost</span></div>
+                                        <div class="fs-sm me-2"><i class="fa-duotone fa-books text-muted me-1"></i><span class="fs-xs ms-1">Književnost</span></div>
                                         <div class="bg-faded-accent text-accent rounded-1 py-1 px-2">80.<small>00kn</small></div>
                                     </div>
                                 </div>
@@ -67,8 +67,8 @@
                             <div class="card product-card-alt">
                                 <div class="product-thumb">
 
-                                    <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="ci-eye"></i></a>
-                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="ci-cart"></i></button>
+                                    <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
+                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
                                     </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga2.jpg" alt="Product">
                                 </div>
                                 <div class="card-body">
@@ -76,12 +76,12 @@
                                         <div class="text-muted fs-xs me-1"><a class="product-meta fw-medium" href="{{ route('knjiga') }}">
 
                                                 Lynds Gayle </a></div>
-                                        <div class="star-rating"><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i>
+                                        <div class="star-rating"><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i>
                                         </div>
                                     </div>
                                     <h3 class="product-title fs-sm mb-2"><a href="{{ route('knjiga') }}">Mozaik</a></h3>
                                     <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                        <div class="fs-sm me-2"><i class="ci-book text-muted me-1"></i><span class="fs-xs ms-1">Književnost</span></div>
+                                        <div class="fs-sm me-2"><i class="fa-duotone fa-books text-muted me-1"></i><span class="fs-xs ms-1">Književnost</span></div>
                                         <div class="bg-faded-accent text-accent rounded-1 py-1 px-2">80.<small>00kn</small></div>
                                     </div>
                                 </div>
@@ -92,8 +92,8 @@
                             <div class="card product-card-alt">
                                 <div class="product-thumb">
 
-                                    <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="ci-eye"></i></a>
-                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="ci-cart"></i></button>
+                                    <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
+                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
                                     </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga3.jpg" alt="Product">
                                 </div>
                                 <div class="card-body">
@@ -101,12 +101,12 @@
                                         <div class="text-muted fs-xs me-1"><a class="product-meta fw-medium" href="{{ route('knjiga') }}">
 
                                                 Gall Zlatko </a></div>
-                                        <div class="star-rating"><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i>
+                                        <div class="star-rating"><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i>
                                         </div>
                                     </div>
                                     <h3 class="product-title fs-sm mb-2"><a href="{{ route('knjiga') }}">Velika svjetska rock enciklopedija</a></h3>
                                     <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                        <div class="fs-sm me-2"><i class="ci-book text-muted me-1"></i><span class="fs-xs ms-1">Glazba</span></div>
+                                        <div class="fs-sm me-2"><i class="fa-duotone fa-books text-muted me-1"></i><span class="fs-xs ms-1">Glazba</span></div>
                                         <div class="bg-faded-accent text-accent rounded-1 py-1 px-2">100.<small>00kn</small></div>
                                     </div>
                                 </div>
@@ -117,8 +117,8 @@
                             <div class="card product-card-alt">
                                 <div class="product-thumb">
 
-                                    <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="ci-eye"></i></a>
-                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="ci-cart"></i></button>
+                                    <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
+                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
                                     </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga4.jpg" alt="Product">
                                 </div>
                                 <div class="card-body">
@@ -126,12 +126,12 @@
                                         <div class="text-muted fs-xs me-1"><a class="product-meta fw-medium" href="{{ route('knjiga') }}">
 
                                                 Camus Albert </a></div>
-                                        <div class="star-rating"><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i>
+                                        <div class="star-rating"><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i>
                                         </div>
                                     </div>
                                     <h3 class="product-title fs-sm mb-2"><a href="{{ route('knjiga') }}">Stranac</a></h3>
                                     <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                        <div class="fs-sm me-2"><i class="ci-book text-muted me-1"></i><span class="fs-xs ms-1">Književnost</span></div>
+                                        <div class="fs-sm me-2"><i class="fa-duotone fa-books text-muted me-1"></i><span class="fs-xs ms-1">Književnost</span></div>
                                         <div class="bg-faded-accent text-accent rounded-1 py-1 px-2">100.<small>00kn</small></div>
                                     </div>
                                 </div>
@@ -142,8 +142,8 @@
                             <div class="card product-card-alt">
                                 <div class="product-thumb">
 
-                                    <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="ci-eye"></i></a>
-                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="ci-cart"></i></button>
+                                    <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
+                                        <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
                                     </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga3.jpg" alt="Product">
                                 </div>
                                 <div class="card-body">
@@ -151,12 +151,12 @@
                                         <div class="text-muted fs-xs me-1"><a class="product-meta fw-medium" href="{{ route('knjiga') }}">
 
                                                 Gall Zlatko </a></div>
-                                        <div class="star-rating"><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i>
+                                        <div class="star-rating"><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i>
                                         </div>
                                     </div>
                                     <h3 class="product-title fs-sm mb-2"><a href="{{ route('knjiga') }}">Velika svjetska rock enciklopedija</a></h3>
                                     <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                        <div class="fs-sm me-2"><i class="ci-book text-muted me-1"></i><span class="fs-xs ms-1">Glazba</span></div>
+                                        <div class="fs-sm me-2"><i class="fa-duotone fa-books text-muted me-1"></i><span class="fs-xs ms-1">Glazba</span></div>
                                         <div class="bg-faded-accent text-accent rounded-1 py-1 px-2">100.<small>00kn</small></div>
                                     </div>
                                 </div>
@@ -178,8 +178,8 @@
                 <div>
                     <div class="card product-card-alt">
                         <div class="product-thumb">
-                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="ci-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="ci-cart"></i></button>
+                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -187,12 +187,12 @@
                                 <div class="text-muted fs-xs me-1"><a class="product-meta fw-medium" href="{{ route('knjiga') }}">
 
                                         Wroblewski David </a></div>
-                                <div class="star-rating"><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i>
+                                <div class="star-rating"><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i>
                                 </div>
                             </div>
                             <h3 class="product-title fs-sm mb-2"><a href="{{ route('knjiga') }}">Priča o Edgaru Sawtelleu</a></h3>
                             <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                <div class="fs-sm me-2"><i class="ci-book text-muted me-1"></i><span class="fs-xs ms-1">Književnost</span></div>
+                                <div class="fs-sm me-2"><i class="fa-duotone fa-books text-muted me-1"></i><span class="fs-xs ms-1">Književnost</span></div>
                                 <div class="bg-faded-accent text-accent rounded-1 py-1 px-2">80.<small>00kn</small></div>
                             </div>
                         </div>
@@ -203,8 +203,8 @@
                     <div class="card product-card-alt">
                         <div class="product-thumb">
 
-                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="ci-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="ci-cart"></i></button>
+                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga2.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -212,12 +212,12 @@
                                 <div class="text-muted fs-xs me-1"><a class="product-meta fw-medium" href="{{ route('knjiga') }}">
 
                                         Lynds Gayle </a></div>
-                                <div class="star-rating"><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i>
+                                <div class="star-rating"><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i>
                                 </div>
                             </div>
                             <h3 class="product-title fs-sm mb-2"><a href="{{ route('knjiga') }}">Mozaik</a></h3>
                             <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                <div class="fs-sm me-2"><i class="ci-book text-muted me-1"></i><span class="fs-xs ms-1">Književnost</span></div>
+                                <div class="fs-sm me-2"><i class="fa-duotone fa-books text-muted me-1"></i><span class="fs-xs ms-1">Književnost</span></div>
                                 <div class="bg-faded-accent text-accent rounded-1 py-1 px-2">80.<small>00kn</small></div>
                             </div>
                         </div>
@@ -228,8 +228,8 @@
                     <div class="card product-card-alt">
                         <div class="product-thumb">
 
-                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="ci-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="ci-cart"></i></button>
+                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga3.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -237,12 +237,12 @@
                                 <div class="text-muted fs-xs me-1"><a class="product-meta fw-medium" href="{{ route('knjiga') }}">
 
                                         Gall Zlatko </a></div>
-                                <div class="star-rating"><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i>
+                                <div class="star-rating"><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i>
                                 </div>
                             </div>
                             <h3 class="product-title fs-sm mb-2"><a href="{{ route('knjiga') }}">Velika svjetska rock enciklopedija</a></h3>
                             <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                <div class="fs-sm me-2"><i class="ci-book text-muted me-1"></i><span class="fs-xs ms-1">Glazba</span></div>
+                                <div class="fs-sm me-2"><i class="fa-duotone fa-books text-muted me-1"></i><span class="fs-xs ms-1">Glazba</span></div>
                                 <div class="bg-faded-accent text-accent rounded-1 py-1 px-2">100.<small>00kn</small></div>
                             </div>
                         </div>
@@ -253,8 +253,8 @@
                     <div class="card product-card-alt">
                         <div class="product-thumb">
 
-                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="ci-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="ci-cart"></i></button>
+                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga4.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -262,12 +262,12 @@
                                 <div class="text-muted fs-xs me-1"><a class="product-meta fw-medium" href="{{ route('knjiga') }}">
 
                                         Camus Albert </a></div>
-                                <div class="star-rating"><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i>
+                                <div class="star-rating"><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i>
                                 </div>
                             </div>
                             <h3 class="product-title fs-sm mb-2"><a href="{{ route('knjiga') }}">Stranac</a></h3>
                             <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                <div class="fs-sm me-2"><i class="ci-book text-muted me-1"></i><span class="fs-xs ms-1">Književnost</span></div>
+                                <div class="fs-sm me-2"><i class="fa-duotone fa-books text-muted me-1"></i><span class="fs-xs ms-1">Književnost</span></div>
                                 <div class="bg-faded-accent text-accent rounded-1 py-1 px-2">100.<small>00kn</small></div>
                             </div>
                         </div>
@@ -278,8 +278,8 @@
                     <div class="card product-card-alt">
                         <div class="product-thumb">
 
-                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="ci-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="ci-cart"></i></button>
+                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga3.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -287,12 +287,12 @@
                                 <div class="text-muted fs-xs me-1"><a class="product-meta fw-medium" href="{{ route('knjiga') }}">
 
                                         Gall Zlatko </a></div>
-                                <div class="star-rating"><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i>
+                                <div class="star-rating"><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i>
                                 </div>
                             </div>
                             <h3 class="product-title fs-sm mb-2"><a href="{{ route('knjiga') }}">Velika svjetska rock enciklopedija</a></h3>
                             <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                <div class="fs-sm me-2"><i class="ci-book text-muted me-1"></i><span class="fs-xs ms-1">Glazba</span></div>
+                                <div class="fs-sm me-2"><i class="fa-duotone fa-books text-muted me-1"></i><span class="fs-xs ms-1">Glazba</span></div>
                                 <div class="bg-faded-accent text-accent rounded-1 py-1 px-2">100.<small>00kn</small></div>
                             </div>
                         </div>
@@ -313,7 +313,7 @@
                         <div class="col-7">
                             <div class="card-body ps-md-4">
                                 <h3 class="mb-4 ">Stare i rijetke knjige</h3>
-                                <a class="btn btn-primary btn-shadow btn-sm  " href="#">Pogledajte ponudu <i class="ci-arrow-right "></i></a>
+                                <a class="btn btn-primary btn-shadow btn-sm  " href="#">Pogledajte ponudu <i class="fa-regular fa-arrow-right "></i></a>
                             </div>
                         </div>
                         <div class="col-5">
@@ -333,7 +333,7 @@
                         <div class="col-7">
                             <div class="card-body ps-md-4">
                                 <h3 class="mb-4">Vedute i karte</h3>
-                                <a class="btn btn-primary btn-shadow btn-sm" href="#">Pogledajte ponudu <i class="ci-arrow-right"></i></a>
+                                <a class="btn btn-primary btn-shadow btn-sm" href="#">Pogledajte ponudu <i class="fa-regular fa-arrow-right"></i></a>
                             </div>
                         </div>
                     </div>
@@ -353,8 +353,8 @@
                     <div class="card product-card-alt">
                         <div class="product-thumb">
 
-                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="#"><i class="ci-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="ci-cart"></i></button>
+                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="#"><i class="fa-regular fa-eye"></i></a>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -362,12 +362,12 @@
                                 <div class="text-muted fs-xs me-1"><a class="product-meta fw-medium" href="{{ route('knjiga') }}">
 
                                         Wroblewski David </a></div>
-                                <div class="star-rating"><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i>
+                                <div class="star-rating"><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i>
                                 </div>
                             </div>
                             <h3 class="product-title fs-sm mb-2"><a href="{{ route('knjiga') }}">Priča o Edgaru Sawtelleu</a></h3>
                             <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                <div class="fs-sm me-2"><i class="ci-book text-muted me-1"></i><span class="fs-xs ms-1">Književnost</span></div>
+                                <div class="fs-sm me-2"><i class="fa-duotone fa-books text-muted me-1"></i><span class="fs-xs ms-1">Književnost</span></div>
                                 <div class="bg-faded-accent text-accent rounded-1 py-1 px-2">80.<small>00kn</small></div>
                             </div>
                         </div>
@@ -378,8 +378,8 @@
                     <div class="card product-card-alt">
                         <div class="product-thumb">
 
-                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="ci-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="ci-cart"></i></button>
+                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga2.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -387,12 +387,12 @@
                                 <div class="text-muted fs-xs me-1"><a class="product-meta fw-medium" href="{{ route('knjiga') }}">
 
                                         Lynds Gayle </a></div>
-                                <div class="star-rating"><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i>
+                                <div class="star-rating"><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i>
                                 </div>
                             </div>
                             <h3 class="product-title fs-sm mb-2"><a href="{{ route('knjiga') }}">Mozaik</a></h3>
                             <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                <div class="fs-sm me-2"><i class="ci-book text-muted me-1"></i><span class="fs-xs ms-1">Književnost</span></div>
+                                <div class="fs-sm me-2"><i class="fa-duotone fa-books text-muted me-1"></i><span class="fs-xs ms-1">Književnost</span></div>
                                 <div class="bg-faded-accent text-accent rounded-1 py-1 px-2">80.<small>00kn</small></div>
                             </div>
                         </div>
@@ -403,8 +403,8 @@
                     <div class="card product-card-alt">
                         <div class="product-thumb">
 
-                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="ci-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="ci-cart"></i></button>
+                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga3.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -412,12 +412,12 @@
                                 <div class="text-muted fs-xs me-1"><a class="product-meta fw-medium" href="{{ route('knjiga') }}">
 
                                         Gall Zlatko </a></div>
-                                <div class="star-rating"><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i>
+                                <div class="star-rating"><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i>
                                 </div>
                             </div>
                             <h3 class="product-title fs-sm mb-2"><a href="{{ route('knjiga') }}">Velika svjetska rock enciklopedija</a></h3>
                             <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                <div class="fs-sm me-2"><i class="ci-book text-muted me-1"></i><span class="fs-xs ms-1">Glazba</span></div>
+                                <div class="fs-sm me-2"><i class="fa-duotone fa-books text-muted me-1"></i><span class="fs-xs ms-1">Glazba</span></div>
                                 <div class="bg-faded-accent text-accent rounded-1 py-1 px-2">100.<small>00kn</small></div>
                             </div>
                         </div>
@@ -428,8 +428,8 @@
                     <div class="card product-card-alt">
                         <div class="product-thumb">
 
-                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="ci-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="ci-cart"></i></button>
+                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga4.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -437,12 +437,12 @@
                                 <div class="text-muted fs-xs me-1"><a class="product-meta fw-medium" href="{{ route('knjiga') }}">
 
                                         Camus Albert </a></div>
-                                <div class="star-rating"><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i>
+                                <div class="star-rating"><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i>
                                 </div>
                             </div>
                             <h3 class="product-title fs-sm mb-2"><a href="{{ route('knjiga') }}">Stranac</a></h3>
                             <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                <div class="fs-sm me-2"><i class="ci-book text-muted me-1"></i><span class="fs-xs ms-1">Književnost</span></div>
+                                <div class="fs-sm me-2"><i class="fa-duotone fa-books text-muted me-1"></i><span class="fs-xs ms-1">Književnost</span></div>
                                 <div class="bg-faded-accent text-accent rounded-1 py-1 px-2">100.<small>00kn</small></div>
                             </div>
                         </div>
@@ -453,8 +453,8 @@
                     <div class="card product-card-alt">
                         <div class="product-thumb">
 
-                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="ci-eye"></i></a>
-                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="ci-cart"></i></button>
+                            <div class="product-card-actions"><a class="btn btn-light btn-icon btn-shadow fs-base mx-2" href="{{ route('knjiga') }}"><i class="fa-regular fa-eye"></i></a>
+                                <button class="btn btn-light btn-icon btn-shadow fs-base mx-2" type="button"><i class="fa-regular fa-cart-shopping"></i></button>
                             </div><a class="product-thumb-overlay" href="{{ route('knjiga') }}"></a><img src="media/img/knjiga3.jpg" alt="Product">
                         </div>
                         <div class="card-body">
@@ -462,12 +462,12 @@
                                 <div class="text-muted fs-xs me-1"><a class="product-meta fw-medium" href="{{ route('knjiga') }}">
 
                                         Gall Zlatko </a></div>
-                                <div class="star-rating"><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i><i class="star-rating-icon ci-star-filled active"></i>
+                                <div class="star-rating"><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i><i class="star-rating-icon fa-solid fa-star active"></i>
                                 </div>
                             </div>
                             <h3 class="product-title fs-sm mb-2"><a href="{{ route('knjiga') }}">Velika svjetska rock enciklopedija</a></h3>
                             <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                <div class="fs-sm me-2"><i class="ci-book text-muted me-1"></i><span class="fs-xs ms-1">Glazba</span></div>
+                                <div class="fs-sm me-2"><i class="fa-duotone fa-books text-muted me-1"></i><span class="fs-xs ms-1">Glazba</span></div>
                                 <div class="bg-faded-accent text-accent rounded-1 py-1 px-2">100.<small>00kn</small></div>
                             </div>
                         </div>
@@ -521,16 +521,16 @@
             <div class="row">
                 <div class="col-xl-3 col-sm-6 mb-grid-gutter">
                     <a class="card h-100" href="https://www.google.com/maps/place/Biblos/@45.810942,15.9794894,17.53z/data=!4m5!3m4!1s0x4765d7aac4f8b023:0xb60bceb791b31ede!8m2!3d45.8106161!4d15.9816921?hl=hr" target="_blank">
-                        <div class="card-body text-center"><i class="ci-location h3 mt-2 mb-4 text-primary"></i>
+                        <div class="card-body text-center"><i class="fa-regular fa-location-dot h3 mt-2 mb-4 text-primary"></i>
                             <h3 class="h6 mb-2">Adresa</h3>
                             <p class="fs-sm text-muted">Palmotićeva 28, Zagreb</p>
-                            <div class="fs-sm text-primary">Kliknite za mapu<i class="ci-arrow-right align-middle ms-1"></i></div>
+                            <div class="fs-sm text-primary">Kliknite za mapu<i class="fa-regular fa-arrow-right align-middle ms-1"></i></div>
                         </div>
                     </a>
                 </div>
                 <div class="col-xl-3 col-sm-6 mb-grid-gutter">
                     <div class="card h-100">
-                        <div class="card-body text-center"><i class="ci-time h3 mt-2 mb-4 text-primary"></i>
+                        <div class="card-body text-center"><i class="fa-regular fa-clock h3 mt-2 mb-4 text-primary"></i>
                             <h3 class="h6 mb-3">Radno vrijeme</h3>
                             <ul class="list-unstyled fs-sm text-muted mb-0">
                                 <li>Pon - pet: 09 - 20h</li>
@@ -541,7 +541,7 @@
                 </div>
                 <div class="col-xl-3 col-sm-6  mb-grid-gutter">
                     <div class="card h-100">
-                        <div class="card-body text-center"><i class="ci-phone h3 mt-2 mb-4 text-primary"></i>
+                        <div class="card-body text-center"><i class="fa-regular fa-phone h3 mt-2 mb-4 text-primary"></i>
                             <h3 class="h6 mb-3">Telefoni</h3>
                             <ul class="list-unstyled fs-sm mb-0">
                                 <li><a class="nav-link-style text-primary" href="tel:+38514816574"> +385 1 48 16 574</a></li>
@@ -552,7 +552,7 @@
                 </div>
                 <div class="col-xl-3 col-sm-6 mb-grid-gutter">
                     <div class="card h-100">
-                        <div class="card-body text-center"><i class="ci-mail h3 mt-2 mb-4 text-primary"></i>
+                        <div class="card-body text-center"><i class="fa-regular fa-envelope h3 mt-2 mb-4 text-primary"></i>
                             <h3 class="h6 mb-3">Email adresa</h3>
                             <ul class="list-unstyled fs-sm mb-0">
                                 <li><a class="nav-link-style text-primary" href="mailto:info@antikvarijat-biblos.hr">info@antikvarijat-biblos.hr</a></li>

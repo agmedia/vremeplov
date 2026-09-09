@@ -6,13 +6,16 @@ use App\Helpers\Currency;
 use App\Models\Back\Catalog\Product\ProductAction;
 use App\Models\Back\Marketing\Review;
 use App\Models\Back\Settings\Settings;
+use App\Support\CatalogFilterValue;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Bouncer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  *
@@ -425,6 +428,67 @@ class Product extends Model
 
 
     /**
+     * Match a normalized filter value against all of its stored variants.
+     */
+    public function scopeWhereFacetValues(Builder $query, string $column, array $values): Builder
+    {
+        $allowedColumns = ['letter', 'condition', 'binding', 'origin'];
+        if ( ! in_array($column, $allowedColumns, true)) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        $keys = collect($values)
+            ->flatMap(fn ($value) => CatalogFilterValue::facetValues($column, $value))
+            ->map(fn ($value) => CatalogFilterValue::key($value))
+            ->filter()
+            ->unique();
+
+        if ($keys->isEmpty()) {
+            return $query;
+        }
+
+        $storedValues = static::query()
+            ->whereNotNull($column)
+            ->where($column, '!=', '')
+            ->distinct()
+            ->pluck($column)
+            ->filter(function ($value) use ($column, $keys) {
+                return collect(CatalogFilterValue::facetValues($column, $value))
+                    ->map(fn ($facetValue) => CatalogFilterValue::key($facetValue))
+                    ->intersect($keys)
+                    ->isNotEmpty();
+            })
+            ->values();
+
+        return $query->whereIn($column, $storedValues->isEmpty() ? ['__no_matching_value__'] : $storedValues);
+    }
+
+
+    /**
+     * Products with a real customer-facing discount.
+     */
+    public function scopeOnSale(Builder $query): Builder
+    {
+        $now = now();
+
+        return $query
+            ->whereNotNull('special')
+            ->where('special', '>', 0)
+            ->whereColumn('special', '<', 'price')
+            ->where(function (Builder $query) use ($now) {
+                $query->whereNull('special_from')
+                    ->orWhere('special_from', '0000-00-00 00:00:00')
+                    ->orWhere('special_from', '<=', $now);
+            })
+            ->where(function (Builder $query) use ($now) {
+                $query->whereNull('special_to')
+                    ->orWhere('special_to', '0000-00-00 00:00:00')
+                    ->orWhere('special_to', '>=', $now);
+            });
+    }
+
+
+    /**
      * @param $query
      *
      * @return mixed
@@ -515,8 +579,22 @@ class Product extends Model
         }
 
         if ($request->has('ids') && $request->input('ids') != '') {
-            $_ids = explode(',', substr($request->input('ids'), 1, -1));
-            $query->whereIn('id', collect($_ids)->unique());
+            $rawIds = $request->input('ids');
+
+            if (is_string($rawIds)) {
+                $decodedIds = json_decode($rawIds, true);
+                $rawIds = is_array($decodedIds)
+                    ? $decodedIds
+                    : explode(',', trim($rawIds, '[]'));
+            }
+
+            $filteredIds = collect($rawIds)
+                ->filter(fn ($id) => is_numeric($id))
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values();
+
+            $query->whereIn('id', $filteredIds->isEmpty() ? [0] : $filteredIds);
         }
 
         if ($request->has('group')) {
@@ -574,6 +652,30 @@ class Product extends Model
             $query->where(function ($query) use ($request) {
                 $query->where('year', '<=', $request->input('end'))->orWhereNull('year');
             });
+        }
+
+        foreach ([
+            'pismo' => 'letter',
+            'stanje' => 'condition',
+            'uvez' => 'binding',
+            'jezik' => 'origin',
+        ] as $parameter => $column) {
+            if ($request->filled($parameter)) {
+                $requestedValues = is_array($request->input($parameter))
+                    ? $request->input($parameter)
+                    : preg_split('/[+|]/', (string) $request->input($parameter));
+
+                $values = collect($requestedValues)
+                    ->map(fn ($value) => CatalogFilterValue::facetKey($column, $value))
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->all();
+
+                if ($values) {
+                    $query->whereFacetValues($column, $values);
+                }
+            }
         }
 
         $sort = $request->input('sort', 'novi');
