@@ -327,6 +327,7 @@ Route::prefix('api/v2')->group(function () {
         Route::post('/products/destroy/api', [ProductController::class, 'destroyApi'])->name('products.destroy.api');
         Route::post('/blogs/destroy/api', [BlogController::class, 'destroyApi'])->name('blogs.destroy.api');
         Route::post('/blogs/upload/image', [BlogController::class, 'uploadBlogImage'])->name('blogs.upload.image');
+        Route::post('/pages/upload/image', [PageController::class, 'uploadPageImage'])->name('pages.upload.image');
     });
 
     // FILTER

@@ -3,13 +3,6 @@
 @push('css_before')
     <link rel="stylesheet" href="{{ asset('js/plugins/select2/css/select2.min.css') }}">
     <link rel="stylesheet" href="{{ asset('js/plugins/flatpickr/flatpickr.min.css') }}">
-
-    <style>
-        .cke_skin_kama .cke_button_CMDSuperButton .cke_label {
-            display: inline;
-        }
-    </style>
-
 @endpush
 
 @section('content')
@@ -72,11 +65,10 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-group row  mb-4">
+                            <div class="form-group row mb-4 admin-rich-text-editor">
                                 <div class="col-md-12">
                                     <label for="description-editor">Opis</label>
-                                    <textarea id="js-ckeditor" name="description">{!! isset($page) ? $page->description : old('description') !!}</textarea>
-
+                                    <textarea id="description-editor" name="description">{!! isset($page) ? $page->description : old('description') !!}</textarea>
                                 </div>
                             </div>
 
@@ -147,7 +139,7 @@
 @endsection
 
 @push('js_after')
-    <script src="{{ asset('js/plugins/ckeditor/ckeditor.js') }}"></script>
+    <script src="{{ asset('js/plugins/ckeditor5-classic/build/ckeditor.js') }}"></script>
     <script src="{{ asset('js/plugins/flatpickr/flatpickr.min.js') }}"></script>
     <script src="{{ asset('js/plugins/select2/js/select2.full.min.js') }}"></script>
 
@@ -162,20 +154,29 @@
                 tags: true
             });
 
-            editor = CKEDITOR.replace('js-ckeditor'); // bind editor
+            const pageHeader = document.getElementById('page-header');
+            const editorToolbarOffset = pageHeader ? Math.ceil(pageHeader.getBoundingClientRect().height) : 0;
 
-            editor.addCommand("mySimpleCommand", { // create named command
-                exec: function(edt) {
-                    alert(edt.getData());
+            ClassicEditor
+            .create(document.querySelector('#description-editor'), {
+                toolbar: {
+                    viewportTopOffset: editorToolbarOffset,
+                },
+                ckfinder: {
+                    uploadUrl: '{{ route('pages.upload.image') }}?_token=' + document.querySelector('meta[name="csrf-token"]').getAttribute('content') + '&page_id={{ (isset($page->id) && $page->id) ?: 0 }}',
                 }
-            });
+            })
+            .then( editor => {
+                const stickyPanel = editor.ui.view.stickyPanel;
 
-            editor.ui.addButton('SuperButton', { // add new button and bind our command
-                label: "Click me",
-                command: 'mySimpleCommand',
-                //toolbar: 'insert',
-                icon: 'https://avatars1.githubusercontent.com/u/5500999?v=2&s=16'
-            });
+                if (stickyPanel) {
+                    stickyPanel.unbind('isActive');
+                    stickyPanel.isActive = true;
+                }
+            } )
+            .catch( error => {
+                console.error(error);
+            } );
         })
     </script>
 

@@ -63,6 +63,7 @@ class AdminApiRouteSecurityTest extends TestCase
             'products.destroy.api',
             'blogs.destroy.api',
             'blogs.upload.image',
+            'pages.upload.image',
             'api.order.send.boxnow',
             'api.order.tracking.boxnow.refresh',
         ], $this->administratorOnlyRoutes());

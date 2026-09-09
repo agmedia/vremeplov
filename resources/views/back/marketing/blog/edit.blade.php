@@ -69,7 +69,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-group row  mb-4">
+                            <div class="form-group row mb-4 admin-rich-text-editor">
                                 <div class="col-md-12">
                                     <label for="description-editor">Opis</label>
                                     <textarea id="description-editor" name="description">{!! isset($blog) ? $blog->description : old('description') !!}</textarea>
@@ -253,7 +253,12 @@
                 }
             })
             .then( editor => {
-                console.log(editor);
+                const stickyPanel = editor.ui.view.stickyPanel;
+
+                if (stickyPanel) {
+                    stickyPanel.unbind('isActive');
+                    stickyPanel.isActive = true;
+                }
             } )
             .catch( error => {
                 console.error(error);

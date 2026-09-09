@@ -1541,6 +1541,20 @@ body.admin-vremeplov,
     background: var(--admin-surface-soft);
 }
 
+.admin-rich-text-editor .ck-editor__top {
+    position: sticky;
+    top: 4.25rem;
+    z-index: 900;
+}
+
+.admin-rich-text-editor .ck-editor__editable_inline {
+    min-height: 22rem;
+}
+
+.admin-rich-text-editor .ck.ck-sticky-panel .ck-sticky-panel__content_sticky {
+    z-index: 900;
+}
+
 .product-editor-actions {
     position: sticky;
     z-index: 20;

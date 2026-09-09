@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Back\Settings\Page;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class PageController extends Controller
 {
@@ -120,6 +121,30 @@ class PageController extends Controller
         }
 
         return redirect()->back()->with(['error' => 'Whoops..! There was an error deleting the page.']);
+    }
+
+
+    /**
+     * Store an image inserted through the info-page rich text editor.
+     */
+    public function uploadPageImage(Request $request)
+    {
+        $validated = $request->validate([
+            'upload' => ['required', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:10240'],
+            'page_id' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        $image = $validated['upload'];
+        $name = Str::random(18) . '.' . strtolower($image->extension());
+        $path = ! empty($validated['page_id']) ? $validated['page_id'] . '/' : '';
+
+        Storage::disk('page')->putFileAs($path, $image, $name);
+
+        return response()->json([
+            'fileName' => $name,
+            'uploaded' => true,
+            'url' => url(config('filesystems.disks.page.url') . $path . $name),
+        ]);
     }
 
 
