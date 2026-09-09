@@ -91,6 +91,7 @@ class NormalizeCatalogFilterDataCommandTest extends TestCase
         $this->assertSame('Hrvatski', $products[1]->origin);
         $this->assertSame('Latinica', $products[3]->letter);
         $this->assertNull($products[4]->letter);
+        $this->assertSame('108', $products[4]->origin);
         $this->assertSame('Dobro', $products[5]->condition);
         $this->assertSame(
             "Oštećenje korica\nDOBRO, s posvetom na prvoj stranici",
@@ -160,6 +161,29 @@ class NormalizeCatalogFilterDataCommandTest extends TestCase
             $secondOutput
         );
         $this->assertSame($afterFirstApply, $this->snapshot());
+    }
+
+    public function test_numeric_origin_is_kept_as_a_string_and_is_not_planned_as_a_change(): void
+    {
+        DB::table('product_actions')->delete();
+        DB::table('products')->where('id', '!=', 4)->delete();
+        DB::table('products')->where('id', 4)->update([
+            'letter' => null,
+            'condition' => null,
+            'binding' => null,
+            'origin' => '108',
+        ]);
+        DB::table('authors')->where('id', '!=', 1)->delete();
+        DB::table('publishers')->where('id', '!=', 1)->delete();
+
+        $this->assertSame(0, Artisan::call('catalog:normalize-filter-data'));
+        $this->assertStringContainsString(
+            'Proizvodi s barem jednom promjenom: 0.',
+            Artisan::output()
+        );
+
+        $this->assertSame(0, Artisan::call('catalog:normalize-filter-data', ['--apply' => true]));
+        $this->assertSame('108', DB::table('products')->where('id', 4)->value('origin'));
     }
 
     public function test_failed_entity_merge_rolls_back_the_entire_apply(): void
@@ -277,7 +301,7 @@ class NormalizeCatalogFilterDataCommandTest extends TestCase
                 'condition' => null,
                 'binding' => null,
                 'note' => null,
-                'origin' => null,
+                'origin' => '108',
             ],
             [
                 'id' => 5,

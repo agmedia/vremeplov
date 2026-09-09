@@ -179,7 +179,10 @@ class NormalizeCatalogFilterData extends Command
                 return $caseComparison !== 0 ? $caseComparison : strcmp($left, $right);
             });
 
-            $canonical[$key] = $labels[0];
+            // PHP converts numeric-looking array keys (for example "108")
+            // to integers. Keep canonical facet values as strings so a legacy
+            // numeric value is not reported as changed on every run.
+            $canonical[$key] = (string) $labels[0];
         }
 
         return $canonical;
