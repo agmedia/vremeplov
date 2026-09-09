@@ -365,7 +365,9 @@ class FilterController extends Controller
      */
     public function authors(Request $request)
     {
-        if ($request->has('params')) {
+        $dynamic = $request->has('params');
+
+        if ($dynamic) {
             $params = array_merge([
                 'ids' => '',
                 'group' => '',
@@ -376,8 +378,10 @@ class FilterController extends Controller
                 'search_author' => '',
                 'search_publisher' => '',
             ], $this->requestParams($request));
-
-            $response = $this->authorFacet($params);
+            $cacheKey = $this->entityFacetCacheKey($params, 'author');
+            $response = Cache::remember($cacheKey, 60, function () use ($params) {
+                return $this->authorFacet($params);
+            });
 
         } else {
             $response = Helper::resolveCache('authors')->remember('featured', config('cache.life'), function () {
@@ -390,13 +394,15 @@ class FilterController extends Controller
             });
         }
 
-        $etag = sha1(json_encode($response));
-        return response()
+        $result = response()
             ->json($response)
-            ->setEtag($etag)
-            ->setPublic()
-            ->setMaxAge(config('cache.one_day'))        // 1 day
-            ->header('Cache-Control', 'public, max-age=' . config('cache.one_day'));
+            ->setEtag(sha1(json_encode($response)));
+
+        return $dynamic
+            ? $result->header('Cache-Control', 'private, no-store')
+            : $result->setPublic()
+                ->setMaxAge(config('cache.one_day'))
+                ->header('Cache-Control', 'public, max-age=' . config('cache.one_day'));
     }
 
 
@@ -407,7 +413,9 @@ class FilterController extends Controller
      */
     public function publishers(Request $request)
     {
-        if ($request->has('params')) {
+        $dynamic = $request->has('params');
+
+        if ($dynamic) {
             $params = array_merge([
                 'ids' => '',
                 'group' => '',
@@ -418,8 +426,10 @@ class FilterController extends Controller
                 'search_author' => '',
                 'search_publisher' => '',
             ], $this->requestParams($request));
-
-            $response = $this->publisherFacet($params);
+            $cacheKey = $this->entityFacetCacheKey($params, 'publisher');
+            $response = Cache::remember($cacheKey, 60, function () use ($params) {
+                return $this->publisherFacet($params);
+            });
 
         } else {
             $response = Helper::resolveCache('publishers')->remember('featured', config('cache.life'), function () {
@@ -432,13 +442,15 @@ class FilterController extends Controller
             });
         }
 
-        $etag = sha1(json_encode($response));
-        return response()
+        $result = response()
             ->json($response)
-            ->setEtag($etag)
-            ->setPublic()
-            ->setMaxAge(config('cache.one_day'))        // 1 day
-            ->header('Cache-Control', 'public, max-age=' . config('cache.one_day'));
+            ->setEtag(sha1(json_encode($response)));
+
+        return $dynamic
+            ? $result->header('Cache-Control', 'private, no-store')
+            : $result->setPublic()
+                ->setMaxAge(config('cache.one_day'))
+                ->header('Cache-Control', 'public, max-age=' . config('cache.one_day'));
     }
 
 
@@ -616,6 +628,21 @@ class FilterController extends Controller
         }
 
         return $normalized;
+    }
+
+
+    private function entityFacetCacheKey(array $params, string $type): string
+    {
+        $cacheParams = $this->characteristicFacetCacheParams($params);
+        $cacheParams['type'] = $type;
+        $cacheParams['search'] = trim((string) ($params[
+            $type === 'author' ? 'search_author' : 'search_publisher'
+        ] ?? ''));
+
+        return 'catalog.' . $type . '-facet:' . sha1(json_encode(
+            $cacheParams,
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+        ));
     }
 
 

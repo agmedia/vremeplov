@@ -83,7 +83,7 @@
                     <button class="catalog-filter-section__toggle" type="button" v-on:click="toggleSection('authors')" :aria-expanded="openSections.authors ? 'true' : 'false'">
                         <span><i class="fa-duotone fa-user-pen" aria-hidden="true"></i>Autori</span>
                         <span class="catalog-filter-section__end">
-                            <span v-if="!authors_loaded" class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Učitavanje</span></span>
+                            <span v-if="authors_loading && openSections.authors" class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Učitavanje</span></span>
                             <i class="fa-regular fa-chevron-down" :class="{'is-open': openSections.authors}" aria-hidden="true"></i>
                         </span>
                     </button>
@@ -109,7 +109,7 @@
                     <button class="catalog-filter-section__toggle" type="button" v-on:click="toggleSection('publishers')" :aria-expanded="openSections.publishers ? 'true' : 'false'">
                         <span><i class="fa-duotone fa-building" aria-hidden="true"></i>Nakladnici</span>
                         <span class="catalog-filter-section__end">
-                            <span v-if="!publishers_loaded" class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Učitavanje</span></span>
+                            <span v-if="publishers_loading && openSections.publishers" class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Učitavanje</span></span>
                             <i class="fa-regular fa-chevron-down" :class="{'is-open': openSections.publishers}" aria-hidden="true"></i>
                         </span>
                     </button>
@@ -185,8 +185,12 @@ export default {
             searchPublisher: '',
             show_authors: false,
             authors_loaded: false,
+            authors_loading: false,
+            authors_dirty: false,
             show_publishers: false,
             publishers_loaded: false,
+            publishers_loading: false,
+            publishers_dirty: false,
             openSections: {
                 categories: true,
                 year: false,
@@ -201,6 +205,8 @@ export default {
             characteristicRequestId: 0,
             authorRequestId: 0,
             publisherRequestId: 0,
+            entityPrefetchHandle: null,
+            entityPrefetchUsesIdleCallback: false,
         };
     },
 
@@ -244,8 +250,12 @@ export default {
         },
 
         $route(route) {
+            const previousSignature = this.availableFilterSignature();
             this.checkQuery(route);
-            this.scheduleAvailableFiltersRefresh();
+
+            if (previousSignature !== this.availableFilterSignature()) {
+                this.scheduleAvailableFiltersRefresh();
+            }
         },
     },
 
@@ -265,6 +275,8 @@ export default {
             if (!this.publisher) {
                 this.show_publishers = true;
             }
+
+            this.deferEntityFiltersLoad();
         }
     },
 
@@ -272,6 +284,12 @@ export default {
         window.clearTimeout(this.searchTimers.authors);
         window.clearTimeout(this.searchTimers.publishers);
         window.clearTimeout(this.availableFiltersTimer);
+
+        if (this.entityPrefetchUsesIdleCallback && typeof window.cancelIdleCallback === 'function') {
+            window.cancelIdleCallback(this.entityPrefetchHandle);
+        } else {
+            window.clearTimeout(this.entityPrefetchHandle);
+        }
     },
 
     methods: {
@@ -305,7 +323,8 @@ export default {
 
         getAuthors() {
             const requestId = ++this.authorRequestId;
-            this.authors_loaded = false;
+            const filterSignature = this.availableFilterSignature();
+            this.authors_loading = true;
             axios.post('filter/getAuthors', {params: this.setParams()})
                 .then(response => {
                     if (requestId !== this.authorRequestId) {
@@ -314,22 +333,27 @@ export default {
 
                     this.authors = Array.isArray(response.data) ? response.data : [];
                     this.selectedAuthors = this.syncSelectedEntityGroups(this.selectedAuthors, this.authors);
+                    this.authors_loaded = true;
+                    this.authors_dirty = filterSignature !== this.availableFilterSignature();
                 })
                 .catch(() => {
                     if (requestId === this.authorRequestId) {
                         this.authors = [];
+                        this.authors_loaded = false;
+                        this.authors_dirty = true;
                     }
                 })
                 .finally(() => {
                     if (requestId === this.authorRequestId) {
-                        this.authors_loaded = true;
+                        this.authors_loading = false;
                     }
                 });
         },
 
         getPublishers() {
             const requestId = ++this.publisherRequestId;
-            this.publishers_loaded = false;
+            const filterSignature = this.availableFilterSignature();
+            this.publishers_loading = true;
             axios.post('filter/getPublishers', {params: this.setParams()})
                 .then(response => {
                     if (requestId !== this.publisherRequestId) {
@@ -338,20 +362,26 @@ export default {
 
                     this.publishers = Array.isArray(response.data) ? response.data : [];
                     this.selectedPublishers = this.syncSelectedEntityGroups(this.selectedPublishers, this.publishers);
+                    this.publishers_loaded = true;
+                    this.publishers_dirty = filterSignature !== this.availableFilterSignature();
                 })
                 .catch(() => {
                     if (requestId === this.publisherRequestId) {
                         this.publishers = [];
+                        this.publishers_loaded = false;
+                        this.publishers_dirty = true;
                     }
                 })
                 .finally(() => {
                     if (requestId === this.publisherRequestId) {
-                        this.publishers_loaded = true;
+                        this.publishers_loading = false;
                     }
                 });
         },
 
         scheduleAvailableFiltersRefresh() {
+            this.authors_dirty = true;
+            this.publishers_dirty = true;
             window.clearTimeout(this.availableFiltersTimer);
             this.availableFiltersTimer = window.setTimeout(() => {
                 this.getCharacteristics();
@@ -364,6 +394,26 @@ export default {
                     this.getPublishers();
                 }
             }, 200);
+        },
+
+        deferEntityFiltersLoad() {
+            const load = () => {
+                if (this.show_authors && !this.authors_loaded && !this.authors_loading) {
+                    this.getAuthors();
+                }
+
+                if (this.show_publishers && !this.publishers_loaded && !this.publishers_loading) {
+                    this.getPublishers();
+                }
+            };
+
+            if (typeof window.requestIdleCallback === 'function') {
+                this.entityPrefetchUsesIdleCallback = true;
+                this.entityPrefetchHandle = window.requestIdleCallback(load, {timeout: 1200});
+                return;
+            }
+
+            this.entityPrefetchHandle = window.setTimeout(load, 400);
         },
 
         parseEntity(value) {
@@ -496,7 +546,21 @@ export default {
             ['pismo', 'stanje', 'uvez', 'jezik'].forEach(key => this.$set(this.selectedCharacteristics, key, []));
 
             this.$nextTick(() => {
+                this.scheduleAvailableFiltersRefresh();
                 this.$router.push({query: this.resolveQuery()}).catch(() => {});
+            });
+        },
+
+        availableFilterSignature() {
+            return JSON.stringify({
+                start: this.start,
+                end: this.end,
+                autor: this.selectedAuthors,
+                nakladnik: this.selectedPublishers,
+                pismo: this.selectedCharacteristics.pismo,
+                stanje: this.selectedCharacteristics.stanje,
+                uvez: this.selectedCharacteristics.uvez,
+                jezik: this.selectedCharacteristics.jezik,
             });
         },
 
@@ -520,11 +584,11 @@ export default {
             const willOpen = !this.openSections[section];
             this.$set(this.openSections, section, willOpen);
 
-            if (willOpen && section === 'authors') {
+            if (willOpen && section === 'authors' && (!this.authors_loaded || this.authors_dirty)) {
                 this.getAuthors();
             }
 
-            if (willOpen && section === 'publishers') {
+            if (willOpen && section === 'publishers' && (!this.publishers_loaded || this.publishers_dirty)) {
                 this.getPublishers();
             }
         },
