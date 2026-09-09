@@ -21,6 +21,12 @@ use Illuminate\Support\Str;
 
 class FilterController extends Controller
 {
+    private const CHARACTERISTIC_FACETS = [
+        'letter' => ['key' => 'pismo', 'title' => 'Pismo'],
+        'condition' => ['key' => 'stanje', 'title' => 'Stanje'],
+        'binding' => ['key' => 'uvez', 'title' => 'Uvez'],
+        'origin' => ['key' => 'jezik', 'title' => 'Jezik'],
+    ];
 
     /**
      * @param Request $request
@@ -130,65 +136,20 @@ class FilterController extends Controller
     public function characteristics(Request $request)
     {
         $params = $this->requestParams($request);
-        $response = [];
-
-        foreach ([
-            'letter' => ['key' => 'pismo', 'title' => 'Pismo'],
-            'condition' => ['key' => 'stanje', 'title' => 'Stanje'],
-            'binding' => ['key' => 'uvez', 'title' => 'Uvez'],
-            'origin' => ['key' => 'jezik', 'title' => 'Jezik'],
-        ] as $column => $definition) {
-            $items = $this->productContextQuery($params, $definition['key'])
-                ->whereNotNull($column)
-                ->where($column, '!=', '')
-                ->select($column . ' as value', DB::raw('COUNT(*) as count'))
-                ->groupBy($column)
-                ->get()
-                ->flatMap(function ($item) use ($column) {
-                    $rawValue = trim((string) $item->value);
-
-                    return collect(CatalogFilterValue::facetValues($column, $rawValue))
-                        ->map(function (string $label) use ($item) {
-                            return [
-                                'value' => CatalogFilterValue::key($label),
-                                'label' => $label,
-                                'count' => (int) $item->count,
-                            ];
-                        });
-                })
-                ->filter(function ($item) {
-                    return $item['value'] !== '' && $item['label'] !== '';
-                })
-                ->groupBy('value')
-                ->map(function ($variants, $value) {
-                    $preferred = $variants->sortByDesc('count')->first();
-
-                    return [
-                        'value' => $value,
-                        'label' => $preferred['label'],
-                        'count' => $variants->sum('count'),
-                    ];
-                })
-                ->sortByDesc('count')
-                ->values();
-
-            if ($items->isNotEmpty()) {
-                $response[] = [
-                    'key' => $definition['key'],
-                    'title' => $definition['title'],
-                    'items' => $items,
-                ];
-            }
-        }
+        $cacheKey = 'catalog.characteristic-facets:' . sha1(json_encode(
+            $this->characteristicFacetCacheParams($params),
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+        ));
+        $response = Cache::remember($cacheKey, 60, function () use ($params) {
+            return $this->characteristicFacets($params);
+        });
 
         $etag = sha1(json_encode($response));
 
         return response()
             ->json($response)
             ->setEtag($etag)
-            ->setPublic()
-            ->setMaxAge(config('cache.one_day'))
-            ->header('Cache-Control', 'public, max-age=' . config('cache.one_day'));
+            ->header('Cache-Control', 'private, no-store');
     }
 
 
@@ -505,6 +466,160 @@ class FilterController extends Controller
 
 
     /**
+     * Build all four disjunctive characteristic facets from one grouped query.
+     * Other facet selections are combined with AND, while multiple values
+     * selected inside the facet being counted remain OR choices.
+     */
+    private function characteristicFacets(array $params): array
+    {
+        $columns = array_keys(self::CHARACTERISTIC_FACETS);
+        $facetKeys = collect(self::CHARACTERISTIC_FACETS)->pluck('key')->all();
+        $rows = $this->productContextQuery($params, $facetKeys)
+            ->select($columns)
+            ->selectRaw('COUNT(*) as aggregate')
+            ->groupBy($columns)
+            ->get();
+        $selections = collect(self::CHARACTERISTIC_FACETS)
+            ->mapWithKeys(function (array $definition, string $column) use ($params) {
+                $values = collect($this->filterValues($params[$definition['key']] ?? []))
+                    ->map(fn ($value) => CatalogFilterValue::facetKey($column, $value))
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->all();
+
+                return [$definition['key'] => $values];
+            })
+            ->all();
+        $response = [];
+
+        foreach (self::CHARACTERISTIC_FACETS as $column => $definition) {
+            $buckets = [];
+
+            foreach ($rows as $row) {
+                if ( ! $this->rowMatchesCharacteristicSelections($row, $selections, $definition['key'])) {
+                    continue;
+                }
+
+                foreach (CatalogFilterValue::facetValues($column, $row->{$column}) as $label) {
+                    $value = CatalogFilterValue::key($label);
+
+                    if ($value === '' || $label === '') {
+                        continue;
+                    }
+
+                    if ( ! isset($buckets[$value])) {
+                        $buckets[$value] = [
+                            'value' => $value,
+                            'label' => $label,
+                            'count' => 0,
+                        ];
+                    }
+
+                    $buckets[$value]['count'] += (int) $row->aggregate;
+                }
+            }
+
+            // A selected zero-result value must remain visible so it can be
+            // unticked; unavailable unselected values disappear entirely.
+            foreach ($selections[$definition['key']] as $selectedValue) {
+                if (isset($buckets[$selectedValue])) {
+                    continue;
+                }
+
+                $label = CatalogFilterValue::facetDisplay($column, $selectedValue);
+                $buckets[$selectedValue] = [
+                    'value' => $selectedValue,
+                    'label' => $label !== '' ? $label : Str::ucfirst($selectedValue),
+                    'count' => 0,
+                ];
+            }
+
+            $items = collect($buckets)
+                ->sort(function (array $left, array $right) {
+                    return $right['count'] <=> $left['count']
+                        ?: strcasecmp($left['label'], $right['label']);
+                })
+                ->values()
+                ->all();
+
+            if ($items) {
+                $response[] = [
+                    'key' => $definition['key'],
+                    'title' => $definition['title'],
+                    'items' => $items,
+                ];
+            }
+        }
+
+        return $response;
+    }
+
+
+    /**
+     * Check one grouped product row against every selected facet except the
+     * facet currently being counted.
+     */
+    private function rowMatchesCharacteristicSelections($row, array $selections, string $exceptFacet): bool
+    {
+        foreach (self::CHARACTERISTIC_FACETS as $column => $definition) {
+            $selected = $selections[$definition['key']] ?? [];
+
+            if ($definition['key'] === $exceptFacet || ! $selected) {
+                continue;
+            }
+
+            $available = collect(CatalogFilterValue::facetValues($column, $row->{$column}))
+                ->map(fn ($value) => CatalogFilterValue::key($value));
+
+            if ($available->intersect($selected)->isEmpty()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+    /**
+     * Keep the short-lived cache key stable regardless of checkbox order.
+     */
+    private function characteristicFacetCacheParams(array $params): array
+    {
+        $normalized = [
+            'ids' => $params['ids'] ?? '',
+            'group' => trim((string) ($params['group'] ?? '')),
+            'cat' => $this->categoryId($params['cat'] ?? null),
+            'subcat' => $this->categoryId($params['subcat'] ?? null),
+            'start' => trim((string) ($params['start'] ?? '')),
+            'end' => trim((string) ($params['end'] ?? '')),
+        ];
+
+        foreach ([
+            'author' => ! empty($params['autor']) ? $params['autor'] : ($params['author'] ?? []),
+            'publisher' => ! empty($params['nakladnik']) ? $params['nakladnik'] : ($params['publisher'] ?? []),
+        ] as $key => $rawValues) {
+            $values = $this->entitySlugs($rawValues);
+            sort($values);
+            $normalized[$key] = $values;
+        }
+
+        foreach (self::CHARACTERISTIC_FACETS as $column => $definition) {
+            $values = collect($this->filterValues($params[$definition['key']] ?? []))
+                ->map(fn ($value) => CatalogFilterValue::facetKey($column, $value))
+                ->filter()
+                ->unique()
+                ->sort()
+                ->values()
+                ->all();
+            $normalized[$definition['key']] = $values;
+        }
+
+        return $normalized;
+    }
+
+
+    /**
      * @param mixed $value
      *
      * @return int|null
@@ -683,9 +798,10 @@ class FilterController extends Controller
      *
      * @return Builder
      */
-    private function productContextQuery(array $params, ?string $exceptFacet = null): Builder
+    private function productContextQuery(array $params, $exceptFacet = null): Builder
     {
         $query = Product::query()->active()->hasStock();
+        $excludedFacets = is_array($exceptFacet) ? $exceptFacet : array_filter([$exceptFacet]);
 
         if ( ! empty($params['ids'])) {
             $ids = is_array($params['ids'])
@@ -711,14 +827,18 @@ class FilterController extends Controller
             });
         }
 
-        $authorSlugs = $this->entitySlugs($params['autor'] ?? ($params['author'] ?? []));
-        if ($exceptFacet !== 'autor' && $authorSlugs) {
-            $query->whereIn('author_id', Author::query()->whereIn('slug', $authorSlugs)->pluck('id'));
+        $authorSlugs = $this->entitySlugs(
+            ! empty($params['autor']) ? $params['autor'] : ($params['author'] ?? [])
+        );
+        if ( ! in_array('autor', $excludedFacets, true) && $authorSlugs) {
+            $query->whereIn('author_id', Author::query()->select('id')->whereIn('slug', $authorSlugs));
         }
 
-        $publisherSlugs = $this->entitySlugs($params['nakladnik'] ?? ($params['publisher'] ?? []));
-        if ($exceptFacet !== 'nakladnik' && $publisherSlugs) {
-            $query->whereIn('publisher_id', Publisher::query()->whereIn('slug', $publisherSlugs)->pluck('id'));
+        $publisherSlugs = $this->entitySlugs(
+            ! empty($params['nakladnik']) ? $params['nakladnik'] : ($params['publisher'] ?? [])
+        );
+        if ( ! in_array('nakladnik', $excludedFacets, true) && $publisherSlugs) {
+            $query->whereIn('publisher_id', Publisher::query()->select('id')->whereIn('slug', $publisherSlugs));
         }
 
         if ( ! empty($params['start'])) {
@@ -739,7 +859,7 @@ class FilterController extends Controller
             'uvez' => 'binding',
             'jezik' => 'origin',
         ] as $parameter => $column) {
-            if ($parameter === $exceptFacet || empty($params[$parameter])) {
+            if (in_array($parameter, $excludedFacets, true) || empty($params[$parameter])) {
                 continue;
             }
 

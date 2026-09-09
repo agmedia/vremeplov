@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Bouncer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -518,17 +519,31 @@ class Product extends Model
             return $query;
         }
 
-        $storedValues = static::query()
-            ->whereNotNull($column)
-            ->where($column, '!=', '')
-            ->distinct()
-            ->pluck($column)
-            ->filter(function ($value) use ($column, $keys) {
-                return collect(CatalogFilterValue::facetValues($column, $value))
-                    ->map(fn ($facetValue) => CatalogFilterValue::key($facetValue))
-                    ->intersect($keys)
-                    ->isNotEmpty();
-            })
+        $storedValueIndex = Cache::remember(
+            'catalog.facet-value-index:v1:' . $column,
+            60,
+            function () use ($column) {
+                return static::query()
+                    ->whereNotNull($column)
+                    ->where($column, '!=', '')
+                    ->distinct()
+                    ->pluck($column)
+                    ->reduce(function (array $index, $storedValue) use ($column) {
+                        foreach (CatalogFilterValue::facetValues($column, $storedValue) as $facetValue) {
+                            $key = CatalogFilterValue::key($facetValue);
+
+                            if ($key !== '') {
+                                $index[$key][] = $storedValue;
+                            }
+                        }
+
+                        return $index;
+                    }, []);
+            }
+        );
+        $storedValues = $keys
+            ->flatMap(fn ($key) => $storedValueIndex[$key] ?? [])
+            ->unique()
             ->values();
 
         return $query->whereIn($column, $storedValues->isEmpty() ? ['__no_matching_value__'] : $storedValues);

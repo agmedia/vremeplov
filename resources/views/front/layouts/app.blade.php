@@ -178,7 +178,7 @@
 
 
 
-<script src="/js/cart.js?v=2.3.5"></script>
+<script src="/js/cart.js?v=2.3.7"></script>
 
 <script src="/js/theme.min.js?v=1.2"></script>
 

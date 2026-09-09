@@ -46,36 +46,36 @@
                         <div class="catalog-filter-years">
                             <label>
                                 <span class="visually-hidden">Godina od</span>
-                                <input class="form-control" inputmode="numeric" maxlength="4" placeholder="Od" type="text" v-model.trim="start">
+                                <input class="form-control" inputmode="numeric" maxlength="4" placeholder="Od" type="text" v-model.trim="start" @input="scheduleAvailableFiltersRefresh">
                                 <small>g</small>
                             </label>
                             <label>
                                 <span class="visually-hidden">Godina do</span>
-                                <input class="form-control" inputmode="numeric" maxlength="4" placeholder="Do" type="text" v-model.trim="end">
+                                <input class="form-control" inputmode="numeric" maxlength="4" placeholder="Do" type="text" v-model.trim="end" @input="scheduleAvailableFiltersRefresh">
                                 <small>g</small>
                             </label>
                         </div>
                     </div>
                 </section>
 
-                <section class="catalog-filter-section" v-if="filtersEnabled && characteristics.length">
-                    <button class="catalog-filter-section__toggle" type="button" v-on:click="toggleSection('characteristics')" :aria-expanded="openSections.characteristics ? 'true' : 'false'">
-                        <span><i class="fa-duotone fa-book-open" aria-hidden="true"></i>Karakteristike</span>
-                        <i class="fa-regular fa-chevron-down" :class="{'is-open': openSections.characteristics}" aria-hidden="true"></i>
+                <section class="catalog-filter-section" v-for="(facet, facetIndex) in characteristics" :key="facet.key">
+                    <button class="catalog-filter-section__toggle" type="button" v-on:click="toggleSection(facetSectionKey(facet.key))" :aria-expanded="openSections[facetSectionKey(facet.key)] ? 'true' : 'false'">
+                        <span><i class="fa-duotone" :class="facetIcon(facet.key)" aria-hidden="true"></i>{{ facet.title }}</span>
+                        <span class="catalog-filter-section__end">
+                            <span class="catalog-filter-count" v-if="selectedCharacteristics[facet.key] && selectedCharacteristics[facet.key].length">{{ selectedCharacteristics[facet.key].length }}</span>
+                            <i class="fa-regular fa-chevron-down" :class="{'is-open': openSections[facetSectionKey(facet.key)]}" aria-hidden="true"></i>
+                        </span>
                     </button>
-                    <div class="catalog-filter-section__content" v-show="openSections.characteristics">
-                        <div class="catalog-filter-facet" v-for="(facet, facetIndex) in characteristics" :key="facet.key">
-                            <h3>{{ facet.title }}</h3>
-                            <ul class="catalog-filter-options catalog-filter-options--checks catalog-filter-options--scroll">
-                                <li v-for="(item, itemIndex) in facet.items" :key="item.value">
-                                    <label class="catalog-filter-check" :for="facetId(facet.key, facetIndex, itemIndex)">
-                                        <input class="form-check-input" type="checkbox" :id="facetId(facet.key, facetIndex, itemIndex)" :value="item.value" v-model="selectedCharacteristics[facet.key]">
-                                        <span>{{ item.label }}</span>
-                                        <span class="catalog-filter-count">{{ formatCount(item.count) }}</span>
-                                    </label>
-                                </li>
-                            </ul>
-                        </div>
+                    <div class="catalog-filter-section__content" v-show="openSections[facetSectionKey(facet.key)]">
+                        <ul class="catalog-filter-options catalog-filter-options--checks catalog-filter-options--scroll">
+                            <li v-for="(item, itemIndex) in facet.items" :key="item.value">
+                                <label class="catalog-filter-check" :for="facetId(facet.key, facetIndex, itemIndex)">
+                                    <input class="form-check-input" type="checkbox" :id="facetId(facet.key, facetIndex, itemIndex)" :value="item.value" v-model="selectedCharacteristics[facet.key]" @change="scheduleAvailableFiltersRefresh">
+                                    <span>{{ item.label }}</span>
+                                    <span class="catalog-filter-count">{{ formatCount(item.count) }}</span>
+                                </label>
+                            </li>
+                        </ul>
                     </div>
                 </section>
 
@@ -96,7 +96,7 @@
                         <ul class="catalog-filter-options catalog-filter-options--checks catalog-filter-options--scroll">
                             <li v-for="(item, index) in authors" :key="item.slug">
                                 <label class="catalog-filter-check" :for="'filter-author-' + index">
-                                    <input class="form-check-input" type="checkbox" :id="'filter-author-' + index" :value="item.slug" v-model="selectedAuthors">
+                                    <input class="form-check-input" type="checkbox" :id="'filter-author-' + index" :value="item.slug" v-model="selectedAuthors" @change="scheduleAvailableFiltersRefresh">
                                     <span>{{ item.title }}</span>
                                     <span class="catalog-filter-count">{{ formatCount(item.products_count) }}</span>
                                 </label>
@@ -122,7 +122,7 @@
                         <ul class="catalog-filter-options catalog-filter-options--checks catalog-filter-options--scroll">
                             <li v-for="(item, index) in publishers" :key="item.slug">
                                 <label class="catalog-filter-check" :for="'filter-publisher-' + index">
-                                    <input class="form-check-input" type="checkbox" :id="'filter-publisher-' + index" :value="item.slug" v-model="selectedPublishers">
+                                    <input class="form-check-input" type="checkbox" :id="'filter-publisher-' + index" :value="item.slug" v-model="selectedPublishers" @change="scheduleAvailableFiltersRefresh">
                                     <span>{{ item.title }}</span>
                                     <span class="catalog-filter-count">{{ formatCount(item.products_count) }}</span>
                                 </label>
@@ -190,7 +190,6 @@ export default {
             openSections: {
                 categories: true,
                 year: false,
-                characteristics: false,
                 authors: false,
                 publishers: false,
             },
@@ -198,6 +197,10 @@ export default {
                 authors: null,
                 publishers: null,
             },
+            availableFiltersTimer: null,
+            characteristicRequestId: 0,
+            authorRequestId: 0,
+            publisherRequestId: 0,
         };
     },
 
@@ -242,6 +245,7 @@ export default {
 
         $route(route) {
             this.checkQuery(route);
+            this.scheduleAvailableFiltersRefresh();
         },
     },
 
@@ -256,12 +260,10 @@ export default {
 
             if (!this.author) {
                 this.show_authors = true;
-                this.getAuthors();
             }
 
             if (!this.publisher) {
                 this.show_publishers = true;
-                this.getPublishers();
             }
         }
     },
@@ -269,6 +271,7 @@ export default {
     beforeDestroy() {
         window.clearTimeout(this.searchTimers.authors);
         window.clearTimeout(this.searchTimers.publishers);
+        window.clearTimeout(this.availableFiltersTimer);
     },
 
     methods: {
@@ -283,43 +286,84 @@ export default {
         },
 
         getCharacteristics() {
+            const requestId = ++this.characteristicRequestId;
+
             axios.post('filter/getCharacteristics', {params: this.setParams()})
                 .then(response => {
+                    if (requestId !== this.characteristicRequestId) {
+                        return;
+                    }
+
                     this.characteristics = Array.isArray(response.data) ? response.data : [];
                 })
                 .catch(() => {
-                    this.characteristics = [];
+                    if (requestId === this.characteristicRequestId) {
+                        this.characteristics = [];
+                    }
                 });
         },
 
         getAuthors() {
+            const requestId = ++this.authorRequestId;
             this.authors_loaded = false;
             axios.post('filter/getAuthors', {params: this.setParams()})
                 .then(response => {
+                    if (requestId !== this.authorRequestId) {
+                        return;
+                    }
+
                     this.authors = Array.isArray(response.data) ? response.data : [];
                     this.selectedAuthors = this.syncSelectedEntityGroups(this.selectedAuthors, this.authors);
                 })
                 .catch(() => {
-                    this.authors = [];
+                    if (requestId === this.authorRequestId) {
+                        this.authors = [];
+                    }
                 })
                 .finally(() => {
-                    this.authors_loaded = true;
+                    if (requestId === this.authorRequestId) {
+                        this.authors_loaded = true;
+                    }
                 });
         },
 
         getPublishers() {
+            const requestId = ++this.publisherRequestId;
             this.publishers_loaded = false;
             axios.post('filter/getPublishers', {params: this.setParams()})
                 .then(response => {
+                    if (requestId !== this.publisherRequestId) {
+                        return;
+                    }
+
                     this.publishers = Array.isArray(response.data) ? response.data : [];
                     this.selectedPublishers = this.syncSelectedEntityGroups(this.selectedPublishers, this.publishers);
                 })
                 .catch(() => {
-                    this.publishers = [];
+                    if (requestId === this.publisherRequestId) {
+                        this.publishers = [];
+                    }
                 })
                 .finally(() => {
-                    this.publishers_loaded = true;
+                    if (requestId === this.publisherRequestId) {
+                        this.publishers_loaded = true;
+                    }
                 });
+        },
+
+        scheduleAvailableFiltersRefresh() {
+            window.clearTimeout(this.availableFiltersTimer);
+            this.availableFiltersTimer = window.setTimeout(() => {
+                this.getCharacteristics();
+
+                if (this.show_authors && this.openSections.authors) {
+                    this.getAuthors();
+                }
+
+                if (this.show_publishers && this.openSections.publishers) {
+                    this.getPublishers();
+                }
+            }, 200);
         },
 
         parseEntity(value) {
@@ -374,7 +418,9 @@ export default {
             this.selectedPublishers = this.publisher ? [] : this.parseList(query.nakladnik, '+');
 
             ['pismo', 'stanje', 'uvez', 'jezik'].forEach(key => {
-                this.$set(this.selectedCharacteristics, key, this.parseList(query[key], '|'));
+                const selected = this.parseList(query[key], '|');
+                this.$set(this.selectedCharacteristics, key, selected);
+                this.$set(this.openSections, this.facetSectionKey(key), selected.length > 0);
             });
         },
 
@@ -471,7 +517,16 @@ export default {
         },
 
         toggleSection(section) {
-            this.$set(this.openSections, section, !this.openSections[section]);
+            const willOpen = !this.openSections[section];
+            this.$set(this.openSections, section, willOpen);
+
+            if (willOpen && section === 'authors') {
+                this.getAuthors();
+            }
+
+            if (willOpen && section === 'publishers') {
+                this.getPublishers();
+            }
         },
 
         closeWindow() {
@@ -499,6 +554,19 @@ export default {
 
         facetId(key, facetIndex, itemIndex) {
             return `filter-${key}-${facetIndex}-${itemIndex}`;
+        },
+
+        facetSectionKey(key) {
+            return `facet-${key}`;
+        },
+
+        facetIcon(key) {
+            return {
+                pismo: 'fa-font',
+                stanje: 'fa-star',
+                uvez: 'fa-book',
+                jezik: 'fa-language',
+            }[key] || 'fa-filter';
         },
 
         normalizeSearchValue(value) {
