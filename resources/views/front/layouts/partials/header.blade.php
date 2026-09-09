@@ -55,6 +55,7 @@
                     <li class="nav-item"><a class="nav-link" href="{{ route('catalog.route.actions') }}"><i class="fa-regular fa-badge-percent" aria-hidden="true"></i><span>Akcije</span></a></li>
                 @endif
                 <li class="nav-item"><a class="nav-link" href="{{ route('catalog.route.blog') }}"><i class="fa-regular fa-newspaper" aria-hidden="true"></i><span>Blog</span></a></li>
+                <li class="nav-item"><a class="nav-link{{ request()->routeIs('faq') ? ' active' : '' }}" href="{{ route('faq') }}" @if (request()->routeIs('faq')) aria-current="page" @endif><i class="fa-regular fa-circle-question" aria-hidden="true"></i><span>Česta pitanja</span></a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ route('kontakt') }}"><i class="fa-regular fa-envelope" aria-hidden="true"></i><span>Kontakt</span></a></li>
             </ul>
         </div>
@@ -156,6 +157,7 @@
                         <li><a class="mobile-main-navigation__row" href="{{ route('catalog.route.actions') }}"><i class="fa-duotone fa-badge-percent" aria-hidden="true"></i><span>Akcije</span><i class="fa-regular fa-chevron-right" aria-hidden="true"></i></a></li>
                     @endif
                     <li><a class="mobile-main-navigation__row" href="{{ route('catalog.route.blog') }}"><i class="fa-duotone fa-newspaper" aria-hidden="true"></i><span>Blog</span><i class="fa-regular fa-chevron-right" aria-hidden="true"></i></a></li>
+                    <li><a class="mobile-main-navigation__row{{ request()->routeIs('faq') ? ' is-active' : '' }}" href="{{ route('faq') }}" @if (request()->routeIs('faq')) aria-current="page" @endif><i class="fa-duotone fa-circle-question" aria-hidden="true"></i><span>Česta pitanja</span><i class="fa-regular fa-chevron-right" aria-hidden="true"></i></a></li>
                     <li><a class="mobile-main-navigation__row" href="{{ route('kontakt') }}"><i class="fa-duotone fa-envelope" aria-hidden="true"></i><span>Kontakt</span><i class="fa-regular fa-chevron-right" aria-hidden="true"></i></a></li>
                 </ul>
             </nav>

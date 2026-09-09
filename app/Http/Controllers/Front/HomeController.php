@@ -150,7 +150,11 @@ class HomeController extends Controller
      */
     public function faq()
     {
-        $faq = Faq::where('status', 1)->get();
+        $faq = Faq::where('status', 1)
+            ->orderByRaw('CAST(sort_order AS UNSIGNED)')
+            ->orderBy('id')
+            ->get();
+
         return view('front.faq', compact('faq'));
     }
 

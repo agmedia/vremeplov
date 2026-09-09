@@ -80,7 +80,7 @@ class FaqController extends Controller
      */
     public function update(Request $request, Faq $faq)
     {
-        $updated = $faq->validateRequest($request)->create();
+        $updated = $faq->validateRequest($request)->edit();
 
         if ($updated) {
             return redirect()->route('faqs.edit', ['faq' => $updated])->with(['success' => 'Faq was succesfully saved!']);

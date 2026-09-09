@@ -61,7 +61,7 @@ class Faq extends Model
             'category'    => 'default',
             'description' => $this->request->description,
             'lang'        => 'hr',
-            'sortorder'  => 0,
+            'sort_order' => 0,
             'status'      => (isset($this->request->status) and $this->request->status == 'on') ? 1 : 0,
             'created_at'  => Carbon::now(),
             'updated_at'  => Carbon::now()
@@ -87,7 +87,7 @@ class Faq extends Model
             'category'    => 'default',
             'description' => $this->request->description,
             'lang'        => 'hr',
-            'sortorder'  => 0,
+            'sort_order' => 0,
             'status'      => (isset($this->request->status) and $this->request->status == 'on') ? 1 : 0,
             'updated_at'  => Carbon::now()
         ]);
