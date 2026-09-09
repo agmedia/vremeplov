@@ -9,7 +9,7 @@
                 && preg_match('/^[A-Za-z0-9-]+$/', $boxNowLockerId) === 1);
         $checkoutCanBeReviewed = $payment !== '' && $boxNowPickupSelected;
     @endphp
-    <div class="steps steps-dark pt-2 pb-3 mb-5">
+    <div class="steps steps-dark checkout-progress-shell checkout-steps-six pt-2 pb-3 mb-4" aria-label="Napredak kupnje">
         <a class="step-item active" href="{{ route('kosarica') }}">
             <div class="step-progress"><span class="step-count">1</span></div>
             <div class="step-label"><i class="fa-regular fa-cart-shopping"></i>Košarica</div>
@@ -73,8 +73,12 @@
             </script>
         @endsection
     @endif
+    <div class="checkout-flow-card">
     @if ($step == 'podaci')
-        <h2 class="h6 pt-1 pb-3 mb-3 border-bottom">Adresa dostave</h2>
+        <div class="checkout-card-heading">
+            <span class="checkout-card-heading__icon" aria-hidden="true"><i class="fa-regular fa-circle-user"></i></span>
+            <h2 class="h5 mb-0">Adresa dostave</h2>
+        </div>
 
         @if (session()->has('login_success'))
             <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
@@ -237,7 +241,10 @@
 
 
     @if ($step == 'dostava')
-        <h2 class="h6 pt-1 pb-3 mb-3 ">Odaberite način dostave</h2>
+        <div class="checkout-card-heading">
+            <span class="checkout-card-heading__icon" aria-hidden="true"><i class="fa-regular fa-box"></i></span>
+            <h2 class="h5 mb-0">Odaberite način dostave</h2>
+        </div>
         <div class="table-responsive">
             <table class="table table-hover fs-sm border-top">
                 <thead>
@@ -325,7 +332,10 @@
 
 
     @if ($step == 'placanje')
-        <h2 class="h6 pt-1 pb-3 mb-3 ">Odaberite način plaćanja</h2>
+        <div class="checkout-card-heading">
+            <span class="checkout-card-heading__icon" aria-hidden="true"><i class="fa-regular fa-credit-card"></i></span>
+            <h2 class="h5 mb-0">Odaberite način plaćanja</h2>
+        </div>
         <div class="table-responsive">
             <table class="table table-hover fs-sm border-top">
                 <tbody>
@@ -349,6 +359,7 @@
             <div class="w-50 ps-2"><a class="btn btn-primary d-block w-100" @if($checkoutCanBeReviewed) href="{{ route('pregled') }}" @else wire:click="changeStep('placanje')" href="javascript:void(0);" @endif><span class="d-none d-sm-inline">Pregledajte narudžbu</span><span class="d-inline d-sm-none">Nastavi</span><i class="fa-regular fa-arrow-right mt-sm-0 ms-1"></i></a></div>
         </div>
     @endif
+    </div>
 
 </div>
 

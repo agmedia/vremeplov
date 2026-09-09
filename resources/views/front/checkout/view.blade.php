@@ -25,7 +25,7 @@
         <div class="row">
             <section class="col-lg-8">
 
-                <div class="steps steps-dark pt-2 pb-3 mb-2">
+                <div class="steps steps-dark checkout-progress-shell checkout-steps-six pt-2 pb-3 mb-4" aria-label="Napredak kupnje">
                     <a class="step-item active" href="{{ route('kosarica') }}">
                         <div class="step-progress"><span class="step-count">1</span></div>
                         <div class="step-label"><i class="fa-regular fa-cart-shopping"></i>Košarica</div>
@@ -51,10 +51,14 @@
                         <div class="step-label"><i class="fa-regular fa-circle-check"></i>Uspješno</div>
                     </a>
                 </div>
-                <h2 class="h6 pt-1 pb-3 mb-3">Pregled košarice</h2>
+                <div class="checkout-flow-card">
+                <div class="checkout-card-heading">
+                    <span class="checkout-card-heading__icon" aria-hidden="true"><i class="fa-regular fa-eye"></i></span>
+                    <h2 class="h5 mb-0">Pregled košarice</h2>
+                </div>
                 <cart-view continueurl="{{ route('index') }}" checkouturl="{{ route('naplata') }}" buttons="false"></cart-view>
 
-                <div class="bg-secondary rounded-3 px-4 pt-4 pb-2">
+                <div class="checkout-review-details px-4 pt-4 pb-2">
                     <div class="row">
                         <div class="col-sm-6">
                             <h4 class="h6">Platitelj:</h4>
@@ -107,6 +111,10 @@
                 <div class="d-none d-lg-flex pt-0 mt-3">
                     {!! $data['payment_form'] !!}
                 </div>
+                <div class="d-lg-none pt-0 mt-3">
+                    {!! $data['payment_form'] !!}
+                </div>
+                </div>
 
             </section>
 
@@ -115,11 +123,6 @@
             </aside>
         </div>
 
-        <div class="row d-lg-none">
-            <div class="col-lg-8">
-                {!! $data['payment_form'] !!}
-            </div>
-        </div>
     </div>
 
 @endsection

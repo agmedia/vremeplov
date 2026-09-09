@@ -33,7 +33,7 @@
 <div class="container pb-5 mb-2 mb-md-4">
     <div class="row">
         <section class="col-lg-8">
-            <div class="steps steps-dark pt-2 pb-3 mb-2">
+            <div class="steps steps-dark checkout-progress-shell checkout-steps-six pt-2 pb-3 mb-4" aria-label="Napredak kupnje">
                 <a class="step-item current active" href="{{ route('kosarica') }}">
                     <div class="step-progress"><span class="step-count">1</span></div>
                     <div class="step-label"><i class="fa-regular fa-cart-shopping"></i>Košarica</div>
@@ -59,7 +59,9 @@
                     <div class="step-label"><i class="fa-regular fa-circle-check"></i>Uspješno</div>
                 </a>
             </div>
-            <cart-view continueurl="{{ \Illuminate\Support\Facades\URL::previous() }}" checkouturl="{{ route('naplata') }}" freeship="{{ config('settings.free_shipping') }}"></cart-view>
+            <div class="checkout-flow-card">
+                <cart-view continueurl="{{ \Illuminate\Support\Facades\URL::previous() }}" checkouturl="{{ route('naplata') }}" freeship="{{ config('settings.free_shipping') }}"></cart-view>
+            </div>
 
         </section>
         <!-- Sidebar-->

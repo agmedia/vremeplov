@@ -15,7 +15,7 @@
 
     <div class="container pb-5 mb-sm-4">
         <div class="pt-5">
-            <div class="steps steps-dark checkout-steps-six pt-2 pb-3 mb-4" aria-label="Napredak kupnje">
+            <div class="steps steps-dark checkout-progress-shell checkout-steps-six pt-2 pb-3 mb-4" aria-label="Napredak kupnje">
                 <a class="step-item active" href="{{ route('kosarica') }}">
                     <div class="step-progress"><span class="step-count">1</span></div>
                     <div class="step-label"><i class="fa-regular fa-cart-shopping"></i>Košarica</div>
@@ -41,7 +41,7 @@
                     <span class="step-label"><i class="fa-regular fa-circle-check"></i>Uspješno</span>
                 </span>
             </div>
-            <div class="card py-3 mt-sm-3">
+            <div class="checkout-flow-card checkout-success-card py-3 mt-sm-3">
                 <div class="card-body text-center">
                     <h2 class="h4 pb-3">Vaša narudžba je uspješno dovršena!</h2>
 
