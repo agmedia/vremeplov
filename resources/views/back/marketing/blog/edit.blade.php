@@ -224,6 +224,8 @@
             const relatedSliderMode = document.getElementById('related-slider-mode');
             const relatedSliderAuthor = document.getElementById('related-slider-author');
             const relatedSliderBooks = document.getElementById('related-slider-books');
+            const pageHeader = document.getElementById('page-header');
+            const editorToolbarOffset = pageHeader ? Math.ceil(pageHeader.getBoundingClientRect().height) : 0;
 
             function updateRelatedSliderPanels() {
                 const mode = relatedSliderMode ? relatedSliderMode.value : 'none';
@@ -243,6 +245,9 @@
 
             ClassicEditor
             .create(document.querySelector('#description-editor'), {
+                toolbar: {
+                    viewportTopOffset: editorToolbarOffset,
+                },
                 ckfinder: {
                     uploadUrl: '{{ route('blogs.upload.image') }}?_token=' + document.querySelector('meta[name="csrf-token"]').getAttribute('content') + '&blog_id={{ (isset($blog->id) && $blog->id) ?: 0 }}',
                 }

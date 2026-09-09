@@ -107,10 +107,23 @@
     </div>
     @else
         @php
-            $articleLead = \Illuminate\Support\Str::limit(
-                trim(strip_tags((string) $blog->short_description)),
-                360
-            );
+            $normalizeArticleText = static function ($value) {
+                $text = html_entity_decode(strip_tags((string) $value), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+                return mb_strtolower(trim(preg_replace('/\s+/u', ' ', $text)), 'UTF-8');
+            };
+            $articleLeadText = trim(preg_replace(
+                '/\s+/u',
+                ' ',
+                html_entity_decode(strip_tags((string) $blog->short_description), ENT_QUOTES | ENT_HTML5, 'UTF-8')
+            ));
+            $articleLead = $articleLeadText
+                && ! \Illuminate\Support\Str::startsWith(
+                    $normalizeArticleText($blog->description),
+                    $normalizeArticleText($articleLeadText)
+                )
+                    ? \Illuminate\Support\Str::limit($articleLeadText, 360)
+                    : '';
             $articleWords = preg_split(
                 '/\s+/u',
                 trim(strip_tags((string) $blog->description)),

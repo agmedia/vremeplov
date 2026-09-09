@@ -87,6 +87,39 @@ class BlogRelatedProductsTest extends TestCase
         $response->assertDontSee('Ručno odabrana karta');
     }
 
+    public function test_blog_article_does_not_repeat_a_summary_that_already_starts_the_body(): void
+    {
+        $summary = 'Isti uvodni tekst spremljen je i kao sažetak i kao prvi odlomak.';
+        $slug = $this->createBlogPage('Članak bez ponovljenog uvoda', $summary, '<p>' . $summary . '</p><p>Nastavak članka.</p>');
+
+        $response = $this->get(route('catalog.route.blog', ['blog' => $slug]));
+
+        $response->assertOk();
+        $response->assertDontSee('<p class="blog-article__lead">', false);
+        $response->assertSee($summary);
+    }
+
+    public function test_blog_admin_lists_newest_posts_first(): void
+    {
+        $this->createBlogPage(
+            'Stariji članak',
+            'Stariji sažetak.',
+            '<p>Stariji sadržaj.</p>',
+            now()->subDay()
+        );
+        $this->createBlogPage(
+            'Najnoviji članak',
+            'Noviji sažetak.',
+            '<p>Noviji sadržaj.</p>',
+            now()
+        );
+
+        $response = $this->actingAs(User::factory()->create())->get(route('blogs'));
+
+        $response->assertOk();
+        $response->assertSeeInOrder(['Najnoviji članak', 'Stariji članak']);
+    }
+
     public function test_blog_admin_requires_an_author_for_author_mode(): void
     {
         $response = $this->actingAs(User::factory()->create())
@@ -135,6 +168,26 @@ class BlogRelatedProductsTest extends TestCase
             'status' => true,
             'created_at' => now(),
             'updated_at' => now(),
+        ]);
+
+        return $slug;
+    }
+
+    private function createBlogPage(string $title, string $summary, string $description, $createdAt = null): string
+    {
+        $slug = Str::slug($title) . '-' . Str::random(8);
+        $createdAt = $createdAt ?: now();
+
+        DB::table('pages')->insert([
+            'group' => 'blog',
+            'title' => $title,
+            'slug' => $slug,
+            'short_description' => $summary,
+            'description' => $description,
+            'image' => 'media/img/blog/test.jpg',
+            'status' => true,
+            'created_at' => $createdAt,
+            'updated_at' => $createdAt,
         ]);
 
         return $slug;
