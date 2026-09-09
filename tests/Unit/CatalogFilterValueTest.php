@@ -62,6 +62,29 @@ class CatalogFilterValueTest extends TestCase
         );
     }
 
+    public function test_person_name_matching_groups_reversed_names_and_initials(): void
+    {
+        $this->assertTrue(CatalogFilterValue::personNamesMatch('Paulo Coelho', 'COELHO PAULO'));
+        $this->assertTrue(CatalogFilterValue::personNamesMatch('Carl Gustav Jung', 'C. G. Jung'));
+        $this->assertFalse(CatalogFilterValue::personNamesMatch('Carl Gustav Jung', 'Chang Jung'));
+        $this->assertFalse(CatalogFilterValue::personNamesMatch('Ivan Sarić', 'Ivan Šarić'));
+    }
+
+    public function test_person_groups_choose_a_human_readable_label(): void
+    {
+        $groups = CatalogFilterValue::groupPeople(collect([
+            (object) ['title' => 'COELHO PAULO'],
+            (object) ['title' => 'Paulo Coelho'],
+            (object) ['title' => 'Chang Jung'],
+        ]));
+
+        $this->assertCount(2, $groups);
+        $preferred = $groups[0]
+            ->sortByDesc(fn ($author) => CatalogFilterValue::personLabelScore($author->title))
+            ->first();
+        $this->assertSame('Paulo Coelho', $preferred->title);
+    }
+
     public function test_facet_values_are_atomic_and_use_sentence_case(): void
     {
         $this->assertSame(

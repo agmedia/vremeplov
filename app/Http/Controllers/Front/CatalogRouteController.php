@@ -17,11 +17,11 @@ use App\Models\Front\Catalog\Product;
 use App\Models\Front\Catalog\Publisher;
 use App\Models\Seo;
 use App\Models\TagManager;
+use App\Support\CatalogFilterValue;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class CatalogRouteController extends Controller
 {
@@ -238,7 +238,7 @@ class CatalogRouteController extends Controller
             ->where('slug', 'carl-gustav-jung')
             ->value('url') ?: ($authorBasePath . '/carl-gustav-jung');
 
-        $authors = DB::table('authors')
+        $authorRows = DB::table('authors')
             ->where('status', 1)
             ->where('title', 'like', '%' . $query . '%')
             ->orderByRaw(
@@ -251,24 +251,32 @@ class CatalogRouteController extends Controller
             )
             ->orderBy('title')
             ->limit(30)
-            ->get(['title', 'slug', 'url'])
-            ->map(function ($author) use ($authorBasePath, $carlJungUrl) {
-                $title = trim((string) $author->title);
-                $key = Str::lower(Str::ascii(preg_replace('/[^\pL\pN]+/u', '', $title) ?? $title));
-                $isCarlJung = in_array($key, [
-                    'cgjung',
-                    'jung',
-                    'gjungc',
-                    'gustavjungcarl',
-                    'gustavjungkarl',
-                    'carlgustavjung',
-                ], true);
-                $url = $author->url ?: ($authorBasePath . '/' . $author->slug);
+            ->get(['title', 'slug', 'url']);
+
+        $authors = collect(CatalogFilterValue::groupPeople($authorRows))
+            ->map(function ($variants) use ($authorBasePath, $carlJungUrl) {
+                $preferred = $variants
+                    ->sortByDesc(fn ($author) => CatalogFilterValue::personLabelScore($author->title))
+                    ->first();
+                $title = CatalogFilterValue::display($preferred->title);
+                $isCarlJung = $variants->contains(function ($author) {
+                    $key = str_replace(' ', '', CatalogFilterValue::key($author->title));
+
+                    return in_array($key, [
+                        'cgjung',
+                        'jung',
+                        'gjungc',
+                        'gustavjungcarl',
+                        'gustavjungkarl',
+                        'carlgustavjung',
+                    ], true);
+                });
+                $url = $preferred->url ?: ($authorBasePath . '/' . $preferred->slug);
 
                 return [
                     'title' => $isCarlJung ? 'Carl Gustav Jung' : $title,
                     'url' => $isCarlJung ? $carlJungUrl : $url,
-                    'key' => $isCarlJung ? 'carl-gustav-jung' : $key,
+                    'key' => $isCarlJung ? 'carl-gustav-jung' : CatalogFilterValue::entityKey($title),
                 ];
             })
             ->unique(function ($author) {

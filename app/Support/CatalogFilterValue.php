@@ -563,4 +563,106 @@ final class CatalogFilterValue
 
         return $surname . '|' . implode('', $initials);
     }
+
+    /**
+     * Group harmless variants of a person's name, including reversed full
+     * names and initial-based forms that still share the same surname.
+     *
+     * @param iterable $entities Objects with a title property.
+     */
+    public static function groupPeople($entities): array
+    {
+        $groups = [];
+
+        foreach ($entities as $entity) {
+            $matchingGroups = [];
+            foreach ($groups as $index => $group) {
+                if ($group->contains(fn ($member) => self::personNamesMatch($entity->title, $member->title))) {
+                    $matchingGroups[] = $index;
+                }
+            }
+
+            if (empty($matchingGroups)) {
+                $groups[] = collect([$entity]);
+                continue;
+            }
+
+            $target = array_shift($matchingGroups);
+            $groups[$target]->push($entity);
+            foreach (array_reverse($matchingGroups) as $index) {
+                $groups[$target] = $groups[$target]->merge($groups[$index]);
+                array_splice($groups, $index, 1);
+            }
+        }
+
+        return $groups;
+    }
+
+    public static function personNamesMatch($first, $second): bool
+    {
+        $firstDisplay = self::display($first);
+        $secondDisplay = self::display($second);
+        if ($firstDisplay === '' || $secondDisplay === '') {
+            return false;
+        }
+
+        if (self::entityKey($firstDisplay) === self::entityKey($secondDisplay)) {
+            return true;
+        }
+
+        $firstTokens = self::personNameTokens($firstDisplay);
+        $secondTokens = self::personNameTokens($secondDisplay);
+        if (empty($firstTokens) || empty($secondTokens)) {
+            return false;
+        }
+
+        $firstSorted = $firstTokens;
+        $secondSorted = $secondTokens;
+        sort($firstSorted, SORT_STRING);
+        sort($secondSorted, SORT_STRING);
+        if ($firstSorted === $secondSorted) {
+            return true;
+        }
+
+        $hasInitials = collect($firstTokens)->contains(fn ($token) => mb_strlen($token, 'UTF-8') === 1)
+            || collect($secondTokens)->contains(fn ($token) => mb_strlen($token, 'UTF-8') === 1);
+        if (! $hasInitials || count($firstTokens) !== count($secondTokens)) {
+            return false;
+        }
+
+        $firstInitials = collect($firstTokens)
+            ->map(fn ($token) => mb_substr($token, 0, 1, 'UTF-8'))
+            ->sort()
+            ->values();
+        $secondInitials = collect($secondTokens)
+            ->map(fn ($token) => mb_substr($token, 0, 1, 'UTF-8'))
+            ->sort()
+            ->values();
+        $sharedFullTokens = array_intersect(
+            array_filter($firstTokens, fn ($token) => mb_strlen($token, 'UTF-8') > 1),
+            array_filter($secondTokens, fn ($token) => mb_strlen($token, 'UTF-8') > 1)
+        );
+
+        return $firstInitials->all() === $secondInitials->all() && ! empty($sharedFullTokens);
+    }
+
+    public static function personLabelScore($value): int
+    {
+        $label = self::display($value);
+        $letters = preg_replace('/[^\pL\pN]+/u', '', $label) ?? '';
+        $words = preg_split('/\s+/u', $label) ?: [];
+        $uppercasePenalty = mb_strtoupper($label, 'UTF-8') === $label ? 20 : 0;
+
+        return (count($words) * 100) + mb_strlen($letters, 'UTF-8') - $uppercasePenalty;
+    }
+
+    private static function personNameTokens($value): array
+    {
+        $plain = Str::lower(self::display($value));
+
+        return array_values(array_filter(
+            preg_split('/[^\p{L}\p{N}]+/u', $plain) ?: [],
+            fn ($token) => $token !== '' && ! in_array($token, ['dr', 'mr', 'prof'], true)
+        ));
+    }
 }

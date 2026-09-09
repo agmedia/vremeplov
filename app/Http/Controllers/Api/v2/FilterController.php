@@ -644,13 +644,13 @@ class FilterController extends Controller
     private function groupEntityFacet($entities, $counts, bool $people): array
     {
         $groups = $people
-            ? $this->groupPeople($entities)
+            ? CatalogFilterValue::groupPeople($entities)
             : $entities->groupBy(fn ($entity) => CatalogFilterValue::key($entity->title));
 
         return collect($groups)
             ->map(function ($variants) use ($counts) {
                 $preferred = $variants
-                    ->sortByDesc(fn ($entity) => $this->entityLabelScore($entity->title))
+                    ->sortByDesc(fn ($entity) => CatalogFilterValue::personLabelScore($entity->title))
                     ->first();
                 $slugs = $variants->pluck('slug')->filter()->unique()->sort()->values();
 
@@ -667,98 +667,6 @@ class FilterController extends Controller
             ->sortBy(fn ($entity) => Str::lower($entity['title']))
             ->values()
             ->all();
-    }
-
-
-    /**
-     * Build transitive groups for harmless author-name variants: punctuation,
-     * reordered full names and initials that still share the same surname.
-     */
-    private function groupPeople($entities): array
-    {
-        $groups = [];
-
-        foreach ($entities as $entity) {
-            $matchingGroups = [];
-            foreach ($groups as $index => $group) {
-                if ($group->contains(fn ($member) => $this->personNamesMatch($entity->title, $member->title))) {
-                    $matchingGroups[] = $index;
-                }
-            }
-
-            if (empty($matchingGroups)) {
-                $groups[] = collect([$entity]);
-                continue;
-            }
-
-            $target = array_shift($matchingGroups);
-            $groups[$target]->push($entity);
-            foreach (array_reverse($matchingGroups) as $index) {
-                $groups[$target] = $groups[$target]->merge($groups[$index]);
-                array_splice($groups, $index, 1);
-            }
-        }
-
-        return $groups;
-    }
-
-
-    private function personNamesMatch($first, $second): bool
-    {
-        if (CatalogFilterValue::personKey($first) === CatalogFilterValue::personKey($second)) {
-            return true;
-        }
-
-        $firstTokens = $this->personNameTokens($first);
-        $secondTokens = $this->personNameTokens($second);
-        if (empty($firstTokens) || empty($secondTokens)) {
-            return false;
-        }
-
-        $firstSorted = $firstTokens;
-        $secondSorted = $secondTokens;
-        sort($firstSorted, SORT_STRING);
-        sort($secondSorted, SORT_STRING);
-        if ($firstSorted === $secondSorted) {
-            return true;
-        }
-
-        $hasInitials = collect($firstTokens)->contains(fn ($token) => strlen($token) === 1)
-            || collect($secondTokens)->contains(fn ($token) => strlen($token) === 1);
-        if ( ! $hasInitials || count($firstTokens) !== count($secondTokens)) {
-            return false;
-        }
-
-        $firstInitials = collect($firstTokens)->map(fn ($token) => substr($token, 0, 1))->sort()->values();
-        $secondInitials = collect($secondTokens)->map(fn ($token) => substr($token, 0, 1))->sort()->values();
-        $sharedFullTokens = array_intersect(
-            array_filter($firstTokens, fn ($token) => strlen($token) > 1),
-            array_filter($secondTokens, fn ($token) => strlen($token) > 1)
-        );
-
-        return $firstInitials->all() === $secondInitials->all() && ! empty($sharedFullTokens);
-    }
-
-
-    private function personNameTokens($value): array
-    {
-        $plain = Str::lower(Str::ascii(CatalogFilterValue::display($value)));
-
-        return array_values(array_filter(
-            preg_split('/[^a-z0-9]+/', $plain) ?: [],
-            fn ($token) => $token !== '' && ! in_array($token, ['dr', 'mr', 'prof'], true)
-        ));
-    }
-
-
-    private function entityLabelScore($value): int
-    {
-        $label = CatalogFilterValue::display($value);
-        $letters = preg_replace('/[^\pL\pN]+/u', '', $label) ?? '';
-        $words = preg_split('/\s+/u', $label) ?: [];
-        $uppercasePenalty = mb_strtoupper($label) === $label ? 20 : 0;
-
-        return (count($words) * 100) + mb_strlen($letters) - $uppercasePenalty;
     }
 
 
