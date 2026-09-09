@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+    <title id="title">Antikvarijat Vremeplov</title>
+    <desc id="description">Zlatno slovo V na tamnosmeđoj podlozi</desc>
+    <rect width="512" height="512" rx="96" fill="#2d2224"/>
+    <rect x="22" y="22" width="468" height="468" rx="78" fill="none" stroke="#d8ac63" stroke-width="8" opacity=".55"/>
+    <path fill="#d8ac63" d="M-39 1361V1486H571V1361L402 1335L681 456L737 255L790 458L1085 1335L927 1361V1486H1413V1361L1285 1335L805 0H566L81 1335Z" transform="translate(84.25 441.5) scale(.25 -.25)"/>
+</svg>

@@ -68,15 +68,18 @@
     <!-- Viewport-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0" />
     <!-- Favicon and Touch Icons-->
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ config('settings.images_domain') . 'favicon-32x32.png' }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ config('settings.images_domain') . 'favicon-32x32.png' }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ config('settings.images_domain') . 'favicon-16x16.png' }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ config('settings.images_domain') . 'apple-touch-icon.png' }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ config('settings.images_domain') . 'favicon-32x32.png' }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ config('settings.images_domain') . 'favicon-16x16.png' }}">
-    <link rel="mask-icon" href="{{ config('settings.images_domain') . 'safari-pinned-tab.svg' }}" color="#2d2224">
+    <link rel="icon" href="/favicon.ico?v=20260909" sizes="any">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260909">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=20260909">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=20260909">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20260909">
+    <link rel="manifest" href="/site.webmanifest?v=20260909">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg?v=20260909" color="#2d2224">
+    <meta name="application-name" content="Vremeplov">
+    <meta name="apple-mobile-web-app-title" content="Vremeplov">
+    <meta name="msapplication-config" content="/browserconfig.xml?v=20260909">
     <meta name="msapplication-TileColor" content="#2d2224">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#2d2224">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     @livewireStyles
