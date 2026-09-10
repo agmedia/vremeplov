@@ -16,6 +16,9 @@ class RegistrationTest extends TestCase
         $response = $this->get('/register');
 
         $response->assertStatus(200);
+        $response->assertSee('id="signin-modal"', false);
+        $response->assertSee('id="signup-tab"', false);
+        $response->assertSee('Registrirajte se');
     }
 
     public function test_new_users_can_register()

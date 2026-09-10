@@ -26,6 +26,7 @@ use App\Http\Controllers\Back\Settings\App\ShippingController;
 use App\Http\Controllers\Back\Settings\App\TaxController;
 use App\Http\Controllers\Back\Settings\FaqController;
 use App\Http\Controllers\Back\Settings\BoxNowSettingsController;
+use App\Http\Controllers\Back\Settings\GoogleLoginSettingsController;
 use App\Http\Controllers\Back\Settings\HistoryController;
 use App\Http\Controllers\Back\Settings\PageController;
 use App\Http\Controllers\Back\Settings\QuickMenuController;
@@ -38,6 +39,7 @@ use App\Http\Controllers\Front\CatalogRouteController;
 use App\Http\Controllers\Front\CheckoutController;
 use App\Http\Controllers\Front\AbandonedCartRecoveryController;
 use App\Http\Controllers\Front\CustomerController;
+use App\Http\Controllers\Front\GoogleLoginController;
 use App\Http\Controllers\Front\HomeController;
 use App\Http\Controllers\Front\BookPurchaseController as FrontBookPurchaseController;
 use App\Http\Controllers\Front\OrderTrackingController;
@@ -47,6 +49,13 @@ use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Laravel\Jetstream\Http\Middleware\AuthenticateSession;
+
+Route::get('/prijava/google', [GoogleLoginController::class, 'redirect'])
+    ->middleware('throttle:10,1')
+    ->name('google.login.redirect');
+Route::get('/prijava/google/povratak', [GoogleLoginController::class, 'callback'])
+    ->middleware('throttle:10,1')
+    ->name('google.login.callback');
 
 
 /*Route::domain('https://images.antikvarijatbibl.lin73.host25.com/')->group(function () {
@@ -259,6 +268,12 @@ Route::middleware(['auth:sanctum', 'verified', 'no.customers'])->prefix('admin')
 
         // API
         Route::get('api', [ApiController::class, 'index'])->name('api.index');
+        Route::get('google-login', [GoogleLoginSettingsController::class, 'edit'])
+            ->middleware('admin.manager')
+            ->name('google-login.edit');
+        Route::patch('google-login', [GoogleLoginSettingsController::class, 'update'])
+            ->middleware('admin.manager')
+            ->name('google-login.update');
         Route::patch('boxnow', [BoxNowSettingsController::class, 'update'])
             ->middleware('boxnow.manager')
             ->name('boxnow-settings.update');

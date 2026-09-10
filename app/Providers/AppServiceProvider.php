@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Front\Catalog\Product;
 use App\Models\Back\Marketing\Review;
 use App\Models\Back\Marketing\Wishlist;
+use App\Services\GoogleLoginSettingsService;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
@@ -47,6 +48,10 @@ class AppServiceProvider extends ServiceProvider
             })
             : false;
         View::share('hasCatalogActions', $hasCatalogActions);
+
+        View::composer('front.layouts.modals.login', function ($view) {
+            $view->with('googleLoginEnabled', app(GoogleLoginSettingsService::class)->enabled());
+        });
 
         View::composer('back.layouts.partials.topbar', function ($view) {
             $wishlistReadyCount = Schema::hasTable('wishlist') && Schema::hasTable('products')

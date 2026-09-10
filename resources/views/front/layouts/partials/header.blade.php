@@ -35,9 +35,15 @@
             <!-- Toolbar -->
             <div class="navbar-toolbar site-header__toolbar d-flex align-items-center order-lg-3">
                 <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" aria-label="Otvori glavni izbornik" aria-controls="mobileNavigation" data-bs-target="#mobileNavigation"><i class="fa-regular fa-bars" aria-hidden="true"></i></button>
-                <a class="navbar-tool ms-2 me-1" aria-label="Prijava ili registracija" href="{{ route('login') }}" >
-                    <div class="navbar-tool-icon-box"><i class="navbar-tool-icon fa-regular fa-circle-user"></i></div>
-                </a>
+                @auth
+                    <a class="navbar-tool ms-2 me-1" aria-label="Moj račun" href="{{ auth()->user()->isAdministrator() ? route('dashboard') : route('moj-racun') }}">
+                        <div class="navbar-tool-icon-box"><i class="navbar-tool-icon fa-regular fa-circle-user"></i></div>
+                    </a>
+                @else
+                    <button class="navbar-tool ms-2 me-1 border-0 bg-transparent p-0" type="button" data-auth-tab="signin" data-bs-toggle="modal" data-bs-target="#signin-modal" aria-label="Prijava ili registracija">
+                        <span class="navbar-tool-icon-box"><i class="navbar-tool-icon fa-regular fa-circle-user"></i></span>
+                    </button>
+                @endauth
                 <div>
                     <cart-nav-icon carturl="{{ route('kosarica') }}" checkouturl="{{ route('naplata') }}"></cart-nav-icon>
                 </div>

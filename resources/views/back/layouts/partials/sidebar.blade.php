@@ -193,6 +193,13 @@
                                 <span class="nav-main-link-name">API</span>
                             </a>
                         </li>
+                        @if(auth()->user() && (Bouncer::is(auth()->user())->an('master') || Bouncer::is(auth()->user())->an('admin')))
+                            <li class="nav-main-item">
+                                <a class="nav-main-link{{ request()->routeIs(['google-login.*']) ? ' active' : '' }}" href="{{ route('google-login.edit') }}">
+                                    <span class="nav-main-link-name">Google prijava</span>
+                                </a>
+                            </li>
+                        @endif
 
                         <li class="nav-main-item{{ request()->is(['admin/settings/system/*']) ? ' open' : '' }}">
                             <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="false" href="#">

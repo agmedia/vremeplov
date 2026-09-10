@@ -93,6 +93,16 @@ class User extends Authenticatable
         return $this->hasOne(UserDetail::class, 'user_id');
     }
 
+    /**
+     * Determine whether the user belongs in the administration area.
+     */
+    public function isAdministrator(): bool
+    {
+        return optional($this->details)->role === 'admin'
+            || $this->isAn('admin')
+            || $this->isAn('master');
+    }
+
 
     /**
      * Validate new category Request.

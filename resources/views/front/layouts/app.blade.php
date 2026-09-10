@@ -95,6 +95,7 @@
     <!-- Main Theme Styles + Bootstrap-->
     <link rel="stylesheet" media="screen" href="/css/theme.css?v=1.91">
     <link rel="stylesheet" media="screen" href="/css/front-vremeplov.css?v=1.0.47">
+    <link rel="stylesheet" media="screen" href="/css/account-auth.css?v=1.0.0">
     @include('front.layouts.partials.analytics')
 
     @stack('css_after')
@@ -147,6 +148,9 @@
 
 
 
+@include('front.layouts.modals.login')
+
+
 <div id="agapp">
     @include('front.layouts.partials.header')
 
@@ -189,6 +193,169 @@
 <script src="/js/cart.js?v=2.3.8"></script>
 
 <script src="/js/theme.min.js?v=1.2"></script>
+
+@guest
+    <script>
+        (function () {
+            const modalElement = document.getElementById('signin-modal');
+            const recaptchaSiteKey = @json(config('services.recaptcha.sitekey'));
+            const requestedForm = @json(old('_auth_form') ?: (request()->routeIs('register') ? 'signup' : 'signin'));
+            const shouldOpen = @json((bool) (session('auth_error') || old('_auth_form') || request()->routeIs('login', 'register')));
+            let recaptchaLoader = null;
+
+            if (!modalElement) {
+                return;
+            }
+
+            function activateTab(name) {
+                const trigger = document.getElementById(name === 'signup' ? 'pills-signup-tab' : 'pills-signin-tab');
+
+                if (trigger) {
+                    new bootstrap.Tab(trigger).show();
+                }
+            }
+
+            function loadRecaptcha() {
+                if (!recaptchaSiteKey || (window.grecaptcha && typeof window.grecaptcha.ready === 'function')) {
+                    return Promise.resolve(window.grecaptcha || null);
+                }
+
+                if (recaptchaLoader) {
+                    return recaptchaLoader;
+                }
+
+                recaptchaLoader = new Promise(function (resolve, reject) {
+                    const script = document.createElement('script');
+                    script.src = 'https://www.google.com/recaptcha/api.js?render=' + encodeURIComponent(recaptchaSiteKey);
+                    script.async = true;
+                    script.defer = true;
+                    script.onload = function () { resolve(window.grecaptcha); };
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
+
+                return recaptchaLoader;
+            }
+
+            function requestRecaptcha(form) {
+                const input = document.getElementById('auth-recaptcha');
+
+                return loadRecaptcha().then(function () {
+                    return new Promise(function (resolve, reject) {
+                        if (!input || !window.grecaptcha) {
+                            reject(new Error('reCAPTCHA API nije dostupan.'));
+                            return;
+                        }
+
+                        window.grecaptcha.ready(function () {
+                            window.grecaptcha.execute(recaptchaSiteKey, { action: 'register' })
+                                .then(function (token) {
+                                    if (!token) {
+                                        reject(new Error('reCAPTCHA token nije dostupan.'));
+                                        return;
+                                    }
+
+                                    input.value = token;
+                                    resolve();
+                                })
+                                .catch(reject);
+                        });
+                    });
+                });
+            }
+
+            modalElement.addEventListener('show.bs.modal', function (event) {
+                const form = event.relatedTarget && event.relatedTarget.getAttribute('data-auth-tab');
+                activateTab(form || requestedForm || 'signin');
+            });
+
+            modalElement.querySelectorAll('.password-visibility-toggle').forEach(function (toggle) {
+                toggle.addEventListener('click', function () {
+                    const input = document.getElementById(toggle.getAttribute('aria-controls'));
+                    const icon = toggle.querySelector('i');
+
+                    if (!input) {
+                        return;
+                    }
+
+                    const isVisible = input.type === 'text';
+                    input.type = isVisible ? 'password' : 'text';
+                    toggle.setAttribute('aria-pressed', isVisible ? 'false' : 'true');
+
+                    if (icon) {
+                        icon.classList.toggle('fa-eye', isVisible);
+                        icon.classList.toggle('fa-eye-slash', !isVisible);
+                    }
+                });
+            });
+
+            modalElement.querySelectorAll('form.needs-validation').forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        form.classList.add('was-validated');
+                        return;
+                    }
+
+                    form.classList.add('was-validated');
+
+                    if (form.id !== 'signup-tab' || !recaptchaSiteKey) {
+                        return;
+                    }
+
+                    if (form.dataset.recaptchaTokenReady === '1') {
+                        delete form.dataset.recaptchaTokenReady;
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    if (form.dataset.recaptchaPending === '1') {
+                        return;
+                    }
+
+                    form.dataset.recaptchaPending = '1';
+                    const button = form.querySelector('button[type="submit"]');
+                    const feedback = form.querySelector('.recaptcha-feedback');
+
+                    if (button) {
+                        button.disabled = true;
+                    }
+                    if (feedback) {
+                        feedback.textContent = '';
+                        feedback.classList.add('d-none');
+                    }
+
+                    requestRecaptcha(form)
+                        .then(function () {
+                            delete form.dataset.recaptchaPending;
+                            form.dataset.recaptchaTokenReady = '1';
+                            if (button) {
+                                button.disabled = false;
+                            }
+                            form.requestSubmit();
+                        })
+                        .catch(function () {
+                            delete form.dataset.recaptchaPending;
+                            if (button) {
+                                button.disabled = false;
+                            }
+                            if (feedback) {
+                                feedback.textContent = 'Sigurnosna provjera nije uspjela. Osvježite stranicu i pokušajte ponovno.';
+                                feedback.classList.remove('d-none');
+                            }
+                        });
+                });
+            });
+
+            if (shouldOpen) {
+                activateTab(requestedForm || 'signin');
+                new bootstrap.Modal(modalElement).show();
+            }
+        })();
+    </script>
+@endguest
 
 <script>
     $(() => {

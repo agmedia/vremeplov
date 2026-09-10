@@ -42,6 +42,12 @@ return [
         'bypass_local' => env('GOOGLE_RECAPTCHA_BYPASS_LOCAL', true),
     ],
 
+    'google_login' => [
+        'enabled' => env('GOOGLE_LOGIN_ENABLED', false),
+        'client_id' => env('GOOGLE_LOGIN_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_LOGIN_CLIENT_SECRET'),
+    ],
+
     // KEKS Pay callbacks and status polling remain unavailable until the
     // integration is explicitly reviewed and enabled for this installation.
     'keks' => [
