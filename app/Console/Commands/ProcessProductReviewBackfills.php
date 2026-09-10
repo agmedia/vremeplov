@@ -7,6 +7,7 @@ use App\Models\ProductReviewBackfillItem;
 use App\Models\ProductReviewInvitation;
 use App\Services\ProductReviewBackfillService;
 use App\Services\ProductReviewRequestService;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 
@@ -83,6 +84,20 @@ class ProcessProductReviewBackfills extends Command
                 break;
             }
 
+            $interval = max(
+                120,
+                (int) config('reviews.minimum_interval_seconds', 120),
+                (int) $batch->interval_seconds
+            );
+            $lastBatchAttemptAt = $batch->items()
+                ->whereNotNull('last_attempt_at')
+                ->max('last_attempt_at');
+
+            if ($lastBatchAttemptAt !== null
+                && Carbon::parse($lastBatchAttemptAt)->addSeconds($interval)->isFuture()) {
+                break;
+            }
+
             $item = $batch->items()
                 ->where('status', ProductReviewBackfillItem::STATUS_PENDING)
                 ->orderBy('id')
@@ -93,9 +108,11 @@ class ProcessProductReviewBackfills extends Command
                 break;
             }
 
+            $previousAttempts = (int) $item->attempts;
+            $previousLastAttemptAt = $item->last_attempt_at;
             $item->forceFill([
                 'status' => ProductReviewBackfillItem::STATUS_PROCESSING,
-                'attempts' => ((int) $item->attempts) + 1,
+                'attempts' => $previousAttempts + 1,
                 'last_attempt_at' => now(),
                 'last_error' => null,
             ])->save();
@@ -136,6 +153,15 @@ class ProcessProductReviewBackfills extends Command
                             $wasSent ? ProductReviewBackfillItem::STATUS_SENT : ProductReviewBackfillItem::STATUS_SKIPPED,
                             $wasSent ? null : $result['message']
                         );
+                    } elseif ($result['status'] === ProductReviewRequestService::STATUS_DEFERRED) {
+                        $item->forceFill([
+                            'status' => ProductReviewBackfillItem::STATUS_PENDING,
+                            'attempts' => $previousAttempts,
+                            'last_attempt_at' => $previousLastAttemptAt,
+                            'last_error' => $result['message'],
+                        ])->save();
+                        $this->info($result['message'] ?: 'Sljedeći review mail ostaje na čekanju.');
+                        break;
                     } elseif ($result['attempts'] < max(1, (int) config('reviews.request_max_attempts', 3))) {
                         $item->forceFill([
                             'status' => ProductReviewBackfillItem::STATUS_PENDING,
@@ -149,7 +175,6 @@ class ProcessProductReviewBackfills extends Command
                 }
             }
 
-            $interval = max(1, (int) $batch->interval_seconds);
             if (microtime(true) + $interval > $deadline) {
                 break;
             }

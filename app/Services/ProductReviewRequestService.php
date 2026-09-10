@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Mail\ProductReviewRequestMail;
+use App\Models\Back\Marketing\Wishlist;
 use App\Models\Back\Orders\Order;
 use App\Models\ProductReviewInvitation;
 use Carbon\Carbon;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
@@ -19,6 +21,7 @@ class ProductReviewRequestService
     public const STATUS_SENT = 'sent';
     public const STATUS_SKIPPED = 'skipped';
     public const STATUS_FAILED = 'failed';
+    public const STATUS_DEFERRED = 'deferred';
 
     public function eligibleOrders(Carbon $from, Carbon $to): Builder
     {
@@ -134,14 +137,74 @@ class ProductReviewRequestService
 
         $lock = Cache::lock('product-review-request-email:' . hash('sha256', $email), 300);
         if (! $lock->get()) {
-            return $this->result(self::STATUS_SKIPPED, 'Slanje na ovu e-mail adresu već je u tijeku.');
+            return $this->result(self::STATUS_DEFERRED, 'Slanje na ovu e-mail adresu već je u tijeku.');
         }
 
         try {
-            return $this->sendToEmail($order, $email);
+            // Keep duplicate checks outside the global rate lock so an already
+            // completed invitation can be marked terminal without waiting.
+            if (ProductReviewInvitation::query()
+                ->where('recipient_email_normalized', $email)
+                ->whereNotNull('sent_at')
+                ->exists()) {
+                return $this->result(self::STATUS_SKIPPED, 'Poziv na ovu e-mail adresu već je poslan.');
+            }
+
+            $minimumInterval = max(120, (int) config('reviews.minimum_interval_seconds', 120));
+            $dispatchLock = Cache::lock('product-review-mail-dispatch', max(300, $minimumInterval + 60));
+
+            if (! $dispatchLock->get()) {
+                return $this->result(self::STATUS_DEFERRED, 'Drugi review mail trenutačno se šalje.');
+            }
+
+            try {
+                if ($this->hasDuePriorityMail()) {
+                    return $this->result(
+                        self::STATUS_DEFERRED,
+                        'Review mail čeka dok se ne pošalju prioritetni mailovi narudžbi i wishliste.'
+                    );
+                }
+
+                $lastAttemptAt = ProductReviewInvitation::query()
+                    ->whereNotNull('last_attempt_at')
+                    ->max('last_attempt_at');
+
+                if ($lastAttemptAt !== null
+                    && Carbon::parse($lastAttemptAt)->addSeconds($minimumInterval)->isFuture()) {
+                    return $this->result(
+                        self::STATUS_DEFERRED,
+                        "Review mailovi imaju obavezni razmak od {$minimumInterval} sekundi."
+                    );
+                }
+
+                return $this->sendToEmail($order, $email);
+            } finally {
+                $dispatchLock->release();
+            }
         } finally {
             $lock->release();
         }
+    }
+
+    private function hasDuePriorityMail(): bool
+    {
+        if (Schema::hasTable('order_mail_deliveries')) {
+            $hasDueOrderMail = DB::table('order_mail_deliveries')
+                ->whereNull('sent_at')
+                ->where(function ($query) {
+                    $query->whereNull('next_attempt_at')
+                        ->orWhere('next_attempt_at', '<=', now());
+                })
+                ->exists();
+
+            if ($hasDueOrderMail) {
+                return true;
+            }
+        }
+
+        return Schema::hasTable('wishlist')
+            && Schema::hasTable('products')
+            && Wishlist::query()->readyToSend()->exists();
     }
 
     /**

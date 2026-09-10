@@ -85,7 +85,7 @@ class ProductReviewBackfillTest extends TestCase
             $table->date('date_from');
             $table->date('date_to');
             $table->unsignedInteger('requested_limit');
-            $table->unsignedSmallInteger('interval_seconds')->default(5);
+            $table->unsignedSmallInteger('interval_seconds')->default(120);
             $table->unsignedInteger('eligible_count')->default(0);
             $table->unsignedInteger('total_count')->default(0);
             $table->unsignedInteger('processed_count')->default(0);
@@ -124,10 +124,11 @@ class ProductReviewBackfillTest extends TestCase
             'reviews.request_daily_limit' => 100,
             'reviews.request_max_attempts' => 3,
             'reviews.request_link_days' => 180,
+            'reviews.minimum_interval_seconds' => 120,
             'reviews.eligible_status_ids' => [4, 9, 10],
             'reviews.backfill_max_orders' => 5000,
-            'reviews.backfill_default_interval_seconds' => 5,
-            'reviews.backfill_interval_options' => [5],
+            'reviews.backfill_default_interval_seconds' => 120,
+            'reviews.backfill_interval_options' => [120],
             'reviews.backfill_run_seconds' => 1,
         ]);
     }
@@ -151,7 +152,7 @@ class ProductReviewBackfillTest extends TestCase
             '--from' => '2026-05-01',
             '--to' => '2026-06-30',
             '--limit' => 100,
-            '--interval' => 5,
+            '--interval' => 120,
             '--yes' => true,
         ])->assertExitCode(0);
 
@@ -173,7 +174,7 @@ class ProductReviewBackfillTest extends TestCase
         $this->assertSame(1, DB::table('product_review_invitations')->count());
     }
 
-    public function test_automatic_and_historical_modules_cannot_send_twice_to_same_normalized_email(): void
+    public function test_automatic_requests_wait_for_active_backfill_and_cannot_duplicate_its_email(): void
     {
         Carbon::setTestNow('2026-09-07 12:00:00');
         Mail::fake();
@@ -184,25 +185,64 @@ class ProductReviewBackfillTest extends TestCase
             '--from' => '2026-05-01',
             '--to' => '2026-05-31',
             '--limit' => 100,
-            '--interval' => 5,
+            '--interval' => 120,
             '--yes' => true,
         ])->assertExitCode(0);
 
         $this->insertOrder(2, 'shared@example.test', '2026-07-20 10:00:00', '2026-08-20 10:00:00');
         $this->artisan('reviews:send-requests')->assertExitCode(0);
+        Mail::assertNothingSent();
+
         $this->artisan('reviews:process-backfills', ['--max-seconds' => 1])->assertExitCode(0);
+        Carbon::setTestNow(now()->addSeconds(120));
+        $this->artisan('reviews:send-requests')->assertExitCode(0);
 
         Mail::assertSent(ProductReviewRequestMail::class, 1);
         $this->assertSame(1, DB::table('product_review_invitations')->count());
         $this->assertDatabaseHas('product_review_backfill_items', [
             'order_id' => 1,
-            'status' => ProductReviewBackfillItem::STATUS_SKIPPED,
+            'status' => ProductReviewBackfillItem::STATUS_SENT,
         ]);
         $this->assertDatabaseHas('product_review_backfills', [
             'processed_count' => 1,
-            'sent_count' => 0,
-            'skipped_count' => 1,
+            'sent_count' => 1,
+            'skipped_count' => 0,
             'status' => ProductReviewBackfill::STATUS_COMPLETED,
+        ]);
+    }
+
+    public function test_legacy_fast_backfill_is_forced_to_wait_two_full_minutes(): void
+    {
+        Carbon::setTestNow('2026-09-07 12:00:00');
+        Mail::fake();
+
+        $this->insertOrder(1, 'prvi@example.test', '2026-05-02 10:00:00', '2026-05-10 10:00:00');
+        $this->insertOrder(2, 'drugi@example.test', '2026-05-03 10:00:00', '2026-05-11 10:00:00');
+        $this->artisan('reviews:backfill', [
+            '--from' => '2026-05-01',
+            '--to' => '2026-05-31',
+            '--limit' => 100,
+            '--interval' => 120,
+            '--yes' => true,
+        ])->assertExitCode(0);
+
+        // Simulate a batch created before the production safety floor existed.
+        DB::table('product_review_backfills')->update(['interval_seconds' => 5]);
+
+        $this->artisan('reviews:process-backfills', ['--max-seconds' => 1])->assertExitCode(0);
+        Mail::assertSent(ProductReviewRequestMail::class, 1);
+
+        Carbon::setTestNow(now()->addSeconds(119));
+        $this->artisan('reviews:process-backfills', ['--max-seconds' => 1])->assertExitCode(0);
+        Mail::assertSent(ProductReviewRequestMail::class, 1);
+        $this->assertSame(1, DB::table('product_review_backfill_items')->where('status', 'pending')->count());
+
+        Carbon::setTestNow(now()->addSecond());
+        $this->artisan('reviews:process-backfills', ['--max-seconds' => 1])->assertExitCode(0);
+        Mail::assertSent(ProductReviewRequestMail::class, 2);
+        $this->assertDatabaseHas('product_review_backfills', [
+            'status' => ProductReviewBackfill::STATUS_COMPLETED,
+            'sent_count' => 2,
         ]);
     }
 
@@ -216,7 +256,7 @@ class ProductReviewBackfillTest extends TestCase
             '--from' => '2026-05-01',
             '--to' => '2026-05-31',
             '--limit' => 100,
-            '--interval' => 5,
+            '--interval' => 120,
             '--yes' => true,
         ])->assertExitCode(0);
         $this->artisan('reviews:process-backfills', ['--max-seconds' => 1])->assertExitCode(0);
@@ -226,7 +266,7 @@ class ProductReviewBackfillTest extends TestCase
             '--from' => '2026-06-01',
             '--to' => '2026-06-30',
             '--limit' => 100,
-            '--interval' => 5,
+            '--interval' => 120,
             '--yes' => true,
         ])->assertExitCode(0);
 
@@ -246,7 +286,7 @@ class ProductReviewBackfillTest extends TestCase
             '--from' => '2026-05-01',
             '--to' => '2026-05-31',
             '--limit' => 100,
-            '--interval' => 5,
+            '--interval' => 120,
             '--yes' => true,
         ])->assertExitCode(0);
         $this->artisan('reviews:process-backfills', ['--max-seconds' => 1])->assertExitCode(0);
@@ -269,7 +309,7 @@ class ProductReviewBackfillTest extends TestCase
             '--from' => '2026-07-01',
             '--to' => '2026-08-20',
             '--limit' => 100,
-            '--interval' => 5,
+            '--interval' => 120,
             '--yes' => true,
         ])->assertExitCode(1);
 

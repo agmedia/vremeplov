@@ -14,7 +14,7 @@ class CreateProductReviewBackfills extends Migration
                 $table->date('date_from');
                 $table->date('date_to');
                 $table->unsignedInteger('requested_limit');
-                $table->unsignedSmallInteger('interval_seconds')->default(5);
+                $table->unsignedSmallInteger('interval_seconds')->default(120);
                 $table->unsignedInteger('eligible_count')->default(0);
                 $table->unsignedInteger('total_count')->default(0);
                 $table->unsignedInteger('processed_count')->default(0);

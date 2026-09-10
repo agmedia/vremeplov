@@ -14,7 +14,7 @@ class CreateProductReviewBackfill extends Command
                             {--from= : Početni datum razdoblja (YYYY-MM-DD)}
                             {--to= : Završni datum razdoblja (YYYY-MM-DD)}
                             {--limit=1000 : Najveći broj poruka}
-                            {--interval=5 : Razmak između poruka u sekundama}
+                            {--interval= : Razmak između poruka u sekundama; zadano je sigurni minimum}
                             {--dry-run : Samo prikaži broj i uzorak kandidata}
                             {--yes : Preskoči interaktivnu potvrdu}';
 
@@ -38,8 +38,10 @@ class CreateProductReviewBackfill extends Command
             return 1;
         }
 
-        $interval = (int) $this->option('interval');
-        $intervalOptions = (array) config('reviews.backfill_interval_options', [5]);
+        $interval = $this->option('interval') !== null
+            ? (int) $this->option('interval')
+            : (int) config('reviews.backfill_default_interval_seconds', 120);
+        $intervalOptions = (array) config('reviews.backfill_interval_options', [120]);
         if (! in_array($interval, $intervalOptions, true)) {
             $this->error('Nedopušten razmak. Odaberite: ' . implode(', ', $intervalOptions) . ' sekundi.');
 

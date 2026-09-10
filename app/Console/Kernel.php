@@ -45,10 +45,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('orders:send-abandoned-cart-reminders --limit=25')
             ->everyThirtyMinutes()
             ->withoutOverlapping(30);
-        $schedule->command('reviews:send-requests')
-            // Tri pokušaja tijekom istog kvalificiranog dana; poslani se automatski preskaču.
-            ->cron('15 10,14,18 * * *')
-            ->withoutOverlapping(30);
+        $schedule->command('reviews:send-requests --limit=1')
+            ->everyMinute()
+            ->withoutOverlapping(5);
         $schedule->command(
             'reviews:process-backfills --max-seconds=' . (int) config('reviews.backfill_run_seconds', 50)
         )

@@ -20,7 +20,7 @@ class ProductReviewRequestTest extends TestCase
     {
         parent::setUp();
 
-        foreach (['reviews', 'product_review_invitations', 'order_products', 'products', 'order_history', 'orders'] as $table) {
+        foreach (['order_mail_deliveries', 'wishlist', 'reviews', 'product_review_invitations', 'order_products', 'products', 'order_history', 'orders'] as $table) {
             Schema::dropIfExists($table);
         }
 
@@ -100,6 +100,7 @@ class ProductReviewRequestTest extends TestCase
             'reviews.request_daily_limit' => 100,
             'reviews.request_max_attempts' => 3,
             'reviews.request_link_days' => 180,
+            'reviews.minimum_interval_seconds' => 120,
             'reviews.eligible_status_ids' => [4, 9, 10],
         ]);
     }
@@ -122,6 +123,10 @@ class ProductReviewRequestTest extends TestCase
         $this->insertOrder(5, 5, 'otkazano@example.test', '2026-07-20 10:00:00', '2026-08-25 12:00:00');
         $this->insertOrder(6, 4, 'prestaro@example.test', '2026-06-01 10:00:00', '2026-08-25 13:00:00');
 
+        $this->artisan('reviews:send-requests')->assertExitCode(0);
+        Carbon::setTestNow(now()->addSeconds(120));
+        $this->artisan('reviews:send-requests')->assertExitCode(0);
+        Carbon::setTestNow(now()->addSeconds(120));
         $this->artisan('reviews:send-requests')->assertExitCode(0);
 
         $this->assertSame(
@@ -181,6 +186,100 @@ class ProductReviewRequestTest extends TestCase
         $this->artisan('reviews:send-requests')->assertExitCode(0);
 
         $this->assertSame(1, DB::table('product_review_invitations')->count());
+        Mail::assertSent(ProductReviewRequestMail::class, 1);
+    }
+
+    public function test_review_mail_never_sends_more_than_once_per_two_minutes(): void
+    {
+        Carbon::setTestNow('2026-09-04 12:00:00');
+        Mail::fake();
+
+        $this->insertOrder(1, 4, 'prvi@example.test', '2026-07-20 10:00:00', '2026-08-25 10:00:00');
+        $this->insertOrder(2, 4, 'drugi@example.test', '2026-07-20 11:00:00', '2026-08-25 11:00:00');
+
+        $this->artisan('reviews:send-requests', ['--limit' => 100])->assertExitCode(0);
+        Mail::assertSent(ProductReviewRequestMail::class, 1);
+        $this->assertSame(1, DB::table('product_review_invitations')->count());
+
+        Carbon::setTestNow(now()->addSeconds(119));
+        $this->artisan('reviews:send-requests', ['--limit' => 100])->assertExitCode(0);
+        Mail::assertSent(ProductReviewRequestMail::class, 1);
+        $this->assertSame(1, DB::table('product_review_invitations')->count());
+
+        Carbon::setTestNow(now()->addSecond());
+        $this->artisan('reviews:send-requests', ['--limit' => 100])->assertExitCode(0);
+        Mail::assertSent(ProductReviewRequestMail::class, 2);
+        $this->assertSame(2, DB::table('product_review_invitations')->count());
+    }
+
+    public function test_due_order_mail_has_priority_over_review_mail(): void
+    {
+        Carbon::setTestNow('2026-09-04 12:00:00');
+        Mail::fake();
+        $this->insertOrder(1, 4, 'kupac@example.test', '2026-07-20 10:00:00', '2026-08-25 10:00:00');
+
+        Schema::create('order_mail_deliveries', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('order_id');
+            $table->string('type');
+            $table->string('recipient');
+            $table->unsignedInteger('attempts')->default(0);
+            $table->timestamp('next_attempt_at')->nullable();
+            $table->timestamp('sent_at')->nullable();
+            $table->text('last_error')->nullable();
+            $table->timestamps();
+        });
+        DB::table('order_mail_deliveries')->insert([
+            'order_id' => 999,
+            'type' => 'customer_confirmation',
+            'recipient' => 'prioritet@example.test',
+            'next_attempt_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->artisan('reviews:send-requests', ['--limit' => 1])->assertExitCode(0);
+        Mail::assertNothingSent();
+        $this->assertSame(0, DB::table('product_review_invitations')->count());
+
+        DB::table('order_mail_deliveries')->update(['sent_at' => now()]);
+        $this->artisan('reviews:send-requests', ['--limit' => 1])->assertExitCode(0);
+        Mail::assertSent(ProductReviewRequestMail::class, 1);
+    }
+
+    public function test_ready_wishlist_mail_has_priority_over_review_mail(): void
+    {
+        Carbon::setTestNow('2026-09-04 12:00:00');
+        Mail::fake();
+        $this->insertOrder(1, 4, 'kupac@example.test', '2026-07-20 10:00:00', '2026-08-25 10:00:00');
+
+        Schema::table('products', function (Blueprint $table) {
+            $table->boolean('status')->default(true);
+            $table->unsignedInteger('quantity')->default(1);
+        });
+        Schema::create('wishlist', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('product_id');
+            $table->string('email');
+            $table->boolean('sent')->default(false);
+            $table->boolean('status')->default(true);
+            $table->timestamp('sent_at')->nullable();
+            $table->timestamps();
+        });
+        DB::table('wishlist')->insert([
+            'product_id' => 10,
+            'email' => 'wishlist@example.test',
+            'sent' => 0,
+            'status' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->artisan('reviews:send-requests', ['--limit' => 1])->assertExitCode(0);
+        Mail::assertNothingSent();
+
+        DB::table('wishlist')->update(['sent' => 1, 'sent_at' => now()]);
+        $this->artisan('reviews:send-requests', ['--limit' => 1])->assertExitCode(0);
         Mail::assertSent(ProductReviewRequestMail::class, 1);
     }
 

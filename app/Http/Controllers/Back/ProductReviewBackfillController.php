@@ -19,8 +19,8 @@ class ProductReviewBackfillController extends Controller
     ) {
         [$latestDate, $lookbackDays] = $this->historicalBoundary();
         $maxOrders = max(1, (int) config('reviews.backfill_max_orders', 5000));
-        $intervalOptions = (array) config('reviews.backfill_interval_options', [5]);
-        $defaultInterval = (int) config('reviews.backfill_default_interval_seconds', 5);
+        $intervalOptions = (array) config('reviews.backfill_interval_options', [120]);
+        $defaultInterval = (int) config('reviews.backfill_default_interval_seconds', 120);
         if (! in_array($defaultInterval, $intervalOptions, true)) {
             $defaultInterval = (int) reset($intervalOptions);
         }
@@ -69,7 +69,7 @@ class ProductReviewBackfillController extends Controller
     {
         [$latestDate] = $this->historicalBoundary();
         $maxOrders = max(1, (int) config('reviews.backfill_max_orders', 5000));
-        $intervalOptions = (array) config('reviews.backfill_interval_options', [5]);
+        $intervalOptions = (array) config('reviews.backfill_interval_options', [120]);
         $validated = $request->validate(array_merge(
             $this->rules($latestDate, $maxOrders, $intervalOptions),
             ['confirmed' => ['accepted']]

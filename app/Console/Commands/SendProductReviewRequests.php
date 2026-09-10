@@ -3,10 +3,12 @@
 namespace App\Console\Commands;
 
 use App\Models\Back\Orders\Order;
+use App\Models\ProductReviewBackfill;
 use App\Models\ProductReviewInvitation;
 use App\Services\ProductReviewRequestService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Schema;
 
 class SendProductReviewRequests extends Command
 {
@@ -23,6 +25,12 @@ class SendProductReviewRequests extends Command
 
         if (! config('reviews.request_emails_enabled') && ! $dryRun) {
             $this->warn('Slanje poziva za recenziju je isključeno (REVIEW_REQUEST_EMAILS_ENABLED=false).');
+
+            return 0;
+        }
+
+        if (! $dryRun && $this->hasActiveBackfill()) {
+            $this->info('Redovni pozivi čekaju dok se ne dovrši aktivni povijesni batch.');
 
             return 0;
         }
@@ -100,12 +108,26 @@ class SendProductReviewRequests extends Command
                 $sent++;
             } elseif ($result['status'] === ProductReviewRequestService::STATUS_FAILED) {
                 $failed++;
+            } elseif ($result['status'] === ProductReviewRequestService::STATUS_DEFERRED) {
+                $this->info($result['message'] ?: 'Sljedeći review mail ostaje na čekanju.');
+                break;
             }
         }
 
         $this->info("Pozivi za recenziju: poslano {$sent}, neuspjelo {$failed}.");
 
         return $failed > 0 ? 1 : 0;
+    }
+
+    private function hasActiveBackfill(): bool
+    {
+        return Schema::hasTable('product_review_backfills')
+            && ProductReviewBackfill::query()
+                ->whereIn('status', [
+                    ProductReviewBackfill::STATUS_PENDING,
+                    ProductReviewBackfill::STATUS_RUNNING,
+                ])
+                ->exists();
     }
 
     private function maskedEmail(string $email): string
