@@ -27,7 +27,8 @@
     .cookie-settings-trigger:hover,.cookie-settings-trigger:focus-visible{background:#2d2224;color:#e6d1ab;transform:translateY(-2px)}
     .cookie-settings-trigger i{display:block;font-size:26px;line-height:1}
     body.cookie-consent-locked{overflow:hidden}
-    @media(max-width:575px){.cookie-consent-modal{top:auto;bottom:0;transform:translateX(-50%);width:100%;max-height:94vh;border-radius:18px 18px 0 0}.cookie-consent-body{padding:8px 14px 35px}.cookie-consent-head,.cookie-consent-actions{padding:15px}.cookie-consent-primary-actions{width:100%}.cookie-consent-primary-actions .btn{flex:1 1 50%}.cookie-consent-actions>[data-cookie-save]{width:100%}.cookie-settings-trigger{right:16px;bottom:8.25rem;left:auto;width:46px;height:46px}.cookie-settings-trigger i{font-size:22px}}
+    @media(max-width:991.98px){.cookie-settings-trigger{display:none}}
+    @media(max-width:575px){.cookie-consent-modal{top:auto;bottom:0;transform:translateX(-50%);width:100%;max-height:94vh;border-radius:18px 18px 0 0}.cookie-consent-body{padding:8px 14px 35px}.cookie-consent-head,.cookie-consent-actions{padding:15px}.cookie-consent-primary-actions{width:100%}.cookie-consent-primary-actions .btn{flex:1 1 50%}.cookie-consent-actions>[data-cookie-save]{width:100%}}
 </style>
 
 <div class="cookie-consent-backdrop" id="cookie-consent-backdrop" aria-hidden="true"></div>
