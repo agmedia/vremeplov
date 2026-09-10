@@ -2682,6 +2682,10 @@
         flex-basis: 100%;
     }
 
+    .catalog-products-grid--mobile-1 .catalog-product-card {
+        height: auto;
+    }
+
     .catalog-products-grid--mobile-2 > .catalog-product-col {
         width: 50%;
         flex-basis: 50%;

@@ -94,7 +94,7 @@
 
     <!-- Main Theme Styles + Bootstrap-->
     <link rel="stylesheet" media="screen" href="/css/theme.css?v=1.91">
-    <link rel="stylesheet" media="screen" href="/css/front-vremeplov.css?v=1.0.43">
+    <link rel="stylesheet" media="screen" href="/css/front-vremeplov.css?v=1.0.44">
     @include('front.layouts.partials.analytics')
 
     @stack('css_after')
