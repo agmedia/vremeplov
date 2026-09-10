@@ -51,6 +51,8 @@ class FaqManagementTest extends TestCase
         $response->assertDontSee('Skriveno pitanje');
         $this->assertGreaterThanOrEqual(2, substr_count($response->getContent(), 'href="' . route('faq') . '"'));
         $response->assertSee('Česta pitanja');
+        $response->assertSee('css/front-faq.css?v=1.0.0', false);
+        $response->assertSee('faq-list', false);
     }
 
     public function test_admin_can_create_and_update_a_faq_without_creating_a_duplicate(): void

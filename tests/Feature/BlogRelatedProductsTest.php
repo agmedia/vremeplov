@@ -99,6 +99,25 @@ class BlogRelatedProductsTest extends TestCase
         $response->assertSee($summary);
     }
 
+    public function test_blog_article_heading_centers_breadcrumbs_above_the_title(): void
+    {
+        $title = 'Članak s pravilnim zaglavljem';
+        $slug = $this->createBlogPage($title, 'Sažetak članka.', '<p>Sadržaj članka.</p>');
+
+        $response = $this->get(route('catalog.route.blog', ['blog' => $slug]));
+        $html = $response->getContent();
+        $headingStart = strpos($html, 'page-heading--centered');
+        $breadcrumb = strpos($html, 'aria-label="breadcrumb"', $headingStart);
+        $heading = strpos($html, '<h1', $headingStart);
+
+        $response->assertOk();
+        $this->assertNotFalse($headingStart);
+        $this->assertNotFalse($breadcrumb);
+        $this->assertNotFalse($heading);
+        $this->assertLessThan($heading, $breadcrumb);
+        $response->assertSee($title);
+    }
+
     public function test_blog_admin_lists_newest_posts_first(): void
     {
         $this->createBlogPage(

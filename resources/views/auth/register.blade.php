@@ -77,6 +77,7 @@
                                 </a>
                                 <p class="text-uppercase font-w700 font-size-sm text-muted">Napravite korisnički račun</p>
                             </div>
+                            @include('back.layouts.partials.session')
                             <form method="POST" action="{{ route('register') }}" id="register-form">
                                 @csrf
                                 <div class="form-group">

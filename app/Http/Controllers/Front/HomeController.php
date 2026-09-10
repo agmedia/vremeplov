@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Intervention\Image\Exception\NotReadableException;
 use Intervention\Image\Facades\Image;
 
 class HomeController extends Controller
@@ -443,9 +444,17 @@ class HomeController extends Controller
     {
         $src = $request->input('src');
 
-        $cacheimage = Image::cache(function($image) use ($src) {
-            $image->make($src);
-        }, config('imagecache.lifetime'));
+        if (! $src) {
+            return $this->placeholderImageResponse();
+        }
+
+        try {
+            $cacheimage = Image::cache(function($image) use ($src) {
+                $image->make($src);
+            }, config('imagecache.lifetime'));
+        } catch (NotReadableException $exception) {
+            return $this->placeholderImageResponse();
+        }
 
         return Image::make($cacheimage)->response();
     }
@@ -459,28 +468,36 @@ class HomeController extends Controller
     public function thumbCache(Request $request)
     {
         if ( ! $request->has('src')) {
-            return asset('media/img/knjiga-detalj.jpg');
+            return $this->placeholderImageResponse();
         }
 
-        $cacheimage = Image::cache(function($image) use ($request) {
-            $width = 400;
-            $height = 400;
+        try {
+            $cacheimage = Image::cache(function ($image) use ($request) {
+                $width = 400;
+                $height = 400;
 
-            if ($request->has('size')) {
-                if (strpos($request->input('size'), 'x') !== false) {
-                    $size = explode('x', $request->input('size'));
-                    $width = $size[0];
-                    $height = $size[1];
+                if (preg_match('/^(\d{1,4})x(\d{1,4})$/', (string) $request->input('size'), $size)) {
+                    $width = max(1, min(1600, (int) $size[1]));
+                    $height = max(1, min(1600, (int) $size[2]));
                 }
-            } else {
-                $width = $request->input('size');
-            }
 
-            $image->make($request->input('src'))->resize($width, $height);
-
-        }, config('imagecache.lifetime'));
+                $image->make($request->input('src'))->resize($width, $height);
+            }, config('imagecache.lifetime'));
+        } catch (NotReadableException $exception) {
+            return $this->placeholderImageResponse();
+        }
 
         return Image::make($cacheimage)->response();
+    }
+
+
+    /**
+     * Return an actual image response so broken sources never produce a 500
+     * or a URL string where image bytes are expected.
+     */
+    private function placeholderImageResponse()
+    {
+        return Image::make(public_path('media/img/thumb-product.jpg'))->response('jpg');
     }
 
 

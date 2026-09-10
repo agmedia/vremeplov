@@ -31,4 +31,32 @@ class RegistrationTest extends TestCase
         $this->assertAuthenticated();
         $response->assertRedirect(RouteServiceProvider::HOME);
     }
+
+    public function test_failed_recaptcha_returns_a_validation_error_instead_of_being_logged_in_as_a_response()
+    {
+        config([
+            'services.recaptcha.bypass_local' => false,
+            'services.recaptcha.sitekey' => 'test-site-key',
+            'services.recaptcha.secret' => 'test-secret-key',
+            'services.recaptcha.verify_url' => 'data://text/plain,' . rawurlencode(json_encode([
+                'success' => true,
+                'score' => 0.9,
+                'action' => 'contact',
+            ])),
+        ]);
+
+        $response = $this->from('/register')->post('/register', [
+            'name' => 'Rejected User',
+            'email' => 'rejected@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'recaptcha' => 'wrong-action-token',
+        ]);
+
+        $response->assertRedirect('/register');
+        $response->assertSessionHasErrors('recaptcha');
+        $this->assertGuest();
+        $this->assertDatabaseMissing('users', ['email' => 'rejected@example.com']);
+    }
 }

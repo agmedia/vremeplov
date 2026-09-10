@@ -58,6 +58,7 @@
         'parents' => isset($blogs) ? [] : [
             ['label' => 'Blog', 'url' => route('catalog.route.blog')],
         ],
+        'centered' => ! isset($blogs),
     ])
 
     @if(isset($blogs))

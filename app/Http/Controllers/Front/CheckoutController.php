@@ -17,6 +17,7 @@ use App\Models\Front\Checkout\Payment\PayPalStandard;
 use App\Models\Front\Checkout\Shipping\Gls;
 use App\Models\TagManager;
 use App\Services\Inventory\OrderInventoryService;
+use App\Services\Orders\CheckoutOrderGuardService;
 use App\Services\Orders\OrderConfirmationService;
 use App\Services\Payments\PaymentAttemptService;
 use App\Services\ProductRecommendationService;
@@ -77,7 +78,11 @@ class CheckoutController extends Controller
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
-    public function view(Request $request, OrderInventoryService $inventory)
+    public function view(
+        Request $request,
+        OrderInventoryService $inventory,
+        CheckoutOrderGuardService $checkoutGuard
+    )
     {
         $cart = $this->shoppingCart()->get();
 
@@ -96,16 +101,29 @@ class CheckoutController extends Controller
         }
 
         $data = $this->collectData($data, config('settings.order.status.unfinished'));
+        $checkoutFingerprint = $checkoutGuard->fingerprint($data);
 
         $order = new Order();
         $alreadyConfirmed = false;
 
         try {
-            DB::transaction(function () use ($order, $data, $inventory, &$alreadyConfirmed) {
+            DB::transaction(function () use (
+                $order,
+                $data,
+                $inventory,
+                $checkoutGuard,
+                $checkoutFingerprint,
+                &$alreadyConfirmed
+            ) {
+                // Always acquire the shared checkout guard before locking an
+                // order so concurrent requests cannot lock in reverse order.
+                $guardedOrder = $checkoutGuard->lockMatchingUnfinished($checkoutFingerprint);
                 $sessionOrderId = (int) data_get(CheckoutSession::getOrder(), 'id', 0);
-                $existingOrder = $sessionOrderId
+                $sessionOrder = $sessionOrderId
+                    && (! $guardedOrder || (int) $guardedOrder->id !== $sessionOrderId)
                     ? BackOrder::query()->where('id', $sessionOrderId)->lockForUpdate()->first()
                     : null;
+                $existingOrder = $guardedOrder ?: $sessionOrder;
                 $alreadyConfirmed = $existingOrder
                     && in_array(
                         (int) $existingOrder->order_status_id,
@@ -141,6 +159,7 @@ class CheckoutController extends Controller
 
                 if ($startedAttemptMatches) {
                     $order->setData((string) $existingOrder->id);
+                    $checkoutGuard->remember($checkoutFingerprint, (int) $existingOrder->id);
 
                     return;
                 }
@@ -151,7 +170,7 @@ class CheckoutController extends Controller
                     && $existingOrder->payment_attempt_started_at === null;
 
                 if ($canReuseOrder) {
-                    $data['id'] = $sessionOrderId;
+                    $data['id'] = (int) $existingOrder->id;
 
                     $order->updateData($data);
                     $order->setData($data['id']);
@@ -163,6 +182,8 @@ class CheckoutController extends Controller
                 if (! $order->isCreated()) {
                     throw new \RuntimeException('Narudžbu nije moguće pripremiti za plaćanje.');
                 }
+
+                $checkoutGuard->remember($checkoutFingerprint, (int) $order->getData()->id);
             });
         } catch (InsufficientStockException $exception) {
             return redirect()->route('kosarica')->with('error', $exception->getMessage());

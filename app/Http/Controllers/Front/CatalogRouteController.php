@@ -52,11 +52,6 @@ class CatalogRouteController extends Controller
         $subcat = $resolver->subcategory;
         $prod = $resolver->product;
 
-        if (is_string($cat)) {
-            Log::info($group);
-            Log::info($cat);
-        }
-
         // Ako je artikl prvotno postavljen ili
         // ako je postavljen umjest kategorije ili podkategorije
         if ($prod) {

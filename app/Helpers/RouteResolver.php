@@ -93,8 +93,14 @@ class RouteResolver
     {
         // Keep product URLs resolvable when a category slug is renamed,
         // including old links still present in caches or search engines.
-        if ($this->product && $this->isRequestedProductRoute($this->product)) {
-            return $this->setProductRoute($this->product);
+        if ($this->product) {
+            if ($this->isRequestedProductRoute($this->product)) {
+                return $this->setProductRoute($this->product);
+            }
+
+            // Never pass unresolved route strings to product breadcrumbs. A
+            // malformed product path is a 404, not a partially resolved page.
+            abort(404);
         }
 
         // Ako je grupa i kategorija_ili_artikl
@@ -186,8 +192,13 @@ class RouteResolver
         $storedPath = explode('/', trim((string) $product->url, '/'));
         $requestedPath = explode('/', trim($this->request->path(), '/'));
 
-        return reset($storedPath) === reset($requestedPath)
+        $isLegacySingleSlug = count($requestedPath) === 1
             && end($requestedPath) === $product->slug;
+
+        return $isLegacySingleSlug || (
+            reset($storedPath) === reset($requestedPath)
+            && end($requestedPath) === $product->slug
+        );
     }
 
 
@@ -204,6 +215,7 @@ class RouteResolver
         }
 
         $this->product = $product;
+        $this->group = $product->group ?: (explode('/', trim((string) $product->url, '/'))[0] ?? $this->group);
         $this->category = $category;
         $this->subcategory = $subcategory;
 

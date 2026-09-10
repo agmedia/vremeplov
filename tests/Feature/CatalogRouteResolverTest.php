@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Tests\TestCase;
 
 class CatalogRouteResolverTest extends TestCase
@@ -53,6 +54,32 @@ class CatalogRouteResolverTest extends TestCase
         $this->assertTrue($resolver->product->is($product));
         $this->assertTrue($resolver->category->is($category));
         $this->assertNull($resolver->subcategory);
+    }
+
+    /** @test */
+    public function it_rejects_a_product_on_an_unrelated_path_instead_of_leaving_string_breadcrumbs()
+    {
+        $slug = 'malformed-route-' . Str::random(12);
+        $product = Product::create([
+            'name' => 'Malformed route product',
+            'slug' => $slug,
+            'url' => 'knjige/ispravna-kategorija/' . $slug,
+            'group' => 'knjige',
+            'price' => 10,
+            'quantity' => 1,
+            'status' => 1,
+        ]);
+        $resolver = new RouteResolver(
+            Request::create('/plakati/pogresna-kategorija/pogresan-zavrsetak'),
+            'plakati',
+            'pogresna-kategorija',
+            'pogresan-zavrsetak',
+            $product
+        );
+
+        $this->expectException(NotFoundHttpException::class);
+
+        $resolver->setRoute();
     }
 
     /** @test */

@@ -295,17 +295,27 @@ class ProductHistory extends Model
         // category changed
         if (isset($this->old['category']['id']) && isset($this->new['category']['id'])) {
             if ($this->old['category']['id'] != $this->new['category']['id']) {
-                $this->changed .= '<li>Promjenjena kategorija: <b>' . $this->old['category']['title'] . '</b> u <b>' . $this->new['category']['title'] . '</b></li>';
+                $this->changed .= '<li>Promjenjena kategorija: <b>' . $this->relationTitle($this->old, 'category') . '</b> u <b>' . $this->relationTitle($this->new, 'category') . '</b></li>';
             }
         }
         if (isset($this->old['subcategory']['id']) || isset($this->new['subcategory']['id'])) {
             if ((isset($this->old['subcategory']['id']) && isset($this->new['subcategory']['id'])) && $this->old['subcategory']['id'] != $this->new['subcategory']['id']) {
-                $this->changed .= '<li>Promjenjena podkategorija: <b>' . $this->old['subcategory']['title'] . '</b> u <b>' . $this->new['subcategory']['title'] . '</b></li>';
+                $this->changed .= '<li>Promjenjena podkategorija: <b>' . $this->relationTitle($this->old, 'subcategory') . '</b> u <b>' . $this->relationTitle($this->new, 'subcategory') . '</b></li>';
             } elseif (isset($this->old['subcategory']['id']) && ! isset($this->new['subcategory']['id'])) {
-                $this->changed .= '<li>Iz podkategorije: <b>' . $this->old['subcategory']['title'] . '</b> stavljeno u kategoriju <b>' . $this->new['category']['title'] . '</b></li>';
+                $this->changed .= '<li>Iz podkategorije: <b>' . $this->relationTitle($this->old, 'subcategory') . '</b> stavljeno u kategoriju <b>' . $this->relationTitle($this->new, 'category') . '</b></li>';
             } elseif ( ! isset($this->old['subcategory']['id']) && isset($this->new['subcategory']['id'])) {
-                $this->changed .= '<li>Iz kategorija: <b>' . $this->old['category']['title'] . '</b> stavljeno u podkategoriju <b>' . $this->new['subcategory']['title'] . '</b></li>';
+                $this->changed .= '<li>Iz kategorija: <b>' . $this->relationTitle($this->old, 'category') . '</b> stavljeno u podkategoriju <b>' . $this->relationTitle($this->new, 'subcategory') . '</b></li>';
             }
         }
+    }
+
+
+    /**
+     * History snapshots created before relation titles were stored can still
+     * be edited safely.
+     */
+    private function relationTitle(array $snapshot, string $relation): string
+    {
+        return (string) data_get($snapshot, $relation . '.title', '(Nepoznato)');
     }
 }

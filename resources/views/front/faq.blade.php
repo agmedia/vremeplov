@@ -12,53 +12,33 @@
     <meta property="og:url" content="{{ route('faq') }}" />
 @endpush
 
+@push('css_after')
+    <link rel="stylesheet" media="screen" href="{{ asset('css/front-faq.css?v=1.0.0') }}">
+@endpush
+
 @section('content')
 
     @include('front.layouts.partials.page-heading', ['title' => 'Česta pitanja'])
 
-
-    <div class="container">
-
-
-
-        <div class="mt-5 mb-5">
-
-    <!-- Flush accordion. Use this when you need to render accordions edge-to-edge with their parent container -->
-    <div class="accordion accordion-flush" id="accordionFlushExample">
-
-
-    @foreach ($faq as $fa)
-
-        <!-- Item -->
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-heading{{ $fa->id }}">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{ $fa->id }}" aria-expanded="false" aria-controls="flush-collapse{{ $fa->id }}">{{ $fa->title }}</button>
-                </h2>
-                <div class="accordion-collapse collapse" id="flush-collapse{{ $fa->id }}" aria-labelledby="flush-heading{{ $fa->id }}" data-bs-parent="#accordionFlushExample">
-                    <div class="accordion-body">  {!! $fa->description !!}</div>
-                </div>
+    <section class="faq-page">
+        <div class="container">
+            <div class="accordion accordion-flush faq-list" id="faqAccordion">
+                @foreach ($faq as $fa)
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq-heading{{ $fa->id }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-collapse{{ $fa->id }}" aria-expanded="false" aria-controls="faq-collapse{{ $fa->id }}">
+                                <span>{{ $fa->title }}</span>
+                                <i class="fa-regular fa-chevron-down" aria-hidden="true"></i>
+                            </button>
+                        </h2>
+                        <div class="accordion-collapse collapse" id="faq-collapse{{ $fa->id }}" aria-labelledby="faq-heading{{ $fa->id }}" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">{!! $fa->description !!}</div>
+                        </div>
+                    </div>
+                @endforeach
             </div>
-
-    @endforeach
-
-
-
-
-
-
-
-
-
-
-
-    </div>
-
         </div>
-    </div>
-
-
-
-
+    </section>
 @endsection
 
 @push('js_after')
