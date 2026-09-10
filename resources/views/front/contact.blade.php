@@ -4,6 +4,8 @@
 @section('description', 'Kontaktirajte Antikvarijat Vremeplov u Zagrebu. Adresa: Zvonimirova 24, telefon 091 762 7441.')
 @section('canonical', route('kontakt'))
 
+@php($contactFormSubmitted = old('contact_form') === '1')
+
 @push('meta_tags')
     <meta property="og:locale" content="hr_HR" />
     <meta property="og:type" content="website" />
@@ -14,6 +16,7 @@
 
 @push('css_after')
     <link rel="stylesheet" media="screen" href="{{ asset('css/front-contact.css?v=1.0.1') }}">
+    <link rel="stylesheet" media="screen" href="{{ asset('css/front-form-validation.css?v=1.0.0') }}">
 @endpush
 
 @section('content')
@@ -25,7 +28,7 @@
 
         <section class="contact-page__content">
             <div class="container">
-                @include('front.layouts.partials.session')
+                @include('front.layouts.partials.session', ['showValidationErrors' => false])
 
                 <div class="contact-page__intro">
                     <span class="contact-page__eyebrow">Antikvarijat Vremeplov</span>
@@ -103,38 +106,43 @@
                             </div>
                             <p class="contact-form-card__intro">Ispunite obrazac i odgovorit ćemo vam u najkraćem mogućem roku.</p>
 
-                            <form action="{{ route('poruka') }}" method="POST" id="contact-form" data-analytics-form="contact">
+                            <form action="{{ route('poruka') }}" method="POST" id="contact-form" data-analytics-form="contact" data-inline-validation data-validation-summary="Provjerite označena polja i pokušajte ponovno." novalidate>
                                 @csrf
+                                <input type="hidden" name="contact_form" value="1">
+                                <div class="form-validation-summary d-none" data-validation-summary role="alert" tabindex="-1">
+                                    <i class="fa-regular fa-circle-exclamation" aria-hidden="true"></i>
+                                    <span data-validation-summary-text>Provjerite označena polja i pokušajte ponovno.</span>
+                                </div>
                                 <div class="row g-3">
                                     <div class="col-12">
                                         <label class="form-label" for="cf-name">Vaše ime <span aria-hidden="true">*</span></label>
-                                        <div class="contact-field">
+                                        <div class="contact-field" data-validation-control>
                                             <i class="fa-regular fa-user" aria-hidden="true"></i>
-                                            <input class="form-control @error('name') is-invalid @enderror" type="text" name="name" id="cf-name" value="{{ old('name') }}" autocomplete="name" required aria-required="true">
+                                            <input class="form-control{{ $contactFormSubmitted && $errors->has('name') ? ' is-invalid' : '' }}" type="text" name="name" id="cf-name" value="{{ $contactFormSubmitted ? old('name') : '' }}" autocomplete="name" required aria-required="true" aria-invalid="{{ $contactFormSubmitted && $errors->has('name') ? 'true' : 'false' }}" aria-describedby="cf-name-feedback" minlength="2" maxlength="100" data-validation-required="Upišite vaše ime." data-validation-too-short="Ime mora sadržavati najmanje 2 znaka." data-server-error="{{ $contactFormSubmitted ? $errors->first('name') : '' }}">
                                         </div>
-                                        @error('name')<div class="invalid-feedback d-block">Molimo upišite vaše ime!</div>@enderror
+                                        @include('front.layouts.partials.validation-feedback', ['field' => 'name', 'controlId' => 'cf-name', 'showErrors' => $contactFormSubmitted])
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label" for="cf-email">Email adresa <span aria-hidden="true">*</span></label>
-                                        <div class="contact-field">
+                                        <div class="contact-field" data-validation-control>
                                             <i class="fa-regular fa-envelope" aria-hidden="true"></i>
-                                            <input class="form-control @error('email') is-invalid @enderror" type="email" id="cf-email" name="email" value="{{ old('email') }}" autocomplete="email" required aria-required="true">
+                                            <input class="form-control{{ $contactFormSubmitted && $errors->has('email') ? ' is-invalid' : '' }}" type="email" id="cf-email" name="email" value="{{ $contactFormSubmitted ? old('email') : '' }}" autocomplete="email" required aria-required="true" aria-invalid="{{ $contactFormSubmitted && $errors->has('email') ? 'true' : 'false' }}" aria-describedby="cf-email-feedback" maxlength="190" data-validation-required="Upišite e-mail adresu." data-validation-type="Upišite ispravnu e-mail adresu." data-server-error="{{ $contactFormSubmitted ? $errors->first('email') : '' }}">
                                         </div>
-                                        @error('email')<div class="invalid-feedback d-block">Molimo upišite ispravnu email adresu!</div>@enderror
+                                        @include('front.layouts.partials.validation-feedback', ['field' => 'email', 'controlId' => 'cf-email', 'showErrors' => $contactFormSubmitted])
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label" for="cf-phone">Broj telefona <span aria-hidden="true">*</span></label>
-                                        <div class="contact-field">
+                                        <div class="contact-field" data-validation-control>
                                             <i class="fa-regular fa-phone" aria-hidden="true"></i>
-                                            <input class="form-control @error('phone') is-invalid @enderror" type="tel" id="cf-phone" name="phone" value="{{ old('phone') }}" autocomplete="tel" required aria-required="true">
+                                            <input class="form-control{{ $contactFormSubmitted && $errors->has('phone') ? ' is-invalid' : '' }}" type="tel" id="cf-phone" name="phone" value="{{ $contactFormSubmitted ? old('phone') : '' }}" autocomplete="tel" required aria-required="true" aria-invalid="{{ $contactFormSubmitted && $errors->has('phone') ? 'true' : 'false' }}" aria-describedby="cf-phone-feedback" maxlength="30" data-validation-required="Upišite broj telefona." data-validation-phone="Upišite ispravan broj telefona (6–15 znamenki)." data-server-error="{{ $contactFormSubmitted ? $errors->first('phone') : '' }}">
                                         </div>
-                                        @error('phone')<div class="invalid-feedback d-block">Molimo upišite broj telefona!</div>@enderror
+                                        @include('front.layouts.partials.validation-feedback', ['field' => 'phone', 'controlId' => 'cf-phone', 'showErrors' => $contactFormSubmitted])
                                     </div>
 
                                     <div class="col-12">
                                         <label class="form-label" for="cf-message">Upit <span aria-hidden="true">*</span></label>
-                                        <textarea class="form-control contact-message @error('message') is-invalid @enderror" id="cf-message" rows="7" name="message" required aria-required="true">{{ old('message') }}</textarea>
-                                        @error('message')<div class="invalid-feedback d-block">Molimo upišite poruku!</div>@enderror
+                                        <textarea class="form-control contact-message{{ $contactFormSubmitted && $errors->has('message') ? ' is-invalid' : '' }}" id="cf-message" rows="7" name="message" required aria-required="true" aria-invalid="{{ $contactFormSubmitted && $errors->has('message') ? 'true' : 'false' }}" aria-describedby="cf-message-feedback" minlength="10" maxlength="5000" data-validation-required="Upišite poruku." data-validation-too-short="Poruka mora sadržavati najmanje 10 znakova." data-server-error="{{ $contactFormSubmitted ? $errors->first('message') : '' }}">{{ $contactFormSubmitted ? old('message') : '' }}</textarea>
+                                        @include('front.layouts.partials.validation-feedback', ['field' => 'message', 'controlId' => 'cf-message', 'showErrors' => $contactFormSubmitted])
                                     </div>
 
                                     <div class="col-12 contact-form-card__footer">
@@ -146,7 +154,9 @@
                                     </div>
                                 </div>
                                 <input type="hidden" name="recaptcha" id="recaptcha">
-                                @include('front.layouts.partials.recaptcha-notice')
+                                @include('front.layouts.partials.recaptcha-notice', [
+                                    'recaptchaError' => $contactFormSubmitted ? $errors->first('recaptcha') : '',
+                                ])
                             </form>
                         </section>
                     </div>
@@ -214,6 +224,7 @@
 @endsection
 
 @push('js_after')
+    <script src="{{ asset('js/front-form-validation.js?v=1.0.0') }}"></script>
     @include('front.layouts.partials.recaptcha-js', [
         'action' => 'contact',
         'fieldId' => 'recaptcha',

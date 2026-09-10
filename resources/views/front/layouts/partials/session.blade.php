@@ -25,7 +25,7 @@
     </div>
 @endif
 
-@if ($errors->any())
+@if (($showValidationErrors ?? true) && $errors->any())
     <div class="alert alert-danger">
         <ul>
             @foreach ($errors->all() as $error)

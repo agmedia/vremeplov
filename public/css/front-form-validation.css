@@ -1,0 +1,58 @@
+.form-validation-summary {
+    display: flex;
+    align-items: flex-start;
+    gap: .7rem;
+    margin-bottom: 1.25rem;
+    padding: .8rem 1rem;
+    border: 1px solid #e7bbb6;
+    border-left: 3px solid #a83a31;
+    border-radius: .5rem;
+    background: #fff6f4;
+    color: #7f2e28;
+    font-size: .82rem;
+    line-height: 1.5;
+}
+
+.form-validation-summary.d-none {
+    display: none;
+}
+
+.form-validation-summary i {
+    margin-top: .15rem;
+    flex: 0 0 auto;
+}
+
+.form-validation-message {
+    display: none;
+    align-items: flex-start;
+    gap: .4rem;
+    margin-top: .4rem;
+    color: #a83a31;
+    font-size: .76rem;
+    line-height: 1.4;
+}
+
+.form-validation-message.is-visible {
+    display: flex;
+}
+
+.form-validation-message::before {
+    margin-top: .08rem;
+    font: var(--fa-font-regular);
+    content: '\f06a';
+}
+
+form[data-inline-validation] .form-control.is-invalid,
+form[data-inline-validation] .form-check-input.is-invalid {
+    border-color: #b94b43 !important;
+}
+
+form[data-inline-validation] .form-control.is-invalid:focus,
+form[data-inline-validation] .form-check-input.is-invalid:focus {
+    border-color: #a83a31 !important;
+    box-shadow: 0 0 0 .2rem rgba(168, 58, 49, .13) !important;
+}
+
+form[data-inline-validation] .form-check-input.is-invalid ~ .form-check-label {
+    color: #7f2e28;
+}
