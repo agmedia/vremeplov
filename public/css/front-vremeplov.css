@@ -1403,10 +1403,10 @@
 }
 
 .widget-custom-hero__title {
-    max-width: 15ch;
+    max-width: none;
     margin: 0;
     color: #2d2224;
-    font-size: clamp(2.25rem, 3.4vw, 3.55rem);
+    font-size: clamp(1.75rem, 2.4vw, 2.25rem);
     font-weight: 700;
     letter-spacing: -.03em;
     line-height: 1.04;
@@ -1894,10 +1894,6 @@
         text-align: center;
     }
 
-    .widget-custom-hero__title {
-        max-width: 18ch;
-    }
-
     .widget-custom-hero__subtitle {
         max-width: 38rem;
     }
@@ -1951,10 +1947,6 @@
     .widget-custom-hero__eyebrow-icon {
         width: 1.75rem;
         height: 1.75rem;
-    }
-
-    .widget-custom-hero__title {
-        font-size: clamp(2rem, 10vw, 2.65rem);
     }
 
     .widget-custom-hero__subtitle {
@@ -2792,4 +2784,99 @@
     color: #f7ead0 !important;
     box-shadow: 0 4px 10px rgba(45, 34, 36, .16) !important;
     transform: translateY(0);
+}
+
+/* Persistent phone and email shortcuts replacing the back-to-top control. */
+.quick-contact-actions {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1085;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: .65rem;
+}
+
+.quick-contact-action {
+    position: relative;
+    display: flex;
+    width: 52px;
+    height: 52px;
+    flex: 0 0 52px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #d8ac63;
+    color: #2d2224;
+    box-shadow: 0 7px 25px rgba(0, 0, 0, .25);
+    font-size: 1.15rem;
+    text-decoration: none;
+    transition: background-color .2s, color .2s, transform .2s;
+}
+
+.quick-contact-action:hover,
+.quick-contact-action:focus-visible {
+    background: #2d2224;
+    color: #e6d1ab;
+    transform: translateY(-2px);
+}
+
+.quick-contact-action:focus-visible {
+    outline: 3px solid rgba(216, 172, 99, .4);
+    outline-offset: 3px;
+}
+
+.quick-contact-action__tooltip {
+    position: absolute;
+    top: 50%;
+    right: calc(100% + .75rem);
+    visibility: hidden;
+    padding: .45rem .7rem;
+    border-radius: .35rem;
+    background: #2d2224;
+    color: #fffdf9;
+    box-shadow: 0 5px 16px rgba(0, 0, 0, .2);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: .8rem;
+    font-weight: 600;
+    line-height: 1.2;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(6px, -50%);
+    transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
+    white-space: nowrap;
+}
+
+.quick-contact-action__tooltip::after {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    width: 0;
+    height: 0;
+    border: 5px solid transparent;
+    border-left-color: #2d2224;
+    content: '';
+    transform: translateY(-50%);
+}
+
+.quick-contact-action:hover .quick-contact-action__tooltip,
+.quick-contact-action:focus-visible .quick-contact-action__tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translate(0, -50%);
+}
+
+@media (max-width: 991.98px) {
+    .quick-contact-actions {
+        right: 16px;
+        bottom: 4.75rem;
+    }
+
+    .quick-contact-action {
+        width: 46px;
+        height: 46px;
+        flex-basis: 46px;
+        font-size: 1rem;
+    }
 }

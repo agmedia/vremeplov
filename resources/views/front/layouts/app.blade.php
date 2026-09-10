@@ -94,7 +94,7 @@
 
     <!-- Main Theme Styles + Bootstrap-->
     <link rel="stylesheet" media="screen" href="/css/theme.css?v=1.91">
-    <link rel="stylesheet" media="screen" href="/css/front-vremeplov.css?v=1.0.44">
+    <link rel="stylesheet" media="screen" href="/css/front-vremeplov.css?v=1.0.45">
     @include('front.layouts.partials.analytics')
 
     @stack('css_after')
@@ -163,8 +163,16 @@
     @include('front.layouts.partials.handheld')
 </div>
 
-<!-- Back To Top Button-->
-<a class="btn-scroll-top" href="#top" aria-label="Povratak na vrh stranice" data-scroll><span class="btn-scroll-top-tooltip text-muted fs-sm me-2"></span><i class="btn-scroll-top-icon fa-regular fa-arrow-up"></i></a>
+<nav class="quick-contact-actions" aria-label="Brzi kontakt">
+    <a class="quick-contact-action" href="tel:+385917627441" aria-label="Nazovite nas na 091 762 7441" title="Nazovite nas: 091 762 7441">
+        <span class="quick-contact-action__tooltip" role="tooltip">091 762 7441</span>
+        <i class="fa-solid fa-phone" aria-hidden="true"></i>
+    </a>
+    <a class="quick-contact-action" href="mailto:{{ config('mail.admin') }}" aria-label="Pošaljite e-mail na {{ config('mail.admin') }}" title="Pošaljite e-mail: {{ config('mail.admin') }}">
+        <span class="quick-contact-action__tooltip" role="tooltip">{{ config('mail.admin') }}</span>
+        <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+    </a>
+</nav>
 <!-- Vendor Styles including: Font Icons, Plugins, etc.-->
 <link rel="stylesheet" media="screen" href="/css/tiny-slider.css?v=1.2"/>
 <!-- Vendor scrits: js libraries and plugins-->
