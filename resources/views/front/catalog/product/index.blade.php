@@ -49,8 +49,7 @@
     ) ?: $productDescriptionSignal;
     $productDescriptionSignal = trim(preg_replace('/\s+/u', ' ', $productDescriptionSignal) ?: $productDescriptionSignal);
     $productDescriptionWordCount = preg_match_all('/\p{L}[\p{L}\p{M}’\'-]*/u', $productDescriptionSignal) ?: 0;
-    $productHasDescription = mb_strlen($productDescriptionSignal, 'UTF-8') >= 120
-        && $productDescriptionWordCount >= 18;
+    $productHasDescription = $productDescriptionWordCount >= 2;
     $displayCatalogLabel = static function (?string $label): string {
         $label = trim((string) $label);
 
