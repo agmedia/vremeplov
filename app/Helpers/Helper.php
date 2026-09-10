@@ -69,7 +69,12 @@ class Helper
      */
     public static function abc()
     {
-        return ['A', 'B', 'C', 'Ć', 'Č', 'D', 'Đ', 'Dž', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'Lj', 'M', 'N', 'Nj', 'O', 'P', 'R', 'S', 'Š', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'Ž'];
+        return [
+            'A', 'B', 'C', 'Č', 'Ć', 'D', 'Dž', 'Đ', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'Lj',
+            'M', 'N', 'Nj', 'O', 'P', 'R', 'S', 'Š', 'T', 'U', 'V', 'Z', 'Ž',
+            // Strana slova koja se pojavljuju u imenima autora i nakladnika.
+            'Q', 'W', 'X', 'Y',
+        ];
     }
 
 
@@ -920,7 +925,13 @@ class Helper
     public static function resolveLetter(Request $request)
     {
         if ($request->has('letter')) {
-            return $request->input('letter');
+            $requestedLetter = trim((string) $request->input('letter'));
+
+            foreach (self::abc() as $letter) {
+                if (mb_strtolower($letter, 'UTF-8') === mb_strtolower($requestedLetter, 'UTF-8')) {
+                    return $letter;
+                }
+            }
         }
 
         return 0;

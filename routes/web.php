@@ -522,6 +522,9 @@ Route::get('/greska', [CheckoutController::class, 'error'])->name('checkout.erro
 //
 Route::get('pretrazi', [CatalogRouteController::class, 'search'])->name('pretrazi');
 Route::get('pretrazi/suggest', [CatalogRouteController::class, 'suggest'])->name('pretrazi.suggest');
+Route::get(config('settings.author_path') . '/suggest', [CatalogRouteController::class, 'authorSuggest'])
+    ->middleware('throttle:60,1')
+    ->name('catalog.route.author.suggest');
 Route::get('tag', [CatalogRouteController::class, 'tag'])->name('tag');
 //
 Route::get('info/{page}', [HomeController::class, 'page'])->name('catalog.route.page');

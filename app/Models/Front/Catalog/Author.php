@@ -146,22 +146,19 @@ class Author extends Model
      */
     public static function getLetters()
     {
-        return Helper::resolveCache('authors')->remember('aut_v2_letters', config('cache.life'), function () {
+        return Helper::resolveCache('authors')->remember('aut_v4_letters', config('cache.life'), function () {
             $letters = collect();
-            $authors = Author::active()->whereHas('products')->pluck('letter')->unique();
+            $authors = Author::active()
+                ->whereHas('products')
+                ->pluck('letter')
+                ->map(fn ($letter) => mb_strtolower(trim((string) $letter), 'UTF-8'))
+                ->unique();
 
             foreach (Helper::abc() as $item) {
-                if ($item == $authors->contains($item)) {
-                    $letters->push([
-                        'value' => $item,
-                        'active' => true
-                    ]);
-                } else {
-                    $letters->push([
-                        'value' => $item,
-                        'active' => false
-                    ]);
-                }
+                $letters->push([
+                    'value' => $item,
+                    'active' => $authors->containsStrict(mb_strtolower($item, 'UTF-8')),
+                ]);
             }
 
             return $letters;
@@ -178,11 +175,24 @@ class Author extends Model
     {
         $currentPage = request()->get('page', 1);
 
-        return Helper::resolveCache('authors')->remember('aut_v2_' . $letter . '.' . $currentPage, config('cache.life'), function () use ($letter) {
+        return Helper::resolveCache('authors')->remember('aut_v4_' . $letter . '.' . $currentPage, config('cache.life'), function () use ($letter) {
             $auts = Author::query()->select('id', 'title', 'url')->where('status',  1)->whereHas('products');
 
             if ($letter) {
-                $auts->where('letter', $letter);
+                // Uobičajene kolacije izjednačavaju C, Č i Ć (te S/Š i Z/Ž).
+                // Usporedba UTF-8 bajtova razdvaja ih, a varijante čuvaju starije zapise
+                // u kojima je početno slovo spremljeno malim slovom.
+                $letterVariants = collect([
+                    $letter,
+                    mb_strtolower($letter, 'UTF-8'),
+                    mb_strtoupper($letter, 'UTF-8'),
+                ])->unique()->values();
+
+                $auts->where(function ($query) use ($letterVariants) {
+                    foreach ($letterVariants as $variant) {
+                        $query->orWhereRaw('HEX(letter) = HEX(?)', [$variant]);
+                    }
+                });
             }
 
             return $auts->orderBy('title')

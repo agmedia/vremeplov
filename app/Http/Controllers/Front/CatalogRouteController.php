@@ -190,6 +190,93 @@ class CatalogRouteController extends Controller
 
 
     /**
+     * Autocomplete limited to authors whose books are currently available.
+     */
+    public function authorSuggest(Request $request)
+    {
+        $query = trim((string) $request->get('q', ''));
+
+        if (mb_strlen($query) < 2) {
+            return response()->json(['authors' => []]);
+        }
+
+        $authorsQuery = Author::query()
+            ->select('id', 'title', 'url')
+            ->active()
+            ->whereHas('products');
+
+        $hasCroatianDiacritic = preg_match('/[čćđšž]/iu', $query) === 1;
+        $usesMysql = DB::connection()->getDriverName() === 'mysql';
+
+        if ($hasCroatianDiacritic && $usesMysql) {
+            // utf8mb4_unicode_ci izjednačava č/c, ć/c, š/s i ž/z. Spuštanje slova
+            // zadržava pretragu neovisnom o veličini slova, a binarna kolacija čuva dijakritike.
+            $authorsQuery
+                ->whereRaw('LOWER(title) COLLATE utf8mb4_bin LIKE LOWER(?)', ['%' . $query . '%'])
+                ->orderByRaw(
+                    'CASE
+                        WHEN LOWER(TRIM(title)) COLLATE utf8mb4_bin = LOWER(?) THEN 0
+                        WHEN LOWER(title) COLLATE utf8mb4_bin LIKE LOWER(?) THEN 1
+                        WHEN LOWER(title) COLLATE utf8mb4_bin LIKE LOWER(?) THEN 2
+                        ELSE 3
+                    END',
+                    [$query, $query . '%', '% ' . $query . '%']
+                );
+        } elseif (! $hasCroatianDiacritic) {
+            // Za upite bez kvačica namjerno zadržavamo tolerantnu pretragu:
+            // "krleza" tako i dalje pronalazi "Krleža".
+            $authorsQuery
+                ->where('title', 'like', '%' . $query . '%')
+                ->orderByRaw(
+                    'CASE
+                        WHEN TRIM(title) = ? THEN 0
+                        WHEN title LIKE ? THEN 1
+                        WHEN title LIKE ? THEN 2
+                        ELSE 3
+                    END',
+                    [$query, $query . '%', '% ' . $query . '%']
+                );
+        }
+
+        $authors = $authorsQuery
+            ->orderBy('title')
+            ->withCount('products')
+            ->when($hasCroatianDiacritic && ! $usesMysql, fn ($query) => $query->limit(5000))
+            ->when(! $hasCroatianDiacritic || $usesMysql, fn ($query) => $query->limit(12))
+            ->get()
+            ->when($hasCroatianDiacritic && ! $usesMysql, function ($authors) use ($query) {
+                return $authors
+                    ->filter(fn ($author) => mb_stripos($author->title, $query, 0, 'UTF-8') !== false)
+                    ->sortBy(function ($author) use ($query) {
+                        $title = mb_strtolower(trim($author->title), 'UTF-8');
+                        $needle = mb_strtolower($query, 'UTF-8');
+
+                        if ($title === $needle) {
+                            return '0|' . $title;
+                        }
+
+                        if (str_starts_with($title, $needle)) {
+                            return '1|' . $title;
+                        }
+
+                        return '2|' . $title;
+                    })
+                    ->take(12);
+            })
+            ->reject(fn ($author) => $this->isGenericCatalogLabel($author->title))
+            ->take(8)
+            ->map(fn ($author) => [
+                'title' => $author->title,
+                'url' => url($author->url),
+                'products_count' => (int) $author->products_count,
+            ])
+            ->values();
+
+        return response()->json(['authors' => $authors]);
+    }
+
+
+    /**
      *
      *
      * @param Publisher $publisher
