@@ -223,6 +223,153 @@ class PayPalStandard
         return $result;
     }
 
+    /**
+     * Apply a completed transaction obtained server-to-server from PayPal's
+     * authenticated Reporting API. Browser return parameters never reach here.
+     */
+    public function handleReportingTransaction(
+        Order $order,
+        array $transactionInfo
+    ): array {
+        $error = $this->reportingValidationError($order, $transactionInfo);
+
+        if ($error !== null) {
+            return $this->notificationResult(false, 409, 'INVALID');
+        }
+
+        $result = DB::transaction(function () use ($order, $transactionInfo) {
+            $lockedOrder = Order::query()->whereKey($order->id)->lockForUpdate()->first();
+            if (! $lockedOrder
+                || $this->reportingValidationError($lockedOrder, $transactionInfo) !== null) {
+                return $this->notificationResult(false, 409, 'INVALID');
+            }
+
+            $txnId = trim((string) ($transactionInfo['transaction_id'] ?? ''));
+            if (! app(ProviderReferenceService::class)->claim($lockedOrder, 'paypal', $txnId)) {
+                Log::critical('PayPal Reporting transaction ID was reused for another order.', [
+                    'order_id' => $lockedOrder->id,
+                    'txn_id' => $txnId,
+                ]);
+
+                return $this->notificationResult(false, 409, 'INVALID');
+            }
+
+            $idempotencyKey = $this->idempotencyKey($txnId, 'Completed');
+            $existing = Transaction::query()
+                ->where('idempotency_key', $idempotencyKey)
+                ->lockForUpdate()
+                ->first();
+
+            if ($existing) {
+                return (int) $existing->order_id === (int) $lockedOrder->id
+                    ? $this->completedRetryResult($lockedOrder, 'Completed')
+                    : $this->notificationResult(false, 409, 'INVALID');
+            }
+
+            $amountMinor = DecimalAmount::fromMajorUnits(
+                data_get($transactionInfo, 'transaction_amount.value')
+            );
+            $now = now();
+            $inserted = DB::table('order_transactions')->insertOrIgnore([
+                'order_id' => $lockedOrder->id,
+                'success' => 1,
+                'amount' => DecimalAmount::format((int) $amountMinor),
+                'signature' => 'paypal-reporting-api',
+                'payment_type' => 'reporting',
+                'payment_plan' => null,
+                'payment_partner' => 'PayPal',
+                'provider_event' => 'paypal_completed',
+                'datetime' => $this->transactionDateTime($transactionInfo['transaction_initiation_date'] ?? null),
+                'approval_code' => null,
+                'pg_order_id' => $txnId,
+                'idempotency_key' => $idempotencyKey,
+                'lang' => 'hr',
+                'stan' => mb_substr((string) ($transactionInfo['invoice_id'] ?? ''), 0, 191) ?: null,
+                'error' => '',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+            if ($inserted !== 1) {
+                $winner = Transaction::query()->where('idempotency_key', $idempotencyKey)->first();
+
+                return $winner && (int) $winner->order_id === (int) $lockedOrder->id
+                    ? $this->completedRetryResult($lockedOrder, 'Completed')
+                    : $this->notificationResult(false, 409, 'INVALID');
+            }
+
+            $result = $this->notificationResult(true, 200, 'OK');
+            $result['should_notify'] = $this->completePayment(
+                $lockedOrder,
+                'paypal_reporting_completed'
+            );
+
+            return $result;
+        });
+
+        Log::info('PayPal Reporting transaction processed.', [
+            'order_id' => $order->id,
+            'txn_id' => trim((string) ($transactionInfo['transaction_id'] ?? '')),
+            'accepted' => $result['accepted'],
+        ]);
+
+        return $result;
+    }
+
+    public function reportingValidationError(
+        Order $order,
+        array $transactionInfo
+    ): ?string {
+        $configuration = $this->configurationForOrder($order);
+        if (! $configuration
+            || strtolower(trim((string) $order->payment_code)) !== 'paypal'
+            || strtolower((string) $order->payment_attempt_provider) !== 'paypal') {
+            return 'Order is not a valid PayPal payment attempt.';
+        }
+
+        if (($transactionInfo['transaction_status'] ?? null) !== 'S') {
+            return 'PayPal transaction is not successful.';
+        }
+
+        $custom = trim((string) ($transactionInfo['custom_field'] ?? ''));
+        if (! preg_match('/^[a-f0-9]{64}$/D', $custom)
+            || ! hash_equals((string) $order->payment_attempt_reference, $custom)) {
+            return 'PayPal custom field does not match the payment attempt.';
+        }
+
+        $txnId = trim((string) ($transactionInfo['transaction_id'] ?? ''));
+        if (! preg_match('/^[A-Za-z0-9._-]{1,191}$/D', $txnId)) {
+            return 'PayPal transaction ID is invalid.';
+        }
+
+        $currency = strtoupper(trim((string) data_get($transactionInfo, 'transaction_amount.currency_code')));
+        $amountMinor = DecimalAmount::fromMajorUnits(data_get($transactionInfo, 'transaction_amount.value'));
+        if ($currency === ''
+            || ! hash_equals(strtoupper($configuration['currency']), $currency)
+            || $amountMinor === null
+            || $amountMinor <= 0
+            || ! in_array($amountMinor, $this->expectedAmounts($order), true)) {
+            return 'PayPal amount or currency does not match.';
+        }
+
+        $invoice = trim((string) ($transactionInfo['invoice_id'] ?? ''));
+        if (! preg_match('/^' . preg_quote((string) $order->id, '/') . '(?:\s*-\s*.+)?$/uD', $invoice)) {
+            return 'PayPal invoice does not match the order.';
+        }
+
+        try {
+            $paidAt = Carbon::parse((string) ($transactionInfo['transaction_initiation_date'] ?? ''));
+        } catch (\Throwable $exception) {
+            return 'PayPal transaction time is invalid.';
+        }
+
+        if ($order->payment_attempt_started_at === null || $paidAt->lt($order->payment_attempt_started_at)) {
+            return 'PayPal transaction predates the payment attempt.';
+        }
+
+        return null;
+    }
+
     public static function findNotificationOrder(string $custom): ?Order
     {
         $custom = trim($custom);
@@ -279,7 +426,7 @@ class PayPalStandard
         }
     }
 
-    private function completePayment(Order $order): bool
+    private function completePayment(Order $order, string $inventoryReason = 'paypal_ipn_completed'): bool
     {
         $previousStatus = (int) $order->order_status_id;
 
@@ -321,7 +468,7 @@ class PayPalStandard
                 $order,
                 $previousStatus,
                 (int) $order->order_status_id,
-                'paypal_ipn_completed'
+                $inventoryReason
             );
 
             if (! $inventory->isActive($managedOrder)

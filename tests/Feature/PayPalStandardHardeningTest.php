@@ -36,6 +36,9 @@ class PayPalStandardHardeningTest extends TestCase
                 'foreign_key_constraints' => true,
             ],
             'cache.default' => 'array',
+            'paypal.reconciliation.enabled' => true,
+            'paypal.reconciliation.delay_minutes' => 240,
+            'paypal.reconciliation.lookback_days' => 30,
         ]);
 
         DB::purge('paypal_testing');
@@ -401,6 +404,95 @@ class PayPalStandardHardeningTest extends TestCase
         });
     }
 
+    public function test_reporting_api_reconciles_a_missing_ipn_once(): void
+    {
+        [$order] = $this->beginAttempt($this->reserveOrder($this->createOrder()));
+        $startedAt = now()->subHours(5);
+        DB::table('orders')->where('id', $order->id)->update([
+            'payment_attempt_started_at' => $startedAt,
+        ]);
+        $order = $order->fresh();
+        $transactionInfo = $this->validReportingTransaction($order, 'PAYPAL-REPORTING-ONE');
+
+        Http::fake([
+            'https://api-m.sandbox.paypal.com/v1/oauth2/token' => Http::response([
+                'access_token' => 'verified-reporting-token',
+                'expires_in' => 300,
+            ], 200),
+            'https://api-m.sandbox.paypal.com/v1/reporting/transactions*' => Http::response([
+                'transaction_details' => [[
+                    'transaction_info' => $transactionInfo,
+                ]],
+                'total_pages' => 1,
+            ], 200),
+        ]);
+
+        $this->artisan('payments:reconcile-paypal')
+            ->expectsOutput('Kandidati: 1; podudaranja: 1; potvrđeno: 1; za provjeru: 0; greške: 0.')
+            ->assertExitCode(0);
+
+        $fresh = $order->fresh();
+        $this->assertSame((int) config('settings.order.status.paid'), (int) $fresh->order_status_id);
+        $this->assertNotNull($fresh->inventory_committed_at);
+        $this->assertSame(0, $this->stockForOrder($order));
+        $this->assertSame(1, DB::table('inventory_movements')->where('action', 'reserve')->count());
+        $this->assertSame(1, DB::table('order_transactions')->count());
+        $this->assertSame(1, DB::table('payment_provider_references')->count());
+        $this->assertDatabaseHas('order_transactions', [
+            'order_id' => $order->id,
+            'pg_order_id' => 'PAYPAL-REPORTING-ONE',
+            'provider_event' => 'paypal_completed',
+            'success' => 1,
+        ]);
+
+        $replay = (new PayPalStandard($fresh))->handleReportingTransaction(
+            $fresh,
+            $transactionInfo
+        );
+        $this->assertTrue($replay['accepted']);
+        $this->assertSame(1, DB::table('order_transactions')->count());
+        $this->assertSame(1, DB::table('inventory_movements')->where('action', 'reserve')->count());
+    }
+
+    public function test_reporting_api_fails_closed_on_any_payment_mismatch(): void
+    {
+        [$order] = $this->beginAttempt($this->reserveOrder($this->createOrder()));
+        DB::table('orders')->where('id', $order->id)->update([
+            'payment_attempt_started_at' => now()->subHours(5),
+        ]);
+        $order = $order->fresh();
+
+        $mutations = [
+            ['custom_field' => str_repeat('f', 64)],
+            ['invoice_id' => '999999 - Wrong order'],
+            ['transaction_status' => 'P'],
+            ['transaction_amount' => ['currency_code' => 'EUR', 'value' => '29.99']],
+            ['transaction_amount' => ['currency_code' => 'USD', 'value' => '30.00']],
+            ['transaction_initiation_date' => now()->subHours(6)->utc()->format('Y-m-d\TH:i:s\Z')],
+        ];
+
+        foreach ($mutations as $index => $mutation) {
+            $transaction = array_replace(
+                $this->validReportingTransaction($order, 'PAYPAL-REPORTING-BAD-' . $index),
+                $mutation
+            );
+            $result = (new PayPalStandard($order))->handleReportingTransaction(
+                $order,
+                $transaction
+            );
+            $this->assertFalse($result['accepted'], 'Mismatch #' . $index . ' was accepted.');
+        }
+
+        $this->assertSame(
+            (int) config('settings.order.status.unfinished'),
+            (int) $order->fresh()->order_status_id
+        );
+        $this->assertSame(0, $this->stockForOrder($order));
+        $this->assertNull($order->fresh()->inventory_committed_at);
+        $this->assertSame(0, DB::table('order_transactions')->count());
+        $this->assertSame(0, DB::table('payment_provider_references')->count());
+    }
+
     private function createSchema(): void
     {
         Schema::create('settings', function (Blueprint $table) {
@@ -556,6 +648,8 @@ class PayPalStandardHardeningTest extends TestCase
                     'code' => 'paypal',
                     'data' => [
                         'test' => $testMode,
+                        'test_id' => 'test-client-id',
+                        'test_secret' => 'test-client-secret',
                     ],
                     'status' => $active,
                 ]]),
@@ -642,6 +736,21 @@ class PayPalStandardHardeningTest extends TestCase
             'invoice' => $order->id . ' - Test Buyer',
             'notify_version' => '3.9',
         ], $overrides);
+    }
+
+    private function validReportingTransaction(Order $order, string $txnId): array
+    {
+        return [
+            'transaction_id' => $txnId,
+            'transaction_status' => 'S',
+            'custom_field' => (string) $order->payment_attempt_reference,
+            'invoice_id' => $order->id . ' - Test Buyer',
+            'transaction_amount' => [
+                'currency_code' => 'EUR',
+                'value' => '30.00',
+            ],
+            'transaction_initiation_date' => now()->subHours(4)->utc()->format('Y-m-d\TH:i:s\Z'),
+        ];
     }
 
     private function ipnRequest(array $payload, ?string $rawBody = null): Request

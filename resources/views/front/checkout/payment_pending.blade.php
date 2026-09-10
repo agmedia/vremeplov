@@ -10,7 +10,8 @@
                         PayPal još šalje sigurnu potvrdu za narudžbu broj {{ $order->id }}.
                     </p>
                     <p class="fs-sm">
-                        Nemojte ponavljati plaćanje. Ova će se stranica uskoro sama osvježiti.
+                        Nemojte ponavljati plaćanje. Potvrda ponekad može potrajati nekoliko sati;
+                        čim je zaprimimo, poslat ćemo vam e-mail.
                     </p>
                     <a class="btn btn-primary mt-3" href="{{ route('checkout.return.paypal', ['attempt' => $attempt ?? null]) }}">
                         Provjeri ponovno
@@ -20,9 +21,4 @@
         </div>
     </div>
 
-    <script>
-        window.setTimeout(function () {
-            window.location.reload();
-        }, 4000);
-    </script>
 @endsection

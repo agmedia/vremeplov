@@ -39,6 +39,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('orders:send-pending-mail --limit=50')
             ->everyMinute()
             ->withoutOverlapping(5);
+        $schedule->command('payments:reconcile-paypal --limit=200')
+            ->everyFifteenMinutes()
+            ->withoutOverlapping(30);
         $schedule->command('orders:send-abandoned-cart-reminders --limit=25')
             ->everyThirtyMinutes()
             ->withoutOverlapping(30);

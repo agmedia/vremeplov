@@ -135,6 +135,25 @@ class AbandonedCartServiceTest extends TestCase
         $this->assertSame([8], (new AbandonedCartService())->candidates(2, 20)->pluck('id')->all());
     }
 
+    public function test_paypal_attempt_never_receives_a_retry_payment_reminder(): void
+    {
+        Mail::fake();
+        $order = $this->order(9, 'paypal@example.test', 8, now()->subHours(5));
+        $this->product($order->id);
+        $order->forceFill([
+            'payment_attempt_started_at' => now()->subHours(5),
+            'payment_attempt_provider' => 'paypal',
+        ])->save();
+
+        $service = new AbandonedCartService();
+
+        $this->assertNotContains(9, $service->candidates(1, 20)->pluck('id')->all());
+        $this->assertFalse($service->adminState($order->fresh())['available']);
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('PayPal');
+        $service->send($order->fresh(), 1, AbandonedCartReminder::SOURCE_MANUAL);
+    }
+
     private function order(int $id, string $email, int $status, $createdAt): Order
     {
         DB::table('orders')->insert([
@@ -169,6 +188,8 @@ class AbandonedCartServiceTest extends TestCase
             $table->unsignedInteger('order_status_id');
             $table->string('payment_email')->nullable();
             $table->string('payment_fname')->nullable();
+            $table->timestamp('payment_attempt_started_at')->nullable();
+            $table->string('payment_attempt_provider', 32)->nullable();
             $table->timestamps();
         });
         Schema::create('products', function (Blueprint $table) {

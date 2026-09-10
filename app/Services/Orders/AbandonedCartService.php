@@ -38,6 +38,13 @@ class AbandonedCartService
 
         $query = Order::query()
             ->where('order_status_id', (int) config('settings.order.status.unfinished', 8))
+            // A started PayPal attempt may already be paid even when its IPN
+            // never arrived. Never invite that customer to pay a second time.
+            ->where(function (Builder $payment) {
+                $payment->whereNull('payment_attempt_started_at')
+                    ->orWhereNull('payment_attempt_provider')
+                    ->orWhere('payment_attempt_provider', '<>', 'paypal');
+            })
             ->where('created_at', '>=', $this->candidateCutoff($sequence))
             ->where('created_at', '<=', now()->subMinutes((int) $delay))
             ->whereNotNull('payment_email')
@@ -243,6 +250,10 @@ class AbandonedCartService
         }
         if (! $this->canRecover($order)) {
             return 'Podsjetnik se može poslati samo za noviju nedovršenu narudžbu.';
+        }
+        if ($order->payment_attempt_started_at !== null
+            && strtolower((string) $order->payment_attempt_provider) === 'paypal') {
+            return 'PayPal plaćanje je pokrenuto; prije ponovnog kontakta potrebna je provjera uplate.';
         }
         if (! filter_var(trim((string) $order->payment_email), FILTER_VALIDATE_EMAIL)) {
             return 'Narudžba nema valjanu e-mail adresu kupca.';
