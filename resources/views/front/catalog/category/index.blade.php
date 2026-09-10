@@ -33,7 +33,9 @@
 @endif
 
 @if (Route::currentRouteName() == 'pretrazi')
-    @php($searchTerm = trim((string) request()->input('pojam')))
+    @php
+        $searchTerm = trim((string) request()->input('pojam'));
+    @endphp
     @if ($searchTerm !== '')
         @section('google_data_layer')
             <script>window.VremeplovAnalytics.track('search', {search_term: @json($searchTerm)});</script>
@@ -79,9 +81,70 @@
 
 
 
-    @php($catalogFiltersEnabled = (isset($group) && $group === 'knjige') || isset($author) || isset($publisher) || request()->routeIs('pretrazi'))
-    <div class="container pb-4 mb-2 mb-md-4 mt-4" id="filter-app" v-cloak>
-        <div class="row">
+    @php
+        $catalogFiltersEnabled = (isset($group) && $group === 'knjige') || isset($author) || isset($publisher) || request()->routeIs('pretrazi');
+        $catalogBackCrumb = isset($crumbs['itemListElement']) && count($crumbs['itemListElement']) > 1
+            ? $crumbs['itemListElement'][count($crumbs['itemListElement']) - 2]
+            : null;
+        $catalogBackUrl = is_array($catalogBackCrumb) ? ($catalogBackCrumb['item'] ?? route('index')) : route('index');
+        $catalogBackLabel = is_array($catalogBackCrumb) ? ($catalogBackCrumb['name'] ?? 'prethodnu stranicu') : 'prethodnu stranicu';
+    @endphp
+    <div class="container pb-4 mb-2 mb-md-4 mt-4" id="filter-app">
+        <div class="row catalog-loading-shell" aria-hidden="true" v-if="false">
+            <aside class="catalog-filter-column">
+                <div class="catalog-filter-panel catalog-filter-skeleton-panel">
+                    <div class="catalog-filter-header">
+                        <h2>
+                            <i class="fa-duotone fa-list-tree d-none d-lg-inline-flex" aria-hidden="true"></i>
+                            <span class="d-none d-lg-inline">Menu</span>
+                        </h2>
+                    </div>
+                    <a class="catalog-filter-back" href="{{ $catalogBackUrl }}">
+                        <i class="fa-regular fa-arrow-left" aria-hidden="true"></i>
+                        <span>Natrag na {{ $catalogBackLabel }}</span>
+                    </a>
+                    <div class="catalog-filter-body catalog-filter-body--loading">
+                        @for ($section = 0; $section < 7; $section++)
+                            <div class="catalog-filter-skeleton-row">
+                                <span class="catalog-skeleton catalog-skeleton--icon"></span>
+                                <span class="catalog-skeleton catalog-skeleton--filter-label"></span>
+                                <span class="catalog-skeleton catalog-skeleton--chevron"></span>
+                            </div>
+                        @endfor
+                    </div>
+                    <div class="catalog-filter-actions catalog-filter-actions--loading">
+                        <span class="catalog-skeleton catalog-skeleton--button"></span>
+                        <span class="catalog-skeleton catalog-skeleton--button catalog-skeleton--button-wide"></span>
+                    </div>
+                </div>
+            </aside>
+
+            <section class="catalog-products-section">
+                <div class="catalog-toolbar">
+                    <div class="catalog-toolbar__controls">
+                        <span class="catalog-skeleton catalog-skeleton--sort"></span>
+                    </div>
+                    <span class="catalog-skeleton catalog-skeleton--total d-none d-lg-block"></span>
+                </div>
+                <div class="row catalog-products-grid catalog-products-skeleton-grid">
+                    @for ($card = 0; $card < 8; $card++)
+                        <div class="catalog-product-col d-flex align-items-stretch">
+                            <div class="catalog-product-skeleton">
+                                <span class="catalog-skeleton catalog-skeleton--image"></span>
+                                <div class="catalog-product-skeleton__body">
+                                    <span class="catalog-skeleton catalog-skeleton--eyebrow"></span>
+                                    <span class="catalog-skeleton catalog-skeleton--line"></span>
+                                    <span class="catalog-skeleton catalog-skeleton--line catalog-skeleton--line-short"></span>
+                                    <span class="catalog-skeleton catalog-skeleton--price"></span>
+                                </div>
+                            </div>
+                        </div>
+                    @endfor
+                </div>
+            </section>
+        </div>
+
+        <div class="row catalog-app-content" v-cloak>
             <filter-view ids="{{ isset($ids) ? $ids : null }}"
                          group="{{ isset($group) ? $group : null }}"
                          catalog-root="{{ request()->route('group') === \App\Helpers\Helper::categoryGroupPath(true) ? 'all' : '' }}"
@@ -89,6 +152,8 @@
                          subcat="{{ isset($subcat) ? $subcat : null }}"
                          author="{{ isset($author) ? $author['slug'] : null }}"
                          publisher="{{ isset($publisher) ? $publisher['slug'] : null }}"
+                         back-url="{{ $catalogBackUrl }}"
+                         back-label="{{ $catalogBackLabel }}"
                          :filters-enabled="{{ $catalogFiltersEnabled ? 'true' : 'false' }}">
             </filter-view>
             <products-view ids="{{ isset($ids) ? $ids : null }}"
@@ -127,6 +192,12 @@
                 </div>
             @endif
         </section>
+        <noscript>
+            <style>
+                .catalog-loading-shell { display: none !important; }
+                #catalog-ssr { display: block !important; }
+            </style>
+        </noscript>
     @endif
 
     @if (isset($author) && $author && ! empty($author->description))

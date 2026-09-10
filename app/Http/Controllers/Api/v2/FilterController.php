@@ -68,6 +68,7 @@ class FilterController extends Controller
                             'active' => $selectedSubcategoryId === (int) $category->id,
                         ];
                     })
+                    ->filter(fn ($category) => $category['count'] > 0)
                     ->values()
                     ->all();
             }
@@ -112,6 +113,7 @@ class FilterController extends Controller
                         'active' => false,
                     ];
                 })
+                ->filter(fn ($category) => $category['count'] > 0)
                 ->values()
                 ->all();
         }

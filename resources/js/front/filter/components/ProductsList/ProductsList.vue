@@ -30,45 +30,67 @@
                 </button>
             </div>
 
-            <p class="catalog-toolbar__total d-none d-lg-block">Ukupno {{ formattedTotal }} artikala</p>
+            <p class="catalog-toolbar__total d-none d-lg-block">
+                <template v-if="has_loaded_products">Ukupno {{ formattedTotal }} artikala</template>
+                <span class="catalog-skeleton catalog-skeleton--total" v-else aria-hidden="true"></span>
+            </p>
         </div>
 
-        <div class="catalog-products-loading" v-if="!products_loaded" aria-live="polite">
-            <span class="spinner-border" role="status"><span class="visually-hidden">Učitavanje artikala</span></span>
+        <div class="catalog-products-skeleton" v-if="!products_loaded && !has_loaded_products" aria-live="polite" aria-busy="true">
+            <span class="visually-hidden" role="status">Učitavanje artikala</span>
+            <div class="row catalog-products-grid catalog-products-skeleton-grid">
+                <div class="catalog-product-col d-flex align-items-stretch" v-for="placeholder in 8" :key="placeholder">
+                    <div class="catalog-product-skeleton">
+                        <span class="catalog-skeleton catalog-skeleton--image"></span>
+                        <div class="catalog-product-skeleton__body">
+                            <span class="catalog-skeleton catalog-skeleton--eyebrow"></span>
+                            <span class="catalog-skeleton catalog-skeleton--line"></span>
+                            <span class="catalog-skeleton catalog-skeleton--line catalog-skeleton--line-short"></span>
+                            <span class="catalog-skeleton catalog-skeleton--price"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="row catalog-products-grid" :class="'catalog-products-grid--mobile-' + mobileColumns" v-if="products_loaded && products.total">
-            <div class="catalog-product-col d-flex align-items-stretch" v-for="product in products.data" :key="product.id">
-                <article class="card product-card product-card--refined catalog-product-card">
-                    <span class="badge bg-warning product-card__badge" v-if="product.quantity <= 0">Rasprodano</span>
-                    <span class="badge rounded-pill bg-primary badge-shadow product-card__badge" v-if="product.special">
-                        -{{ $store.state.service.getDiscountAmount(product.price, product.special) }}%
-                    </span>
-                    <a class="card-img-top product-card__media d-block overflow-hidden" :href="origin + product.url">
-                        <img loading="lazy" :src="thumbnail(product)" width="250" height="300" :alt="product.card_name || product.name">
-                    </a>
-                    <div class="card-body product-card__body">
-                        <a class="product-card__category" v-if="product.card_category" :href="product.card_category.url">{{ product.card_category.title }}</a>
-                        <div class="product-card__rating" v-if="Number(product.reviews_count) > 0" :aria-label="ratingLabel(product)">
-                            <span aria-hidden="true">
-                                <i v-for="star in 5" :key="star" :class="[star <= roundedRating(product) ? 'fa-solid' : 'fa-regular', 'fa-star']"></i>
-                            </span>
-                            <small>({{ product.reviews_count }})</small>
+        <div class="catalog-products-stage" :class="{'is-updating': !products_loaded && has_loaded_products}" :aria-busy="!products_loaded ? 'true' : 'false'">
+            <div class="row catalog-products-grid" :class="'catalog-products-grid--mobile-' + mobileColumns" v-if="has_loaded_products && products.total">
+                <div class="catalog-product-col d-flex align-items-stretch" v-for="product in products.data" :key="product.id">
+                    <article class="card product-card product-card--refined catalog-product-card">
+                        <span class="badge bg-warning product-card__badge" v-if="product.quantity <= 0">Rasprodano</span>
+                        <span class="badge rounded-pill bg-primary badge-shadow product-card__badge" v-if="product.special">
+                            -{{ $store.state.service.getDiscountAmount(product.price, product.special) }}%
+                        </span>
+                        <a class="card-img-top product-card__media d-block overflow-hidden" :href="origin + product.url">
+                            <img loading="lazy" :src="thumbnail(product)" width="250" height="300" :alt="product.card_name || product.name">
+                        </a>
+                        <div class="card-body product-card__body">
+                            <a class="product-card__category" v-if="product.card_category" :href="product.card_category.url">{{ product.card_category.title }}</a>
+                            <div class="product-card__rating" v-if="Number(product.reviews_count) > 0" :aria-label="ratingLabel(product)">
+                                <span aria-hidden="true">
+                                    <i v-for="star in 5" :key="star" :class="[star <= roundedRating(product) ? 'fa-solid' : 'fa-regular', 'fa-star']"></i>
+                                </span>
+                                <small>({{ product.reviews_count }})</small>
+                            </div>
+                            <h3 class="product-title product-card__title"><a :href="origin + product.url">{{ product.card_name || product.name }}</a></h3>
+                            <div class="product-price product-card__previous-price" v-if="product.special">
+                                <small>NC 30 dana: {{ product.main_price_text }}</small>
+                            </div>
+                            <div class="product-price product-card__price">
+                                <span>{{ product.special ? product.main_special_text : product.main_price_text }}</span>
+                            </div>
                         </div>
-                        <h3 class="product-title product-card__title"><a :href="origin + product.url">{{ product.card_name || product.name }}</a></h3>
-                        <div class="product-price product-card__previous-price" v-if="product.special">
-                            <small>NC 30 dana: {{ product.main_price_text }}</small>
+                        <div class="product-floating-btn product-card__action" v-if="product.quantity > 0">
+                            <button class="btn btn-primary btn-shadow btn-sm" :class="{'is-blocked': product.disabled}" v-on:click="add(product.id, product.quantity)" type="button" :aria-disabled="product.disabled ? 'true' : 'false'" :title="product.disabled ? 'Nema više dostupnih primjeraka ovog artikla' : 'Dodaj u košaricu'" :aria-label="product.disabled ? 'Nema više dostupnih primjeraka artikla ' + (product.card_name || product.name) : 'Dodaj ' + (product.card_name || product.name) + ' u košaricu'">
+                                <i class="fa-regular fa-bag-shopping fs-base" aria-hidden="true"></i>
+                            </button>
                         </div>
-                        <div class="product-price product-card__price">
-                            <span>{{ product.special ? product.main_special_text : product.main_price_text }}</span>
-                        </div>
-                    </div>
-                    <div class="product-floating-btn product-card__action" v-if="product.quantity > 0">
-                        <button class="btn btn-primary btn-shadow btn-sm" :class="{'is-blocked': product.disabled}" v-on:click="add(product.id, product.quantity)" type="button" :aria-disabled="product.disabled ? 'true' : 'false'" :title="product.disabled ? 'Nema više dostupnih primjeraka ovog artikla' : 'Dodaj u košaricu'" :aria-label="product.disabled ? 'Nema više dostupnih primjeraka artikla ' + (product.card_name || product.name) : 'Dodaj ' + (product.card_name || product.name) + ' u košaricu'">
-                            <i class="fa-regular fa-bag-shopping fs-base" aria-hidden="true"></i>
-                        </button>
-                    </div>
-                </article>
+                    </article>
+                </div>
+            </div>
+
+            <div class="catalog-products-updating" v-if="!products_loaded && has_loaded_products">
+                <span class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Osvježavanje artikala</span></span>
             </div>
         </div>
 
@@ -90,7 +112,7 @@
             <p>Osvježite stranicu i pokušajte ponovno.</p>
         </div>
 
-        <div class="catalog-pagination-wrap" v-if="products_loaded && products.total">
+        <div class="catalog-pagination-wrap" v-if="has_loaded_products && products.total">
             <pagination :data="products" align="center" :show-disabled="true" :limit="2" @pagination-change-page="getProductsPage"></pagination>
             <p class="catalog-pagination-summary">
                 Prikazano <strong>{{ formattedNumber(products.from) }}–{{ formattedNumber(products.to) }}</strong>
@@ -135,6 +157,7 @@ export default {
             origin: location.origin + '/',
             hr_total: 'rezultata',
             products_loaded: false,
+            has_loaded_products: false,
             search_zero_result: false,
             navigation_zero_result: false,
             load_error: false,
@@ -233,6 +256,7 @@ export default {
                 .finally(() => {
                     if (sequence === this.requestSequence) {
                         this.products_loaded = true;
+                        this.has_loaded_products = true;
                     }
                 });
         },

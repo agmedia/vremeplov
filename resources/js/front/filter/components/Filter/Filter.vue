@@ -13,7 +13,21 @@
                 </button>
             </div>
 
-            <div class="catalog-filter-body">
+            <a class="catalog-filter-back" :href="backUrl" v-if="backUrl">
+                <i class="fa-regular fa-arrow-left" aria-hidden="true"></i>
+                <span>Natrag na {{ backLabel || 'prethodnu stranicu' }}</span>
+            </a>
+
+            <div class="catalog-filter-body catalog-filter-body--loading" v-if="initialLoading" aria-busy="true">
+                <span class="visually-hidden" role="status">Učitavanje izbornika</span>
+                <div class="catalog-filter-skeleton-row" v-for="section in 7" :key="section">
+                    <span class="catalog-skeleton catalog-skeleton--icon"></span>
+                    <span class="catalog-skeleton catalog-skeleton--filter-label"></span>
+                    <span class="catalog-skeleton catalog-skeleton--chevron"></span>
+                </div>
+            </div>
+
+            <div class="catalog-filter-body" v-else>
                 <section class="catalog-filter-section" v-if="categories.length">
                     <button class="catalog-filter-section__toggle" type="button" v-on:click="toggleSection('categories')" :aria-expanded="openSections.categories ? 'true' : 'false'">
                         <span><i class="fa-duotone fa-books" aria-hidden="true"></i>Kategorije</span>
@@ -132,7 +146,12 @@
                 </section>
             </div>
 
-            <div class="catalog-filter-actions" v-if="filtersEnabled">
+            <div class="catalog-filter-actions catalog-filter-actions--loading" v-if="initialLoading && filtersEnabled" aria-hidden="true">
+                <span class="catalog-skeleton catalog-skeleton--button"></span>
+                <span class="catalog-skeleton catalog-skeleton--button catalog-skeleton--button-wide"></span>
+            </div>
+
+            <div class="catalog-filter-actions" v-else-if="filtersEnabled">
                 <button class="btn catalog-filter-clear" type="button" v-on:click="cleanQuery" :disabled="!hasActiveFilters">
                     <i class="fa-regular fa-trash-can" aria-hidden="true"></i>
                     <span>Očisti</span>
@@ -155,6 +174,8 @@ export default {
         author: String,
         publisher: String,
         catalogRoot: String,
+        backUrl: String,
+        backLabel: String,
         filtersEnabled: {
             type: Boolean,
             default: false,
@@ -207,18 +228,21 @@ export default {
             publisherRequestId: 0,
             entityPrefetchHandle: null,
             entityPrefetchUsesIdleCallback: false,
+            categories_loaded: false,
+            characteristics_loaded: !this.filtersEnabled,
         };
     },
 
     computed: {
         filteredCategories() {
             const query = this.normalizeSearchValue(this.searchCategory);
+            const availableCategories = this.categories.filter(item => Number(item.count || 0) > 0);
 
             if (!query) {
-                return this.categories;
+                return availableCategories;
             }
 
-            return this.categories.filter(item => this.normalizeSearchValue(item.title).includes(query));
+            return availableCategories.filter(item => this.normalizeSearchValue(item.title).includes(query));
         },
 
         activeFilterCount() {
@@ -231,6 +255,10 @@ export default {
 
         hasActiveFilters() {
             return this.activeFilterCount > 0;
+        },
+
+        initialLoading() {
+            return !this.categories_loaded || (this.filtersEnabled && !this.characteristics_loaded);
         },
     },
 
@@ -300,6 +328,9 @@ export default {
                 })
                 .catch(() => {
                     this.categories = [];
+                })
+                .finally(() => {
+                    this.categories_loaded = true;
                 });
         },
 
@@ -317,6 +348,11 @@ export default {
                 .catch(() => {
                     if (requestId === this.characteristicRequestId) {
                         this.characteristics = [];
+                    }
+                })
+                .finally(() => {
+                    if (requestId === this.characteristicRequestId) {
+                        this.characteristics_loaded = true;
                     }
                 });
         },

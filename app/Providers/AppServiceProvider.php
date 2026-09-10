@@ -82,7 +82,7 @@ class AppServiceProvider extends ServiceProvider
                 $bookNavigationGroup = $mobileNavigationGroups->firstWhere('slug', 'knjige');
                 $bookNavigationGroupSlug = $bookNavigationGroup->slug ?? 'knjige';
                 $mobileNavigationBookCategories = Helper::resolveCache('categories')->remember(
-                    'mobile-navigation.books.v3',
+                    'mobile-navigation.books.v4',
                     config('cache.life'),
                     function () use ($bookNavigationGroupSlug) {
                         return Category::query()
@@ -90,11 +90,25 @@ class AppServiceProvider extends ServiceProvider
                             ->topList($bookNavigationGroupSlug)
                             ->orderBy('title')
                             ->select('id', 'title', 'group', 'slug', 'sort_order')
+                            ->withCount('products')
                             ->with(['subcategories' => function ($query) {
                                 $query->select('id', 'parent_id', 'title', 'group', 'slug', 'sort_order')
+                                    ->withCount('products')
                                     ->orderBy('title');
                             }])
-                            ->get();
+                            ->get()
+                            ->map(function (Category $category) {
+                                $category->setRelation(
+                                    'subcategories',
+                                    $category->subcategories
+                                        ->filter(fn (Category $subcategory) => (int) $subcategory->products_count > 0)
+                                        ->values()
+                                );
+
+                                return $category;
+                            })
+                            ->filter(fn (Category $category) => (int) $category->products_count > 0 || $category->subcategories->isNotEmpty())
+                            ->values();
                     }
                 );
             }
@@ -114,6 +128,16 @@ class AppServiceProvider extends ServiceProvider
                             ->map(fn ($count) => (int) $count);
                     }
                 );
+
+                $mobileNavigationGroups = $mobileNavigationGroups
+                    ->filter(function ($navigationGroup) use ($navigationGroupProductCounts) {
+                        return (int) (
+                            $navigationGroupProductCounts->get($navigationGroup->slug)
+                            ?? $navigationGroupProductCounts->get($navigationGroup->title)
+                            ?? 0
+                        ) > 0;
+                    })
+                    ->values();
             }
 
             $view->with(compact(

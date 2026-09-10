@@ -194,7 +194,7 @@
 
 
 
-<script src="/js/cart.js?v=2.3.8"></script>
+<script src="/js/cart.js?v=2.3.9"></script>
 
 <script src="/js/theme.min.js?v=1.2"></script>
 
