@@ -7,6 +7,32 @@
     $mobileShopRootActive = $mobileCatalogGroup === \App\Helpers\Helper::categoryGroupPath(true);
     $mobileCatalogCategoryId = isset($cat) && is_object($cat) ? (int) $cat->id : 0;
     $mobileCatalogSubcategoryId = isset($subcat) && is_object($subcat) ? (int) $subcat->id : 0;
+    $desktopGroupIcons = [
+        'ambalaza' => 'fa-box',
+        'antikviteti' => 'fa-landmark',
+        'dionice' => 'fa-chart-line',
+        'diplome' => 'fa-graduation-cap',
+        'heraldika' => 'fa-shield-halved',
+        'jelovnici' => 'fa-utensils',
+        'novine-i-casopisi' => 'fa-newspaper',
+        'reklame' => 'fa-bullhorn',
+        'stari-dokumenti' => 'fa-file-lines',
+        'knjige' => 'fa-books',
+        'razglednice' => 'fa-envelope',
+        'plakati' => 'fa-image',
+        'zemljopisne-karte' => 'fa-map',
+    ];
+    $desktopBookLetterGroups = $mobileNavigationBookCategories->groupBy(function ($category) {
+        return mb_strtoupper(mb_substr(trim($category->title), 0, 1, 'UTF-8'), 'UTF-8');
+    });
+    $desktopBookColumns = [
+        ['A', 'B', 'C', 'D'],
+        ['Č', 'Ć', 'Đ', 'E', 'F', 'G', 'H', 'I'],
+        ['J', 'K', 'L', 'M'],
+        ['N', 'O', 'P'],
+        ['R', 'S', 'Š'],
+        ['T', 'U', 'V', 'Z', 'Ž'],
+    ];
 @endphp
 
 <header class="site-header bg-dark position-relative"
@@ -54,8 +80,103 @@
     <nav class="site-header__desktop-nav d-none d-lg-block" aria-label="Glavni izbornik">
         <div class="container">
             <ul class="navbar-nav flex-row justify-content-center">
-                <li class="nav-item"><a class="nav-link" href="{{ route('catalog.route', ['group' => \App\Helpers\Helper::categoryGroupPath(true)]) }}"><i class="fa-regular fa-shop" aria-hidden="true"></i><span>Web shop</span></a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ route('catalog.route', ['group' => '/knjige']) }}"><i class="fa-regular fa-books" aria-hidden="true"></i><span>Sve knjige</span></a></li>
+                <li class="nav-item desktop-mega-nav" data-desktop-mega>
+                    <button class="nav-link desktop-mega-nav__trigger{{ $mobileShopActive ? ' active' : '' }}" type="button" aria-expanded="false" aria-controls="desktopShopMenu">
+                        <i class="fa-regular fa-shop" aria-hidden="true"></i>
+                        <span>Web shop</span>
+                        <i class="fa-regular fa-chevron-down desktop-mega-nav__chevron" aria-hidden="true"></i>
+                    </button>
+                    <div class="desktop-mega-menu desktop-mega-menu--shop" id="desktopShopMenu" aria-hidden="true" inert>
+                        <div class="container">
+                            <div class="desktop-mega-menu__shop-layout">
+                                <div class="desktop-mega-menu__intro">
+                                    <span class="desktop-mega-menu__eyebrow">Web shop / zbirke</span>
+                                    <h2>Predmeti koji čuvaju priče</h2>
+                                    <p>Knjige, karte, razglednice i drugi tragovi vremena, pregledno složeni po zbirkama.</p>
+                                    <a class="desktop-mega-menu__primary-link" href="{{ route('catalog.route', ['group' => \App\Helpers\Helper::categoryGroupPath(true)]) }}">
+                                        <span>Pregledaj cijeli web shop</span>
+                                        <i class="fa-regular fa-arrow-right" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                                <div class="desktop-mega-menu__collections" aria-label="Zbirke u web shopu">
+                                    @foreach ($mobileNavigationGroups as $navigationGroup)
+                                        @php
+                                            $navigationGroupProductCount = (int) (
+                                                $navigationGroupProductCounts->get($navigationGroup->slug)
+                                                ?? $navigationGroupProductCounts->get($navigationGroup->title)
+                                                ?? 0
+                                            );
+                                            $navigationGroupProductCountMod100 = $navigationGroupProductCount % 100;
+                                            $navigationGroupProductCountMod10 = $navigationGroupProductCount % 10;
+                                            $navigationGroupProductCountNoun = $navigationGroupProductCountMod100 >= 11 && $navigationGroupProductCountMod100 <= 14
+                                                ? 'artikala'
+                                                : ($navigationGroupProductCountMod10 === 1
+                                                    ? 'artikl'
+                                                    : (in_array($navigationGroupProductCountMod10, [2, 3, 4], true) ? 'artikla' : 'artikala'));
+                                        @endphp
+                                        <a class="desktop-mega-menu__collection" href="{{ route('catalog.route', ['group' => $navigationGroup->slug]) }}">
+                                            <span class="desktop-mega-menu__collection-icon" aria-hidden="true">
+                                                <i class="fa-regular {{ $desktopGroupIcons[$navigationGroup->slug] ?? 'fa-box-archive' }}"></i>
+                                            </span>
+                                            <span class="desktop-mega-menu__collection-copy">
+                                                <strong>{{ $navigationGroup->title }}</strong>
+                                                <small>
+                                                    <span class="desktop-mega-menu__collection-count">{{ number_format($navigationGroupProductCount, 0, ',', '.') }}</span>
+                                                    {{ $navigationGroupProductCountNoun }}
+                                                </small>
+                                            </span>
+                                            <i class="fa-regular fa-arrow-up-right desktop-mega-menu__collection-arrow" aria-hidden="true"></i>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="nav-item desktop-mega-nav" data-desktop-mega>
+                    <button class="nav-link desktop-mega-nav__trigger{{ $mobileBooksActive ? ' active' : '' }}" type="button" aria-expanded="false" aria-controls="desktopBooksMenu">
+                        <i class="fa-regular fa-books" aria-hidden="true"></i>
+                        <span>Sve knjige</span>
+                        <i class="fa-regular fa-chevron-down desktop-mega-nav__chevron" aria-hidden="true"></i>
+                    </button>
+                    <div class="desktop-mega-menu desktop-mega-menu--books" id="desktopBooksMenu" aria-hidden="true" inert>
+                        <div class="container">
+                            <div class="desktop-mega-menu__books-header">
+                                <div>
+                                    <span class="desktop-mega-menu__eyebrow">Katalog knjiga / A–Ž</span>
+                                    <h2>Pronađite knjige po području</h2>
+                                </div>
+                                <div class="desktop-mega-menu__quick-links" role="group" aria-label="Prečac kataloga">
+                                    <a href="{{ route('catalog.route', ['group' => '/knjige']) }}">
+                                        <i class="fa-regular fa-books desktop-mega-menu__all-books-icon" aria-hidden="true"></i>
+                                        <span>Sve knjige</span>
+                                        <i class="fa-regular fa-arrow-right desktop-mega-menu__all-books-arrow" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="desktop-mega-menu__book-scroll">
+                                <div class="desktop-mega-menu__book-columns">
+                                    @foreach ($desktopBookColumns as $letterColumn)
+                                        <div class="desktop-mega-menu__book-column">
+                                            @foreach ($letterColumn as $letter)
+                                                @if ($desktopBookLetterGroups->has($letter))
+                                                    <section class="desktop-mega-menu__letter-group" aria-labelledby="desktopBookLetter{{ $loop->parent->index }}{{ $loop->index }}">
+                                                        <h3 id="desktopBookLetter{{ $loop->parent->index }}{{ $loop->index }}">{{ $letter }}</h3>
+                                                        <ul>
+                                                            @foreach ($desktopBookLetterGroups->get($letter) as $navigationCategory)
+                                                                <li><a href="{{ $navigationCategory->url() }}">{{ $navigationCategory->title }}</a></li>
+                                                            @endforeach
+                                                        </ul>
+                                                    </section>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
                 <li class="nav-item"><a class="nav-link" href="{{ route('catalog.route.author') }}"><i class="fa-regular fa-user-pen" aria-hidden="true"></i><span>Autori</span></a></li>
                 @if ($hasCatalogActions ?? false)
                     <li class="nav-item"><a class="nav-link" href="{{ route('catalog.route.actions') }}"><i class="fa-regular fa-badge-percent" aria-hidden="true"></i><span>Akcije</span></a></li>
@@ -472,6 +593,106 @@
             initializeSearch('search-form-mobile', 'search-input-mobile', 'mobile-search-suggest');
 
             var mobileNavigation = document.getElementById('mobileNavigation');
+
+            var desktopMegaMenus = Array.prototype.slice.call(document.querySelectorAll('[data-desktop-mega]'));
+
+            function setDesktopMegaState(menu, isOpen, returnFocus) {
+                var trigger = menu.querySelector('.desktop-mega-nav__trigger');
+                var panel = menu.querySelector('.desktop-mega-menu');
+
+                if (!trigger || !panel) {
+                    return;
+                }
+
+                menu.classList.toggle('is-open', isOpen);
+                trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                panel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+                panel.inert = !isOpen;
+
+                if (returnFocus) {
+                    trigger.focus();
+                }
+            }
+
+            function closeDesktopMegaMenus(exceptMenu, returnFocus) {
+                desktopMegaMenus.forEach(function (menu) {
+                    if (menu !== exceptMenu) {
+                        setDesktopMegaState(menu, false, returnFocus && menu.classList.contains('is-open'));
+                    }
+                });
+            }
+
+            desktopMegaMenus.forEach(function (menu) {
+                var trigger = menu.querySelector('.desktop-mega-nav__trigger');
+                var panel = menu.querySelector('.desktop-mega-menu');
+                var closeTimer = null;
+
+                if (!trigger || !panel) {
+                    return;
+                }
+
+                function openMenu() {
+                    window.clearTimeout(closeTimer);
+                    closeDesktopMegaMenus(menu, false);
+                    setDesktopMegaState(menu, true, false);
+                }
+
+                function scheduleClose() {
+                    window.clearTimeout(closeTimer);
+                    closeTimer = window.setTimeout(function () {
+                        if (!menu.contains(document.activeElement)) {
+                            setDesktopMegaState(menu, false, false);
+                        }
+                    }, 140);
+                }
+
+                menu.addEventListener('mouseenter', openMenu);
+                menu.addEventListener('mouseleave', scheduleClose);
+
+                trigger.addEventListener('click', function () {
+                    var willOpen = !menu.classList.contains('is-open');
+                    closeDesktopMegaMenus(menu, false);
+                    setDesktopMegaState(menu, willOpen, false);
+                });
+
+                trigger.addEventListener('keydown', function (event) {
+                    if (event.key === 'ArrowDown') {
+                        event.preventDefault();
+                        openMenu();
+                        var firstLink = panel.querySelector('a');
+                        if (firstLink) {
+                            firstLink.focus();
+                        }
+                    }
+                });
+
+                menu.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape') {
+                        event.preventDefault();
+                        setDesktopMegaState(menu, false, true);
+                    }
+                });
+
+                menu.addEventListener('focusout', function () {
+                    window.setTimeout(function () {
+                        if (!menu.contains(document.activeElement)) {
+                            setDesktopMegaState(menu, false, false);
+                        }
+                    }, 0);
+                });
+            });
+
+            document.addEventListener('click', function (event) {
+                if (!event.target.closest('[data-desktop-mega]')) {
+                    closeDesktopMegaMenus(null, false);
+                }
+            });
+
+            window.addEventListener('resize', function () {
+                if (window.innerWidth < 992) {
+                    closeDesktopMegaMenus(null, false);
+                }
+            });
 
             if (mobileNavigation) {
                 var activeNavigationScrollTimer = null;

@@ -67,6 +67,7 @@ class AppServiceProvider extends ServiceProvider
         View::composer('front.layouts.partials.header', function ($view) {
             $mobileNavigationGroups = collect();
             $mobileNavigationBookCategories = collect();
+            $navigationGroupProductCounts = collect();
 
             if (Schema::hasTable('categories')) {
                 $mobileNavigationGroups = Category::getGroups();
@@ -90,7 +91,28 @@ class AppServiceProvider extends ServiceProvider
                 );
             }
 
-            $view->with(compact('mobileNavigationGroups', 'mobileNavigationBookCategories'));
+            if (Schema::hasTable('products')) {
+                $navigationGroupProductCounts = Cache::remember(
+                    'catalog.navigation.group-counts.v1',
+                    now()->addMinutes(5),
+                    function () {
+                        return Product::query()
+                            ->active()
+                            ->hasStock()
+                            ->select('group')
+                            ->selectRaw('COUNT(*) as aggregate')
+                            ->groupBy('group')
+                            ->pluck('aggregate', 'group')
+                            ->map(fn ($count) => (int) $count);
+                    }
+                );
+            }
+
+            $view->with(compact(
+                'mobileNavigationGroups',
+                'mobileNavigationBookCategories',
+                'navigationGroupProductCounts'
+            ));
         });
 
         /*$nacini_placanja = Page::where('subgroup', 'Načini plaćanja')->get();

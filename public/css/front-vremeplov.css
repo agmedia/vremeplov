@@ -214,6 +214,396 @@
     background: rgba(230, 209, 171, .08);
 }
 
+.site-header__desktop-nav .desktop-mega-nav {
+    position: static;
+}
+
+.desktop-mega-nav__trigger {
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.site-header__desktop-nav .desktop-mega-nav__trigger.active,
+.site-header__desktop-nav .desktop-mega-nav.is-open .desktop-mega-nav__trigger {
+    color: #fff;
+    background: rgba(230, 209, 171, .1);
+}
+
+.site-header__desktop-nav .desktop-mega-nav__chevron {
+    margin-left: -.2rem;
+    color: #bcae9c !important;
+    font-size: .6rem !important;
+    transition: transform .2s ease;
+}
+
+.desktop-mega-nav.is-open .desktop-mega-nav__chevron {
+    transform: rotate(180deg);
+}
+
+.desktop-mega-menu {
+    position: absolute;
+    z-index: 1085;
+    top: calc(100% + 1px);
+    right: 0;
+    left: 0;
+    visibility: hidden;
+    border-bottom: 1px solid rgba(124, 81, 25, .24);
+    background: #fbfaf7;
+    color: #352c2e;
+    opacity: 0;
+    box-shadow: 0 1.5rem 3rem rgba(29, 20, 18, .22);
+    transform: translateY(-.45rem);
+    transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
+    pointer-events: none;
+}
+
+.desktop-mega-nav.is-open .desktop-mega-menu {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0s;
+    pointer-events: auto;
+}
+
+.desktop-mega-menu::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #8b5b22 0%, #d7aa56 38%, #f0d59f 50%, #d7aa56 62%, #8b5b22 100%);
+    content: '';
+}
+
+.desktop-mega-menu__eyebrow {
+    display: block;
+    margin-bottom: .7rem;
+    color: #966425;
+    font-size: .69rem;
+    font-weight: 700;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+}
+
+.desktop-mega-menu h2 {
+    margin: 0;
+    color: #302528;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(1.45rem, 2vw, 2rem);
+    font-weight: 400;
+    line-height: 1.15;
+}
+
+.desktop-mega-menu--shop {
+    padding: 2.15rem 0 2.35rem;
+}
+
+.desktop-mega-menu__shop-layout {
+    display: grid;
+    grid-template-columns: minmax(215px, .72fr) minmax(0, 2.55fr);
+    gap: clamp(2rem, 4vw, 4.5rem);
+}
+
+.desktop-mega-menu__intro {
+    padding: .25rem clamp(1.25rem, 2.5vw, 2.5rem) .25rem 0;
+    border-right: 1px solid #e2d6c4;
+}
+
+.desktop-mega-menu__intro p {
+    max-width: 22rem;
+    margin: 1rem 0 1.35rem;
+    color: #70645f;
+    font-size: .88rem;
+    line-height: 1.65;
+}
+
+.desktop-mega-menu__primary-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .7rem 0 .35rem;
+    border-bottom: 1px solid #b77a2e;
+    color: #754b18;
+    font-size: .76rem;
+    font-weight: 700;
+    letter-spacing: .055em;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.desktop-mega-menu__primary-link:hover,
+.desktop-mega-menu__primary-link:focus-visible {
+    color: #422b12;
+}
+
+.desktop-mega-menu__primary-link i {
+    transition: transform .18s ease;
+}
+
+.desktop-mega-menu__primary-link:hover i,
+.desktop-mega-menu__primary-link:focus-visible i {
+    transform: translateX(.25rem);
+}
+
+.desktop-mega-menu__collections {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .55rem;
+}
+
+.desktop-mega-menu__collection {
+    display: grid;
+    min-width: 0;
+    min-height: 4.55rem;
+    grid-template-columns: 2.35rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .8rem;
+    padding: .7rem .8rem;
+    border: 1px solid #e6ded1;
+    border-radius: .35rem;
+    background: rgba(255, 255, 255, .72);
+    color: #392f2f;
+    text-decoration: none;
+    transition: border-color .18s ease, background-color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+
+.desktop-mega-menu__collection:hover,
+.desktop-mega-menu__collection:focus-visible {
+    border-color: #d8b77f;
+    background: #fff;
+    color: #2e2425;
+    box-shadow: 0 .45rem 1rem rgba(86, 57, 27, .08);
+    transform: translateY(-2px);
+}
+
+.desktop-mega-menu__collection-icon {
+    display: inline-flex;
+    width: 2.35rem;
+    height: 2.35rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e0cda9;
+    border-radius: 50%;
+    background: #f7f0e4;
+    color: #9b682a;
+    font-size: .9rem;
+}
+
+.desktop-mega-menu__collection-copy {
+    min-width: 0;
+}
+
+.desktop-mega-menu__collection-copy strong,
+.desktop-mega-menu__collection-copy small {
+    display: block;
+}
+
+.desktop-mega-menu__collection-copy strong {
+    overflow: hidden;
+    font-size: .84rem;
+    font-weight: 650;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+}
+
+.desktop-mega-menu__collection-copy small {
+    margin-top: .18rem;
+    color: #70645f;
+    font-size: .75rem;
+    letter-spacing: .035em;
+    text-transform: uppercase;
+}
+
+.desktop-mega-menu__collection-count {
+    color: #956225;
+    font-variant-numeric: tabular-nums;
+    font-weight: 750;
+}
+
+.desktop-mega-menu__collection-arrow {
+    color: #ad9c88;
+    font-size: .65rem;
+    transition: color .18s ease, transform .18s ease;
+}
+
+.desktop-mega-menu__collection:hover .desktop-mega-menu__collection-arrow,
+.desktop-mega-menu__collection:focus-visible .desktop-mega-menu__collection-arrow {
+    color: #976526;
+    transform: translate(.12rem, -.12rem);
+}
+
+.desktop-mega-menu--books > .container {
+    padding-top: 1.8rem;
+    padding-bottom: 0;
+}
+
+.desktop-mega-menu__books-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid #ded3c3;
+}
+
+.desktop-mega-menu__books-header .desktop-mega-menu__eyebrow {
+    margin-bottom: .45rem;
+}
+
+.desktop-mega-menu__quick-links {
+    display: flex;
+    flex: 0 0 auto;
+}
+
+.desktop-mega-menu__quick-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: .65rem;
+    min-height: 2.8rem;
+    padding: .7rem 1rem;
+    border: 1px solid #a8793d;
+    border-radius: .32rem;
+    background: #302528;
+    color: #f5e7cc;
+    box-shadow: 0 .35rem .9rem rgba(48, 37, 40, .14);
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .055em;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: border-color .18s ease, background-color .18s ease, color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+
+.desktop-mega-menu__quick-links a:hover,
+.desktop-mega-menu__quick-links a:focus-visible {
+    border-color: #d5aa62;
+    background: #402f32;
+    color: #fff;
+    box-shadow: 0 .5rem 1.1rem rgba(48, 37, 40, .2);
+    transform: translateY(-1px);
+}
+
+.desktop-mega-menu__quick-links a:focus-visible {
+    outline: 2px solid #d8ac63;
+    outline-offset: 3px;
+}
+
+.desktop-mega-menu__all-books-icon {
+    color: #d8ac63;
+    font-size: .85rem;
+}
+
+.desktop-mega-menu__all-books-arrow {
+    margin-left: .12rem;
+    color: #d8ac63;
+    font-size: .7rem;
+    transition: transform .18s ease;
+}
+
+.desktop-mega-menu__quick-links a:hover .desktop-mega-menu__all-books-arrow,
+.desktop-mega-menu__quick-links a:focus-visible .desktop-mega-menu__all-books-arrow {
+    transform: translateX(.2rem);
+}
+
+.desktop-mega-menu__book-scroll {
+    max-height: min(64vh, 660px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-color: #c6a36b #eee7dc;
+    scrollbar-width: thin;
+}
+
+.desktop-mega-menu__book-columns {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 1.35rem;
+    padding: 1.3rem 0 1.7rem;
+}
+
+.desktop-mega-menu__book-column {
+    min-width: 0;
+}
+
+.desktop-mega-menu__letter-group + .desktop-mega-menu__letter-group {
+    margin-top: 1rem;
+}
+
+.desktop-mega-menu__letter-group h3 {
+    margin: 0 0 .38rem;
+    padding-bottom: .28rem;
+    border-bottom: 1px solid #d8c39f;
+    color: #a06b27;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.05rem;
+    font-weight: 400;
+    line-height: 1;
+}
+
+.desktop-mega-menu__letter-group ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.desktop-mega-menu__letter-group li {
+    margin: 0;
+}
+
+.desktop-mega-menu__letter-group a {
+    display: block;
+    padding: .25rem .12rem;
+    color: #4e4642;
+    font-size: .75rem;
+    line-height: 1.25;
+    text-decoration: none;
+}
+
+.desktop-mega-menu__letter-group a:hover,
+.desktop-mega-menu__letter-group a:focus-visible {
+    color: #8a581d;
+    text-decoration: underline;
+    text-decoration-color: #c99c58;
+    text-underline-offset: .18rem;
+}
+
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .desktop-mega-menu__shop-layout {
+        grid-template-columns: 215px minmax(0, 1fr);
+        gap: 1.5rem;
+    }
+
+    .desktop-mega-menu__collections {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .desktop-mega-menu__collection {
+        gap: .6rem;
+        padding-right: .55rem;
+        padding-left: .55rem;
+    }
+
+    .desktop-mega-menu__book-columns {
+        gap: .85rem;
+    }
+
+    .desktop-mega-menu__letter-group a {
+        font-size: .7rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .desktop-mega-menu,
+    .desktop-mega-nav__chevron,
+    .desktop-mega-menu__collection,
+    .desktop-mega-menu__collection-arrow,
+    .desktop-mega-menu__all-books-arrow,
+    .desktop-mega-menu__primary-link i {
+        transition: none;
+    }
+}
+
 @media (min-width: 992px) {
     .site-header__brand img {
         width: 150px;
