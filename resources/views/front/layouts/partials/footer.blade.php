@@ -52,26 +52,30 @@
         <div class="row">
             <div class="col-12 col-md-3 text-start mb-4">
 
-                <h3 class="widget-title fw-700 text-white"><span>Antikvarijat Vremeplov</span></h3>
+                <h3 class="widget-title fw-700 text-white"><span>{{ $storefrontContent['footer_title'] }}</span></h3>
                 <p class="text-white fs-md pb-1">
 
-                    <strong>Adresa</strong><br>Zvonimirova 24<br> 10000 Zagreb</p>
+                    <strong>Adresa</strong><br>{{ $storefrontContent['footer_address'] }}<br>{{ $storefrontContent['footer_postal_code'] }} {{ $storefrontContent['footer_city'] }}</p>
 
 
                 <p class="text-white fs-md pb-1">  <strong>Broj telefona</strong><br>
-                  091 762 7441</p>
+                  <a class="text-white" href="tel:{{ $storefrontContent['footer_phone_href'] }}">{{ $storefrontContent['footer_phone'] }}</a></p>
 
                 <p class="text-white fs-md pb-1">  <strong>Radno vrijeme
                        </strong><br>
-                    Pon-Pet: 09 -14h i 16 - 19h<br>
-                    Sub: 10 - 13h
+                    {{ $storefrontContent['footer_weekday_hours'] }}<br>
+                    {{ $storefrontContent['footer_saturday_hours'] }}
 
                 </p>
 
 
                 <div class="widget mt-4 text-md-nowrap text-start">
-                    <a class="btn-social bs-light bg-primary bs-instagram me-2 mb-2" aria-label="Pratite nas na Instagramu" href="https://www.instagram.com/antikvarijatvremeplov"><i class="fa-brands fa-instagram"></i></a>
-                    <a class="btn-social bs-light bg-primary bs-facebook me-2 mb-2" aria-label="Pratite nas na Facebooku" href="https://www.facebook.com/antikavrijatvremeplov"><i class="fa-brands fa-facebook-f"></i></a>
+                    @if ($storefrontContent['instagram_url'])
+                        <a class="btn-social bs-light bg-primary bs-instagram me-2 mb-2" aria-label="Pratite nas na Instagramu" href="{{ $storefrontContent['instagram_url'] }}"><i class="fa-brands fa-instagram"></i></a>
+                    @endif
+                    @if ($storefrontContent['facebook_url'])
+                        <a class="btn-social bs-light bg-primary bs-facebook me-2 mb-2" aria-label="Pratite nas na Facebooku" href="{{ $storefrontContent['facebook_url'] }}"><i class="fa-brands fa-facebook-f"></i></a>
+                    @endif
                 </div>
             </div>
             <!-- Mobile dropdown menu (visible on screens below md)-->

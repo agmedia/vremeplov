@@ -3,6 +3,33 @@
     min-width: 0;
 }
 
+@media (min-width: 768px) {
+    .site-topbar .container {
+        position: relative;
+    }
+
+    .site-topbar__announcement {
+        position: absolute;
+        left: 50%;
+        max-width: min(50vw, 44rem);
+        overflow: hidden;
+        text-align: center;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        transform: translateX(-50%);
+    }
+
+    .site-topbar__social {
+        margin-left: auto !important;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1199.98px) {
+    .site-topbar__contacts .topbar-link:last-child {
+        display: none !important;
+    }
+}
+
 @media (max-width: 575.98px) {
     .site-topbar .container {
         justify-content: center;

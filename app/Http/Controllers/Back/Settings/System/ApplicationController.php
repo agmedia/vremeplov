@@ -7,6 +7,7 @@ use App\Models\Back\Apartment\ApartmentDetail;
 use App\Models\Back\Settings\Application;
 use App\Models\Back\Settings\Faq;
 use App\Models\Back\Settings\Settings;
+use App\Services\StorefrontContentSettingsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -18,11 +19,12 @@ class ApplicationController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index(Request $request, StorefrontContentSettingsService $storefrontSettings)
     {
         $items = Settings::query()->where('code', 'app')->get();
 
         $data = Application::setAdminIndexData($items);
+        $data['storefront'] = $storefrontSettings->get($items);
 
         return view('back.settings.system.application', compact('items', 'data'));
     }
@@ -33,26 +35,32 @@ class ApplicationController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function basicInfoStore(Request $request): JsonResponse
+    public function storefrontContentStore(
+        Request $request,
+        StorefrontContentSettingsService $storefrontSettings
+    ): JsonResponse
     {
         $is_valid = Validator::make($request->toArray(), [
-            'title' => 'required|string|max:191',
-            'address' => 'required|string|max:191',
-            'zip' => 'required|string|max:20',
-            'city' => 'required|string|max:100',
-            'state' => 'required|string|max:100',
-            'phone' => 'required|string|max:40',
-            'email' => 'required|email:rfc|max:191'
+            'announcement_text' => 'required|string|max:255',
+            'footer_title' => 'required|string|max:191',
+            'footer_address' => 'required|string|max:191',
+            'footer_postal_code' => 'required|string|max:20',
+            'footer_city' => 'required|string|max:100',
+            'footer_phone' => 'required|string|max:40',
+            'footer_weekday_hours' => 'required|string|max:191',
+            'footer_saturday_hours' => 'required|string|max:191',
+            'instagram_url' => 'nullable|url|max:500',
+            'facebook_url' => 'nullable|url|max:500',
         ]);
 
         if ($is_valid->fails()) {
             return response()->json(['errors' => $is_valid->errors()], 422);
         }
 
-        $set = Settings::reset('app', 'basic', $is_valid->validated());
+        $set = $storefrontSettings->save($is_valid->validated());
 
         if ($set) {
-            return response()->json(['success' => 'Osnovni info aplikacije je snimljen...']);
+            return response()->json(['success' => 'Sadržaj zaglavlja i footera je spremljen.']);
         }
 
         return response()->json(['error' => 'Whoops.!! Pokušajte ponovo ili kontaktirajte administratora!']);

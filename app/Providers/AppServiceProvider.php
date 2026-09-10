@@ -10,6 +10,7 @@ use App\Models\Front\Catalog\Product;
 use App\Models\Back\Marketing\Review;
 use App\Models\Back\Marketing\Wishlist;
 use App\Services\GoogleLoginSettingsService;
+use App\Services\StorefrontContentSettingsService;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
@@ -51,6 +52,13 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('front.layouts.modals.login', function ($view) {
             $view->with('googleLoginEnabled', app(GoogleLoginSettingsService::class)->enabled());
+        });
+
+        View::composer([
+            'front.layouts.app',
+            'errors.container',
+        ], function ($view) {
+            $view->with('storefrontContent', app(StorefrontContentSettingsService::class)->get());
         });
 
         View::composer('back.layouts.partials.topbar', function ($view) {

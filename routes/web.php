@@ -391,7 +391,8 @@ Route::prefix('api/v2')->group(function () {
         Route::prefix('system')->group(function () {
             // APPLICATION
             Route::prefix('application')->middleware(['auth:web', 'verified', 'no.customers', 'admin.manager'])->group(function () {
-                Route::post('basic/store', [ApplicationController::class, 'basicInfoStore'])->name('api.application.basic.store');
+                Route::post('basic/store', [ApplicationController::class, 'storefrontContentStore'])->name('api.application.basic.store');
+                Route::post('storefront-content/store', [ApplicationController::class, 'storefrontContentStore'])->name('api.application.storefront-content.store');
                 Route::post('maps-api/store', [ApplicationController::class, 'storeGoogleMapsApiKey'])->name('api.application.google-api.store.key');
             });
         });

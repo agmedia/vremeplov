@@ -94,7 +94,7 @@
 
     <!-- Main Theme Styles + Bootstrap-->
     <link rel="stylesheet" media="screen" href="/css/theme.css?v=1.91">
-    <link rel="stylesheet" media="screen" href="/css/front-vremeplov.css?v=1.0.52">
+    <link rel="stylesheet" media="screen" href="/css/front-vremeplov.css?v=1.0.53">
     <link rel="stylesheet" media="screen" href="/css/account-auth.css?v=1.0.0">
     @include('front.layouts.partials.analytics')
 
@@ -122,23 +122,27 @@
     <div class="container">
 
         <div class="topbar-text site-topbar__contacts text-nowrap d-inline-flex align-items-center gap-3">
-            <a class="topbar-link d-inline-flex align-items-center" href="tel:00385917627441">
+            <a class="topbar-link d-inline-flex align-items-center" href="tel:{{ $storefrontContent['footer_phone_href'] }}">
                 <i class="fa-regular fa-phone me-1 text-primary" aria-hidden="true"></i>
-                <span>091 762 7441</span>
+                <span>{{ $storefrontContent['footer_phone'] }}</span>
             </a>
             <a class="topbar-link d-inline-flex align-items-center" href="mailto:{{ config('mail.admin') }}">
                 <i class="fa-regular fa-envelope me-2 text-primary" aria-hidden="true"></i>{{ config('mail.admin') }}
             </a>
         </div>
-        <div class="topbar-text  d-none  d-md-inline-block">Besplatna dostava U RH za narudžbe iznad 70 €</div>
+        <div class="topbar-text site-topbar__announcement d-none d-md-inline-block" title="{{ $storefrontContent['announcement_text'] }}">{{ $storefrontContent['announcement_text'] }}</div>
         <div class="site-topbar__social ms-3 text-nowrap d-none d-md-flex">
-            <a class="topbar-link me-2 d-inline-block" aria-label="Pratite nas na Facebooku" href="https://www.facebook.com/antikavrijatvremeplov">
+            @if ($storefrontContent['facebook_url'])
+            <a class="topbar-link me-2 d-inline-block" aria-label="Pratite nas na Facebooku" href="{{ $storefrontContent['facebook_url'] }}">
                 <i class="fa-brands fa-facebook-f"></i>
             </a>
+            @endif
 
-            <a class="topbar-link me-2 d-inline-block" aria-label="Pratite nas na Instagramu" href="https://www.instagram.com/antikvarijatvremeplov">
+            @if ($storefrontContent['instagram_url'])
+            <a class="topbar-link me-2 d-inline-block" aria-label="Pratite nas na Instagramu" href="{{ $storefrontContent['instagram_url'] }}">
                 <i class="fa-brands fa-instagram"></i>
             </a>
+            @endif
 
         </div>
     </div>
@@ -168,8 +172,8 @@
 </div>
 
 <nav class="quick-contact-actions" aria-label="Brzi kontakt">
-    <a class="quick-contact-action" href="tel:+385917627441" aria-label="Nazovite nas na 091 762 7441" title="Nazovite nas: 091 762 7441">
-        <span class="quick-contact-action__tooltip" role="tooltip">091 762 7441</span>
+    <a class="quick-contact-action" href="tel:{{ $storefrontContent['footer_phone_href'] }}" aria-label="Nazovite nas na {{ $storefrontContent['footer_phone'] }}" title="Nazovite nas: {{ $storefrontContent['footer_phone'] }}">
+        <span class="quick-contact-action__tooltip" role="tooltip">{{ $storefrontContent['footer_phone'] }}</span>
         <i class="fa-solid fa-phone" aria-hidden="true"></i>
     </a>
     <a class="quick-contact-action" href="mailto:{{ config('mail.admin') }}" aria-label="Pošaljite e-mail na {{ config('mail.admin') }}" title="Pošaljite e-mail: {{ config('mail.admin') }}">
