@@ -2,6 +2,15 @@
     max-width: 540px;
 }
 
+/* Keep the authentication dialog above every storefront overlay and floating control. */
+.account-auth-modal {
+    z-index: 1200;
+}
+
+body.account-auth-modal-open > .modal-backdrop {
+    z-index: 1190;
+}
+
 .auth-gateway {
     display: flex;
     min-height: 58vh;

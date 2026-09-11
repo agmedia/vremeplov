@@ -95,7 +95,7 @@
     <!-- Main Theme Styles + Bootstrap-->
     <link rel="stylesheet" media="screen" href="/css/theme.css?v=1.91">
     <link rel="stylesheet" media="screen" href="/css/front-vremeplov.css?v=1.0.54">
-    <link rel="stylesheet" media="screen" href="/css/account-auth.css?v=1.0.0">
+    <link rel="stylesheet" media="screen" href="/css/account-auth.css?v=1.0.1">
     @include('front.layouts.partials.analytics')
 
     @stack('css_after')
@@ -271,8 +271,13 @@
             }
 
             modalElement.addEventListener('show.bs.modal', function (event) {
+                document.body.classList.add('account-auth-modal-open');
                 const form = event.relatedTarget && event.relatedTarget.getAttribute('data-auth-tab');
                 activateTab(form || requestedForm || 'signin');
+            });
+
+            modalElement.addEventListener('hidden.bs.modal', function () {
+                document.body.classList.remove('account-auth-modal-open');
             });
 
             modalElement.querySelectorAll('.password-visibility-toggle').forEach(function (toggle) {
