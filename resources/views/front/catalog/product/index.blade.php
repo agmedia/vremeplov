@@ -115,7 +115,7 @@
 @push('css_after')
     <link rel="stylesheet" media="screen" href="{{ asset('js/slick/slick.css') }}">
     <link rel="stylesheet" media="screen" href="{{ asset('js/slick/slick-theme.css') }}">
-    <link rel="stylesheet" media="screen" href="{{ asset('css/front-product-detail.css?v=1.0.11') }}">
+    <link rel="stylesheet" media="screen" href="{{ asset('css/front-product-detail.css?v=1.0.12') }}">
 @endpush
 
 @if (session('analytics_event') === 'add_to_wishlist' && isset($gdl))
