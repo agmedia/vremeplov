@@ -28,6 +28,10 @@ class Seo
         $description = self::normalizeDescription($product->meta_description);
 
         if ($description === '') {
+            $description = self::normalizeDescription($product->description);
+        }
+
+        if ($description === '') {
             $description = trim($product->name . ($author !== '' ? ' — ' . $author : ''))
                 . '. Provjerite cijenu, stanje i dostupnost u Antikvarijatu Vremeplov.';
         }
@@ -152,7 +156,7 @@ class Seo
     /**
      * Turn legacy rich-text descriptions into readable search snippets.
      */
-    private static function normalizeDescription($value): string
+    public static function normalizeDescription($value): string
     {
         $description = preg_replace(
             '/<(?:br|\/p|\/div|\/li|\/h[1-6]|\/tr)\b[^>]*>/iu',
@@ -161,6 +165,11 @@ class Seo
         );
         $description = html_entity_decode(strip_tags($description ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $description = str_replace("\u{00A0}", ' ', $description);
+        $description = preg_replace(
+            '/(?<!\s)(?=(?:Broj\s+stranica|Jezik|Pismo|Godina(?:\s+izdanja)?|Uvez|Stanje|Nakladnik|Izdavač|Izdavac|Autor|ISBN|ISSN|EAN)\s*:)/iu',
+            ' ',
+            $description
+        );
 
         return trim(preg_replace('/\s+/u', ' ', $description) ?? '');
     }

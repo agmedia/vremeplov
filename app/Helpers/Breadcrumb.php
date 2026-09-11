@@ -6,6 +6,7 @@ use App\Models\Front\Catalog\Author;
 use App\Models\Front\Catalog\Category;
 use App\Models\Front\Catalog\Product;
 use App\Models\Front\Catalog\Publisher;
+use App\Models\Seo;
 use App\Support\CatalogFilterValue;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -205,7 +206,7 @@ class Breadcrumb
             $reviewCount = $prod->reviews()->count();
             $averageRating = $reviewCount ? round((float) $prod->reviews()->avg('stars'), 2) : null;
             $isBook = $prod->group === 'knjige';
-            $description = trim(strip_tags((string) ($prod->meta_description ?: $prod->description)))
+            $description = Seo::normalizeDescription($prod->meta_description ?: $prod->description)
                 ?: $prod->name . ' u ponudi Antikvarijata Vremeplov.';
 
             $schema = [

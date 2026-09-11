@@ -40,4 +40,39 @@ class SeoMetadataTest extends TestCase
 
         $this->assertSame('Stare knjige u Zagrebu', $metadata['description']);
     }
+
+    /** @test */
+    public function it_separates_labels_in_already_flattened_product_descriptions(): void
+    {
+        $product = new Product([
+            'name' => 'Miroslav Krleža: Hrvatski bog Mars',
+            'meta_title' => '',
+            'meta_description' => 'Uvez : tvrdiBroj stranica : 327Jezik : hrvatskiPismo : latinicaGodina : 2008.',
+        ]);
+
+        $metadata = Seo::getProductData($product);
+
+        $this->assertSame(
+            'Uvez : tvrdi Broj stranica : 327 Jezik : hrvatski Pismo : latinica Godina : 2008.',
+            $metadata['description']
+        );
+    }
+
+    /** @test */
+    public function it_uses_the_product_description_when_a_custom_meta_description_is_missing(): void
+    {
+        $product = new Product([
+            'name' => 'Mudrost menopauze',
+            'meta_title' => '',
+            'meta_description' => '',
+            'description' => '<p>Stvaranje tjelesnog i emocionalnog zdravlja.</p><p>Holistički pristup promjenama.</p>',
+        ]);
+
+        $metadata = Seo::getProductData($product);
+
+        $this->assertSame(
+            'Stvaranje tjelesnog i emocionalnog zdravlja. Holistički pristup promjenama.',
+            $metadata['description']
+        );
+    }
 }
