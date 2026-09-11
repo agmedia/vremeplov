@@ -151,10 +151,10 @@
             <div class="d-md-flex justify-content-between pt-4 align-items-center">
                 <div class="pb-4 fs-sm text-white  text-center text-md-start "><p class="mb-0">© {{ now()->year }}. Sva prava pridržana Antikvarijat Vremeplov. Web by <a class="text-white" title="Izrada web shopa - B2C ili B2B web trgovina - AG media" href="https://www.agmedia.hr/usluge/izrada-web-shopa/" target="_blank" rel="noopener">AG media</a></p></div>
                 <div class="widget widget-links widget-light pb-4 text-center text-md-end">
-                    <img class="d-inline-block" style="width: 55px;margin-right:3px" src="{{ config('settings.images_domain') }}media/cards/visa.svg" width="55" height="35" alt="Visa"/>
-                    <img class="d-inline-block" style="width: 55px;margin-right:3px" src="{{ config('settings.images_domain') }}media/cards/maestro.svg" width="55" height="35" alt="Maestro"/>
-                    <img class="d-inline-block" style="width: 55px;margin-right:3px" src="{{ config('settings.images_domain') }}media/cards/mastercard.svg" width="55" height="35" alt="MasterCard"/>
-                    <img class="d-inline-block" style="width: 55px;margin-right:3px" src="{{ config('settings.images_domain') }}media/cards/diners.svg" width="55" height="35" alt="Diners"/>
+                    <img class="d-inline-block" style="width: 55px;margin-right:3px" src="{{ config('settings.images_domain') }}media/cards/visa.svg" width="55" height="35" loading="lazy" decoding="async" alt="Visa"/>
+                    <img class="d-inline-block" style="width: 55px;margin-right:3px" src="{{ config('settings.images_domain') }}media/cards/maestro.svg" width="55" height="35" loading="lazy" decoding="async" alt="Maestro"/>
+                    <img class="d-inline-block" style="width: 55px;margin-right:3px" src="{{ config('settings.images_domain') }}media/cards/mastercard.svg" width="55" height="35" loading="lazy" decoding="async" alt="MasterCard"/>
+                    <img class="d-inline-block" style="width: 55px;margin-right:3px" src="{{ config('settings.images_domain') }}media/cards/diners.svg" width="55" height="35" loading="lazy" decoding="async" alt="Diners"/>
 
               <!--      <img class="d-inline-block" style="width: 55px;margin-right:3px" src="{{ config('settings.images_domain') }}media/cards/paypal.svg" width="55" height="35" alt="Diners"/> -->
 

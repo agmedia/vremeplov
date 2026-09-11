@@ -961,6 +961,18 @@
     }
 }
 
+/* Let the browser postpone painting large below-the-fold homepage blocks. */
+.storefront-deferred-section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 520px;
+}
+
+.catalog-editorial p {
+    max-width: 78ch;
+    color: #5f5650;
+    line-height: 1.75;
+}
+
 .catalog-heading {
     position: relative;
     border-top: 1px solid rgba(177, 131, 62, .18);

@@ -15,7 +15,7 @@
         @endif
 
         <a class="card-img-top product-card__media d-block overflow-hidden" href="{{ url($product->url) }}">
-            <img src="{{ $product->thumb }}" loading="lazy" width="350" height="300" alt="{{ $product->card_name }}">
+            <img src="{{ $product->thumb }}" loading="lazy" decoding="async" width="350" height="300" alt="{{ $product->card_name }}">
         </a>
         <div class="card-body product-card__body">
             @if ($cardCategory)

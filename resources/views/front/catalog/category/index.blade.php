@@ -212,11 +212,20 @@
         </div>
     @endif
 
-    @if (isset($subcat) && $subcat && ! empty($subcat->description))
+    @if (! empty($meta['content']))
+        <section class="container pb-4 mb-2 mb-md-4 catalog-editorial" aria-labelledby="catalog-editorial-title">
+            <div class="bg-white rounded-3 shadow-sm p-4 p-md-5">
+                <h2 class="h3 font-title mb-3" id="catalog-editorial-title">O kategoriji {{ $meta['title'] }}</h2>
+                @foreach ($meta['content'] as $paragraph)
+                    <p @if ($loop->last) class="mb-0" @endif>{{ $paragraph }}</p>
+                @endforeach
+            </div>
+        </section>
+    @elseif (isset($subcat) && $subcat && ! empty($subcat->description) && ($meta['show_category_description'] ?? true))
         <div class="container pb-4 mb-2 mb-md-4" >
             {!! $subcat->description !!}
         </div>
-    @elseif (isset($cat) && $cat && ! empty($cat->description))
+    @elseif (isset($cat) && $cat && ! empty($cat->description) && ($meta['show_category_description'] ?? true))
         <div class="container pb-4 mb-2 mb-md-4" >
             {!! $cat->description !!}
         </div>

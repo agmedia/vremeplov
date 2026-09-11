@@ -21,6 +21,8 @@ class RouteResolver
     public $title;
     public $description;
     public $canonical;
+    public $content = [];
+    public $showCategoryDescription = true;
 
     private $all_path;
 
@@ -59,8 +61,11 @@ class RouteResolver
 
             foreach ($groups as $item) {
                 if ($item->slug == $this->group) {
+                    $curated = $this->curatedContent('groups', $item->slug);
                     $this->title = $item->title;
-                    $this->description = 'Pregledajte dostupne artikle iz kategorije ' . $item->title . ' u ponudi Antikvarijata Vremeplov.';
+                    $this->description = $curated['description']
+                        ?? 'Pregledajte dostupne artikle iz kategorije ' . $item->title . ' u ponudi Antikvarijata Vremeplov.';
+                    $this->content = $curated['paragraphs'] ?? [];
                     $this->canonical = url($item->slug);
                     $group_exist = true;
                 }
@@ -117,6 +122,8 @@ class RouteResolver
             } else {
                 $this->title = trim((string) $category->title);
                 $this->description = $this->categoryDescription($category);
+                $this->content = $this->categoryContent($category);
+                $this->showCategoryDescription = $this->isMeaningfulCategoryText($category->description, $category->title);
                 $this->canonical = url($this->group . '/' . $category->slug);
             }
 
@@ -153,6 +160,8 @@ class RouteResolver
             } else {
                 $this->title = trim((string) $subcategory->title);
                 $this->description = $this->categoryDescription($subcategory);
+                $this->content = $this->categoryContent($subcategory);
+                $this->showCategoryDescription = $this->isMeaningfulCategoryText($subcategory->description, $subcategory->title);
                 $this->canonical = url($this->group . '/' . $category->slug . '/' . $subcategory->slug);
             }
 
@@ -249,6 +258,8 @@ class RouteResolver
         $data['description'] = $this->description;
         $data['canonical'] = $this->canonical;
         $data['tags'] = Seo::getMetaTags($this->request, 'filter');
+        $data['content'] = $this->content;
+        $data['show_category_description'] = $this->showCategoryDescription;
 
         return $data;
     }
@@ -257,26 +268,22 @@ class RouteResolver
     private function categoryDescription(Category $category): string
     {
         $title = trim((string) $category->title);
-        $normalizedTitle = mb_strtolower($title, 'UTF-8');
         $description = '';
 
         foreach ([$category->meta_description, $category->description] as $candidate) {
-            $candidate = preg_replace('/<(?:br\s*\/?|\/p|\/div|\/li|\/h[1-6])>/iu', ' ', (string) $candidate) ?: (string) $candidate;
-            $candidate = html_entity_decode(trim(strip_tags($candidate)), ENT_QUOTES | ENT_HTML5, 'UTF-8');
-            $candidate = trim(preg_replace('/\s+/u', ' ', $candidate) ?: $candidate);
-            $normalizedCandidate = mb_strtolower(rtrim($candidate, " .\t\n\r\0\x0B"), 'UTF-8');
-            $looksLikeLegacySeo = $candidate === ''
-                || $normalizedCandidate === rtrim($normalizedTitle, '.')
-                || mb_strtoupper($candidate, 'UTF-8') === $candidate
-                || preg_match('/(?:antikvarijat\s+vremeplov|lopašićeva|zvonimirova\s+24|10000\s+zagreb|broj\s+telefona|01\s*\/\s*777|dodaj\s+u\s+košaricu|dodaj\s+u\s+kosaricu|mailto:)/iu', $candidate);
-
-            if (! $looksLikeLegacySeo) {
-                $description = $candidate;
+            if ($this->isMeaningfulCategoryText($candidate, $title)) {
+                $description = Seo::normalizeDescription($candidate);
                 break;
             }
         }
 
         if ($description === '') {
+            $curated = $this->curatedContent('categories', $category->group . '/' . $category->slug);
+
+            if (! empty($curated['description'])) {
+                return Str::limit($curated['description'], 155, '…');
+            }
+
             $templates = [
                 'knjige' => 'Knjige iz kategorije %s: rabljena, rijetka i antikvarna izdanja.',
                 'novine-i-casopisi' => 'Stare novine i časopisi iz kategorije %s: rijetka i kolekcionarska izdanja.',
@@ -294,5 +301,38 @@ class RouteResolver
         }
 
         return Str::limit($description, 155, '…');
+    }
+
+
+    private function categoryContent(Category $category): array
+    {
+        if ($this->isMeaningfulCategoryText($category->description, $category->title)) {
+            return [];
+        }
+
+        $curated = $this->curatedContent('categories', $category->group . '/' . $category->slug);
+
+        return $curated['paragraphs'] ?? [];
+    }
+
+
+    private function curatedContent(string $section, string $key): array
+    {
+        $content = config('seo.category_content.' . $section . '.' . $key, []);
+
+        return is_array($content) ? $content : [];
+    }
+
+
+    private function isMeaningfulCategoryText($candidate, string $title): bool
+    {
+        $candidate = Seo::normalizeDescription($candidate);
+        $normalizedCandidate = mb_strtolower(rtrim($candidate, " .\t\n\r\0\x0B"), 'UTF-8');
+        $normalizedTitle = mb_strtolower(rtrim(trim($title), " .\t\n\r\0\x0B"), 'UTF-8');
+
+        return $candidate !== ''
+            && $normalizedCandidate !== $normalizedTitle
+            && mb_strtoupper($candidate, 'UTF-8') !== $candidate
+            && ! preg_match('/(?:antikvarijat\s+vremeplov|lopašićeva|zvonimirova\s+24|10000\s+zagreb|broj\s+telefona|01\s*\/\s*777|dodaj\s+u\s+košaricu|dodaj\s+u\s+kosaricu|mailto:)/iu', $candidate);
     }
 }

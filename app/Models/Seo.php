@@ -25,21 +25,65 @@ class Seo
     {
         $author = isset($product->author->title) ? trim((string) $product->author->title) : '';
         $title = trim((string) ($product->meta_title ?: $product->name));
-        $description = self::normalizeDescription($product->meta_description);
-
-        if ($description === '') {
-            $description = self::normalizeDescription($product->description);
-        }
-
-        if ($description === '') {
-            $description = trim($product->name . ($author !== '' ? ' — ' . $author : ''))
-                . '. Provjerite cijenu, stanje i dostupnost u Antikvarijatu Vremeplov.';
-        }
 
         return [
             'title' => $title . ($author !== '' && stripos($title, $author) === false ? ' - ' . $author : ''),
-            'description' => mb_substr($description, 0, 160),
+            'description' => self::productDescription($product, 160),
         ];
+    }
+
+
+    /**
+     * Build a useful description of this exact physical copy.
+     *
+     * Manual metadata remains the editorial lead, while condition and other
+     * copy-specific facts keep otherwise identical editions distinguishable.
+     */
+    public static function productDescription(Product $product, ?int $limit = 160): string
+    {
+        $manualMeta = self::normalizeDescription($product->meta_description);
+        $body = self::normalizeDescription($product->description);
+        $hasEditorialLead = $manualMeta !== '' || $body !== '';
+        $author = isset($product->author->title) ? self::normalizeDescription($product->author->title) : '';
+        $lead = $manualMeta ?: $body;
+
+        // A large part of the legacy catalog used the product title itself as
+        // an all-caps description. Keep the wording but use the calmer public
+        // card title so Merchant Center and snippets are editorially clean.
+        if ($manualMeta === '' && $body !== '' && self::sameText($body, $product->name)) {
+            $lead = self::normalizeDescription($product->card_name);
+        }
+
+        if ($lead === '') {
+            $lead = trim(self::normalizeDescription($product->name) . ($author !== '' ? ' — ' . $author : ''));
+        }
+
+        $details = self::productDetailSegments($product, $lead, $manualMeta !== '');
+        $detailText = implode('. ', $details);
+
+        if ($detailText !== '') {
+            $detailText .= '.';
+
+            // Leave enough room for the condition/note so a long publisher
+            // description cannot hide what is unique about this copy.
+            if ($limit !== null && mb_strlen($lead . ' ' . $detailText, 'UTF-8') > $limit) {
+                $reserved = min(80, mb_strlen($detailText, 'UTF-8'));
+                $lead = self::limitDescription($lead, max(60, $limit - $reserved - 1));
+            }
+
+            $lead = rtrim($lead);
+            $lead .= preg_match('/[.!?…]$/u', $lead) ? ' ' : '. ';
+            $lead .= $detailText;
+        } elseif (! $hasEditorialLead && $lead !== '') {
+            $lead = rtrim($lead, " .\t\n\r\0\x0B")
+                . '. Provjerite cijenu, stanje i dostupnost u Antikvarijatu Vremeplov.';
+        }
+
+        if ($lead === '') {
+            $lead = 'Artikal iz ponude Antikvarijata Vremeplov.';
+        }
+
+        return $limit === null ? $lead : self::limitDescription($lead, $limit);
     }
 
 
@@ -172,6 +216,92 @@ class Seo
         );
 
         return trim(preg_replace('/\s+/u', ' ', $description) ?? '');
+    }
+
+
+    /**
+     * Keep the most useful copy-specific facts close to the beginning.
+     */
+    private static function productDetailSegments(Product $product, string $lead, bool $hasManualMeta): array
+    {
+        $publisher = isset($product->publisher->title)
+            ? self::normalizeDescription($product->publisher->title)
+            : '';
+        $values = [
+            'Stanje' => $product->condition,
+            'Napomena' => $product->note,
+        ];
+
+        // A manually curated meta description only needs the facts that make
+        // the physical copy distinct. Generated descriptions can use all the
+        // available bibliographic data.
+        if (! $hasManualMeta) {
+            $values += [
+                'Šifra primjerka' => $product->sku,
+                'Izdavač' => $publisher,
+                'Godina izdanja' => $product->year,
+                'Uvez' => $product->binding,
+                'Broj stranica' => $product->pages,
+                'Dimenzije' => $product->dimensions,
+                'Jezik' => $product->origin,
+                'Pismo' => $product->letter,
+            ];
+        }
+
+        $segments = [];
+
+        foreach ($values as $label => $value) {
+            $value = self::normalizeDescription($value);
+
+            if ($value === '' || $value === '-' || self::containsValue($lead, $value)) {
+                continue;
+            }
+
+            $segments[] = $label . ': ' . $value;
+        }
+
+        return $segments;
+    }
+
+
+    private static function containsValue(string $description, string $value): bool
+    {
+        return mb_stripos($description, $value, 0, 'UTF-8') !== false;
+    }
+
+
+    private static function sameText(string $first, $second): bool
+    {
+        $normalize = static function ($value): string {
+            $value = self::normalizeDescription($value);
+            $value = mb_strtolower($value, 'UTF-8');
+
+            return trim($value, " .,:;!?–—-\t\n\r\0\x0B");
+        };
+
+        return $normalize($first) !== '' && $normalize($first) === $normalize($second);
+    }
+
+
+    /**
+     * Limit search snippets without leaving a cut-off word at the end.
+     */
+    public static function limitDescription(string $description, int $limit): string
+    {
+        $description = trim($description);
+
+        if ($limit < 2 || mb_strlen($description, 'UTF-8') <= $limit) {
+            return $description;
+        }
+
+        $truncated = mb_substr($description, 0, $limit - 1, 'UTF-8');
+        $wordSafe = preg_replace('/\s+\S*$/u', '', $truncated);
+
+        if (is_string($wordSafe) && trim($wordSafe) !== '') {
+            $truncated = $wordSafe;
+        }
+
+        return rtrim($truncated, " ,;:.!?–—-\t\n\r\0\x0B") . '…';
     }
 
 

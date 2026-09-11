@@ -1,6 +1,6 @@
 <!-- {"title": "Banneri", "description": "Kombinirani promotivni banneri."} -->
 @if (collect($data)->isNotEmpty())
-    <section class="container py-3">
+    <section class="container py-3 storefront-deferred-section">
         <div class="row g-3">
             @foreach ($data as $widget)
                 @php
@@ -20,7 +20,7 @@
                         </div>
                         @if (! empty($widget['image']))
                             @if ($hasLink)<a class="widget-simple-card__media" href="{{ url($widget['url']) }}">@else<div class="widget-simple-card__media">@endif
-                                <img src="{{ $widget['image'] }}" width="420" height="300" loading="lazy" alt="{{ $widget['title'] }}">
+                                <img src="{{ $widget['image'] }}" width="420" height="300" loading="lazy" decoding="async" alt="{{ $widget['title'] }}">
                             @if ($hasLink)</a>@else</div>@endif
                         @endif
                     </article>

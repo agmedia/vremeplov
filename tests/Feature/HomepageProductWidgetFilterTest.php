@@ -74,6 +74,55 @@ class HomepageProductWidgetFilterTest extends TestCase
         $this->assertStringNotContainsString('Kolekcionarski predmet', $rendered);
     }
 
+    public function test_homepage_caps_each_product_carousel_and_skips_blog_only_scripts(): void
+    {
+        config(['seo.homepage_product_limit' => 3]);
+        $groupId = DB::table('widget_groups')->insertGetId([
+            'template' => 'product_carousel',
+            'title' => 'Brza naslovnica',
+            'slug' => 'brza-naslovnica',
+            'width' => 12,
+            'status' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('widgets')->insert([
+            'group_id' => $groupId,
+            'title' => 'Brza naslovnica',
+            'subtitle' => 'Ograničen broj kartica.',
+            'data' => serialize([
+                'target' => 'product',
+                'new' => 'on',
+                'catalog_group' => 'knjige',
+            ]),
+            'url' => '/knjige',
+            'width' => 12,
+            'sort_order' => 1,
+            'status' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('pages')->insert([
+            'title' => 'Naslovnica',
+            'slug' => 'homepage',
+            'description' => '++brza-naslovnica++',
+            'status' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        foreach (range(1, 6) as $number) {
+            $this->createProduct('Naslov ' . $number, 'knjige', $number);
+        }
+
+        $response = $this->get('/');
+
+        $response->assertOk();
+        $this->assertSame(3, substr_count($response->getContent(), 'product-card product-card--refined'));
+        $response->assertDontSee('/js/imagesloaded/imagesloaded.pkgd.min.js', false);
+        $response->assertDontSee('/js/shufflejs/dist/shuffle.min.js', false);
+    }
+
     private function createProduct(string $name, string $group, int $viewed): void
     {
         DB::table('products')->insert([

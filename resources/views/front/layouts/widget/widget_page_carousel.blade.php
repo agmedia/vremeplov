@@ -1,6 +1,6 @@
 <!-- {"title": "Page Carousel", "description": "Kategorije, izdavači, autori, blog i komentari."} -->
 @if (collect($data['items'] ?? [])->isNotEmpty())
-    <section class="py-4 {{ $data['background'] ? 'reviews-widget' : '' }} {{ $data['css'] ?? '' }}">
+    <section class="py-4 storefront-deferred-section {{ $data['background'] ? 'reviews-widget' : '' }} {{ $data['css'] ?? '' }}">
         <div class="container">
             <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
                 <div class="widget-section-heading">
@@ -23,7 +23,7 @@
                             <div class="article mb-grid-gutter">
                                 <a class="card border-0 h-100" href="{{ url(trim($item->group, '/') . '/' . $item->slug) }}">
                                     <span class="blog-entry-meta-label fs-sm"><i class="fa-duotone fa-books text-primary" aria-hidden="true"></i></span>
-                                    <img class="card-img-top" loading="lazy" width="300" height="300" src="{{ $item->thumb }}" alt="Kategorija {{ $item->title }}">
+                                    <img class="card-img-top" loading="lazy" decoding="async" width="300" height="300" src="{{ $item->thumb }}" alt="Kategorija {{ $item->title }}">
                                     <div class="card-body py-2 text-center px-1">
                                         <h3 class="h6 mt-1 mb-1 font-title text-primary">{{ $item->title }}</h3>
                                     </div>
@@ -40,7 +40,7 @@
                             <div>
                                 <a class="d-flex align-items-center justify-content-center bg-white border rounded-3 p-3 text-center h-100" href="{{ url($item->url) }}">
                                     @if (! empty($item->image))
-                                        <img loading="lazy" src="{{ config('settings.images_domain') . ltrim($item->image, '/') }}" width="150" height="100" style="max-width:150px;height:100px;object-fit:contain" alt="{{ $item->title }}">
+                                        <img loading="lazy" decoding="async" src="{{ config('settings.images_domain') . ltrim($item->image, '/') }}" width="150" height="100" style="max-width:150px;height:100px;object-fit:contain" alt="{{ $item->title }}">
                                     @else
                                         <strong class="font-title text-primary">{{ $item->title }}</strong>
                                     @endif
@@ -105,7 +105,7 @@
                             <div>
                                 <article class="card h-100">
                                     <a class="blog-entry-thumb" href="{{ route('catalog.route.blog', ['blog' => $item]) }}">
-                                        <img class="card-img-top" loading="lazy" src="{{ $item->image }}" width="400" height="230" alt="{{ $item->title }}">
+                                        <img class="card-img-top" loading="lazy" decoding="async" src="{{ $item->image }}" width="400" height="230" alt="{{ $item->title }}">
                                     </a>
                                     <div class="card-body">
                                         <h3 class="h6 blog-entry-title"><a href="{{ route('catalog.route.blog', ['blog' => $item]) }}">{{ $item->title }}</a></h3>

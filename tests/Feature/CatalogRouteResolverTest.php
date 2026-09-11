@@ -156,4 +156,42 @@ class CatalogRouteResolverTest extends TestCase
 
         $this->assertSame($category->description, $resolver->description);
     }
+
+    /** @test */
+    public function it_uses_curated_editorial_content_when_a_main_category_only_has_legacy_text()
+    {
+        $slug = 'urednicka-kategorija-' . Str::random(10);
+        config([
+            'seo.category_content.categories.knjige/' . $slug => [
+                'description' => 'Kratak i koristan opis glavne kategorije za rezultate pretraživanja.',
+                'paragraphs' => [
+                    'Prvi urednički odlomak o stvarnoj ponudi kategorije.',
+                    'Drugi urednički odlomak pomaže kupcu pri odabiru primjerka.',
+                ],
+            ],
+        ]);
+        $category = Category::create([
+            'parent_id' => 0,
+            'title' => 'Urednička kategorija',
+            'group' => 'knjige',
+            'slug' => $slug,
+            'description' => 'UREĐNIČKA KATEGORIJA-Antikvarijat Vremeplov. Dodaj u košaricu.',
+            'status' => 1,
+        ]);
+        $resolver = new RouteResolver(
+            Request::create('/knjige/' . $category->slug),
+            'knjige',
+            $category->slug
+        );
+
+        $resolver->setRoute();
+        $meta = $resolver->setMeta();
+
+        $this->assertSame(
+            'Kratak i koristan opis glavne kategorije za rezultate pretraživanja.',
+            $meta['description']
+        );
+        $this->assertCount(2, $meta['content']);
+        $this->assertFalse($meta['show_category_description']);
+    }
 }

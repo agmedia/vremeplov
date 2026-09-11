@@ -228,7 +228,7 @@ class Helper
      *
      * @return false|string
      */
-    public static function setDescription(string $description)
+    public static function setDescription(string $description, ?int $productLimit = null)
     {
         if ($description == '') {
             return '';
@@ -274,7 +274,7 @@ class Helper
         });
 
         foreach ($ids as $id) {
-            $description = static::resolveDescription($wgs, $description, $id);
+            $description = static::resolveDescription($wgs, $description, $id, $productLimit);
         }
 
         return $description;
@@ -288,7 +288,7 @@ class Helper
      *
      * @return string
      */
-    private static function resolveDescription(Collection $wgs, string $description, string $id): string
+    private static function resolveDescription(Collection $wgs, string $description, string $id, ?int $productLimit = null): string
     {
         $wg = $wgs->where('id', $id)->first();
 
@@ -317,7 +317,7 @@ class Helper
             $tablename = '';
 
             if (static::isDescriptionTarget($data, 'product')) {
-                $items     = static::products($data)->get();
+                $items     = static::productWidgetItems(static::products($data), $productLimit);
                 $tablename = 'product';
             }
 
@@ -328,7 +328,7 @@ class Helper
 
             if (static::isDescriptionTarget($data, 'category')) {
                 if ($wg->template === 'product_carousel') {
-                    $items = static::productsByCategory($data)->get();
+                    $items = static::productWidgetItems(static::productsByCategory($data), $productLimit);
                     $tablename = 'product_category';
                 } else {
                     $items = static::category($data)->get();
@@ -337,13 +337,13 @@ class Helper
             }
 
             if (static::isDescriptionTarget($data, 'product_category')) {
-                $items = static::productsByCategory($data)->get();
+                $items = static::productWidgetItems(static::productsByCategory($data), $productLimit);
                 $tablename = 'product_category';
             }
 
             if (static::isDescriptionTarget($data, 'publisher')) {
                 if ($wg->template === 'product_carousel') {
-                    $items = static::productsByPublisher($data)->get();
+                    $items = static::productWidgetItems(static::productsByPublisher($data), $productLimit);
                     $tablename = 'publisher';
                 } else {
                     $items = static::publisher($data)->get();
@@ -434,6 +434,16 @@ class Helper
         $decoded = @unserialize($data, ['allowed_classes' => false]);
 
         return is_array($decoded) ? $decoded : [];
+    }
+
+
+    private static function productWidgetItems(Builder $query, ?int $limit): Collection
+    {
+        if ($limit !== null) {
+            $query->limit(max(1, $limit));
+        }
+
+        return $query->get();
     }
 
 

@@ -544,6 +544,9 @@ Route::get('sitemap/{sitemap?}', [HomeController::class, 'sitemapXML'])
 Route::get('image-sitemap', [HomeController::class, 'sitemapImageXML'])
     ->withoutMiddleware([AddQueuedCookiesToResponse::class, StartSession::class, AuthenticateSession::class, ShareErrorsFromSession::class, \App\Http\Middleware\VerifyCsrfToken::class])
     ->name('sitemap.images');
+Route::get('google-merchant.xml', [HomeController::class, 'googleMerchantXML'])
+    ->withoutMiddleware([AddQueuedCookiesToResponse::class, StartSession::class, AuthenticateSession::class, ShareErrorsFromSession::class, \App\Http\Middleware\VerifyCsrfToken::class])
+    ->name('google.merchant.feed');
 //
 Route::get('njuskalo/xml', [HomeController::class, 'njuskaloXML'])->name('njuskalo');
 /**

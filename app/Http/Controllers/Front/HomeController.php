@@ -20,6 +20,7 @@ use App\Models\Front\Faq;
 use App\Models\Front\Page;
 use App\Models\Sitemap;
 use App\Services\ContractTerminationNotificationService;
+use App\Services\GoogleMerchantFeed;
 use App\Services\NewsletterSignupGuard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -43,7 +44,10 @@ class HomeController extends Controller
             return Page::where('slug', 'homepage')->first();
         });
 
-        $page->description = Helper::setDescription(isset($page->description) ? $page->description : '');
+        $page->description = Helper::setDescription(
+            isset($page->description) ? $page->description : '',
+            (int) config('seo.homepage_product_limit', 10)
+        );
 
         return view('front.page', compact('page'));
     }
@@ -671,6 +675,18 @@ class HomeController extends Controller
         return response()->view('front.layouts.partials.njuskalo', [
             'items' => $njuskalo->getItems()
         ])->header('Content-Type', 'text/xml');
+    }
+
+
+    public function googleMerchantXML(GoogleMerchantFeed $feed)
+    {
+        return response()->stream(function () use ($feed): void {
+            $feed->stream();
+        }, 200, [
+            'Content-Type' => 'application/xml; charset=UTF-8',
+            'Cache-Control' => 'public, max-age=900',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
 }

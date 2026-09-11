@@ -1,6 +1,6 @@
 <!-- {"title": "Carousel", "description": "Carousel artikala po izboru, kategoriji ili izdavaču."} -->
 @if (collect($data['items'] ?? [])->isNotEmpty())
-    <section class="py-3 widget-product-carousel {{ $data['css'] ?? '' }}">
+    <section class="py-3 widget-product-carousel storefront-deferred-section {{ $data['css'] ?? '' }}">
         <div class="container">
             <div class="{{ $data['container'] ? 'bg-white rounded-3 shadow-sm px-3 px-md-4 pt-2' : '' }}">
                 <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 pb-2 mb-2">

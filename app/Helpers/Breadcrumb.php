@@ -206,8 +206,7 @@ class Breadcrumb
             $reviewCount = $prod->reviews()->count();
             $averageRating = $reviewCount ? round((float) $prod->reviews()->avg('stars'), 2) : null;
             $isBook = $prod->group === 'knjige';
-            $description = Seo::normalizeDescription($prod->meta_description ?: $prod->description)
-                ?: $prod->name . ' u ponudi Antikvarijata Vremeplov.';
+            $description = Seo::productDescription($prod, 500);
 
             $schema = [
                 '@context' => 'https://schema.org',

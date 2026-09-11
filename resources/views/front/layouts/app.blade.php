@@ -94,7 +94,7 @@
 
     <!-- Main Theme Styles + Bootstrap-->
     <link rel="stylesheet" media="screen" href="/css/theme.css?v=1.91">
-    <link rel="stylesheet" media="screen" href="/css/front-vremeplov.css?v=1.0.53">
+    <link rel="stylesheet" media="screen" href="/css/front-vremeplov.css?v=1.0.54">
     <link rel="stylesheet" media="screen" href="/css/account-auth.css?v=1.0.0">
     @include('front.layouts.partials.analytics')
 
@@ -188,8 +188,10 @@
 <script src="/js/bootstrap.bundle.min.js?v=1.2"></script>
 <script src="/js/tiny-slider.js?v=1.2"></script>
 <script src="/js/smooth-scroll.polyfills.min.js?v=1.2"></script>
-<script src="/js/imagesloaded/imagesloaded.pkgd.min.js"></script>
-<script src="/js/shufflejs/dist/shuffle.min.js"></script>
+@if (request()->routeIs('catalog.route.blog') && request()->route('blog') === null)
+    <script src="/js/imagesloaded/imagesloaded.pkgd.min.js"></script>
+    <script src="/js/shufflejs/dist/shuffle.min.js"></script>
+@endif
 <!-- Main theme script-->
 
 
