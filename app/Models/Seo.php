@@ -25,7 +25,7 @@ class Seo
     {
         $author = isset($product->author->title) ? trim((string) $product->author->title) : '';
         $title = trim((string) ($product->meta_title ?: $product->name));
-        $description = trim(strip_tags((string) $product->meta_description));
+        $description = self::normalizeDescription($product->meta_description);
 
         if ($description === '') {
             $description = trim($product->name . ($author !== '' ? ' — ' . $author : ''))
@@ -50,7 +50,7 @@ class Seo
     {
         $authorTitle = trim((string) $author->title);
         $title = preg_replace('/^[\s,;:]+/u', '', trim((string) ($author->meta_title ?: $authorTitle))) ?? $authorTitle;
-        $description = trim(strip_tags((string) ($author->meta_description ?: $author->description)));
+        $description = self::normalizeDescription($author->meta_description ?: $author->description);
 
         if ($description === '') {
             $description = 'Dostupni naslovi autora ' . $authorTitle . ' u ponudi Antikvarijata Vremeplov.';
@@ -91,7 +91,7 @@ class Seo
     public static function getPublisherData(Publisher $publisher, ?Category $cat = null, ?Category $subcat = null): array
     {
         $title = trim((string) ($publisher->meta_title ?: $publisher->title));
-        $description = trim(strip_tags((string) ($publisher->meta_description ?: $publisher->description)));
+        $description = self::normalizeDescription($publisher->meta_description ?: $publisher->description);
 
         if ($description === '') {
             $description = 'Dostupna izdanja nakladnika ' . $publisher->title . ' u ponudi Antikvarijata Vremeplov.';
@@ -146,6 +146,23 @@ class Seo
         }
 
         return $response;
+    }
+
+
+    /**
+     * Turn legacy rich-text descriptions into readable search snippets.
+     */
+    private static function normalizeDescription($value): string
+    {
+        $description = preg_replace(
+            '/<(?:br|\/p|\/div|\/li|\/h[1-6]|\/tr)\b[^>]*>/iu',
+            ' ',
+            (string) $value
+        );
+        $description = html_entity_decode(strip_tags($description ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $description = str_replace("\u{00A0}", ' ', $description);
+
+        return trim(preg_replace('/\s+/u', ' ', $description) ?? '');
     }
 
 

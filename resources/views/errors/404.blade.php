@@ -1,6 +1,10 @@
 @extends('front.layouts.app')
 
-@section ( 'title', '404 Error')
+@section('title', 'Stranica nije pronađena - Antikvarijat Vremeplov')
+@section('description', 'Tražena stranica nije pronađena.')
+@push('meta_tags')
+    <meta name="robots" content="noindex,nofollow">
+@endpush
 
 @section('content')
     <div class="container py-5 mb-lg-3">

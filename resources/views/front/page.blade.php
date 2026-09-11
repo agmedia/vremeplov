@@ -1,30 +1,34 @@
 @extends('front.layouts.app')
 @if (request()->routeIs(['index']))
-    @section ( 'title', 'Antikvarijat Vremeplov | Prodaja knjiga | Otkup knjiga | Webshop' )
-@section ( 'description', 'Dobro došli na stranice antikvarijata Vremeplov. Specijalizirani smo za stare razglednice, pisma, knjige, plakate,časopise te vršimo otkup i prodaju navedenih.' )
-@section('canonical', url('/'))
+    @php
+        $homeTitle = 'Antikvarijat Vremeplov Zagreb | Rabljene i antikvarne knjige';
+        $homeDescription = 'Kupite rabljene i antikvarne knjige, stare razglednice, plakate i časopise online ili u Zagrebu. Antikvarijat Vremeplov nudi prodaju i otkup.';
+    @endphp
+    @section('title', $homeTitle)
+    @section('description', $homeDescription)
+    @section('canonical', url('/'))
 
 
-@push('meta_tags')
+    @push('meta_tags')
 
     <meta property="og:locale" content="hr_HR" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Antikvarijat Vremeplov | Prodaja knjiga | Otkup knjiga | Webshop" />
-    <meta property="og:description" content="Dobro došli na stranice antikvarijata Vremeplov. Specijalizirani smo za stare razglednice, pisma, knjige, plakate,časopise te vršimo otkup i prodaju navedenih." />
+    <meta property="og:title" content="{{ $homeTitle }}" />
+    <meta property="og:description" content="{{ $homeDescription }}" />
     <meta property="og:url" content="{{ url('/') }}"  />
-    <meta property="og:site_name" content="Antikvarijat Vremeplov | Prodaja knjiga | Otkup knjiga | Webshop" />
+    <meta property="og:site_name" content="Antikvarijat Vremeplov" />
     <meta property="og:image" content="{{ config('settings.images_domain') . 'media/img/cover-vremeplov.jpg' }}" />
     <meta property="og:image:secure_url" content="{{ config('settings.images_domain') . 'media/img/cover-vremeplov.jpg' }}" />
     <meta property="og:image:width" content="1920" />
     <meta property="og:image:height" content="720" />
     <meta property="og:image:type" content="image/jpeg" />
-    <meta property="og:image:alt" content="Antikvarijat Vremeplov | Prodaja knjiga | Otkup knjiga | Webshop" />
+    <meta property="og:image:alt" content="Antikvarijat Vremeplov u Zagrebu" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Antikvarijat Vremeplov | Prodaja knjiga | Otkup knjiga | Webshop" />
-    <meta name="twitter:description" content="Dobro došli na stranice antikvarijata Vremeplov. Specijalizirani smo za stare razglednice, pisma, knjige, plakate,časopise te vršimo otkup i prodaju navedenih." />
+    <meta name="twitter:title" content="{{ $homeTitle }}" />
+    <meta name="twitter:description" content="{{ $homeDescription }}" />
     <meta name="twitter:image" content="{{ config('settings.images_domain') . 'media/img/cover-vremeplov.jpg' }}" />
 
-@endpush
+    @endpush
 
 @else
     @php
