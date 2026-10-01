@@ -344,10 +344,20 @@ class FilterController extends Controller
 
 
         $products = (new Product())->filter($request)
+                                   ->select([
+                                       'id', 'name', 'sku', 'slug', 'url', 'image', 'group',
+                                       'price', 'special', 'special_from', 'special_to', 'quantity',
+                                       'author_id', 'publisher_id', 'action_id', 'updated_at',
+                                   ])
                                    ->cardData()
                                    ->paginate(config('settings.pagination.front'));
 
         $products->getCollection()->each(function (Product $product) {
+            // Catalog cards use only main-currency prices. The legacy EUR
+            // appends each issue a settings query and are unused by this view.
+            $product->setAppends([
+                'main_price', 'main_price_text', 'main_special', 'main_special_text', 'card_name',
+            ]);
             $category = $product->categories->firstWhere('parent_id', 0) ?: $product->categories->first();
             $product->setAttribute('card_category', $category ? [
                 'title' => $category->title,

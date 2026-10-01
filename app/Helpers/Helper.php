@@ -128,7 +128,7 @@ class Helper
             if (isset ($preg[1]) && in_array($preg[1], $preg) && ! isset($preg[2])) {
                 $authors = Author::active()->where('title', 'like', '%' . $preg[0] . '%' . $preg[1] . '%')
                                  ->orWhere('title', 'like', '%' . $preg[1] . '% ' . $preg[0] . '%')
-                                 ->with('products')->get();
+                                 ->with('products:id,author_id')->get();
 
             } elseif (isset ($preg[2]) && in_array($preg[2], $preg)) {
                 $authors = Author::active()->where('title', 'like', $preg[0] . '%' . $preg[1] . '%' . $preg[2] . '%')
@@ -136,11 +136,11 @@ class Helper
                                  ->orWhere('title', 'like', $preg[0] . '%' . $preg[2] . '% ' . $preg[1] . '%')
                                  ->orWhere('title', 'like', $preg[1] . '%' . $preg[0] . '% ' . $preg[2] . '%')
                                  ->orWhere('title', 'like', $preg[1] . '%' . $preg[2] . '% ' . $preg[0] . '%')
-                                 ->with('products')->get();
+                                 ->with('products:id,author_id')->get();
 
             } else {
                 $authors = Author::active()->where('title', 'like', '%' . $preg[0] . '%')
-                                 ->with('products')->get();
+                                 ->with('products:id,author_id')->get();
             }
 
             foreach ($authors as $author) {
