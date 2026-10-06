@@ -44,14 +44,23 @@ return [
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
-            'level' => 'debug',
+            'level' => env('LOG_LEVEL', 'debug'),
         ],
 
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
-            'level' => 'debug',
+            'level' => env('LOG_LEVEL', 'debug'),
             'days' => 14,
+            'locking' => true,
+        ],
+
+        'db-capacity' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/db-capacity.log'),
+            'level' => 'warning',
+            'days' => 14,
+            'locking' => true,
         ],
 
         'wspay' => [

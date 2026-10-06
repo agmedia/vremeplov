@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Back\Settings\Settings;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -11,6 +12,8 @@ use Throwable;
 
 class GoogleLoginSettingsService
 {
+    public const ENABLED_CACHE_KEY = 'storefront.google-login-enabled.v1';
+
     private const CODE = 'auth';
     private const KEY = 'google_login';
 
@@ -68,6 +71,10 @@ class GoogleLoginSettingsService
         $saved = $setting
             ? Settings::edit($setting->id, self::CODE, self::KEY, $value, true)
             : Settings::insert(self::CODE, self::KEY, $value, true);
+
+        if ($saved) {
+            Cache::forget(self::ENABLED_CACHE_KEY);
+        }
 
         return (bool) $saved;
     }

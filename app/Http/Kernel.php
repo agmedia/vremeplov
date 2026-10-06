@@ -2,7 +2,9 @@
 
 namespace App\Http;
 
+use App\Support\DatabaseCapacityLeaseManager;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use Throwable;
 
 class Kernel extends HttpKernel
 {
@@ -17,6 +19,7 @@ class Kernel extends HttpKernel
         // \App\Http\Middleware\TrustHosts::class,
         \App\Http\Middleware\TrustProxies::class,
         \Fruitcake\Cors\HandleCors::class,
+        \App\Http\Middleware\LimitConcurrentDatabaseRequests::class,
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
@@ -68,4 +71,43 @@ class Kernel extends HttpKernel
         'boxnow.manager' => \App\Http\Middleware\RequireBoxNowManager::class,
         'review.backfill.admin' => \App\Http\Middleware\RequireProductReviewBackfillAdmin::class,
     ];
+
+    /**
+     * Keep the capacity lease through response sending and every terminating
+     * callback, then close created PDO connections before releasing the slot.
+     */
+    public function terminate($request, $response)
+    {
+        try {
+            parent::terminate($request, $response);
+        } finally {
+            $leases = $this->app->make(DatabaseCapacityLeaseManager::class);
+
+            if ($leases->hasLease($request)) {
+                $this->disconnectResolvedDatabaseConnections();
+                $leases->release($request);
+            }
+        }
+    }
+
+    private function disconnectResolvedDatabaseConnections(): void
+    {
+        if (! $this->app->resolved('db')) {
+            return;
+        }
+
+        try {
+            $connections = $this->app->make('db')->getConnections();
+        } catch (Throwable $exception) {
+            return;
+        }
+
+        foreach ($connections as $connection) {
+            try {
+                $connection->disconnect();
+            } catch (Throwable $exception) {
+                // Releasing the OS-level lock remains mandatory at shutdown.
+            }
+        }
+    }
 }

@@ -328,6 +328,16 @@ FileETag None
 
   RewriteEngine On
 
+  # Block crawlers observed generating high request volume before Laravel boots.
+  # Keep Googlebot and Bingbot available for normal search indexing.
+  RewriteCond %{HTTP_USER_AGENT} (?:GPTBot|ChatGPT-User|ClaudeBot|Anthropic-ai|AionBot|meta-externalagent|meta-externalfetcher|ReflectionBot|PerplexityBot|Google-Extended|Bytespider|Cohere-ai|CCBot|SemrushBot|Baiduspider|DataForSeoBot|GeedoShopProductFinder|SERankingBacklinksBot) [NC]
+  RewriteRule ^ - [F,L]
+
+  # Google login starts via a CSRF-protected POST button. Reject legacy/crawler
+  # GET and HEAD requests before PHP so this OAuth endpoint cannot be indexed.
+  RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+  RewriteRule ^prijava/google/?$ - [F,L]
+
   # Handle Authorization Header
   RewriteCond %{HTTP:Authorization} .
   RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

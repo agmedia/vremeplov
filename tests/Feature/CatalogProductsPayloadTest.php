@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Helpers\Helper;
 use App\Http\Controllers\Api\v2\FilterController;
+use App\Http\Controllers\Front\CatalogRouteController;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -118,6 +119,35 @@ class CatalogProductsPayloadTest extends TestCase
 
         session()->forget(config('session.cart') . '_coupon');
         $this->assertSame('25.00', $this->products()['data'][0]['main_special']);
+    }
+
+    public function test_server_rendered_catalog_exposes_the_same_lean_card_payload_for_frontend_hydration(): void
+    {
+        $this->createProduct(1);
+        DB::table('reviews')->insert([
+            'product_id' => 1, 'stars' => 5, 'status' => 1, 'sort_order' => 0,
+        ]);
+
+        $method = new \ReflectionMethod(CatalogRouteController::class, 'catalogProducts');
+        $method->setAccessible(true);
+        $products = $method->invoke(
+            app(CatalogRouteController::class),
+            Request::create('/knjige', 'GET'),
+            'knjige'
+        );
+        $payload = $products->toArray();
+
+        $this->assertSame(1, $payload['total']);
+        $this->assertSame(1, $payload['data'][0]['id']);
+        $this->assertSame('Naslov 1', $payload['data'][0]['card_name']);
+        $this->assertSame('Književnost', $payload['data'][0]['card_category']['title']);
+        $this->assertSame(1, $payload['data'][0]['reviews_count']);
+        $this->assertArrayNotHasKey('description', $payload['data'][0]);
+        $this->assertArrayNotHasKey('meta_description', $payload['data'][0]);
+        $this->assertArrayNotHasKey('secondary_price', $payload['data'][0]);
+        $this->assertArrayNotHasKey('categories', $payload['data'][0]);
+        $this->assertArrayNotHasKey('author', $payload['data'][0]);
+        $this->assertArrayNotHasKey('action', $payload['data'][0]);
     }
 
     public function test_expired_discounts_and_inventory_changes_are_visible_on_the_next_request(): void

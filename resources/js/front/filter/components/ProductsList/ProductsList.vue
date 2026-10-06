@@ -133,6 +133,10 @@ export default {
         subcat: String,
         author: String,
         publisher: String,
+        initialProducts: {
+            type: Object,
+            default: null,
+        },
         filtersEnabled: {
             type: Boolean,
             default: false,
@@ -140,8 +144,12 @@ export default {
     },
 
     data() {
+        const initialProducts = this.initialProducts && Array.isArray(this.initialProducts.data)
+            ? JSON.parse(JSON.stringify(this.initialProducts))
+            : null;
+
         return {
-            products: {},
+            products: initialProducts || {},
             autor: '',
             nakladnik: '',
             start: '',
@@ -156,12 +164,14 @@ export default {
             mobileColumns: 2,
             origin: location.origin + '/',
             hr_total: 'rezultata',
-            products_loaded: false,
-            has_loaded_products: false,
+            products_loaded: initialProducts !== null,
+            has_loaded_products: initialProducts !== null,
             search_zero_result: false,
             navigation_zero_result: false,
             load_error: false,
             requestSequence: 0,
+            initialProductsPending: initialProducts !== null,
+            lastRouteSignature: null,
         };
     },
 
@@ -209,6 +219,13 @@ export default {
     methods: {
         checkQuery(route) {
             const query = route && route.query ? route.query : {};
+            const routeSignature = route && route.fullPath ? route.fullPath : JSON.stringify(query);
+
+            if (routeSignature === this.lastRouteSignature) {
+                return;
+            }
+
+            this.lastRouteSignature = routeSignature;
             this.start = query.start || '';
             this.end = query.end || '';
             this.autor = query.autor || '';
@@ -220,6 +237,13 @@ export default {
             this.page = Math.max(1, Number(query.page || 1));
             this.sorting = query.sort || '';
             this.search_query = query.pojam || '';
+
+            if (this.initialProductsPending) {
+                this.initialProductsPending = false;
+                this.applyProducts(this.products, this.setParams());
+                return;
+            }
+
             this.getProducts();
         },
 
@@ -237,16 +261,7 @@ export default {
                         return;
                     }
 
-                    this.products = response.data || {};
-                    this.checkSpecials();
-                    this.checkAvailables();
-                    this.checkHrTotal();
-                    this.hideServerRenderedProducts();
-
-                    if (!this.products.total) {
-                        this.search_zero_result = Boolean(params.pojam);
-                        this.navigation_zero_result = !params.pojam;
-                    }
+                    this.applyProducts(response.data, params);
                 })
                 .catch(() => {
                     if (sequence === this.requestSequence) {
@@ -259,6 +274,17 @@ export default {
                         this.has_loaded_products = true;
                     }
                 });
+        },
+
+        applyProducts(products, params) {
+            this.products = products || {};
+            this.checkSpecials();
+            this.checkAvailables();
+            this.checkHrTotal();
+            this.hideServerRenderedProducts();
+
+            this.search_zero_result = !this.products.total && Boolean(params.pojam);
+            this.navigation_zero_result = !this.products.total && !params.pojam;
         },
 
         getProductsPage(page) {

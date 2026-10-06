@@ -47,7 +47,7 @@ class GoogleLoginController extends Controller
             'state' => $state,
             'nonce' => $nonce,
             'code_verifier' => $codeVerifier,
-            'redirect' => $this->safeRedirect($request, $request->query('redirect')),
+            'redirect' => $this->safeRedirect($request, $request->input('redirect')),
             'created_at' => time(),
         ]);
 

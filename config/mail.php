@@ -107,6 +107,10 @@ return [
         ],
     ],
 
+    'order_confirmation' => [
+        'max_attempts' => max(1, (int) env('ORDER_CONFIRMATION_MAIL_MAX_ATTEMPTS', 12)),
+    ],
+
     'admin' => 'info@antiqueshop.hr'
 
 ];

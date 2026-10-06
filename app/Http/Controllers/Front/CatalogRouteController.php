@@ -25,6 +25,11 @@ use Illuminate\Support\Facades\Log;
 
 class CatalogRouteController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('throttle:catalog-search')->only(['search', 'tag']);
+        $this->middleware('throttle:catalog-suggest')->only('suggest');
+    }
 
     /**
      * Resolver for the Groups, categories and products routes.
@@ -596,10 +601,32 @@ class CatalogRouteController extends Controller
 
         $filterRequest = new Request($data);
 
-        return (new Product())->filter($filterRequest)
-            ->with(['author', 'action'])
+        $products = (new Product())->filter($filterRequest)
+            ->select([
+                'id', 'name', 'sku', 'slug', 'url', 'image', 'group',
+                'price', 'special', 'special_from', 'special_to', 'quantity',
+                'author_id', 'publisher_id', 'action_id', 'updated_at',
+            ])
+            ->cardData()
             ->paginate(config('settings.pagination.front'))
             ->appends($request->query());
+
+        $products->getCollection()->each(function (Product $product) {
+            // Keep the embedded hydration payload as lean as the filter API.
+            // Accessors omitted here remain available to the server-rendered
+            // fallback, but are not duplicated into the page's JSON payload.
+            $product->setAppends([
+                'main_price', 'main_price_text', 'main_special', 'main_special_text', 'card_name',
+            ]);
+            $product->makeHidden(['author', 'action', 'categories']);
+            $category = $product->categories->firstWhere('parent_id', 0) ?: $product->categories->first();
+            $product->setAttribute('card_category', $category ? [
+                'title' => $category->title,
+                'url' => $category->url(),
+            ] : null);
+        });
+
+        return $products;
     }
 
 }

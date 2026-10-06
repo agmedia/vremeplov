@@ -30,6 +30,13 @@
                 </div>
 
                 <div class="modal-body tab-content">
+                    @if ($googleLoginEnabled ?? false)
+                        <form class="d-none" id="google-login-form" method="POST" action="{{ route('google.login.redirect') }}" aria-hidden="true">
+                            @csrf
+                            <input type="hidden" name="redirect" value="{{ request()->fullUrl() }}">
+                        </form>
+                    @endif
+
                     <form method="POST" class="needs-validation tab-pane fade {{ $loginOpen ? 'show active' : '' }}" action="{{ route('login') }}" autocomplete="on" novalidate id="signin-tab" role="tabpanel" aria-labelledby="pills-signin-tab">
                         @csrf
                         <input type="hidden" name="_auth_form" value="signin">
@@ -48,7 +55,7 @@
                         @endif
 
                         @if ($googleLoginEnabled ?? false)
-                            <a class="google-login-button" href="{{ route('google.login.redirect', ['redirect' => request()->fullUrl()]) }}">
+                            <button class="google-login-button" type="submit" form="google-login-form" formnovalidate>
                                 <svg class="google-login-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                                     <path fill="#4285F4" d="M21.6 12.227c0-.709-.064-1.391-.182-2.045H12v3.868h5.382a4.601 4.601 0 0 1-1.996 3.018v2.509h3.232c1.891-1.741 2.982-4.305 2.982-7.35Z"/>
                                     <path fill="#34A853" d="M12 22c2.7 0 4.964-.895 6.618-2.423l-3.232-2.509c-.895.6-2.041.955-3.386.955-2.605 0-4.809-1.76-5.596-4.123h-3.34v2.591A9.997 9.997 0 0 0 12 22Z"/>
@@ -56,7 +63,7 @@
                                     <path fill="#EA4335" d="M12 5.977c1.468 0 2.786.505 3.823 1.496l2.868-2.868C16.959 2.99 14.695 2 12 2a9.997 9.997 0 0 0-8.936 5.509l3.34 2.591C7.191 7.737 9.395 5.977 12 5.977Z"/>
                                 </svg>
                                 <span>Nastavi s Google računom</span>
-                            </a>
+                            </button>
                             <div class="google-login-divider" aria-hidden="true"><span>ili</span></div>
                         @endif
 

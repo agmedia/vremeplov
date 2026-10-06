@@ -22,14 +22,15 @@ use App\Models\Sitemap;
 use App\Services\ContractTerminationNotificationService;
 use App\Services\GoogleMerchantFeed;
 use App\Services\NewsletterSignupGuard;
+use App\Support\LocalImageSourceResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Intervention\Image\Exception\NotReadableException;
 use Intervention\Image\Facades\Image;
+use Throwable;
 
 class HomeController extends Controller
 {
@@ -557,9 +558,9 @@ class HomeController extends Controller
      *
      * @return mixed
      */
-    public function imageCache(Request $request)
+    public function imageCache(Request $request, LocalImageSourceResolver $sourceResolver)
     {
-        $src = $request->input('src');
+        $src = $sourceResolver->resolve($request->input('src'));
 
         if (! $src) {
             return $this->placeholderImageResponse();
@@ -569,11 +570,11 @@ class HomeController extends Controller
             $cacheimage = Image::cache(function($image) use ($src) {
                 $image->make($src);
             }, config('imagecache.lifetime'));
-        } catch (NotReadableException $exception) {
+        } catch (Throwable $exception) {
             return $this->placeholderImageResponse();
         }
 
-        return Image::make($cacheimage)->response();
+        return $this->cacheableImageResponse(Image::make($cacheimage));
     }
 
 
@@ -582,29 +583,24 @@ class HomeController extends Controller
      *
      * @return mixed
      */
-    public function thumbCache(Request $request)
+    public function thumbCache(Request $request, LocalImageSourceResolver $sourceResolver)
     {
-        if ( ! $request->has('src')) {
+        $src = $sourceResolver->resolve($request->input('src'));
+
+        if (! $src) {
             return $this->placeholderImageResponse();
         }
 
         try {
-            $cacheimage = Image::cache(function ($image) use ($request) {
-                $width = 400;
-                $height = 400;
-
-                if (preg_match('/^(\d{1,4})x(\d{1,4})$/', (string) $request->input('size'), $size)) {
-                    $width = max(1, min(1600, (int) $size[1]));
-                    $height = max(1, min(1600, (int) $size[2]));
-                }
-
-                $image->make($request->input('src'))->resize($width, $height);
+            [$width, $height] = $this->thumbnailDimensions((string) $request->input('size'));
+            $cacheimage = Image::cache(function ($image) use ($src, $width, $height) {
+                $image->make($src)->resize($width, $height);
             }, config('imagecache.lifetime'));
-        } catch (NotReadableException $exception) {
+        } catch (Throwable $exception) {
             return $this->placeholderImageResponse();
         }
 
-        return Image::make($cacheimage)->response();
+        return $this->cacheableImageResponse(Image::make($cacheimage));
     }
 
 
@@ -614,7 +610,56 @@ class HomeController extends Controller
      */
     private function placeholderImageResponse()
     {
-        return Image::make(public_path('media/img/thumb-product.jpg'))->response('jpg');
+        return $this->cacheableImageResponse(
+            Image::make(public_path('media/img/thumb-product.jpg')),
+            'jpg'
+        );
+    }
+
+
+    /**
+     * Keep custom thumbnail requests inside one bounded decode/resize budget.
+     */
+    private function thumbnailDimensions(string $requestedSize): array
+    {
+        $width = 400;
+        $height = 400;
+        $maxDimension = max(1, (int) config('imagecache.max_thumb_dimension', 1200));
+        $maxPixels = max(1, (int) config('imagecache.max_thumb_pixels', 1440000));
+        $allowedSizes = config('imagecache.allowed_thumb_sizes', ['100x100', '400x400', '800x800']);
+
+        if (is_array($allowedSizes)
+            && in_array($requestedSize, $allowedSizes, true)
+            && preg_match('/^(\d{1,4})x(\d{1,4})$/', $requestedSize, $size)) {
+            $width = max(1, min($maxDimension, (int) $size[1]));
+            $height = max(1, min($maxDimension, (int) $size[2]));
+        }
+
+        $pixels = $width * $height;
+
+        if ($pixels > $maxPixels) {
+            $scale = sqrt($maxPixels / $pixels);
+            $width = max(1, (int) floor($width * $scale));
+            $height = max(1, (int) floor($height * $scale));
+        }
+
+        return [$width, $height];
+    }
+
+
+    /**
+     * Let browsers reuse generated images for the same duration as the server
+     * cache. These routes have no session middleware, so responses are public.
+     */
+    private function cacheableImageResponse($image, ?string $format = null)
+    {
+        $response = $image->response($format);
+        $maxAge = max(60, (int) config('imagecache.lifetime', 60) * 60);
+
+        $response->headers->set('Cache-Control', 'public, max-age='.$maxAge);
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
+
+        return $response;
     }
 
 

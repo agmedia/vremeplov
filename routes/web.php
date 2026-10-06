@@ -50,7 +50,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Laravel\Jetstream\Http\Middleware\AuthenticateSession;
 
-Route::get('/prijava/google', [GoogleLoginController::class, 'redirect'])
+Route::post('/prijava/google', [GoogleLoginController::class, 'redirect'])
     ->middleware('throttle:10,1')
     ->name('google.login.redirect');
 Route::get('/prijava/google/povratak', [GoogleLoginController::class, 'callback'])
@@ -530,8 +530,12 @@ Route::get('tag', [CatalogRouteController::class, 'tag'])->name('tag');
 Route::get('info/{page}', [HomeController::class, 'page'])->name('catalog.route.page');
 Route::get('blog/{blog?}', [HomeController::class, 'blog'])->name('catalog.route.blog');
 //
-Route::get('cache/image', [HomeController::class, 'imageCache']);
-Route::get('cache/thumb', [HomeController::class, 'thumbCache']);
+Route::get('cache/image', [HomeController::class, 'imageCache'])
+    ->middleware('throttle:image-cache')
+    ->withoutMiddleware([AddQueuedCookiesToResponse::class, StartSession::class, AuthenticateSession::class, ShareErrorsFromSession::class, \App\Http\Middleware\VerifyCsrfToken::class]);
+Route::get('cache/thumb', [HomeController::class, 'thumbCache'])
+    ->middleware('throttle:image-cache')
+    ->withoutMiddleware([AddQueuedCookiesToResponse::class, StartSession::class, AuthenticateSession::class, ShareErrorsFromSession::class, \App\Http\Middleware\VerifyCsrfToken::class]);
 /**
  * Sitemap routes
  */

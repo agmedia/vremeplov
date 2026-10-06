@@ -1,11 +1,67 @@
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Anthropic-ai
+Disallow: /
+
+User-agent: AionBot
+Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
+User-agent: meta-externalfetcher
+Disallow: /
+
+User-agent: ReflectionBot
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Cohere-ai
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: DataForSeoBot
+Disallow: /
+
+User-agent: GeedoShopProductFinder
+Disallow: /
+
+User-agent: SERankingBacklinksBot
+Disallow: /
+
 User-agent: *
 Disallow: /admin/
+Disallow: /api/
 Disallow: /naplata
 Disallow: /pregled
 Disallow: /narudzba
 Disallow: /uspjeh
 Disallow: /greska
 Disallow: /moj-racun/
+Disallow: /prijava/
 Disallow: /assets/artikli.csv
 Disallow: /assets/proizvodi.xml
 

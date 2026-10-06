@@ -18,8 +18,6 @@ export default {
     },
     //
     mounted() {
-        this.getCart();
-
         if (window.location.pathname == '/kosarica/success') {
             this.$store.dispatch('flushCart');
         }
@@ -30,11 +28,6 @@ export default {
     },
     //
     methods: {
-        //
-        getCart() {
-            this.$store.dispatch('getCart')
-        },
-        //
         removeFromCart(item) {
             //this.$store.dispatch('removeItem', item);
         }

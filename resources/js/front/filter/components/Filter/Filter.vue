@@ -226,8 +226,6 @@ export default {
             characteristicRequestId: 0,
             authorRequestId: 0,
             publisherRequestId: 0,
-            entityPrefetchHandle: null,
-            entityPrefetchUsesIdleCallback: false,
             categories_loaded: false,
             characteristics_loaded: !this.filtersEnabled,
         };
@@ -303,8 +301,6 @@ export default {
             if (!this.publisher) {
                 this.show_publishers = true;
             }
-
-            this.deferEntityFiltersLoad();
         }
     },
 
@@ -312,12 +308,6 @@ export default {
         window.clearTimeout(this.searchTimers.authors);
         window.clearTimeout(this.searchTimers.publishers);
         window.clearTimeout(this.availableFiltersTimer);
-
-        if (this.entityPrefetchUsesIdleCallback && typeof window.cancelIdleCallback === 'function') {
-            window.cancelIdleCallback(this.entityPrefetchHandle);
-        } else {
-            window.clearTimeout(this.entityPrefetchHandle);
-        }
     },
 
     methods: {
@@ -430,26 +420,6 @@ export default {
                     this.getPublishers();
                 }
             }, 200);
-        },
-
-        deferEntityFiltersLoad() {
-            const load = () => {
-                if (this.show_authors && !this.authors_loaded && !this.authors_loading) {
-                    this.getAuthors();
-                }
-
-                if (this.show_publishers && !this.publishers_loaded && !this.publishers_loading) {
-                    this.getPublishers();
-                }
-            };
-
-            if (typeof window.requestIdleCallback === 'function') {
-                this.entityPrefetchUsesIdleCallback = true;
-                this.entityPrefetchHandle = window.requestIdleCallback(load, {timeout: 1200});
-                return;
-            }
-
-            this.entityPrefetchHandle = window.setTimeout(load, 400);
         },
 
         parseEntity(value) {

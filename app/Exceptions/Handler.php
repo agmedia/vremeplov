@@ -2,7 +2,9 @@
 
 namespace App\Exceptions;
 
+use App\Support\DatabaseCapacityReporter;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Throwable;
 
 class Handler extends ExceptionHandler
 {
@@ -32,7 +34,20 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
-        //
+        $this->reportable(function (Throwable $exception) {
+            try {
+                $request = app()->runningInConsole() ? null : request();
+                $reportedSafely = app(DatabaseCapacityReporter::class)->report($exception, $request);
+
+                if ($reportedSafely) {
+                    // QueryException interpolates bindings into its message in Laravel 8.
+                    // The dedicated report above intentionally replaces that unsafe log.
+                    return false;
+                }
+            } catch (Throwable $reportingException) {
+                // Capacity diagnostics must never interfere with normal reporting.
+            }
+        });
     }
 
 }

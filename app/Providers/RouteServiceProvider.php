@@ -92,6 +92,34 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60);
         });
 
+        RateLimiter::for('image-cache', function (Request $request) {
+            $secret = (string) config('app.key');
+
+            return Limit::perMinute(30)
+                ->by('image-cache:ip:' . hash_hmac('sha256', (string) $request->ip(), $secret));
+        });
+
+        RateLimiter::for('catalog-filter', function (Request $request) {
+            $secret = (string) config('app.key');
+
+            return Limit::perMinute(90)
+                ->by('catalog-filter:ip:' . hash_hmac('sha256', (string) $request->ip(), $secret));
+        });
+
+        RateLimiter::for('catalog-search', function (Request $request) {
+            $secret = (string) config('app.key');
+
+            return Limit::perMinute(30)
+                ->by('catalog-search:ip:' . hash_hmac('sha256', (string) $request->ip(), $secret));
+        });
+
+        RateLimiter::for('catalog-suggest', function (Request $request) {
+            $secret = (string) config('app.key');
+
+            return Limit::perMinute(60)
+                ->by('catalog-suggest:ip:' . hash_hmac('sha256', (string) $request->ip(), $secret));
+        });
+
         RateLimiter::for('newsletter', function (Request $request) {
             $secret = (string) config('app.key');
             $email = $request->input('email');

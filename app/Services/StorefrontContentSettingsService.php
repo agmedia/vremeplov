@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Back\Settings\Settings;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 
 class StorefrontContentSettingsService
@@ -11,6 +12,8 @@ class StorefrontContentSettingsService
     public const CODE = 'app';
 
     public const KEY = 'storefront_content';
+
+    public const CACHE_KEY = 'storefront.content-settings.v1';
 
     private const DEFAULTS = [
         'announcement_text' => 'Besplatna dostava U RH za narudžbe iznad 70 €',
@@ -64,6 +67,7 @@ class StorefrontContentSettingsService
 
         if ($stored) {
             $this->resolved = null;
+            Cache::forget(self::CACHE_KEY);
         }
 
         return $stored;

@@ -57,16 +57,18 @@ class AuthenticationTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Nastavi s Google računom');
-        $response->assertSee(route('google.login.redirect', ['redirect' => url('/login')]), false);
+        $response->assertSee('id="google-login-form" method="POST" action="'.route('google.login.redirect').'"', false);
+        $response->assertSee('name="redirect" value="'.url('/login').'"', false);
+        $response->assertSee('form="google-login-form"', false);
     }
 
     public function test_google_login_redirect_uses_state_nonce_and_pkce()
     {
         $this->configureGoogleLogin();
 
-        $response = $this->get(route('google.login.redirect', [
+        $response = $this->post(route('google.login.redirect'), [
             'redirect' => url('/kosarica'),
-        ]));
+        ]);
 
         $location = $response->headers->get('Location');
         $query = [];

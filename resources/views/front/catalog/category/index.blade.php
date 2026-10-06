@@ -162,6 +162,7 @@
                            subcat="{{ isset($subcat) ? $subcat['id'] : null }}"
                            author="{{ isset($author) ? $author['slug'] : null }}"
                            publisher="{{ isset($publisher) ? $publisher['slug'] : null }}"
+                           @if (isset($products)) :initial-products='@json($products->toArray())' @endif
                            :filters-enabled="{{ $catalogFiltersEnabled ? 'true' : 'false' }}">
             </products-view>
         </div>

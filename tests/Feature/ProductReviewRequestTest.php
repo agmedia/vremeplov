@@ -212,9 +212,10 @@ class ProductReviewRequestTest extends TestCase
         $this->assertSame(2, DB::table('product_review_invitations')->count());
     }
 
-    public function test_due_order_mail_has_priority_over_review_mail(): void
+    public function test_retryable_order_mail_has_priority_but_exhausted_delivery_does_not(): void
     {
         Carbon::setTestNow('2026-09-04 12:00:00');
+        config(['mail.order_confirmation.max_attempts' => 2]);
         Mail::fake();
         $this->insertOrder(1, 4, 'kupac@example.test', '2026-07-20 10:00:00', '2026-08-25 10:00:00');
 
@@ -242,7 +243,11 @@ class ProductReviewRequestTest extends TestCase
         Mail::assertNothingSent();
         $this->assertSame(0, DB::table('product_review_invitations')->count());
 
-        DB::table('order_mail_deliveries')->update(['sent_at' => now()]);
+        DB::table('order_mail_deliveries')->update([
+            'attempts' => 2,
+            'next_attempt_at' => null,
+            'last_error' => 'RuntimeException; code=451; attempt=2/2; exhausted=yes',
+        ]);
         $this->artisan('reviews:send-requests', ['--limit' => 1])->assertExitCode(0);
         Mail::assertSent(ProductReviewRequestMail::class, 1);
     }

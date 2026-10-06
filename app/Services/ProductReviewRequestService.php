@@ -189,8 +189,10 @@ class ProductReviewRequestService
     private function hasDuePriorityMail(): bool
     {
         if (Schema::hasTable('order_mail_deliveries')) {
+            $maxOrderMailAttempts = max(1, (int) config('mail.order_confirmation.max_attempts', 12));
             $hasDueOrderMail = DB::table('order_mail_deliveries')
                 ->whereNull('sent_at')
+                ->where('attempts', '<', $maxOrderMailAttempts)
                 ->where(function ($query) {
                     $query->whereNull('next_attempt_at')
                         ->orWhere('next_attempt_at', '<=', now());

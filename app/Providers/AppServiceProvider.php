@@ -36,36 +36,37 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
-
-        $uvjeti_kupnje = $this->app->environment('testing') && ! Schema::hasTable('pages')
-            ? collect()
-            : Page::where('subgroup', 'Uvjeti kupnje')->get();
-        View::share('uvjeti_kupnje', $uvjeti_kupnje);
-
-        $hasCatalogActions = Schema::hasTable('products')
-            ? Cache::remember('catalog.navigation.has-actions.v2', now()->addMinutes(5), function () {
-                return Product::query()->active()->hasStock()->onSale()->exists();
-            })
-            : false;
-        View::share('hasCatalogActions', $hasCatalogActions);
-
         View::composer('front.layouts.modals.login', function ($view) {
-            $view->with('googleLoginEnabled', app(GoogleLoginSettingsService::class)->enabled());
+            $view->with('googleLoginEnabled', Cache::remember(
+                GoogleLoginSettingsService::ENABLED_CACHE_KEY,
+                now()->addMinutes(5),
+                fn () => app(GoogleLoginSettingsService::class)->enabled()
+            ));
         });
 
         View::composer([
             'front.layouts.app',
             'errors.container',
         ], function ($view) {
-            $view->with('storefrontContent', app(StorefrontContentSettingsService::class)->get());
+            $view->with('storefrontContent', Cache::remember(
+                StorefrontContentSettingsService::CACHE_KEY,
+                now()->addMinutes(5),
+                fn () => app(StorefrontContentSettingsService::class)->get()
+            ));
+        });
+
+        View::composer('front.layouts.partials.footer', function ($view) {
+            $view->with([
+                'uvjeti_kupnje' => $this->purchaseTerms(),
+                'hasCatalogActions' => $this->catalogActionsAvailable(),
+            ]);
         });
 
         View::composer('back.layouts.partials.topbar', function ($view) {
-            $wishlistReadyCount = Schema::hasTable('wishlist') && Schema::hasTable('products')
+            $wishlistReadyCount = $this->tableAvailableForView('wishlist') && $this->tableAvailableForView('products')
                 ? Wishlist::query()->readyToSend()->count()
                 : 0;
-            $pendingCommentCount = Schema::hasTable('reviews')
+            $pendingCommentCount = $this->tableAvailableForView('reviews')
                 ? Review::query()->where('status', 0)->count()
                 : 0;
 
@@ -76,8 +77,9 @@ class AppServiceProvider extends ServiceProvider
             $mobileNavigationGroups = collect();
             $mobileNavigationBookCategories = collect();
             $navigationGroupProductCounts = collect();
+            $hasCatalogActions = $this->catalogActionsAvailable();
 
-            if (Schema::hasTable('categories')) {
+            if ($this->tableAvailableForView('categories')) {
                 $mobileNavigationGroups = Category::getGroups();
                 $bookNavigationGroup = $mobileNavigationGroups->firstWhere('slug', 'knjige');
                 $bookNavigationGroupSlug = $bookNavigationGroup->slug ?? 'knjige';
@@ -113,7 +115,7 @@ class AppServiceProvider extends ServiceProvider
                 );
             }
 
-            if (Schema::hasTable('products')) {
+            if ($this->tableAvailableForView('products')) {
                 $navigationGroupProductCounts = Cache::remember(
                     'catalog.navigation.group-counts.v1',
                     now()->addMinutes(5),
@@ -143,7 +145,8 @@ class AppServiceProvider extends ServiceProvider
             $view->with(compact(
                 'mobileNavigationGroups',
                 'mobileNavigationBookCategories',
-                'navigationGroupProductCounts'
+                'navigationGroupProductCounts',
+                'hasCatalogActions'
             ));
         });
 
@@ -166,5 +169,52 @@ class AppServiceProvider extends ServiceProvider
         View::share('zemljovidi_vedute', $zemljovidi_vedute);*/
 
         Paginator::useBootstrap();
+    }
+
+
+    /**
+     * Purchase-term links are only needed while rendering the storefront
+     * footer, not while booting API, console or rejected HTTP requests.
+     */
+    private function purchaseTerms()
+    {
+        if (! $this->tableAvailableForView('pages')) {
+            return collect();
+        }
+
+        return Cache::remember('storefront.purchase-terms.v1', now()->addMinutes(15), function () {
+            return Page::query()
+                ->where('subgroup', 'Uvjeti kupnje')
+                ->select(['id', 'title', 'slug'])
+                ->get();
+        });
+    }
+
+
+    /**
+     * Resolve and cache the navigation flag only for views which display it.
+     */
+    private function catalogActionsAvailable(): bool
+    {
+        if (! $this->tableAvailableForView('products')) {
+            return false;
+        }
+
+        return (bool) Cache::remember(
+            'catalog.navigation.has-actions.v2',
+            now()->addMinutes(5),
+            fn () => Product::query()->active()->hasStock()->onSale()->exists()
+        );
+    }
+
+
+    /**
+     * Production schema is managed by deployments. Runtime schema probes add
+     * an information_schema query to every rendered view, so retain them only
+     * for isolated test databases where individual tables may be absent.
+     */
+    private function tableAvailableForView(string $table): bool
+    {
+        return ! $this->app->environment('testing') || Schema::hasTable($table);
     }
 }

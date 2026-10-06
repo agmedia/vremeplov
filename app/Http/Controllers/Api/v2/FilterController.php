@@ -28,6 +28,11 @@ class FilterController extends Controller
         'origin' => ['key' => 'jezik', 'title' => 'Jezik'],
     ];
 
+    public function __construct()
+    {
+        $this->middleware('throttle:catalog-filter');
+    }
+
     /**
      * @param Request $request
      *

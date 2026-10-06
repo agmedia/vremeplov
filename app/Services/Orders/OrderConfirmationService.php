@@ -59,6 +59,10 @@ class OrderConfirmationService
         $order = Order::query()->find($orderId);
 
         if (! $order || ! $this->isEligible($order)) {
+            if (Schema::hasTable('order_mail_deliveries')) {
+                $this->terminalizeUnavailableDeliveries($orderId);
+            }
+
             return false;
         }
 
@@ -67,9 +71,11 @@ class OrderConfirmationService
         }
 
         $this->enqueue($order);
+        $maxAttempts = $this->maxAttempts();
         $deliveries = OrderMailDelivery::query()
             ->where('order_id', $orderId)
             ->whereNull('sent_at')
+            ->where('attempts', '<', $maxAttempts)
             ->where(function ($query) {
                 $query->whereNull('next_attempt_at')->orWhere('next_attempt_at', '<=', now());
             })
@@ -102,8 +108,10 @@ class OrderConfirmationService
             return ['sent' => 0, 'failed' => 0];
         }
 
+        $maxAttempts = $this->maxAttempts();
         $orderIds = OrderMailDelivery::query()
             ->whereNull('sent_at')
+            ->where('attempts', '<', $maxAttempts)
             ->where(function ($query) {
                 $query->whereNull('next_attempt_at')->orWhere('next_attempt_at', '<=', now());
             })
@@ -128,6 +136,7 @@ class OrderConfirmationService
 
     private function sendDelivery(OrderMailDelivery $delivery): bool
     {
+        $maxAttempts = $this->maxAttempts();
         $lock = Cache::lock('order-mail-delivery:' . $delivery->id, 120);
 
         if (! $lock->get()) {
@@ -141,9 +150,23 @@ class OrderConfirmationService
                 return true;
             }
 
+            if ((int) $delivery->attempts >= $maxAttempts) {
+                if ($delivery->next_attempt_at !== null) {
+                    $delivery->forceFill(['next_attempt_at' => null])->save();
+                }
+
+                return false;
+            }
+
             $order = Order::query()->find($delivery->order_id);
 
             if (! $order || ! $this->isEligible($order, false)) {
+                $this->markDeliveryTerminal(
+                    $delivery,
+                    $order ? 'order_ineligible' : 'order_missing',
+                    $maxAttempts
+                );
+
                 return false;
             }
 
@@ -166,16 +189,25 @@ class OrderConfirmationService
             return true;
         } catch (\Throwable $exception) {
             $attempts = max(1, (int) $delivery->attempts);
+            $retryExhausted = $attempts >= $maxAttempts;
+            $smtpStatus = $this->smtpStatus($exception);
             $delivery->forceFill([
-                'last_error' => mb_substr($exception->getMessage(), 0, 2000),
-                'next_attempt_at' => now()->addMinutes(min(60, 2 ** min($attempts, 6))),
+                'last_error' => $this->failureDiagnostic($exception, $attempts, $maxAttempts, $smtpStatus),
+                'next_attempt_at' => $retryExhausted
+                    ? null
+                    : now()->addMinutes(min(60, 2 ** min($attempts, 6))),
             ])->save();
 
             Log::error('Order mail delivery failed.', [
+                'delivery_id' => $delivery->id,
                 'order_id' => $delivery->order_id,
                 'type' => $delivery->type,
                 'attempts' => $attempts,
-                'error' => $exception->getMessage(),
+                'max_attempts' => $maxAttempts,
+                'retry_exhausted' => $retryExhausted,
+                'exception_type' => class_basename($exception),
+                'exception_code' => (int) $exception->getCode(),
+                'smtp_status' => $smtpStatus,
             ]);
 
             return false;
@@ -201,7 +233,8 @@ class OrderConfirmationService
         } catch (\Throwable $exception) {
             Log::error('Order confirmation mail failed.', [
                 'order_id' => $order->id,
-                'error' => $exception->getMessage(),
+                'exception_type' => class_basename($exception),
+                'exception_code' => (int) $exception->getCode(),
             ]);
 
             return false;
@@ -218,5 +251,121 @@ class OrderConfirmationService
             && $order->inventory_released_at === null
             && ! $order->inventory_allocation_error
             && ! $order->payment_review_error;
+    }
+
+    private function maxAttempts(): int
+    {
+        return max(1, (int) config('mail.order_confirmation.max_attempts', 12));
+    }
+
+    private function terminalizeUnavailableDeliveries(int $orderId): void
+    {
+        $maxAttempts = $this->maxAttempts();
+        $deliveries = OrderMailDelivery::query()
+            ->where('order_id', $orderId)
+            ->whereNull('sent_at')
+            ->where(function ($query) use ($maxAttempts) {
+                $query->where('attempts', '<', $maxAttempts)
+                    ->orWhereNotNull('next_attempt_at');
+            })
+            ->get();
+
+        foreach ($deliveries as $delivery) {
+            $lock = Cache::lock('order-mail-delivery:' . $delivery->id, 120);
+
+            if (! $lock->get()) {
+                continue;
+            }
+
+            try {
+                $delivery->refresh();
+
+                if ($delivery->sent_at !== null) {
+                    continue;
+                }
+
+                if ((int) $delivery->attempts >= $maxAttempts) {
+                    if ($delivery->next_attempt_at !== null) {
+                        $delivery->forceFill(['next_attempt_at' => null])->save();
+                    }
+
+                    continue;
+                }
+
+                $order = Order::query()->find($orderId);
+
+                if ($order && $this->isEligible($order)) {
+                    continue;
+                }
+
+                $this->markDeliveryTerminal(
+                    $delivery,
+                    $order ? 'order_ineligible' : 'order_missing',
+                    $maxAttempts
+                );
+            } finally {
+                $lock->release();
+            }
+        }
+    }
+
+    private function markDeliveryTerminal(
+        OrderMailDelivery $delivery,
+        string $reason,
+        int $maxAttempts
+    ): void {
+        $delivery->forceFill([
+            'attempts' => max((int) $delivery->attempts, $maxAttempts),
+            'next_attempt_at' => null,
+            'last_error' => sprintf(
+                'OrderUnavailable; reason=%s; attempt=%d/%d; exhausted=yes',
+                $reason,
+                $maxAttempts,
+                $maxAttempts
+            ),
+        ])->save();
+    }
+
+    private function failureDiagnostic(
+        \Throwable $exception,
+        int $attempts,
+        int $maxAttempts,
+        ?int $smtpStatus
+    ): string
+    {
+        return sprintf(
+            '%s; code=%d; smtp_status=%s; attempt=%d/%d; exhausted=%s',
+            class_basename($exception),
+            (int) $exception->getCode(),
+            $smtpStatus === null ? 'none' : (string) $smtpStatus,
+            $attempts,
+            $maxAttempts,
+            $attempts >= $maxAttempts ? 'yes' : 'no'
+        );
+    }
+
+    /**
+     * Preserve only a protocol status from transport errors. Exception text can
+     * contain recipient addresses and server responses, so it is never stored.
+     */
+    private function smtpStatus(\Throwable $exception): ?int
+    {
+        $current = $exception;
+
+        while ($current instanceof \Throwable) {
+            $code = (int) $current->getCode();
+
+            if ($code >= 400 && $code <= 599) {
+                return $code;
+            }
+
+            if (preg_match('/\bgot\s+code\s+["\']?([45][0-9]{2})\b/i', $current->getMessage(), $match) === 1) {
+                return (int) $match[1];
+            }
+
+            $current = $current->getPrevious();
+        }
+
+        return null;
     }
 }
