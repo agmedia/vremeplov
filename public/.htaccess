@@ -335,8 +335,11 @@ FileETag None
 
   # Google login starts via a CSRF-protected POST button. Reject legacy/crawler
   # GET and HEAD requests before PHP so this OAuth endpoint cannot be indexed.
+  # Match REQUEST_URI because this host rewrites the public path before this
+  # per-directory rule is evaluated, so the RewriteRule path may be index.php.
   RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
-  RewriteRule ^prijava/google/?$ - [F,L]
+  RewriteCond %{REQUEST_URI} ^/prijava/google/?$ [NC]
+  RewriteRule ^ - [F,L]
 
   # Handle Authorization Header
   RewriteCond %{HTTP:Authorization} .

@@ -64,6 +64,7 @@ class CrawlerProtectionTest extends TestCase
         $this->assertStringContainsString('class="google-login-button" type="submit"', $view);
         $this->assertStringContainsString('id="google-login-form" method="POST"', $view);
         $this->assertStringContainsString('form="google-login-form"', $view);
-        $this->assertStringContainsString('RewriteRule ^prijava/google/?$ - [F,L]', $apache);
+        $this->assertStringContainsString('RewriteCond %{REQUEST_URI} ^/prijava/google/?$ [NC]', $apache);
+        $this->assertStringContainsString('RewriteRule ^ - [F,L]', $apache);
     }
 }
