@@ -106,26 +106,29 @@ environment configuration remains supported with `MAILCHIMP_ENABLED`,
 `MAILCHIMP_API_KEY`, `MAILCHIMP_SERVER_PREFIX`, `MAILCHIMP_AUDIENCE_ID`,
 `MAILCHIMP_WEBHOOK_TOKEN`, and `MAILCHIMP_WEBHOOK_SIGNING_SECRET`.
 
-The existing Laravel scheduler runs `newsletter:sync-mailchimp --limit=25`
-every five minutes. Ensure the server cron runs `php artisan schedule:run`
-every minute. This batch size controls processing time, not the audience size;
-the integration imposes no subscription-plan contact cap.
+Sync is manual: in the newsletter admin, click **Uskladi aktivne prijave** to
+process up to 25 pending signups from the filtered view. Repeat for further
+batches. There is no scheduled Mailchimp polling or background import. This
+batch size controls processing time, not the audience size; the integration
+imposes no subscription-plan contact cap. The operator command
+`newsletter:sync-mailchimp --limit=25` remains available for manual use only.
 
 Only active homepage newsletter signups with recorded consent are created in
 Mailchimp. Historical order customers are not imported by this integration.
 Existing Mailchimp statuses are preserved, including opt-outs and archived
 contacts. If the audience requires double opt-in, new contacts remain pending
-until they confirm. API failures are retried and visible in the admin.
+until they confirm. API failures are visible in the admin and can be retried
+with the manual sync button.
 
 For prompt unsubscribe reconciliation, register the admin-generated callback
 URL under Mailchimp **Audience settings → Webhooks**, with unsubscribe,
 cleaned, subscribe, and email-change events enabled. Include user, admin, and
 API sources. If Mailchimp supplies a webhook signing secret, save it in the
 admin; POST callbacks then require both the URL token and a valid HMAC
-signature. The URL token is a secret and must not be shared. Daily read-only
-status reconciliation also preserves remote opt-outs when callbacks are
-unavailable. This integration does not send campaigns or sync product/order
-history through the Mailchimp e-commerce API.
+signature. The URL token is a secret and must not be shared. These inbound
+callbacks continue to reconcile opt-outs immediately, without periodic polling.
+This integration does not send campaigns or sync product/order history through
+the Mailchimp e-commerce API.
 
 Sender-domain authentication is configured separately in Mailchimp and the
 authoritative DNS provider; it does not change the website or mail routing.

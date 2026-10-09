@@ -59,7 +59,7 @@
                 <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mb-4">
                     <div class="mr-lg-4">
                         @if ($mailchimpConnection['ready'])
-                            <p class="mb-1">Nove aktivne prijave s privolom automatski se usklađuju s Mailchimpom.</p>
+                            <p class="mb-1">Aktivne prijave s privolom prenose se u Mailchimp kada kliknete „Uskladi aktivne prijave”.</p>
                         @elseif (! $mailchimpConnection['available'])
                             <p class="mb-1">Za usklađivanje je potrebno dovršiti nadogradnju web stranice.</p>
                         @else

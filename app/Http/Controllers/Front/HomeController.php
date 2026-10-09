@@ -176,7 +176,7 @@ class HomeController extends Controller
     }
 
     /**
-     * Store consent locally; the scheduled Mailchimp sync processes pending
+     * Store consent locally; the manual admin Mailchimp sync processes pending
      * signups without making a successful signup depend on an external API.
      */
     public function newsletter(Request $request, NewsletterSignupGuard $signupGuard)

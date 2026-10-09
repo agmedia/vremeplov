@@ -58,7 +58,7 @@ class MailchimpNewsletterSyncTest extends TestCase
         Http::assertNotSent(function ($request) { return in_array($request->method(), ['PATCH', 'PUT', 'DELETE']); });
     }
 
-    public function test_public_signup_stays_durably_pending_until_scheduled_command_runs(): void
+    public function test_public_signup_stays_durably_pending_until_manual_command_runs(): void
     {
         $this->withoutMiddleware(ThrottleRequests::class);
         $token = app(NewsletterSignupGuard::class)->issueToken();
