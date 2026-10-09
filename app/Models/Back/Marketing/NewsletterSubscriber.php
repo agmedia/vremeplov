@@ -16,6 +16,10 @@ class NewsletterSubscriber extends Model
         'gdpr' => 'boolean',
         'status' => 'boolean',
         'subscribed_at' => 'datetime',
+        'mailchimp_synced_at' => 'datetime',
+        'mailchimp_last_attempt_at' => 'datetime',
+        'mailchimp_next_attempt_at' => 'datetime',
+        'mailchimp_sync_attempts' => 'integer',
     ];
 
     public function user()

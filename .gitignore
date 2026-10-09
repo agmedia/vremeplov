@@ -4,6 +4,7 @@
 /public/media/img/products
 /public/media/img/qr
 /storage/*.key
+/storage/framework/mailchimp-locks/
 /vendor
 .env
 .env.backup

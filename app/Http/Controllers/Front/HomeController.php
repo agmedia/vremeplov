@@ -176,8 +176,8 @@ class HomeController extends Controller
     }
 
     /**
-     * Store newsletter interest locally. Mailchimp synchronization will be
-     * added separately once the audience configuration is available.
+     * Store consent locally; the scheduled Mailchimp sync processes pending
+     * signups without making a successful signup depend on an external API.
      */
     public function newsletter(Request $request, NewsletterSignupGuard $signupGuard)
     {

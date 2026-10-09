@@ -15,5 +15,6 @@ class VerifyCsrfToken extends Middleware
         //
         'paypal/ipn',
         'paypal/uspjeh',
+        'mailchimp/webhook/*',
     ];
 }

@@ -93,6 +93,43 @@ their records, product references, and marketing-action links remain untouched.
 There is no force option for those groups; configure redirects and merge them
 through an explicit manual procedure.
 
+## Mailchimp newsletter connection
+
+Deploy the code and run `php artisan migrate --force`. In **Marketing →
+Newsletter prijave → Mailchimp postavke**, enter the API key, server prefix
+(`us1` for the current account), and Audience ID. Credentials are encrypted in
+the settings table; empty password fields retain their saved values. Keep the
+connection disabled until the correct audience and sender are confirmed.
+
+No environment variables are required when using the admin form. Existing
+environment configuration remains supported with `MAILCHIMP_ENABLED`,
+`MAILCHIMP_API_KEY`, `MAILCHIMP_SERVER_PREFIX`, `MAILCHIMP_AUDIENCE_ID`,
+`MAILCHIMP_WEBHOOK_TOKEN`, and `MAILCHIMP_WEBHOOK_SIGNING_SECRET`.
+
+The existing Laravel scheduler runs `newsletter:sync-mailchimp --limit=25`
+every five minutes. Ensure the server cron runs `php artisan schedule:run`
+every minute. This batch size controls processing time, not the audience size;
+the integration imposes no subscription-plan contact cap.
+
+Only active homepage newsletter signups with recorded consent are created in
+Mailchimp. Historical order customers are not imported by this integration.
+Existing Mailchimp statuses are preserved, including opt-outs and archived
+contacts. If the audience requires double opt-in, new contacts remain pending
+until they confirm. API failures are retried and visible in the admin.
+
+For prompt unsubscribe reconciliation, register the admin-generated callback
+URL under Mailchimp **Audience settings → Webhooks**, with unsubscribe,
+cleaned, subscribe, and email-change events enabled. Include user, admin, and
+API sources. If Mailchimp supplies a webhook signing secret, save it in the
+admin; POST callbacks then require both the URL token and a valid HMAC
+signature. The URL token is a secret and must not be shared. Daily read-only
+status reconciliation also preserves remote opt-outs when callbacks are
+unavailable. This integration does not send campaigns or sync product/order
+history through the Mailchimp e-commerce API.
+
+Sender-domain authentication is configured separately in Mailchimp and the
+authoritative DNS provider; it does not change the website or mail routing.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

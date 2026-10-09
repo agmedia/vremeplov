@@ -44,6 +44,7 @@ use App\Http\Controllers\Front\HomeController;
 use App\Http\Controllers\Front\BookPurchaseController as FrontBookPurchaseController;
 use App\Http\Controllers\Front\OrderTrackingController;
 use App\Http\Controllers\Front\ProductReviewInvitationController;
+use App\Http\Controllers\MailchimpWebhookController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Session\Middleware\StartSession;
@@ -237,6 +238,12 @@ Route::middleware(['auth:sanctum', 'verified', 'no.customers'])->prefix('admin')
         Route::get('newsletter-subscribers/export', [NewsletterSubscriberController::class, 'export'])
             ->middleware('admin.manager')
             ->name('newsletter-subscribers.export');
+        Route::post('newsletter-subscribers/sync', [NewsletterSubscriberController::class, 'sync'])
+            ->middleware(['admin.manager', 'throttle:5,1'])
+            ->name('newsletter-subscribers.sync');
+        Route::put('newsletter-subscribers/mailchimp-settings', [NewsletterSubscriberController::class, 'saveMailchimpSettings'])
+            ->middleware('admin.manager')
+            ->name('newsletter-subscribers.mailchimp-settings');
     });
 
     // KORISNICI
@@ -473,6 +480,11 @@ Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::post('/newsletter/prijava', [HomeController::class, 'newsletter'])
     ->middleware('throttle:newsletter')
     ->name('newsletter.subscribe');
+
+Route::match(['get', 'post'], '/mailchimp/webhook/{token}', MailchimpWebhookController::class)
+    ->where('token', '[A-Za-z0-9_-]{32,128}')
+    ->middleware('throttle:120,1')
+    ->name('mailchimp.webhook');
 Route::get('/kontakt', [HomeController::class, 'contact'])->name('kontakt');
 Route::post('/kontakt/posalji', [HomeController::class, 'sendContactMessage'])
     ->middleware('throttle:10,1')

@@ -55,8 +55,12 @@ return [
     ],
 
     'mailchimp' => [
+        'enabled'       => env('MAILCHIMP_ENABLED', false),
         'api_key'       => env('MAILCHIMP_API_KEY'),
         'server_prefix' => env('MAILCHIMP_SERVER_PREFIX'),
+        'audience_id'   => env('MAILCHIMP_AUDIENCE_ID'),
+        'webhook_token' => env('MAILCHIMP_WEBHOOK_TOKEN'),
+        'webhook_signing_secret' => env('MAILCHIMP_WEBHOOK_SIGNING_SECRET'),
     ],
 
     'gls' => [

@@ -44,6 +44,108 @@
 
         <div class="block block-rounded">
             <div class="block-header block-header-default">
+                <h3 class="block-title">Mailchimp</h3>
+                @if ($mailchimpConnection['ready'])
+                    <span class="badge badge-success">Povezivanje postavljeno</span>
+                @elseif (! $mailchimpSettings['enabled'])
+                    <span class="badge badge-secondary">Povezivanje nije uključeno</span>
+                @elseif (! $mailchimpConnection['available'])
+                    <span class="badge badge-warning">Čeka nadogradnju</span>
+                @else
+                    <span class="badge badge-warning">Povezivanje nije dovršeno</span>
+                @endif
+            </div>
+            <div class="block-content">
+                <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mb-4">
+                    <div class="mr-lg-4">
+                        @if ($mailchimpConnection['ready'])
+                            <p class="mb-1">Nove aktivne prijave s privolom automatski se usklađuju s Mailchimpom.</p>
+                        @elseif (! $mailchimpConnection['available'])
+                            <p class="mb-1">Za usklađivanje je potrebno dovršiti nadogradnju web stranice.</p>
+                        @else
+                            <p class="mb-1">Za povezivanje unesite API ključ i Audience ID iz Mailchimpa te uključite povezivanje.</p>
+                        @endif
+                        <div class="text-muted">Postojeće odjave ostaju važeće.</div>
+                    </div>
+                    <form action="{{ route('newsletter-subscribers.sync', array_filter($filters, function ($value) { return $value !== '' && $value !== 'all'; })) }}"
+                          method="post" class="mt-3 mt-lg-0">
+                        @csrf
+                        <button type="submit" class="btn btn-primary" {{ ! $mailchimpConnection['ready'] ? 'disabled' : '' }}>
+                            <i class="fa fa-sync-alt mr-1"></i> Uskladi aktivne prijave
+                        </button>
+                        <div class="font-size-sm text-muted mt-2">Do 25 prijava iz odabranog pregleda.</div>
+                    </form>
+                </div>
+
+                <div class="row text-center mb-4">
+                    @foreach ([
+                        ['label' => 'Usklađene', 'value' => $mailchimpStatistics['synced']],
+                        ['label' => 'Na čekanju', 'value' => $mailchimpStatistics['pending']],
+                        ['label' => 'Potrebna provjera', 'value' => $mailchimpStatistics['error']],
+                    ] as $stat)
+                        <div class="col-sm-4 mb-2">
+                            <div class="font-size-h3 font-w700">{{ number_format($stat['value'], 0, ',', '.') }}</div>
+                            <div class="text-muted">{{ $stat['label'] }}</div>
+                        </div>
+                    @endforeach
+                </div>
+                <p class="font-size-sm text-muted">Brojevi se odnose na aktivne prijave s privolom.</p>
+
+                <details class="mb-4" {{ ! $mailchimpConnection['ready'] ? 'open' : '' }}>
+                    <summary class="font-w600 mb-3">Postavke povezivanja</summary>
+                    <form action="{{ route('newsletter-subscribers.mailchimp-settings', array_filter($filters, function ($value) { return $value !== '' && $value !== 'all'; })) }}" method="post">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" name="enabled" value="0">
+                        <div class="custom-control custom-checkbox mb-3">
+                            <input type="checkbox" class="custom-control-input" id="mailchimp-enabled" name="enabled" value="1"
+                                   {{ $mailchimpSettings['enabled'] ? 'checked' : '' }}>
+                            <label class="custom-control-label" for="mailchimp-enabled">Uključi povezivanje s Mailchimpom</label>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-lg-5">
+                                <label for="mailchimp-api-key">Mailchimp API ključ</label>
+                                <input type="password" class="form-control" id="mailchimp-api-key" name="api_key" value=""
+                                       autocomplete="new-password" maxlength="255">
+                                <small class="form-text text-muted">{{ $mailchimpSettings['key_configured'] ? 'Ključ je spremljen. Ostavite prazno ako ga ne mijenjate.' : 'Unesite ključ jednom. Nakon spremanja neće se prikazivati.' }}</small>
+                            </div>
+                            <div class="form-group col-sm-4 col-lg-2">
+                                <label for="mailchimp-server-prefix">Poslužitelj</label>
+                                <input type="text" class="form-control" id="mailchimp-server-prefix" name="server_prefix"
+                                       value="{{ $mailchimpSettings['server_prefix'] }}" placeholder="us1" maxlength="20">
+                            </div>
+                            <div class="form-group col-sm-8 col-lg-5">
+                                <label for="mailchimp-audience-id">Audience ID</label>
+                                <input type="text" class="form-control" id="mailchimp-audience-id" name="audience_id"
+                                       value="{{ $mailchimpSettings['audience_id'] }}" maxlength="80">
+                            </div>
+                        </div>
+                        <details class="mb-3">
+                            <summary class="mb-3">Automatski povrat odjava</summary>
+                            @if ($mailchimpWebhookUrl)
+                                <div class="form-group">
+                                    <label for="mailchimp-webhook-url">Adresa za povrat odjava</label>
+                                    <input type="text" class="form-control" id="mailchimp-webhook-url" value="{{ $mailchimpWebhookUrl }}" readonly autocomplete="off">
+                                    <small class="form-text text-muted">Kopirajte ovu adresu u Mailchimpove postavke webhooka.</small>
+                                </div>
+                            @else
+                                <p class="text-muted">Adresa za povrat odjava bit će dostupna nakon spremanja postavki.</p>
+                            @endif
+                            <div class="form-group">
+                                <label for="mailchimp-webhook-secret">Ključ za provjeru odjava (opcionalno)</label>
+                                <input type="password" class="form-control" id="mailchimp-webhook-secret" name="webhook_signing_secret"
+                                       value="" autocomplete="new-password" maxlength="255">
+                                <small class="form-text text-muted">{{ $mailchimpSettings['signing_configured'] ? 'Ključ je spremljen. Ostavite prazno ako ga ne mijenjate.' : 'Unesite ako ste postavili ključ za potpisivanje Mailchimpovih webhookova.' }}</small>
+                            </div>
+                        </details>
+                        <button type="submit" class="btn btn-outline-primary">Spremi postavke</button>
+                    </form>
+                </details>
+            </div>
+        </div>
+
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
                 <h3 class="block-title">
                     Prijavljene adrese
                     <span class="font-size-sm text-muted ml-2">{{ number_format($subscribers->total(), 0, ',', '.') }} rezultata</span>
@@ -90,7 +192,7 @@
 
                 <div class="alert alert-info d-flex align-items-start" role="status">
                     <i class="fa fa-info-circle mt-1 mr-2"></i>
-                    <div>Ovaj pregled ne šalje newsletter i ne mijenja status prijava. Izvoz sadrži samo trenutno filtrirane rezultate.</div>
+                    <div>Izvoz sadrži samo trenutno filtrirane rezultate. Usklađivanje prenosi prijave u Mailchimp bez slanja newslettera.</div>
                 </div>
 
                 <div class="table-responsive">
@@ -102,6 +204,7 @@
                             <th>Izvor</th>
                             <th class="text-center">Privola</th>
                             <th class="text-center">Status</th>
+                            <th>Mailchimp</th>
                             <th>Datum prijave</th>
                         </tr>
                         </thead>
@@ -133,11 +236,24 @@
                                         <span class="badge badge-secondary">Neaktivan</span>
                                     @endif
                                 </td>
+                                <td>
+                                    @if (! $subscriber->status)
+                                        <span class="badge badge-secondary">Neaktivno</span>
+                                    @elseif (! $subscriber->gdpr)
+                                        <span class="badge badge-secondary">Bez privole</span>
+                                    @else
+                                        @php($syncState = $mailchimpStates[$subscriber->mailchimp_sync_status ?: 'pending'] ?? $mailchimpStates['error'])
+                                        <span class="badge {{ $syncState['class'] }}">{{ $syncState['label'] }}</span>
+                                        @if ($subscriber->mailchimp_synced_at)
+                                            <small class="d-block text-muted">{{ $subscriber->mailchimp_synced_at->format('d.m.Y. H:i') }}</small>
+                                        @endif
+                                    @endif
+                                </td>
                                 <td>{{ optional($subscriber->subscribed_at)->format('d.m.Y. H:i') ?: '—' }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-5">
+                                <td colspan="7" class="text-center text-muted py-5">
                                     <i class="fa fa-inbox fa-2x d-block mb-2"></i>
                                     Nema newsletter prijava za odabrane filtre.
                                 </td>
