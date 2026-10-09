@@ -2,7 +2,6 @@
 
 @push('css_before')
     <link rel="stylesheet" href="{{ asset('js/plugins/select2/css/select2.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('js/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css') }}">
 @endpush
 
 @section('content')
@@ -58,7 +57,9 @@
                                                 @foreach ($groups as $group)
                                                     <option value="{{ $group->id }}" {{ (isset($action) and $group->id == $action->group) ? 'selected="selected"' : '' }}>{{ $group->title }}</option>
                                                 @endforeach
-{{--                                                <option value="all" {{ (isset($action) and 'all' == $action->group) ? 'selected="selected"' : '' }}>Svi Artikli</option>--}}
+                                                @unless (collect($groups)->contains('id', 'total'))
+                                                    <option value="total" {{ old('group', isset($action) ? $action->group : '') === 'total' ? 'selected' : '' }}>Ukupni iznos knjiga (kupon)</option>
+                                                @endunless
                                             </select>
                                         </div>
                                     </div>
@@ -83,19 +84,17 @@
                                     </div>
                                     <div class="form-group row items-push mb-2">
                                         <div class="col-md-12">
-                                            <label for="date-start-input">Akcija vrijedi</label>
-                                            <div class="input-daterange input-group" data-date-format="mm/dd/yyyy" data-week-start="1" data-autoclose="true" data-today-highlight="true">
-                                                <input type="text" class="form-control" id="date-start-input" name="date_start"
-                                                       value="{{ isset($action) && $action->date_start ? \Illuminate\Support\Carbon::make($action->date_start)->format('d.m.Y') : '' }}"
-                                                       placeholder="od" data-week-start="1" data-autoclose="true" data-today-highlight="true">
+                                            <label for="date-start-input">Akcija vrijedi (datum i vrijeme, Europe/Zagreb)</label>
+                                            <div class="input-group">
+                                                <input type="datetime-local" step="1" class="form-control" id="date-start-input" name="date_start"
+                                                       value="{{ old('date_start', isset($action) && $action->date_start ? \Illuminate\Support\Carbon::make($action->date_start)->format('Y-m-d\TH:i:s') : '') }}">
                                                 <div class="input-group-prepend input-group-append">
                                                     <span class="input-group-text font-w600">
                                                         <i class="fa fa-fw fa-arrow-right"></i>
                                                     </span>
                                                 </div>
-                                                <input type="text" class="form-control" id="date-end-input" name="date_end"
-                                                       value="{{ isset($action) && $action->date_end ? \Illuminate\Support\Carbon::make($action->date_end)->format('d.m.Y') : '' }}"
-                                                       placeholder="do" data-week-start="1" data-autoclose="true" data-today-highlight="true">
+                                                <input type="datetime-local" step="1" class="form-control" id="date-end-input" name="date_end"
+                                                       value="{{ old('date_end', isset($action) && $action->date_end ? \Illuminate\Support\Carbon::make($action->date_end)->format('Y-m-d\TH:i:s') : '') }}">
                                             </div>
                                         </div>
                                     </div>
@@ -169,10 +168,6 @@
 
 @push('js_after')
     <script src="{{ asset('js/plugins/select2/js/select2.full.min.js') }}"></script>
-    <script src="{{ asset('js/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js') }}"></script>
-
-    <script>jQuery(function(){Dashmix.helpers(['datepicker']);});</script>
-
     <script>
         $(() => {
             /**

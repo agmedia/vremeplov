@@ -48,7 +48,9 @@ class Action extends Model
             'title'    => 'required',
             'type'     => 'required',
             'group'    => 'required',
-            'discount' => 'required'
+            'discount' => 'required',
+            'date_start' => 'nullable|date',
+            'date_end' => 'nullable|date' . ($request->filled('date_start') ? '|after_or_equal:date_start' : ''),
         ]);
 
         $this->request = $request;
@@ -112,6 +114,10 @@ class Action extends Model
      */
     public function isValid(string $coupon = ''): bool
     {
+        if (! $this->status) {
+            return false;
+        }
+
         $is_valid = false;
 
         $from = now()->subDay();

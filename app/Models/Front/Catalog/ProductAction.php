@@ -37,9 +37,14 @@ class ProductAction extends Model
      */
     public function scopeActive(Builder $query)
     {
-        return $query->where('date_start', '<', Carbon::now())
-            ->where('date_end', '>', Carbon::now())
-            //->orWhere('date_start', null)
-            ->orWhere('date_end', null);
+        $now = Carbon::now();
+
+        return $query->where('status', 1)
+            ->where(function (Builder $query) use ($now) {
+                $query->whereNull('date_start')->orWhere('date_start', '<=', $now);
+            })
+            ->where(function (Builder $query) use ($now) {
+                $query->whereNull('date_end')->orWhere('date_end', '>=', $now);
+            });
     }
 }
