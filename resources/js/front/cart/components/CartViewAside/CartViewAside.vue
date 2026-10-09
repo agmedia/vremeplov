@@ -7,6 +7,27 @@
                     <h3 class="fw-bold text-primary">{{ $store.state.service.formatMainPrice(($store.state.cart && $store.state.cart.total) ? $store.state.cart.total : 0) }}</h3>
                     <h4 class="fs-sm" v-if="$store.state.cart.secondary_price">{{ $store.state.service.formatSecondaryPrice(($store.state.cart && $store.state.cart.total) ? $store.state.cart.total : 0) }}</h4>
                 </div>
+                <form class="mt-3" @submit.prevent="checkCoupon" v-if="$store.state.cart && $store.state.cart.count">
+                    <label class="form-label" for="cart-gift-code">Poklon kod / kod za popust</label>
+                    <div class="input-group">
+                        <input id="cart-gift-code" class="form-control" type="text" v-model.trim="coupon"
+                               placeholder="Unesite kod" autocomplete="off" :disabled="couponLoading">
+                        <button class="btn btn-outline-primary" type="submit" :disabled="couponLoading || !coupon">
+                            {{ couponLoading ? 'Provjeravam…' : 'Primijeni' }}
+                        </button>
+                    </div>
+                    <p class="small text-success mt-2 mb-0" v-if="appliedCoupon">
+                        Primijenjen kod: <strong>{{ appliedCoupon }}</strong>
+                        <button class="btn btn-link btn-sm p-0 ms-2" type="button" @click="removeCoupon" :disabled="couponLoading">Ukloni</button>
+                    </p>
+                    <p class="small text-danger mt-2 mb-0" role="alert" v-if="couponFeedback">{{ couponFeedback }}</p>
+                </form>
+                <div class="small mt-3" v-for="condition in (($store.state.cart && $store.state.cart.detail_con) || [])" :key="condition.name">
+                    <div class="d-flex justify-content-between" v-if="condition.attributes && condition.attributes.type == 'coupon'">
+                        <span>{{ condition.name }}</span>
+                        <strong>{{ $store.state.service.formatMainPrice(condition.value) }}</strong>
+                    </div>
+                </div>
                 <a class="btn btn-primary btn-shadow d-block w-100 mt-4" :href="checkouturl">NASTAVI NA NAPLATU <i class="fa-regular fa-arrow-right fs-sm"></i></a>
 
             </div>
@@ -104,7 +125,15 @@
                 mobile: false,
                 show_delete_btn: true,
                 coupon: '',
+                couponLoading: false,
+                couponFeedback: '',
                 tax: 0,
+            }
+        },
+        computed: {
+            appliedCoupon() {
+                const conditions = (this.$store.state.cart && this.$store.state.cart.detail_con) || [];
+                return conditions.some(condition => condition.attributes && condition.attributes.type == 'coupon') ? this.$store.state.cart.coupon : '';
             }
         },
         mounted() {
@@ -183,8 +212,24 @@
             /**
              *
              */
-            checkCoupon() {
-                this.$store.dispatch('checkCoupon', this.coupon);
+            async checkCoupon() {
+                this.couponLoading = true;
+                this.couponFeedback = '';
+                try {
+                    const success = await this.$store.dispatch('checkCoupon', this.coupon);
+                    if (success) {
+                        this.setCoupon();
+                    } else {
+                        this.couponFeedback = 'Kod nije primijenjen. Provjerite kod i pokušajte ponovno.';
+                    }
+                } finally {
+                    this.couponLoading = false;
+                }
+            },
+
+            async removeCoupon() {
+                this.coupon = '';
+                await this.checkCoupon();
             }
         }
     };

@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Helpers\Helper;
+use App\Http\Controllers\Api\v2\CartController;
 use App\Models\Back\Marketing\Action;
+use App\Models\Front\AgCart;
 use App\Models\Front\Catalog\ProductAction;
 use Carbon\Carbon;
 use Darryldecode\Cart\CartCondition;
@@ -13,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
+use ReflectionProperty;
 use Tests\TestCase;
 
 class NewsletterCouponTest extends TestCase
@@ -176,6 +179,88 @@ class NewsletterCouponTest extends TestCase
         (new Action())->validateRequest($request);
     }
 
+    /** @dataProvider acceptedCouponInputs */
+    public function test_applying_a_coupon_immediately_updates_the_cart_and_session_with_its_canonical_code(string $input): void
+    {
+        $this->action();
+        [$cart, $contents, $sessionKey] = $this->agCart();
+
+        $this->assertSame(1, $cart->coupon($input));
+        $this->assertSame('VREMEPLOV20', $this->cartCoupon($cart));
+        $this->assertSame('VREMEPLOV20', session($sessionKey));
+        $this->assertTrue($contents->getContent()->isEmpty());
+    }
+
+    public function acceptedCouponInputs(): array
+    {
+        return [
+            'canonical' => ['VREMEPLOV20'],
+            'lowercase' => ['vremeplov20'],
+            'surrounding whitespace' => ['  vremeplov20  '],
+        ];
+    }
+
+    /** @dataProvider invalidCoupons */
+    public function test_rejected_coupon_preserves_the_previous_coupon_session_and_cart_items(array $attributes): void
+    {
+        $this->action($attributes);
+        [$cart, $contents, $sessionKey] = $this->agCart('KEEP20');
+        $contents->add([
+            'id' => 1, 'name' => 'Book already in cart', 'price' => 100, 'quantity' => 2,
+            'attributes' => ['existing' => true],
+            'conditions' => new CartCondition([
+                'name' => 'Existing promotion', 'type' => 'promo', 'value' => '-20',
+            ]),
+        ]);
+        $before = $contents->getContent()->toArray();
+
+        $this->assertSame(0, $cart->coupon('VREMEPLOV20'));
+        $this->assertSame('KEEP20', $this->cartCoupon($cart));
+        $this->assertSame('KEEP20', session($sessionKey));
+        $this->assertEquals($before, $contents->getContent()->toArray());
+        $this->assertEquals(160, $contents->getSubTotal());
+    }
+
+    /** @dataProvider clearedCouponInputs */
+    public function test_removing_a_coupon_clears_the_code_and_forgets_the_session($input): void
+    {
+        [$cart, $contents, $sessionKey] = $this->agCart('VREMEPLOV20');
+
+        $this->assertSame(1, $cart->coupon($input));
+        $this->assertSame('', $this->cartCoupon($cart));
+        $this->assertFalse(session()->has($sessionKey));
+        $this->assertTrue($contents->getContent()->isEmpty());
+    }
+
+    public function clearedCouponInputs(): array
+    {
+        return [
+            'null' => [null],
+            'empty' => [''],
+            'whitespace' => ['   '],
+            'literal null' => ['null'],
+            'uppercase literal with whitespace' => ['  NULL  '],
+        ];
+    }
+
+    public function test_controller_does_not_overwrite_a_previous_coupon_before_rejecting_an_invalid_code(): void
+    {
+        $this->action(['status' => 0]);
+        [$cart, , $sessionKey] = $this->agCart('KEEP20');
+        $controller = new CartController();
+        foreach (['cart' => $cart, 'key' => substr($sessionKey, 0, -strlen('_coupon'))] as $name => $value) {
+            $property = new ReflectionProperty(CartController::class, $name);
+            $property->setAccessible(true);
+            $property->setValue($controller, $value);
+        }
+
+        $response = $controller->coupon('VREMEPLOV20');
+
+        $this->assertSame(0, $response->getData());
+        $this->assertSame('KEEP20', session($sessionKey));
+        $this->assertSame('KEEP20', $this->cartCoupon($cart));
+    }
+
     private function action(array $attributes = []): Action
     {
         $id = DB::table('product_actions')->insertGetId(array_merge([
@@ -212,6 +297,27 @@ class NewsletterCouponTest extends TestCase
         $cart->add(['id' => 1, 'name' => 'Book', 'price' => 100, 'quantity' => 1, 'attributes' => []]);
 
         return $cart;
+    }
+
+    private function agCart(?string $existingCoupon = null): array
+    {
+        $id = 'newsletter-coupon-change-' . uniqid('', true);
+        $sessionKey = (config('session.cart') ?: 'agm') . '_coupon';
+        if ($existingCoupon === null) {
+            session()->forget($sessionKey);
+        } else {
+            session()->put($sessionKey, $existingCoupon);
+        }
+
+        return [new AgCart($id), Cart::session($id), $sessionKey];
+    }
+
+    private function cartCoupon(AgCart $cart): string
+    {
+        $property = new ReflectionProperty(AgCart::class, 'coupon');
+        $property->setAccessible(true);
+
+        return $property->getValue($cart);
     }
 
     private function freezeCouponTime(string $time): void

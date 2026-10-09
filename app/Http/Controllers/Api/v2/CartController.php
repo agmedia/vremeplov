@@ -137,8 +137,6 @@ class CartController extends Controller
      */
     public function coupon($coupon)
     {
-        session([$this->key . '_coupon' => $coupon]);
-
         return response()->json($this->cart->coupon($coupon))->header('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     }
     

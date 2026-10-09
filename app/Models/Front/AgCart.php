@@ -6,7 +6,6 @@ use App\Helpers\Currency;
 use App\Helpers\Helper;
 use App\Models\Back\Marketing\Action;
 use App\Models\Front\Catalog\Product;
-use App\Models\Front\Catalog\ProductAction;
 use App\Models\Front\Checkout\PaymentMethod;
 use App\Models\Front\Checkout\ShippingMethod;
 use App\Models\TagManager;
@@ -241,15 +240,39 @@ class AgCart extends Model
 
 
     /**
-     * Provjeriti metodu da li se koristi negdje.
-     *  ????????????????????????????????????????
-     *
-     * @param $coupon
-     *
-     * @return int
+     * Validate a coupon before changing the cart, or clear it with an empty code.
      */
     public function coupon($coupon): int
     {
+        $coupon = trim((string) $coupon);
+
+        if (strtolower($coupon) === 'null') {
+            $coupon = '';
+        }
+
+        if ($coupon !== '') {
+            $action = Action::query()
+                ->whereRaw('LOWER(coupon) = ?', [mb_strtolower($coupon)])
+                ->get()
+                ->first(function (Action $action) {
+                    return $action->isValid((string) $action->coupon);
+                });
+
+            if (! $action) {
+                return 0;
+            }
+
+            $coupon = (string) $action->coupon;
+        }
+
+        $this->coupon = $coupon;
+
+        if ($coupon === '') {
+            session()->forget($this->session_key . '_coupon');
+        } else {
+            session([$this->session_key . '_coupon' => $coupon]);
+        }
+
         $items = $this->cart->getContent();
 
         // Refreshaj košaricu sa upisanim kuponom.
@@ -258,13 +281,7 @@ class AgCart extends Model
             $this->addToCart($this->resolveItemRequest($item));
         }
 
-        $has_coupon = ProductAction::active()->where('coupon', $coupon)->get();
-
-        if ($has_coupon->count()) {
-            return 1;
-        }
-
-        return 0;
+        return 1;
     }
 
 

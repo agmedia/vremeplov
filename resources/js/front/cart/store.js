@@ -9,7 +9,8 @@ let messages = {
     cartUpdate: 'Količina proizvoda je promjenjena',
     cartRemove: 'Proizvod maknut iz košarice.',
     couponSuccess: 'Kupon je uspješno dodan u košaricu.',
-    couponError: 'Nažalost nema kupona pod tim kodom.',
+    couponError: 'Kupon nije valjan ili je istekao.',
+    couponRemoved: 'Kupon je uklonjen.',
 }
 
 
@@ -153,15 +154,9 @@ class AgService {
      * @returns {*}
      */
     checkCoupon(coupon) {
-        if ( ! coupon) {
-            coupon = null;
-        }
-        return axios.get('cart/coupon/' + coupon)
-        .then(response => {
-            this.returnSuccess(messages.couponSuccess);
-            return response.data
-        })
-        .catch(error => { return this.returnError(messages.error) })
+        const code = String(coupon || '').trim();
+        return axios.get('cart/coupon/' + encodeURIComponent(code || 'null'))
+            .then(response => response.data);
     }
 
     /**
@@ -491,21 +486,22 @@ let store = {
          * @param context
          * @param coupon
          */
-        checkCoupon(context, coupon) {
-            let state = context.state;
-
-            state.cart.coupon = coupon;
-            state.storage.setCart(state.cart);
-
-            state.service.checkCoupon(coupon).then(response => {
-                if (response) {
-                    state.service.returnSuccess(messages.couponSuccess);
-                } else {
+        async checkCoupon(context, coupon) {
+            const state = context.state;
+            const code = String(coupon || '').trim();
+            try {
+                const response = await state.service.checkCoupon(code);
+                if (Number(response) !== 1) {
                     state.service.returnError(messages.couponError);
+                    return false;
                 }
-
-                context.commit('setCart');
-            });
+                await context.dispatch('getCart');
+                state.service.returnSuccess(code ? messages.couponSuccess : messages.couponRemoved);
+                return true;
+            } catch (error) {
+                state.service.returnError(messages.error);
+                return false;
+            }
         },
 
         /**
