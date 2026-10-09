@@ -5,14 +5,17 @@ namespace Tests\Feature;
 use App\Helpers\Helper;
 use App\Http\Controllers\Api\v2\CartController;
 use App\Models\Back\Marketing\Action;
+use App\Models\Cart as SavedCart;
 use App\Models\Front\AgCart;
 use App\Models\Front\Catalog\ProductAction;
 use Carbon\Carbon;
 use Darryldecode\Cart\CartCondition;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
+use Illuminate\Auth\GenericUser;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use ReflectionProperty;
@@ -58,6 +61,13 @@ class NewsletterCouponTest extends TestCase
             $table->unsignedBigInteger('action_id')->nullable();
             $table->dateTime('special_from')->nullable();
             $table->dateTime('special_to')->nullable();
+        });
+        Schema::create('carts', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('user_id');
+            $table->text('session_id');
+            $table->text('cart_data');
+            $table->timestamps();
         });
         $this->freezeCouponTime('2026-10-09 12:00:00');
     }
@@ -261,6 +271,71 @@ class NewsletterCouponTest extends TestCase
         $this->assertSame('KEEP20', $this->cartCoupon($cart));
     }
 
+    /** @dataProvider persistedCouponChanges */
+    public function test_successful_coupon_change_survives_reloading_an_authenticated_saved_cart($input, string $expected): void
+    {
+        $this->action();
+        $this->action(['coupon' => 'OLD20']);
+        Auth::setUser(new GenericUser(['id' => 123]));
+        $key = config('session.cart') ?: 'agm';
+        $sessionKey = $key . '_coupon';
+        $id = 'newsletter-saved-coupon';
+        session()->put($key, $id);
+        session()->put($sessionKey, 'OLD20');
+        DB::table('carts')->insert([
+            'user_id' => 123, 'session_id' => $id,
+            'cart_data' => json_encode(['items' => [], 'coupon' => 'OLD20']),
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $cart = new NewsletterCouponSavedCartForTest($id);
+        $controller = $this->controllerForCart($cart, $key);
+
+        $this->assertSame(1, $controller->coupon($input)->getData());
+        $stored = json_decode(DB::table('carts')->where('user_id', 123)->value('cart_data'), true);
+        $this->assertIsArray($stored);
+        $this->assertSame($expected, $stored['coupon']);
+
+        // The next request reloads the account's saved cart through checkLogged.
+        session()->forget($sessionKey);
+        $reloaded = new NewsletterCouponSavedCartForTest($id . '-reload');
+        SavedCart::checkLogged($reloaded, $id . '-reload');
+
+        $this->assertSame($expected, $this->cartCoupon($reloaded));
+        if ($expected === '') {
+            $this->assertFalse(session()->has($sessionKey));
+        } else {
+            $this->assertSame($expected, session($sessionKey));
+        }
+    }
+
+    public function persistedCouponChanges(): array
+    {
+        return [
+            'removed coupon stays removed' => ['null', ''],
+            'replacement coupon is restored' => ['vremeplov20', 'VREMEPLOV20'],
+        ];
+    }
+
+    public function test_rejected_coupon_does_not_persist_or_replace_the_authenticated_saved_cart(): void
+    {
+        $this->action(['status' => 0]);
+        Auth::setUser(new GenericUser(['id' => 123]));
+        $key = config('session.cart') ?: 'agm';
+        $id = 'newsletter-saved-invalid-coupon';
+        session()->put($key, $id);
+        session()->put($key . '_coupon', 'OLD20');
+        $original = json_encode(['items' => [], 'coupon' => 'OLD20', 'unchanged' => true]);
+        DB::table('carts')->insert([
+            'user_id' => 123, 'session_id' => $id, 'cart_data' => $original,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $cart = new NewsletterCouponSavedCartForTest($id);
+
+        $this->assertSame(0, $this->controllerForCart($cart, $key)->coupon('VREMEPLOV20')->getData());
+        $this->assertSame($original, DB::table('carts')->where('user_id', 123)->value('cart_data'));
+        $this->assertSame('OLD20', $this->cartCoupon($cart));
+    }
+
     private function action(array $attributes = []): Action
     {
         $id = DB::table('product_actions')->insertGetId(array_merge([
@@ -320,8 +395,32 @@ class NewsletterCouponTest extends TestCase
         return $property->getValue($cart);
     }
 
+    private function controllerForCart(AgCart $cart, string $key): CartController
+    {
+        $controller = new CartController();
+        foreach (['cart' => $cart, 'key' => $key] as $name => $value) {
+            $property = new ReflectionProperty(CartController::class, $name);
+            $property->setAccessible(true);
+            $property->setValue($controller, $value);
+        }
+
+        return $controller;
+    }
+
     private function freezeCouponTime(string $time): void
     {
         Carbon::setTestNow(Carbon::parse($time, 'Europe/Zagreb'));
+    }
+}
+
+class NewsletterCouponSavedCartForTest extends AgCart
+{
+    public function get()
+    {
+        $coupon = new ReflectionProperty(AgCart::class, 'coupon');
+        $coupon->setAccessible(true);
+
+        // Keep the real persistence and reload paths without currency/settings setup.
+        return ['items' => $this->getCartItems(true)->toArray(), 'coupon' => $coupon->getValue($this)];
     }
 }
